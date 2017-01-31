@@ -37,7 +37,43 @@ namespace ArkBot
             });
 
             var commands = _discord.GetService<CommandService>();
+            commands.CreateCommand("command")
+                .Alias("commands")
+                .Parameter("name", ParameterType.Optional)
+                .Do(async (e) =>
+                {
+                    var name = e.GetArg("name")?.TrimStart('!').ToLower();
+                    var sb = new StringBuilder();
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        sb.AppendLine($"**List of commands** (for usage examples type **!commands** <***name of command***>");
+                        sb.AppendLine($"● **!findtame** <***name*** (minimum length 2)> [***tribe <name>***] [***owner <name>***] [<option (***exact/species***)>]");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"**Example usage of !{name}**");
+                        switch(name)
+                        {
+                            case "findtame":
+                            case "findtames":
+                            case "findpet":
+                            case "findpets":
+                                sb.AppendLine($"● **!findtame lina**: Looks for a tame using a ***partial*** name ***'lina'***");
+                                sb.AppendLine($"● **!findtame lars exact**: Looks for a tame using an ***exact*** name ***'lars'***");
+                                sb.AppendLine($"● **!findtame doedicurus species**: Looks for any tame of the ***species 'doedicurus'***");
+                                sb.AppendLine($"● **!findtame lina owner nils**: Looks for a tame using a partial name ***'lina'*** belonging to the ***player 'nils'***");
+                                sb.AppendLine($"● **!findtame lina tribe epic**: Looks for a tame using a partial name ***'lina'*** belonging to the ***tribe 'epic'***");
+                                break;
+                            default:
+                                sb.Clear();
+                                sb.AppendLine($"**The specified command does not exist!**");
+                                break;
+                        }
+                    }
+                    await e.Channel.SendMessage(sb.ToString().TrimEnd('\r', '\n'));
+                });
             commands.CreateCommand("findtame")
+                .Alias("findtames", "findpet", "findpets")
                 .Parameter("name", ParameterType.Required)
                 .Parameter("optional", ParameterType.Multiple)
                 .Do(async (e) =>
@@ -55,7 +91,6 @@ namespace ArkBot
 
                     if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
                     {
-                        await e.Channel.SendMessage("Use the command like so: !findtame <name (minimum length 2)> [tribe <name>] [owner <name>] [<option (exact/species)>]");
                         return;
                     }
 
@@ -70,21 +105,29 @@ namespace ArkBot
 
                     var matches = filtered?.OrderByDescending(x => x.FullLevel ?? x.BaseLevel).ThenByDescending(x => x.Experience ?? decimal.MinValue).Take(10).ToArray();
                     var count = filtered.Count();
+                    var nextUpdate = _context.ApproxTimeUntilNextUpdate;
+                    var nextUpdateString = (nextUpdate.HasValue ? (nextUpdate.Value.TotalSeconds >= 0 ? $", next update in ~{nextUpdate.Value:c}" : ", waiting for new update ...") : "");
+                    var lastUpdate = _context.LastUpdate;
+                    var isToday = DateTime.Today == lastUpdate.Date;
+                    var isYesterday = DateTime.Today.AddDays(-1).Date == lastUpdate.Date;
+                    var lastUpdateString = isToday ? $"{lastUpdate:'today at' HH:mm}" : isYesterday ? $"{lastUpdate:'yesterday at' HH:mm}" : $"{lastUpdate:yyyy-MM-dd HH:mm}";
+
+                    if (nextUpdate.HasValue) nextUpdate = TimeSpan.FromSeconds(Math.Round(nextUpdate.Value.TotalSeconds));
                     if (matches == null || matches.Length < 1)
                     {
-                        await e.Channel.SendMessage("No matching tamed creatures found!");
+                        await e.Channel.SendMessage($"**No matching tamed creatures found!** (updated {lastUpdateString}{nextUpdateString})");
                     }
                     else
                     {
                         var sb = new StringBuilder();
-                        sb.Append($"Found {count} matching tamed creatures");
+                        sb.Append($"**Found {count} matching tamed creatures");
                         if (count > 10) sb.Append(" (showing top 10)");
-                        sb.AppendLine(":");
+                        sb.AppendLine($"** (updated {lastUpdateString}{nextUpdateString})");
                         foreach(var x in matches)
                         {
-                            sb.Append($"{x.Name}{(x.Name != null ? ", " : "")}{x.SpeciesName} (lvl {x.FullLevel ?? x.BaseLevel}");
-                            if (x.Tribe != null || x.OwnerName != null) sb.Append($" owned by {string.Join("/", new[] { x.Tribe, x.OwnerName }.Where(y => !string.IsNullOrWhiteSpace(y)).ToArray())}");
-                            sb.AppendLine(Invariant($") at {x.Latitude:N1}, {x.Longitude:N1}"));
+                            sb.Append($"● {(x.Name != null ? "**" : "")}{x.Name}{(x.Name != null ? "**, " : "")}***{x.SpeciesName}*** (lvl ***{x.FullLevel ?? x.BaseLevel}***");
+                            if (x.Tribe != null || x.OwnerName != null) sb.Append($" owned by ***{string.Join("/", new[] { x.Tribe, x.OwnerName }.Where(y => !string.IsNullOrWhiteSpace(y)).ToArray())}***");
+                            sb.AppendLine(Invariant($") at ***{x.Latitude:N1}***, ***{x.Longitude:N1}***"));
                         }
 
                         await e.Channel.SendMessage(sb.ToString().TrimEnd('\r', '\n'));

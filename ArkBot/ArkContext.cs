@@ -18,6 +18,48 @@ namespace ArkBot
         private string _jsonOutputDirPath;
         private bool _debugNoExtract;
 
+        private List<DateTime> _previousUpdates = new List<DateTime>();
+
+        private DateTime _lastUpdate;
+        public DateTime LastUpdate
+        {
+            get
+            {
+                return _lastUpdate;
+            }
+
+            private set
+            {
+                _previousUpdates.Add(value);
+                if (_previousUpdates.Count > 20) _previousUpdates.RemoveRange(0, _previousUpdates.Count - 20);
+
+                _lastUpdate = value;
+            }
+        }
+
+        public TimeSpan? ApproxTimeUntilNextUpdate
+        {
+            get
+            {
+                if (_previousUpdates.Count < 2) return null;
+
+                var deltas = _previousUpdates.Skip(1).Zip(_previousUpdates, (a, b) => a - b)
+                    .Where(x => x.TotalMilliseconds > 0).ToArray();
+                if (deltas.Length <= 0) return null;
+                else if (deltas.Length == 1) return deltas[0];
+
+                var avg = deltas.Average(x => x.TotalMilliseconds);
+                var sumsd = deltas.Sum(val => (val.TotalMilliseconds - avg) * (val.TotalMilliseconds - avg));
+                var sd = Math.Sqrt(sumsd / (deltas.Length - 1));
+
+                var partial = deltas.Where(x => Math.Abs(avg - x.TotalMilliseconds) <= sd).ToArray();
+                var estimated = TimeSpan.FromMilliseconds((partial.Length > 0 ? partial : deltas).Average(x => x.TotalMilliseconds));
+                var relative = estimated - (DateTime.Now - LastUpdate);
+
+                return TimeSpan.FromMinutes(Math.Round(relative.TotalMinutes));
+            }
+        }
+
         public Creature[] Creatures { get; private set; }
 
         public ArkContext(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath, bool debugNoExtract = false)
@@ -31,7 +73,11 @@ namespace ArkBot
         public async Task Load()
         {
             var creatures = await ExtractAndLoadData();
-            if (creatures != null) Creatures = creatures;
+            if (creatures != null)
+            {
+                Creatures = creatures;
+                LastUpdate = DateTime.Now;
+            }
 
             if (!_debugNoExtract)
             {
@@ -140,7 +186,11 @@ namespace ArkBot
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
         {
             var creatures = await ExtractAndLoadData();
-            if (creatures != null) Creatures = creatures;
+            if (creatures != null)
+            {
+                Creatures = creatures;
+                LastUpdate = DateTime.Now;
+            }
         }
 
         #region IDisposable Support
