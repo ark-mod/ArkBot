@@ -89,41 +89,47 @@ namespace ArkBot
 
         private async Task<Creature[]> LoadDataFromJson()
         {
-            var classes = (CreatureClass[])null;
-            var creatures = new Dictionary<string, List<Creature>>();
-
-            foreach (var file in Directory.EnumerateFiles(/*dir*/ _jsonOutputDirPath))
+            try
             {
-                if (Path.GetFileName(file).Equals("classes.json", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (classes != null) continue;
-                    classes = JsonConvert.DeserializeObject<CreatureClass[]>(File.ReadAllText(file));
-                }
-                else
-                {
-                    var className = Path.GetFileNameWithoutExtension(file);
+                var classes = (CreatureClass[])null;
+                var creatures = new Dictionary<string, List<Creature>>();
 
-                    using (var reader = File.OpenText(file))
+                foreach (var file in Directory.EnumerateFiles(_jsonOutputDirPath, "*.json", SearchOption.TopDirectoryOnly))
+                {
+                    if (Path.GetFileName(file).Equals("classes.json", StringComparison.OrdinalIgnoreCase))
                     {
-                        var tmp = JsonConvert.DeserializeObject<Creature[]>(await reader.ReadToEndAsync());
+                        if (classes != null) continue;
+                        classes = JsonConvert.DeserializeObject<CreatureClass[]>(File.ReadAllText(file));
+                    }
+                    else
+                    {
+                        var className = Path.GetFileNameWithoutExtension(file);
 
-                        if (!creatures.ContainsKey(className)) creatures.Add(className, new List<Creature>());
-                        creatures[className].AddRange(tmp);
+                        using (var reader = File.OpenText(file))
+                        {
+                            var tmp = JsonConvert.DeserializeObject<Creature[]>(await reader.ReadToEndAsync());
+
+                            if (!creatures.ContainsKey(className)) creatures.Add(className, new List<Creature>());
+                            creatures[className].AddRange(tmp);
+                        }
                     }
                 }
-            }
 
-            //map the creature data
-            return creatures.SelectMany(x =>
-            {
-                x.Value.ForEach(y =>
+                //map the creature data
+                return creatures.SelectMany(x =>
                 {
-                    y.SpeciesClass = x.Key;
-                    y.SpeciesName = classes.FirstOrDefault(z => z.Class.Equals(x.Key, StringComparison.OrdinalIgnoreCase))?.Name;
-                });
+                    x.Value.ForEach(y =>
+                    {
+                        y.SpeciesClass = x.Key;
+                        y.SpeciesName = classes.FirstOrDefault(z => z.Class.Equals(x.Key, StringComparison.OrdinalIgnoreCase))?.Name;
+                    });
 
-                return x.Value;
-            }).ToArray();
+                    return x.Value;
+                }).ToArray();
+            }
+            catch { /* ignore all exceptions */ }
+
+            return null;
         }
 
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)

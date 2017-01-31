@@ -2,6 +2,10 @@
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,9 +16,11 @@ namespace ArkBot
     {
         private DiscordClient _discord;
         private ArkContext _context;
+        private string _tempFileOutputDirPath;
 
-        public ArkBot(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath)
+        public ArkBot(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath, string tempFileOutputDirPath)
         {
+            _tempFileOutputDirPath = tempFileOutputDirPath;
             _context = new ArkContext(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath);
 
             _discord = new DiscordClient(x =>
@@ -51,6 +57,41 @@ namespace ArkBot
                         await e.Channel.SendMessage($"Found {matches.Length} tamed creatures matching name '{partialname}'{(matches.Length > 10 ? " (showing top 10)" : "")}:{Environment.NewLine}"
                             + string.Join(Environment.NewLine, matches.OrderByDescending(x => x.Experience ?? decimal.MinValue).Take(10)
                             .Select(x => $"{x.Name} (lvl {x.FullLevel ?? x.BaseLevel}{(x.OwnerName != null ? $" owned by {x.OwnerName}" : "")}) at {x.Latitude:N1}, {x.Longitude:N1}").ToArray()));
+
+                        //send map with locations marked
+                        var templatePath = @"Resources\theisland-template.png";
+                        if (File.Exists(templatePath))
+                        {
+                            using (var image = Image.FromFile(templatePath))
+                            {
+                                using (var g = Graphics.FromImage(image))
+                                {
+                                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                                    g.SmoothingMode = SmoothingMode.HighQuality;
+
+                                    foreach (var m in matches.OrderByDescending(x => x.Experience ?? decimal.MinValue).Take(10))
+                                    {
+                                        var rc = new Rectangle(81, 86, 568, 552);
+                                        var gx = rc.Width / 8m;
+                                        var gy = rc.Height / 8m;
+                                        var x = (float)(((m.Longitude - 10) / 10) * gx + rc.Left);
+                                        var y = (float)(((m.Latitude - 10) / 10) * gy + rc.Top);
+                                        g.FillCircle(Brushes.Magenta, x, y, 5f);
+                                    }
+
+                                    var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
+                                    if (je == null) return;
+
+                                    var p = new EncoderParameters(1);
+                                    p.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L);
+
+                                    var path = Path.Combine(_tempFileOutputDirPath, $"{Guid.NewGuid()}.jpg");
+                                    image.Save(path, je, p);
+                                    await e.Channel.SendFile(path);
+                                    File.Delete(path);
+                                }
+                            }
+                        }
                     }
                 });
         }

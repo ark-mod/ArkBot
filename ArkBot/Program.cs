@@ -16,6 +16,7 @@ namespace ArkBot
         static private string saveFilePath => ConfigurationManager.AppSettings["saveFilePath"];
         static private string arktoolsExecutablePath => ConfigurationManager.AppSettings["arktoolsExecutablePath"];
         static private string jsonOutputDirPath => ConfigurationManager.AppSettings["jsonOutputDirPath"];
+        static private string tempFileOutputDirPath => ConfigurationManager.AppSettings["tempFileOutputDirPath"];
         static private string botToken => ConfigurationManager.AppSettings["botToken"];
 
         static void Main(string[] args)
@@ -29,6 +30,9 @@ namespace ArkBot
             if (string.IsNullOrWhiteSpace(jsonOutputDirPath) || !Directory.Exists(jsonOutputDirPath))
                 throw new ApplicationException($"AppSettings: {nameof(jsonOutputDirPath)} is not a valid directory.");
 
+            if (string.IsNullOrWhiteSpace(tempFileOutputDirPath) || !Directory.Exists(tempFileOutputDirPath))
+                throw new ApplicationException($"AppSettings: {nameof(tempFileOutputDirPath)} is not a valid directory.");
+
             if (string.IsNullOrWhiteSpace(botToken))
                 throw new ApplicationException($"AppSettings: {nameof(botToken)} is not set.");
 
@@ -37,7 +41,7 @@ namespace ArkBot
 
         static async Task MainAsync()
         {
-            using (_bot = new ArkBot(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath))
+            using (_bot = new ArkBot(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath, tempFileOutputDirPath))
             {
                 await _bot.Start(botToken);
 
