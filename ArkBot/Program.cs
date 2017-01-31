@@ -19,6 +19,14 @@ namespace ArkBot
         static private string tempFileOutputDirPath => ConfigurationManager.AppSettings["tempFileOutputDirPath"];
         static private string botToken => ConfigurationManager.AppSettings["botToken"];
 
+        static private bool debugNoExtract;
+
+        static Program()
+        {
+            bool b;
+            debugNoExtract = bool.TryParse(ConfigurationManager.AppSettings["debugNoExtract"], out b) ? b : false;
+        }
+
         static void Main(string[] args)
         {
             if (string.IsNullOrWhiteSpace(saveFilePath) || !File.Exists(saveFilePath))
@@ -41,7 +49,7 @@ namespace ArkBot
 
         static async Task MainAsync()
         {
-            using (_bot = new ArkBot(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath, tempFileOutputDirPath))
+            using (_bot = new ArkBot(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath, tempFileOutputDirPath, debugNoExtract))
             {
                 await _bot.Start(botToken);
 

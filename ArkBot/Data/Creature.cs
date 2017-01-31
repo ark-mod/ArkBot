@@ -50,6 +50,8 @@ namespace ArkBot.Data
         public decimal? TamedAtTime { get; set; }
         [JsonProperty(PropertyName = "tamedTime")]
         public decimal? TamedTime { get; set; }
+        [JsonProperty(PropertyName = "tribe")]
+        public string Tribe { get; set; }
         [JsonProperty(PropertyName = "tamer")]
         public string Tamer { get; set; }
         [JsonProperty(PropertyName = "ownerName")]

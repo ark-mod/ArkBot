@@ -16,14 +16,16 @@ namespace ArkBot
         private string _saveFilePath;
         private string _arktoolsExecutablePath;
         private string _jsonOutputDirPath;
+        private bool _debugNoExtract;
 
         public Creature[] Creatures { get; private set; }
 
-        public ArkContext(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath)
+        public ArkContext(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath, bool debugNoExtract = false)
         {
             _saveFilePath = saveFilePath;
             _arktoolsExecutablePath = arktoolsExecutablePath;
             _jsonOutputDirPath = jsonOutputDirPath;
+            _debugNoExtract = debugNoExtract;
         }
 
         public async Task Load()
@@ -31,16 +33,19 @@ namespace ArkBot
             var creatures = await ExtractAndLoadData();
             if (creatures != null) Creatures = creatures;
 
-            _watcher = new ArkSaveFileWatcher { SaveFilePath = _saveFilePath };
-            _watcher.Changed += _watcher_Changed;
+            if (!_debugNoExtract)
+            {
+                _watcher = new ArkSaveFileWatcher { SaveFilePath = _saveFilePath };
+                _watcher.Changed += _watcher_Changed;
+            }
         }
 
         private async Task<Creature[]> ExtractAndLoadData()
         {
             //exctract the save file data to json using ark-tools
-            if (!await ExtractSaveFileData()) return null;
+            if (!_debugNoExtract && !await ExtractSaveFileData()) return null;
 
-            //load the reusulting json into memory
+            //load the resulting json into memory
             var creatures = await LoadDataFromJson();
 
             return creatures;
@@ -121,7 +126,7 @@ namespace ArkBot
                     x.Value.ForEach(y =>
                     {
                         y.SpeciesClass = x.Key;
-                        y.SpeciesName = classes.FirstOrDefault(z => z.Class.Equals(x.Key, StringComparison.OrdinalIgnoreCase))?.Name;
+                        y.SpeciesName = classes.FirstOrDefault(z => z.Class.Equals(x.Key, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");
                     });
 
                     return x.Value;

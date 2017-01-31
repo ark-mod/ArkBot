@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.FormattableString;
 
 namespace ArkBot
 {
@@ -18,10 +19,10 @@ namespace ArkBot
         private ArkContext _context;
         private string _tempFileOutputDirPath;
 
-        public ArkBot(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath, string tempFileOutputDirPath)
+        public ArkBot(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath, string tempFileOutputDirPath, bool debugNoExtract = false)
         {
             _tempFileOutputDirPath = tempFileOutputDirPath;
-            _context = new ArkContext(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath);
+            _context = new ArkContext(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath, debugNoExtract);
 
             _discord = new DiscordClient(x =>
            {
@@ -38,62 +39,101 @@ namespace ArkBot
             var commands = _discord.GetService<CommandService>();
             commands.CreateCommand("findtame")
                 .Parameter("name", ParameterType.Required)
+                .Parameter("optional", ParameterType.Multiple)
                 .Do(async (e) =>
                 {
-                    var partialname = e.GetArg("name");
-                    if (string.IsNullOrWhiteSpace(partialname) || partialname.Length < 2)
+                    var query = e.GetArg("name");
+                    var optional = e.Args.Skip(1).ToArray();
+                    var matchExact = optional.Any(x => x.Equals("exact", StringComparison.OrdinalIgnoreCase));
+                    var matchSpecies = optional.Any(x => x.Equals("species", StringComparison.OrdinalIgnoreCase));
+                    var tribe = optional.Take(optional.Length - 1)
+                        .Select((o, i) => new { o = o, a = optional[i + 1] })
+                        .FirstOrDefault(x => x.o.Equals("tribe", StringComparison.OrdinalIgnoreCase))?.a;
+                    var owner = optional.Take(optional.Length - 1)
+                        .Select((o, i) => new { o = o, a = optional[i + 1] })
+                        .FirstOrDefault(x => x.o.Equals("owner", StringComparison.OrdinalIgnoreCase))?.a;
+
+                    if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
                     {
-                        await e.Channel.SendMessage("Use the command like so: !findtame <name (minimum length 2)>");
+                        await e.Channel.SendMessage("Use the command like so: !findtame <name (minimum length 2)> [tribe <name>] [owner <name>] [<option (exact/species)>]");
                         return;
                     }
 
-                    var matches = _context.Creatures?.Where(x => x.Tamed == true && x.Name != null && x.Name.IndexOf(partialname, StringComparison.OrdinalIgnoreCase) != -1).ToArray();
+                    var filtered = _context.Creatures?.Where(x => x.Tamed == true);
+
+                    if (tribe != null) filtered = filtered.Where(x => x.Tribe != null && x.Tribe.Equals(tribe, StringComparison.OrdinalIgnoreCase));
+                    if (owner != null) filtered = filtered.Where(x => x.OwnerName != null && x.OwnerName.Equals(owner, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchExact) filtered = filtered?.Where(x => x.Name != null && x.Name.Equals(query, StringComparison.OrdinalIgnoreCase));
+                    else if (matchSpecies) filtered = filtered?.Where(x => x.SpeciesName != null && x.SpeciesName.Equals(query, StringComparison.OrdinalIgnoreCase));
+                    else filtered = filtered?.Where(x => x.Name != null && x.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1);
+
+                    var matches = filtered?.OrderByDescending(x => x.FullLevel ?? x.BaseLevel).ThenByDescending(x => x.Experience ?? decimal.MinValue).Take(10).ToArray();
+                    var count = filtered.Count();
                     if (matches == null || matches.Length < 1)
                     {
                         await e.Channel.SendMessage("No matching tamed creatures found!");
                     }
                     else
                     {
-                        await e.Channel.SendMessage($"Found {matches.Length} tamed creatures matching name '{partialname}'{(matches.Length > 10 ? " (showing top 10)" : "")}:{Environment.NewLine}"
-                            + string.Join(Environment.NewLine, matches.OrderByDescending(x => x.Experience ?? decimal.MinValue).Take(10)
-                            .Select(x => $"{x.Name} (lvl {x.FullLevel ?? x.BaseLevel}{(x.OwnerName != null ? $" owned by {x.OwnerName}" : "")}) at {x.Latitude:N1}, {x.Longitude:N1}").ToArray()));
-
-                        //send map with locations marked
-                        var templatePath = @"Resources\theisland-template.png";
-                        if (File.Exists(templatePath))
+                        var sb = new StringBuilder();
+                        sb.Append($"Found {count} matching tamed creatures");
+                        if (count > 10) sb.Append(" (showing top 10)");
+                        sb.AppendLine(":");
+                        foreach(var x in matches)
                         {
-                            using (var image = Image.FromFile(templatePath))
-                            {
-                                using (var g = Graphics.FromImage(image))
-                                {
-                                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                                    g.SmoothingMode = SmoothingMode.HighQuality;
-
-                                    foreach (var m in matches.OrderByDescending(x => x.Experience ?? decimal.MinValue).Take(10))
-                                    {
-                                        var rc = new Rectangle(81, 86, 568, 552);
-                                        var gx = rc.Width / 8m;
-                                        var gy = rc.Height / 8m;
-                                        var x = (float)(((m.Longitude - 10) / 10) * gx + rc.Left);
-                                        var y = (float)(((m.Latitude - 10) / 10) * gy + rc.Top);
-                                        g.FillCircle(Brushes.Magenta, x, y, 5f);
-                                    }
-
-                                    var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
-                                    if (je == null) return;
-
-                                    var p = new EncoderParameters(1);
-                                    p.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L);
-
-                                    var path = Path.Combine(_tempFileOutputDirPath, $"{Guid.NewGuid()}.jpg");
-                                    image.Save(path, je, p);
-                                    await e.Channel.SendFile(path);
-                                    File.Delete(path);
-                                }
-                            }
+                            sb.Append($"{x.Name}{(x.Name != null ? ", " : "")}{x.SpeciesName} (lvl {x.FullLevel ?? x.BaseLevel}");
+                            if (x.Tribe != null || x.OwnerName != null) sb.Append($" owned by {string.Join("/", new[] { x.Tribe, x.OwnerName }.Where(y => !string.IsNullOrWhiteSpace(y)).ToArray())}");
+                            sb.AppendLine(Invariant($") at {x.Latitude:N1}, {x.Longitude:N1}"));
                         }
+
+                        await e.Channel.SendMessage(sb.ToString().TrimEnd('\r', '\n'));
+                        await SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.Longitude, (float)x.Latitude)).ToArray());
                     }
                 });
+        }
+
+        private async Task SendAnnotatedMap(Channel channel, PointF[] points)
+        {
+            //send map with locations marked
+            var templatePath = @"Resources\theisland-template.png";
+            if (!File.Exists(templatePath)) return;
+
+            using (var image = Image.FromFile(templatePath))
+            {
+                using (var g = Graphics.FromImage(image))
+                {
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    g.SmoothingMode = SmoothingMode.HighQuality;
+
+                    foreach (var loc in points)
+                    {
+                        //var rc = new Rectangle(81, 86, 568, 552);
+                        //var rcf = new RectangleF(12.1f, 7.2f, (float)(92.1 - 12.1), (float)(87.2 - 7.2)); //87.9
+                        //var x = (float)(((loc.X - rcf.Left) / rcf.Width) * rc.Width + rc.Left);
+                        //var y = (float)(((loc.Y - rcf.Top) / rcf.Height) * rc.Height + rc.Top);
+
+                        var rc = new Rectangle(81, 86, 568, 552);
+                        var gx = rc.Width / 8f;
+                        var gy = rc.Height / 8f;
+                        var x = (float)(((loc.X - 10) / 10) * gx + rc.Left);
+                        var y = (float)(((loc.Y - 10) / 10) * gy + rc.Top);
+
+                        g.FillCircle(Brushes.Magenta, x, y, 5f);
+                    }
+
+                    var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
+                    if (je == null) return;
+
+                    var p = new EncoderParameters(1);
+                    p.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L);
+
+                    var path = Path.Combine(_tempFileOutputDirPath, $"{Guid.NewGuid()}.jpg");
+                    image.Save(path, je, p);
+                    await channel.SendFile(path);
+                    File.Delete(path);
+                }
+            }
         }
 
         public async Task Start(string botToken)
