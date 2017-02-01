@@ -1,13 +1,18 @@
 ﻿using Discord;
 using Discord.Commands;
+using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using static System.FormattableString;
 
@@ -68,6 +73,64 @@ namespace ArkBot
                                 sb.Clear();
                                 sb.AppendLine($"**The specified command does not exist!**");
                                 break;
+                        }
+                    }
+                    await e.Channel.SendMessage(sb.ToString().TrimEnd('\r', '\n'));
+                });
+            commands.CreateCommand("status")
+                .Alias("serverstatus")
+                .Do(async (e) =>
+                {
+                    var status = await GetServerStatus();
+
+                    var sb = new StringBuilder();
+                    if (status == null || status.Item1 == null || status.Item2 == null)
+                    {
+                        sb.AppendLine($"**Serverstatus is currently unavailable!**");
+                    }
+                    else
+                    {
+                        var serverInfo = status.Item1;
+                        var serverRules = status.Item2;
+
+                        var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(serverInfo.Name);
+                        var name = m.Success ? m.Groups["name"].Value : serverInfo.Name;
+                        var version = m.Success ? m.Groups["version"] : null;
+                        var currentTime = serverRules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
+
+                        sb.AppendLine($"**{name}**");
+                        sb.AppendLine($"● **Address:** {serverInfo.Address}");
+                        if(version != null) sb.AppendLine($"● **Version:** {version}");
+                        sb.AppendLine($"● **Players:** {serverInfo.Players}/{serverInfo.MaxPlayers}");
+                        sb.AppendLine($"● **Map:** {serverInfo.Map}");
+                        if(currentTime != null) sb.AppendLine($"● **In-game time:** {currentTime}");
+                    }
+                    await e.Channel.SendMessage(sb.ToString().TrimEnd('\r', '\n'));
+                });
+            commands.CreateCommand("playerlist")
+                .Alias("playerslist")
+                .Do(async (e) =>
+                {
+                    var status = await GetServerStatus();
+
+                    var sb = new StringBuilder();
+                    if (status == null || status.Item1 == null || status.Item3 == null)
+                    {
+                        sb.AppendLine($"**Playerlist is currently unavailable!**");
+                    }
+                    else
+                    {
+                        var serverInfo = status.Item1;
+                        var playerInfo = status.Item3;
+
+                        var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(serverInfo.Name);
+                        var name = m.Success ? m.Groups["name"].Value : serverInfo.Name;
+
+                        sb.AppendLine($"**{name} ({serverInfo.Players}/{serverInfo.MaxPlayers})**");
+                        foreach(var player in playerInfo)
+                        {
+                            var playername = string.IsNullOrEmpty(player.Name) ? "[server admin]" : player.Name;
+                            sb.AppendLine($"● **{playername}** ({(player.Time.Days > 0 ? player.Time.ToString("d'.'") : "")}{player.Time.ToString("hh':'mm")})");
                         }
                     }
                     await e.Channel.SendMessage(sb.ToString().TrimEnd('\r', '\n'));
@@ -134,6 +197,48 @@ namespace ArkBot
                         await SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.Longitude, (float)x.Latitude)).ToArray());
                     }
                 });
+        }
+
+        private async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus()
+        {
+            var cache = MemoryCache.Default;
+
+            var status = cache[nameof(GetServerStatus)] as Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>;
+
+            if (status == null)
+            {
+                await Task.Factory.StartNew(() =>
+                {
+                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, "85.227.28.132", 27003, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
+                    {
+                        var serverInfo = server.GetInfo();
+                        var serverRules = server.GetRules();
+                        var playerInfo = server.GetPlayers();
+
+                        status = new Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>(serverInfo, serverRules, playerInfo);
+                        cache.Set(nameof(GetServerStatus), status, new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMinutes(1) });
+
+                        ////send rcon commands
+                        //string rconPassword = "";
+                        //if (server.GetControl(rconPassword))
+                        //{
+                        //    var result = server.Rcon.SendCommand("status");
+                        //    server.Rcon.Dispose();
+                        //}
+
+                        ////listen to logs
+                        //using (Logs logs = server.GetLogs(port))
+                        //{
+                        //    logs.Listen(x => Debug.WriteLine(x));
+                        //    logs.Start();
+                        //    //wait here
+                        //    logs.Stop();
+                        //}
+                    }
+                });
+            }
+
+            return status;
         }
 
         private async Task SendAnnotatedMap(Channel channel, PointF[] points)
