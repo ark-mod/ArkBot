@@ -1,11 +1,15 @@
 ﻿using ArkBot.Data;
+using ArkBot.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ArkBot
@@ -13,10 +17,13 @@ namespace ArkBot
     public class ArkContext : IDisposable
     {
         private ArkSaveFileWatcher _watcher;
-        private string _saveFilePath;
-        private string _arktoolsExecutablePath;
-        private string _jsonOutputDirPath;
-        private bool _debugNoExtract;
+        private Config _config;
+        private IProgress<string> _progress;
+
+        private string _jsonOutputDirPathTamed => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "tamed") : null;
+        private string _jsonOutputDirPathTribes => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "tribes") : null;
+        private string _jsonOutputDirPathPlayers => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "players") : null;
+        private string _jsonOutputDirPathCluster => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "cluster") : null;
 
         private List<DateTime> _previousUpdates = new List<DateTime>();
 
@@ -61,122 +68,183 @@ namespace ArkBot
         }
 
         public Creature[] Creatures { get; private set; }
+        public Tribe[] Tribes { get; private set; }
+        public Player[] Players { get; private set; }
+        public CreatureClass[] Classes { get; private set; }
+        public Cluster Cluster { get; private set; }
 
-        public ArkContext(string saveFilePath, string arktoolsExecutablePath, string jsonOutputDirPath, bool debugNoExtract = false)
+        public ArkContext(Config config, IProgress<string> progress)
         {
-            _saveFilePath = saveFilePath;
-            _arktoolsExecutablePath = arktoolsExecutablePath;
-            _jsonOutputDirPath = jsonOutputDirPath;
-            _debugNoExtract = debugNoExtract;
+            _config = config;
+            _progress = progress;
         }
 
-        public async Task Load()
+        public async Task Initialize()
         {
-            var creatures = await ExtractAndLoadData();
-            if (creatures != null)
+            _progress.Report("Context initialization started...");
+            var data = await ExtractAndLoadData();
+            if (data != null)
             {
-                Creatures = creatures;
-                LastUpdate = DateTime.Now;
+                Classes = data.Item1;
+                Creatures = data.Item2;
+                Players = data.Item3;
+                Tribes = data.Item4;
+                Cluster = data.Item5;
+                _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
             }
 
-            if (!_debugNoExtract)
+            if (!_config.DebugNoExtract)
             {
-                _watcher = new ArkSaveFileWatcher { SaveFilePath = _saveFilePath };
+                _watcher = new ArkSaveFileWatcher { SaveFilePath = _config.SaveFilePath };
                 _watcher.Changed += _watcher_Changed;
             }
         }
 
-        private async Task<Creature[]> ExtractAndLoadData()
+        private async Task<Tuple<CreatureClass[], Creature[], Player[], Tribe[], Cluster>> ExtractAndLoadData()
         {
-            //exctract the save file data to json using ark-tools
-            if (!_debugNoExtract && !await ExtractSaveFileData()) return null;
+            //extract the save file data to json using ark-tools
+            _progress.Report("Extracting ARK gamedata...");
+            if (!_config.DebugNoExtract && !await ExtractSaveFileData()) return null;
 
             //load the resulting json into memory
-            var creatures = await LoadDataFromJson();
+            _progress.Report("Loading json data into memory...");
+            var data = await LoadDataFromJson();
 
-            return creatures;
+            return data;
         }
 
         private async Task<bool> ExtractSaveFileData()
         {
             try
             {
-                foreach (var filepath in Directory.GetFiles(_jsonOutputDirPath, "*.json", SearchOption.TopDirectoryOnly))
-                {
-                    File.Delete(filepath);
-                }
-
-                var tcs = new TaskCompletionSource<int>();
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Verb = "runas",
-                    Arguments = $@"/C {_arktoolsExecutablePath} tamed ""{_saveFilePath}"" ""{_jsonOutputDirPath}"" --pretty-printing",
-                    WorkingDirectory = Directory.GetParent(_arktoolsExecutablePath).FullName,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                var cmd = new Process
-                {
-                    StartInfo = startInfo,
-                    EnableRaisingEvents = true
-                };
-                cmd.Exited += (sender, args) =>
-                {
-                    tcs.SetResult(cmd.ExitCode);
-                    cmd.Dispose();
-                    cmd = null;
-                };
-
-                cmd.Start();
-
-                var exitCode = await tcs.Task;
-                if (exitCode == 0) return true;
+                await DownloadHelper.DownloadLatestReleaseFromGithub(
+                    @"http://api.github.com/repos/Qowyn/ark-tools/releases/latest",
+                    (s) => s.EndsWith(".zip", StringComparison.OrdinalIgnoreCase),
+                    @"Tools\ark-tools\ark-tools.zip",
+                    (p) => p.Equals("ark_data.json", StringComparison.OrdinalIgnoreCase) ? @"Tools\ark-tools\ark_data.json" : null,
+                    true,
+                    TimeSpan.FromDays(1)
+                );
             }
-            catch { /* ignore all exceptions */ }
+            catch { /*ignore exceptions */ }
 
-            return false;
+            var _rJson = new Regex(@"\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var _rCluster = new Regex(@"^\d+$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            var success = true;
+            foreach (var action in new[]
+            {
+                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathTamed, filepathCheck = _rJson, verb = "tamed", parameters = "" }, //--pretty-print
+                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathTribes, filepathCheck = _rJson, verb = "tribes", parameters = "--structures --items --tribeless" },
+                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathPlayers, filepathCheck = _rJson, verb = "players", parameters = "--inventory --positions --no-privacy --max-age 2592000" }, //limit to last 30 days
+                new { inpath = _config.ClusterSavePath, path = _jsonOutputDirPathCluster, filepathCheck = _rCluster, verb = "cluster", parameters = "" }
+            })
+            {
+                _progress.Report($"- {action.verb}");
+
+                if (!Directory.Exists(action.path)) Directory.CreateDirectory(action.path);
+
+                try
+                {
+                    foreach (var filepath in Directory.GetFiles(action.path, "*.*", SearchOption.TopDirectoryOnly))
+                    {
+                        if (!action.filepathCheck.IsMatch(filepath)) continue;
+                        File.Delete(filepath);
+                    }
+
+                    var tcs = new TaskCompletionSource<int>();
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Verb = "runas",
+                        Arguments = $@"/C {Path.GetFullPath(_config.ArktoolsExecutablePath)} {action.verb} ""{action.inpath}"" ""{action.path}"" {action.parameters}",
+                        WorkingDirectory = Directory.GetParent(_config.ArktoolsExecutablePath).FullName,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    var cmd = new Process
+                    {
+                        StartInfo = startInfo,
+                        EnableRaisingEvents = true
+                    };
+                    cmd.Exited += (sender, args) =>
+                    {
+                        tcs.SetResult(cmd.ExitCode);
+                        cmd.Dispose();
+                        cmd = null;
+                    };
+
+                    cmd.Start();
+
+                    var exitCode = await tcs.Task;
+                    success = success && (exitCode == 0);
+                }
+                catch
+                {
+                    /* ignore all exceptions */
+                    success = false;
+                }
+            }
+
+            return success;
         }
 
-        private async Task<Creature[]> LoadDataFromJson()
+        private async Task<Tuple<CreatureClass[], Creature[], Player[], Tribe[], Cluster>> LoadDataFromJson()
         {
             try
             {
-                var classes = (CreatureClass[])null;
-                var creatures = new Dictionary<string, List<Creature>>();
+                var results = new List<Tuple<string, object>>();
 
-                foreach (var file in Directory.EnumerateFiles(_jsonOutputDirPath, "*.json", SearchOption.TopDirectoryOnly))
+                var actions = new[]
                 {
-                    if (Path.GetFileName(file).Equals("classes.json", StringComparison.OrdinalIgnoreCase))
+                    new
                     {
-                        if (classes != null) continue;
-                        classes = JsonConvert.DeserializeObject<CreatureClass[]>(File.ReadAllText(file));
-                    }
-                    else
-                    {
-                        var className = Path.GetFileNameWithoutExtension(file);
+                        path = _jsonOutputDirPathTamed,
+                        selector = (Func<string, Type>)((x) => x.Equals("classes", StringComparison.OrdinalIgnoreCase) ? typeof(CreatureClass[]) : typeof(Creature[]))
+                    },
+                    new { path = _jsonOutputDirPathTribes, selector = (Func<string, Type>)((x) => typeof(Tribe)) },
+                    new { path = _jsonOutputDirPathPlayers, selector = (Func<string, Type>)((x) => typeof(Player)) },
+                    new { path = _jsonOutputDirPathCluster, selector = (Func<string, Type>)((x) => typeof(Cluster)) }
+                };
 
-                        using (var reader = File.OpenText(file))
+                foreach (var action in actions)
+                {
+                    foreach (var filepath in Directory.EnumerateFiles(action.path, "*.json", SearchOption.TopDirectoryOnly))
+                    {
+                        var className = Path.GetFileNameWithoutExtension(filepath);
+
+                        using (var reader = File.OpenText(filepath))
                         {
-                            var tmp = JsonConvert.DeserializeObject<Creature[]>(await reader.ReadToEndAsync());
-
-                            if (!creatures.ContainsKey(className)) creatures.Add(className, new List<Creature>());
-                            creatures[className].AddRange(tmp);
+                            var tmp = JsonConvert.DeserializeObject(await reader.ReadToEndAsync(), action.selector(Path.GetFileNameWithoutExtension(filepath)));
+                            results.Add(new Tuple<string, object>(className, tmp));
                         }
                     }
                 }
 
-                //map the creature data
-                return creatures.SelectMany(x =>
-                {
-                    x.Value.ForEach(y =>
+                var classes = results?.Where(x => x.Item2 is CreatureClass[])?.FirstOrDefault()?.Item2 as CreatureClass[];
+                var creatures = results?.Where(x => x.Item2 is Creature[])
+                    .GroupBy(x => x.Item1)
+                    .ToDictionary(x => x.Key, x => x.SelectMany(y => y.Item2 as Creature[]).Select(y =>
                     {
                         y.SpeciesClass = x.Key;
-                        y.SpeciesName = classes.FirstOrDefault(z => z.Class.Equals(x.Key, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");
-                    });
+                        y.SpeciesName = classes?.FirstOrDefault(z => z.Class.Equals(x.Key, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");
 
-                    return x.Value;
+                        return y;
+                    }).ToList()).Values.SelectMany(x => x).ToArray();
+                var tribes = results?.Where(x => x.Item2 is Tribe)?.Select(x =>
+                {
+                    var tribe = x.Item2 as Tribe;
+                    int tribeId = 0;
+                    if(int.TryParse(x.Item1, out tribeId)) tribe.Id = tribeId;
+                    return tribe;
                 }).ToArray();
+                var players = results?.Where(x => x.Item2 is Player)?.Select(x => x.Item2 as Player).ToArray();
+
+                //todo: not sure how playerid is set
+                var clusterlist = results?.Where(x => x.Item2 is Cluster)?.Select(x => x.Item2 as Cluster).ToArray();
+                var cluster = new Cluster { Creatures = clusterlist?.SelectMany(x => x.Creatures).ToArray() };
+
+                return new Tuple<CreatureClass[], Creature[], Player[], Tribe[], Cluster>(classes, creatures, players, tribes, cluster);
             }
             catch { /* ignore all exceptions */ }
 
@@ -185,10 +253,16 @@ namespace ArkBot
 
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
         {
-            var creatures = await ExtractAndLoadData();
-            if (creatures != null)
+            _progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            var data = await ExtractAndLoadData();
+            if (data != null)
             {
-                Creatures = creatures;
+                Classes = data.Item1;
+                Creatures = data.Item2;
+                Players = data.Item3;
+                Tribes = data.Item4;
+                Cluster = data.Item5;
+
                 LastUpdate = DateTime.Now;
             }
         }

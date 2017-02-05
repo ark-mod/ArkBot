@@ -1,4 +1,6 @@
-﻿using Nito.AsyncEx;
+﻿using ArkBot.Helpers;
+using Newtonsoft.Json;
+using Nito.AsyncEx;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -12,48 +14,108 @@ namespace ArkBot
     class Program
     {
         static private ArkBot _bot;
-
-        static private string saveFilePath => ConfigurationManager.AppSettings["saveFilePath"];
-        static private string arktoolsExecutablePath => ConfigurationManager.AppSettings["arktoolsExecutablePath"];
-        static private string jsonOutputDirPath => ConfigurationManager.AppSettings["jsonOutputDirPath"];
-        static private string tempFileOutputDirPath => ConfigurationManager.AppSettings["tempFileOutputDirPath"];
-        static private string botToken => ConfigurationManager.AppSettings["botToken"];
-
-        static private bool debugNoExtract;
-
-        static Program()
-        {
-            bool b;
-            debugNoExtract = bool.TryParse(ConfigurationManager.AppSettings["debugNoExtract"], out b) ? b : false;
-        }
+        static private Config _config;
 
         static void Main(string[] args)
         {
-            if (string.IsNullOrWhiteSpace(saveFilePath) || !File.Exists(saveFilePath))
-                throw new ApplicationException($"AppSettings: {nameof(saveFilePath)} is not a valid filepath.");
+            var WriteAndWaitForKey = new Action<string>((msg) =>
+            {
+                Console.WriteLine(msg);
+                Console.WriteLine();
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            });
 
-            if (string.IsNullOrWhiteSpace(arktoolsExecutablePath) || !File.Exists(arktoolsExecutablePath))
-                throw new ApplicationException($"AppSettings: {nameof(arktoolsExecutablePath)} is not a valid filepath.");
+            Console.WriteLine("ARK Discord Bot");
+            Console.WriteLine("------------------------------------------------------");
+            Console.WriteLine();
 
-            if (string.IsNullOrWhiteSpace(jsonOutputDirPath) || !Directory.Exists(jsonOutputDirPath))
-                throw new ApplicationException($"AppSettings: {nameof(jsonOutputDirPath)} is not a valid directory.");
+            //load config and check for errors
+            var configPath = @"config.json";
+            if (!File.Exists(configPath))
+            {
+                WriteAndWaitForKey($@"The required file config.json is missing form application directory. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
+                return;
+            }
 
-            if (string.IsNullOrWhiteSpace(tempFileOutputDirPath) || !Directory.Exists(tempFileOutputDirPath))
-                throw new ApplicationException($"AppSettings: {nameof(tempFileOutputDirPath)} is not a valid directory.");
+            var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+            if (config == null)
+            {
+                WriteAndWaitForKey($@"The required file config.json is empty or contains errors. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
+                return;
+            }
 
-            if (string.IsNullOrWhiteSpace(botToken))
-                throw new ApplicationException($"AppSettings: {nameof(botToken)} is not set.");
+            var sb = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(config.SaveFilePath) || !File.Exists(config.SaveFilePath))
+            {
+                sb.AppendLine($@"Error: {nameof(config.SaveFilePath)} is not a valid file path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SaveFilePath))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.ClusterSavePath) || !Directory.Exists(config.ClusterSavePath))
+            {
+                sb.AppendLine($@"Error: {nameof(config.ClusterSavePath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ClusterSavePath))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.ArktoolsExecutablePath) || !File.Exists(config.ArktoolsExecutablePath))
+            {
+                sb.AppendLine($@"Error: {nameof(config.ArktoolsExecutablePath)} is not a valid file path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ArktoolsExecutablePath))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.JsonOutputDirPath) || !Directory.Exists(config.JsonOutputDirPath))
+            {
+                sb.AppendLine($@"Error: {nameof(config.JsonOutputDirPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.JsonOutputDirPath))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.TempFileOutputDirPath) || !Directory.Exists(config.TempFileOutputDirPath))
+            {
+                sb.AppendLine($@"Error: {nameof(config.TempFileOutputDirPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.TempFileOutputDirPath))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.BotToken))
+            {
+                sb.AppendLine($@"Error: {nameof(config.BotToken)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotToken))}");
+                sb.AppendLine();
+            }
+
+            var errors = sb.ToString();
+            if(errors.Length > 0)
+            {
+                WriteAndWaitForKey(errors);
+                return;
+            }
+
+            _config = config;
 
             AsyncContext.Run(() => MainAsync());
         }
 
         static async Task MainAsync()
         {
-            using (_bot = new ArkBot(saveFilePath, arktoolsExecutablePath, jsonOutputDirPath, tempFileOutputDirPath, debugNoExtract))
+            IProgress<string> progress = new Progress<string>(message =>
             {
-                await _bot.Start(botToken);
+                Console.WriteLine(message);
+            });
+            using (_bot = new ArkBot(_config, progress))
+            {
+                await _bot.Start(_config.BotToken);
 
-                Console.ReadKey();
+                while(true)
+                {
+                    if(Console.KeyAvailable)
+                    {
+                        Console.ReadKey(true);
+                        break;
+                    }
+
+                    await Task.Delay(100);
+                }
+
                 await _bot.Stop();
             }
         }

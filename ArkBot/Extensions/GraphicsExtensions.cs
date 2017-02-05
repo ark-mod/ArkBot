@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ArkBot
+namespace ArkBot.Extensions
 {
     public static class GraphicsExtensions
     {
