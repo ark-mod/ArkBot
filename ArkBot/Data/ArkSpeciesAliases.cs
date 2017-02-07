@@ -27,13 +27,17 @@ namespace ArkBot.Data
         public static async Task<ArkSpeciesAliases> Load(string filepath = _filepath)
         {
             ArkSpeciesAliases arkSpeciesAliases = null;
-            if (File.Exists(filepath))
+            try
             {
-                using (var reader = File.OpenText(filepath))
+                if (File.Exists(filepath))
                 {
-                    arkSpeciesAliases = JsonConvert.DeserializeObject<ArkSpeciesAliases>(await reader.ReadToEndAsync());
+                    using (var reader = File.OpenText(filepath))
+                    {
+                        arkSpeciesAliases = JsonConvert.DeserializeObject<ArkSpeciesAliases>(await reader.ReadToEndAsync());
+                    }
                 }
             }
+            catch { /* ignore exceptions */ }
 
             return arkSpeciesAliases;
         }

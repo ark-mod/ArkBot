@@ -42,7 +42,12 @@ namespace ArkBot
                 return;
             }
 
-            var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+            Config config = null;
+            try
+            {
+                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+            }
+            catch { /* ignore exceptions */ }
             if (config == null)
             {
                 WriteAndWaitForKey($@"The required file config.json is empty or contains errors. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
