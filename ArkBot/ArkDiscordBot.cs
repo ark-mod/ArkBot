@@ -244,6 +244,7 @@ namespace ArkBot
                 sb.AppendLine($"● **!linksteam**");
                 sb.AppendLine($"● **!unlinksteam**");
                 sb.AppendLine($"● **!whoami**");
+                sb.AppendLine($"● **!mydinos**");
             }
             else
             {
@@ -259,6 +260,11 @@ namespace ArkBot
                         sb.AppendLine($"● **!findtame doedicurus species**: Looks for any tame of the ***species 'doedicurus'***");
                         sb.AppendLine($"● **!findtame lina owner nils**: Looks for a tame using a partial name ***'lina'*** belonging to the ***player 'nils'***");
                         sb.AppendLine($"● **!findtame lina tribe epic**: Looks for a tame using a partial name ***'lina'*** belonging to the ***tribe 'epic'***");
+                        break;
+                    case "mydinos":
+                    case "mypets":
+                    case "mytames":
+                        sb.AppendLine($"● **!mydinos**: Summary of the food status of your personal- and tribe dinos");
                         break;
                     case "status":
                     case "serverstatus":
