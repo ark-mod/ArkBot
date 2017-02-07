@@ -3,7 +3,16 @@
 A Discord bot for ARK Survival Evolved utilizing https://github.com/arktools to extract data from savegame-files on your server.
 
 
-## Configuration in config.json
+## Latest release
+Stable
+
+https://github.com/tsebring/ArkBot/releases
+
+Pre-release built from latest sources (open as zip-archive, binaries under tools/)
+
+https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
+
+## Configuration in config.json (copy defaultconfig.json template file)
 **"saveFilePath": "\<absolute .ark savegame path\>"**
 
 Absolute path to the savegame-file (.ark) to watch for changes and extract data from.
