@@ -102,6 +102,10 @@
       <HintPath>..\packages\QueryMaster.1.0.0-CI00000\lib\net40\QueryMaster.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="RazorEngine, Version=3.9.3.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\packages\RazorEngine.3.9.3\lib\net45\RazorEngine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Remotion.Linq, Version=1.13.122.1, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
       <HintPath>..\packages\BrightstarDBLibs.1.13.3\lib\net45\Remotion.Linq.dll</HintPath>
       <Private>True</Private>
@@ -154,6 +158,10 @@
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.0.0\lib\net45\System.Web.Razor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
@@ -192,6 +200,7 @@
     <Compile Include="Data\EntityNameWithCount.cs" />
     <Compile Include="Data\Player.cs" />
     <Compile Include="Data\Tribe.cs" />
+    <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Extensions\GraphicsExtensions.cs" />
     <Compile Include="Helpers\DownloadHelper.cs" />
     <Compile Include="Helpers\StatisticsHelper.cs" />
@@ -227,6 +236,9 @@
     <Content Include="Database\DatabaseContext.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DatabaseContext.cs</LastGenOutput>
+    </Content>
+    <Content Include="Resources\openidresponse.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\theisland-template.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

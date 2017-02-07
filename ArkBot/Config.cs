@@ -10,6 +10,22 @@ namespace ArkBot
 {
     public class Config
     {
+        [JsonProperty(PropertyName = "botId")]
+        [Description("Simple non-whitespace or special character ID to identify the bot (A-Za-z0-9)")]
+        public string BotId { get; set; }
+
+        [JsonProperty(PropertyName = "botName")]
+        [Description("Short name to identify the bot")]
+        public string BotName { get; set; }
+
+        [JsonProperty(PropertyName = "botNamespace")]
+        [Description("Unique namespace url given to the bot (may be same as botUrl)")]
+        public string BotNamespace { get; set; }
+
+        [JsonProperty(PropertyName = "botUrl")]
+        [Description("Website url associated with the bot or ARK server (optional).")]
+        public string BotUrl { get; set; }
+
         [JsonProperty(PropertyName = "saveFilePath")]
         [Description("Absolute file path of the .ark save file to monitor/extract data from.")]
         public string SaveFilePath { get; set; }

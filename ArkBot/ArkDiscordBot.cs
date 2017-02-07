@@ -9,6 +9,9 @@ using Google.Apis.Services;
 using Google.Apis.Urlshortener.v1;
 using Newtonsoft.Json;
 using QueryMaster.GameServer;
+using RazorEngine;
+using RazorEngine.Configuration;
+using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,6 +41,8 @@ namespace ArkBot
         private Config _config;
         private IProgress<string> _progress;
 
+        private const string _openidresponsetemplatePath = @"Resources\openidresponse.html";
+
         public ArkDiscordBot(Config config, IProgress<string> progress)
         {
             _config = config;
@@ -49,21 +54,35 @@ namespace ArkBot
                 ListenPrefixes = new[] { _config.SteamOpenIdRelyingServiceListenPrefix },
                 RedirectUri = _config.SteamOpenIdRedirectUri,
             };
-            _openId = new BarebonesSteamOpenId(options);
+            _openId = new BarebonesSteamOpenId(options, 
+                new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
+                {
+                    var razorConfig = new TemplateServiceConfiguration
+                    {
+                        DisableTempFileLocking = true,
+                        CachingProvider = new DefaultCachingProvider(t => { })
+                    };
+
+                    using (var service = RazorEngineService.Create(razorConfig))
+                    {
+                        var html = await FileHelper.ReadAllTextTaskAsync(_openidresponsetemplatePath);
+                        return service.RunCompile(html, _openidresponsetemplatePath, null, new { Success = success, botName = _config.BotName, botUrl = _config.BotUrl });
+                    }
+                }));
             _openId.SteamOpenIdCallback += _openId_SteamOpenIdCallback;
 
             _urlShortenerService = new UrlshortenerService(new BaseClientService.Initializer()
             {
                 ApiKey = _config.GoogleApiKey,
-                ApplicationName = "ARKSverige Discord Bot",
+                ApplicationName = _config.BotName,
             });
 
             _discord = new DiscordClient(x =>
            {
                x.LogLevel = LogSeverity.Info;
                x.LogHandler += Log;
-               x.AppName = "ARKSverige Discord Bot";
-               x.AppUrl = "http://www.arksverige.se/";
+               x.AppName = _config.BotName;
+               x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
            });
 
             _discord.UsingCommands(x =>

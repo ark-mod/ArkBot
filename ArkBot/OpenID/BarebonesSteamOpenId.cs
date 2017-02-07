@@ -25,6 +25,7 @@ namespace ArkBot.OpenID
         private ConcurrentDictionary<Guid, SteamOpenIdState> _states;
 
         private SteamOpenIdOptions _options;
+        private Func<bool, ulong, ulong, Task<string>> _getHtmlContent;
 
         public delegate void SteamOpenIdCallbackEventHandler(object sender, SteamOpenIdCallbackEventArgs e);
         public event SteamOpenIdCallbackEventHandler SteamOpenIdCallback;
@@ -34,9 +35,10 @@ namespace ArkBot.OpenID
             SteamOpenIdCallback?.Invoke(this, new SteamOpenIdCallbackEventArgs { Successful = successful, SteamId = steamId, DiscordUserId = discordUserId });
         }
 
-        public BarebonesSteamOpenId(SteamOpenIdOptions options)
+        public BarebonesSteamOpenId(SteamOpenIdOptions options, Func<bool, ulong, ulong, Task<string>> getHtmlContent)
         {
             _options = options;
+            _getHtmlContent = getHtmlContent;
             _ongoingTasks = new ConcurrentDictionary<Guid, Task>();
             _states = new ConcurrentDictionary<Guid, SteamOpenIdState>();
 
@@ -83,7 +85,6 @@ namespace ArkBot.OpenID
             var a = Guid.NewGuid();
             var state = new SteamOpenIdState
             {
-                //Realm = @"http://www.arksverige.se",
                 ReturnTo = new Uri(new Uri(_options.RedirectUri), $"?a={a}"),
                 Identity = @"http://specs.openid.net/auth/2.0/identifier_select",
                 ClaimedId = @"http://specs.openid.net/auth/2.0/identifier_select",
@@ -164,10 +165,14 @@ namespace ArkBot.OpenID
                 _ongoingTasks.TryRemove(context.Request.RequestTraceIdentifier, out task);
                 OnSteamOpenIdCallback(successful, steamId, state.DiscordUserId);
 
-                var buffer = Encoding.UTF8.GetBytes("<html><head><title>ARKSverige.se Discord Bot Steam Link</title><meta http-equiv='refresh' content='10;url=http://www.arksverige.se'></head><body>" + (successful ? "Your account was successfully linked to steam!" : "Failed to link your account to steam... :( Please try again!") + @"<br /><br />Redirecting to <a href=""http://wwww.arksverige.se"">www.arksverige.se</a> in 10 seconds...</body></html>");
-                context.Response.ContentLength64 = buffer.Length;
-                await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-                context.Response.OutputStream.Close();
+                if (_getHtmlContent != null)
+                {
+                    var content = await _getHtmlContent(successful, steamId, state.DiscordUserId);
+                    var buffer = Encoding.UTF8.GetBytes(content);
+                    context.Response.ContentLength64 = buffer.Length;
+                    await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                    context.Response.OutputStream.Close();
+                }
             }
         }
 

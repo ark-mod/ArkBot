@@ -8,7 +8,10 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using RazorEngine;
+using RazorEngine.Templating;
 
 namespace ArkBot
 {
@@ -47,6 +50,24 @@ namespace ArkBot
             }
 
             var sb = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(config.BotId) || !new Regex(@"^[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Singleline).IsMatch(config.BotId))
+            {
+                sb.AppendLine($@"Error: {nameof(config.BotId)} is not a valid id.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotId))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.BotName))
+            {
+                sb.AppendLine($@"Error: {nameof(config.BotName)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotName))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.BotNamespace) || !Uri.IsWellFormedUriString(config.BotNamespace, UriKind.Absolute))
+            {
+                sb.AppendLine($@"Error: {nameof(config.BotNamespace)} is not set or not a valid url.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotNamespace))}");
+                sb.AppendLine();
+            }
             if (string.IsNullOrWhiteSpace(config.SaveFilePath) || !File.Exists(config.SaveFilePath))
             {
                 sb.AppendLine($@"Error: {nameof(config.SaveFilePath)} is not a valid file path.");

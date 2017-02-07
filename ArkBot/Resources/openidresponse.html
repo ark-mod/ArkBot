@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv='refresh' content='10;url=@Model.botUrl'>
+    <title>@Model.botName Steam Link</title>
+    <style type="text/css">
+        html, body, a {
+            font-size: 12px;
+            font-family: Arial;
+        }
+        a { color: green; }
+        h1.success { color: green; }
+        h1.failed { color: red; }
+    </style>
+</head>
+<body>
+    <div>
+        @if (Model.Success)
+        {
+        <h1 class="success">Your account was successfully linked to steam!</h1>
+        } else {
+        <h1 class="failed">Failed to link your account to steam... :( Please try again later!</h1>
+        }
+        <p>
+            You may now close this window or wait to be redirected to <a href="@Model.botUrl">@Model.botUrl</a> in a moment.
+        </p>
+    </div>
+</body>
+</html>
