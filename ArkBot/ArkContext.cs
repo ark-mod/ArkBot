@@ -25,6 +25,8 @@ namespace ArkBot
         private string _jsonOutputDirPathPlayers => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "players") : null;
         private string _jsonOutputDirPathCluster => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "cluster") : null;
 
+        private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
+
         private List<DateTime> _previousUpdates = new List<DateTime>();
 
         private DateTime _lastUpdate;
@@ -66,7 +68,8 @@ namespace ArkBot
                 return TimeSpan.FromMinutes(Math.Round(relative.TotalMinutes));
             }
         }
-
+        public ArkSpeciesAliases SpeciesAliases { get; set; }
+        public ArkSpeciesStatsData ArkSpeciesStatsData { get; set; }
         public Creature[] Creatures { get; private set; }
         public Tribe[] Tribes { get; private set; }
         public Player[] Players { get; private set; }
@@ -79,17 +82,21 @@ namespace ArkBot
             _progress = progress;
         }
 
-        public async Task Initialize()
+        public async Task Initialize(ArkSpeciesAliases aliases = null)
         {
             _progress.Report("Context initialization started...");
+
+            SpeciesAliases = aliases ?? await ArkSpeciesAliases.Load();
+
             var data = await ExtractAndLoadData();
             if (data != null)
             {
-                Classes = data.Item1;
-                Creatures = data.Item2;
-                Players = data.Item3;
-                Tribes = data.Item4;
-                Cluster = data.Item5;
+                ArkSpeciesStatsData = data.Item1;
+                Classes = data.Item2;
+                Creatures = data.Item3;
+                Players = data.Item4;
+                Tribes = data.Item5;
+                Cluster = data.Item6;
                 _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
             }
 
@@ -100,7 +107,7 @@ namespace ArkBot
             }
         }
 
-        private async Task<Tuple<CreatureClass[], Creature[], Player[], Tribe[], Cluster>> ExtractAndLoadData()
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster>> ExtractAndLoadData()
         {
             //extract the save file data to json using ark-tools
             _progress.Report("Extracting ARK gamedata...");
@@ -128,6 +135,18 @@ namespace ArkBot
             }
             catch { /*ignore exceptions */ }
 
+            try
+            {
+                //this resource contains species stats that we need
+                await DownloadHelper.DownloadFile(
+                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/values.json",
+                    _speciesstatsFileName,
+                    true,
+                    TimeSpan.FromDays(1)
+                );
+            }
+            catch { /*ignore exceptions */ }
+
             var _rJson = new Regex(@"\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             var _rCluster = new Regex(@"^\d+$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
@@ -136,7 +155,7 @@ namespace ArkBot
             {
                 new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathTamed, filepathCheck = _rJson, verb = "tamed", parameters = "" }, //--pretty-print
                 new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathTribes, filepathCheck = _rJson, verb = "tribes", parameters = "--structures --items --tribeless" },
-                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathPlayers, filepathCheck = _rJson, verb = "players", parameters = "--inventory --positions --no-privacy --max-age 2592000" }, //limit to last 30 days
+                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathPlayers, filepathCheck = _rJson, verb = "players", parameters = "--inventory --positions --no-privacy" }, // --max-age 2592000 //limit to last 30 days
                 new { inpath = _config.ClusterSavePath, path = _jsonOutputDirPathCluster, filepathCheck = _rCluster, verb = "cluster", parameters = "" }
             })
             {
@@ -189,7 +208,7 @@ namespace ArkBot
             return success;
         }
 
-        private async Task<Tuple<CreatureClass[], Creature[], Player[], Tribe[], Cluster>> LoadDataFromJson()
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster>> LoadDataFromJson()
         {
             try
             {
@@ -221,6 +240,14 @@ namespace ArkBot
                     }
                 }
 
+                ArkSpeciesStatsData arkSpeciesStatsData = null;
+                if (File.Exists(_speciesstatsFileName))
+                {
+                    using (var reader = File.OpenText(_speciesstatsFileName))
+                    {
+                        arkSpeciesStatsData = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(await reader.ReadToEndAsync());
+                    }
+                }
                 var classes = results?.Where(x => x.Item2 is CreatureClass[])?.FirstOrDefault()?.Item2 as CreatureClass[];
                 var creatures = results?.Where(x => x.Item2 is Creature[])
                     .GroupBy(x => x.Item1)
@@ -244,7 +271,7 @@ namespace ArkBot
                 var clusterlist = results?.Where(x => x.Item2 is Cluster)?.Select(x => x.Item2 as Cluster).ToArray();
                 var cluster = new Cluster { Creatures = clusterlist?.SelectMany(x => x.Creatures).ToArray() };
 
-                return new Tuple<CreatureClass[], Creature[], Player[], Tribe[], Cluster>(classes, creatures, players, tribes, cluster);
+                return new Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster>(arkSpeciesStatsData, classes, creatures, players, tribes, cluster);
             }
             catch { /* ignore all exceptions */ }
 
@@ -257,11 +284,12 @@ namespace ArkBot
             var data = await ExtractAndLoadData();
             if (data != null)
             {
-                Classes = data.Item1;
-                Creatures = data.Item2;
-                Players = data.Item3;
-                Tribes = data.Item4;
-                Cluster = data.Item5;
+                ArkSpeciesStatsData = data.Item1;
+                Classes = data.Item2;
+                Creatures = data.Item3;
+                Players = data.Item4;
+                Tribes = data.Item5;
+                Cluster = data.Item6;
 
                 LastUpdate = DateTime.Now;
             }

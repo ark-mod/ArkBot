@@ -4,5 +4,9 @@
   "arktoolsExecutablePath": "Tools\\ark-tools\\ark-tools.exe",
   "jsonOutputDirPath": "C:\\ark-tool-data",
   "tempFileOutputDirPath": "C:\\ark-tool-data",
-  "botToken": "<token from discord>"
+  "botToken": "<token from discord>",
+  "steamOpenIdRelyingServiceListenPrefix":  "http://+:<your open port>/openid/",
+  "steamOpenIdRedirectUri": "http://<your public ip or domain>:<your open port>/openid/",
+  "googleApiKey": "<google api key>",
+  "steamApiKey": "<steam webapi key>"
 }

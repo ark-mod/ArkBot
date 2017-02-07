@@ -70,7 +70,7 @@ namespace ArkBot
         private void OnChanged()
         {
             LastChanged = DateTime.Now;
-            if(Changed != null) Changed(this, new ArkSaveFileChangedEventArgs { SaveFileName = SaveFilePath });
+            Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { SaveFileName = SaveFilePath });
         }
 
         #region IDisposable Support

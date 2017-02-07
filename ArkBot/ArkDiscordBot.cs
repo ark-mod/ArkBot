@@ -1,7 +1,13 @@
-﻿using ArkBot.Extensions;
+﻿using ArkBot.Data;
+using ArkBot.Database;
+using ArkBot.Extensions;
 using ArkBot.Helpers;
+using ArkBot.OpenID;
 using Discord;
 using Discord.Commands;
+using Google.Apis.Services;
+using Google.Apis.Urlshortener.v1;
+using Newtonsoft.Json;
 using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
@@ -12,32 +18,51 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Caching;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Forms.DataVisualization.Charting;
 using static System.FormattableString;
 
 namespace ArkBot
 {
-    public class ArkBot : IDisposable
+    public class ArkDiscordBot : IDisposable
     {
+        private const string _databaseConnectionString = "type=embedded;storesdirectory=.\\Database;storename=Default";
         private DiscordClient _discord;
         private ArkContext _context;
+        private BarebonesSteamOpenId _openId;
+        private UrlshortenerService _urlShortenerService;
         private Config _config;
         private IProgress<string> _progress;
 
-        public ArkBot(Config config, IProgress<string> progress)
+        public ArkDiscordBot(Config config, IProgress<string> progress)
         {
             _config = config;
             _progress = progress;
             _context = new ArkContext(_config, _progress);
 
+            var options = new SteamOpenIdOptions
+            {
+                ListenPrefixes = new[] { _config.SteamOpenIdRelyingServiceListenPrefix },
+                RedirectUri = _config.SteamOpenIdRedirectUri,
+            };
+            _openId = new BarebonesSteamOpenId(options);
+            _openId.SteamOpenIdCallback += _openId_SteamOpenIdCallback;
+
+            _urlShortenerService = new UrlshortenerService(new BaseClientService.Initializer()
+            {
+                ApiKey = _config.GoogleApiKey,
+                ApplicationName = "ARKSverige Discord Bot",
+            });
+
             _discord = new DiscordClient(x =>
            {
                x.LogLevel = LogSeverity.Info;
                x.LogHandler += Log;
-               x.AppName = "ARK Discord Bot";
+               x.AppName = "ARKSverige Discord Bot";
                x.AppUrl = "http://www.arksverige.se/";
            });
 
@@ -65,9 +90,144 @@ namespace ArkBot
                 .Parameter("name", ParameterType.Required)
                 .Parameter("optional", ParameterType.Multiple)
                 .Do(FindTame);
+            commands.CreateCommand("mydinos")
+                .Alias("mytames", "mypets")
+                .Do(MyDinos);
             commands.CreateCommand("stats")
                 .Parameter("optional", ParameterType.Multiple)
                 .Do(Stats);
+            commands.CreateCommand("linksteam")
+                .Do(LinkSteam);
+            commands.CreateCommand("unlinksteam")
+                .Do(UnlinkSteam);
+            commands.CreateCommand("whoami")
+                //.AddCheck((cmd, usr, ch) =>
+                //{
+                //    return ch.IsPrivate;
+                //})
+                .Do(WhoAmI);
+        }
+
+        private async void _openId_SteamOpenIdCallback(object sender, SteamOpenIdCallbackEventArgs e)
+        {
+            var ch = await _discord.CreatePrivateChannel(e.DiscordUserId);
+            if (ch == null) return;
+
+            if (e.Successful)
+            {
+                var player = new
+                {
+                    RealName = (string)null,
+                    PersonaName = (string)null
+                };
+                try
+                {
+                    using (var wc = new WebClient())
+                    {
+                        var data = await wc.DownloadStringTaskAsync($@"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_config.SteamApiKey}&steamids={e.SteamId}");
+                        var response = JsonConvert.DeserializeAnonymousType(data, new { response = new { players = new[] { player } } });
+                        player = response?.response?.players?.FirstOrDefault();
+                    }
+                }
+                catch { /* ignore exceptions */ }
+
+                //QueryMaster.Steam.GetPlayerSummariesResponsePlayer player = null;
+                //await Task.Factory.StartNew(() =>
+                //{
+                //    try
+                //    {
+                //        //this results in an exception (but it is easy enough to query by ourselves)
+                //        var query = new QueryMaster.Steam.SteamQuery(_config.SteamApiKey);
+                //        var result = query?.ISteamUser.GetPlayerSummaries(new[] { e.SteamId });
+                //        if (result == null || !result.IsSuccess) return;
+
+                //        player = result.ParsedResponse.Players.FirstOrDefault();
+                //    }
+                //    catch { /* ignore exceptions */}
+                //});
+
+                using (var ctx = new DatabaseContext(_databaseConnectionString))
+                {
+                    ctx.Users.AddOrUpdate(new Database.User
+                    {
+                        DiscordId = e.DiscordUserId,
+                        SteamId = e.SteamId,
+                        RealName = player?.RealName,
+                        SteamDisplayName = player?.PersonaName
+                    });
+                    ctx.SaveChanges();
+                }
+                await ch.SendMessage($"Your Discord user is now linked with your Steam ID! :)");
+            }
+            else
+            {
+                await ch.SendMessage($"Something went wrong during the linking process. Please try again later!");
+            }
+        }
+
+        private async Task WhoAmI(CommandEventArgs e)
+        {
+            using (var ctx = new DatabaseContext(_databaseConnectionString))
+            {
+                var user = ctx.Users.FirstOrDefault(x => x.DiscordId == e.User.Id);
+                if (user == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, your existence is a mystery to us! :(");
+                }
+                else
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, I will send you a private message with everything we know about you!");
+
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"**This is what we know about you:**");
+                    sb.AppendLine($"● **Discord ID:** {user.DiscordId}");
+                    sb.AppendLine($"● **Steam ID:** {user.SteamId}");
+                    if (user.SteamDisplayName != null) sb.AppendLine($"● **Steam nick:** {user.SteamDisplayName}");
+                    if (user.RealName != null) sb.AppendLine($"● **Real name:** {user.RealName}");
+
+                    foreach (var msg in sb.ToString().Partition(2000))
+                    {
+                        await e.User.PrivateChannel.SendMessage(msg.Trim('\r', '\n'));
+                    }
+                }
+            }
+        }
+
+        private async Task UnlinkSteam(CommandEventArgs e)
+        {
+            using (var ctx = new DatabaseContext(_databaseConnectionString))
+            {
+                var user = ctx.Users.FirstOrDefault(x => x.DiscordId == e.User.Id);
+                if (user == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, your user is not linked with Steam.");
+                }
+                else
+                {
+                    ctx.DeleteObject(user);
+                    ctx.SaveChanges();
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, your user is no longer linked with Steam.");
+                }
+            }
+        }
+
+        private async Task LinkSteam(CommandEventArgs e)
+        {
+            using (var ctx = new DatabaseContext(_databaseConnectionString))
+            {
+                if(ctx.Users.FirstOrDefault(x => x.DiscordId == e.User.Id) != null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, your user is already linked with Steam. If you wish to remove this link use the command **!unlinksteam**.");
+                    return;
+                }
+            }
+
+            await e.Channel.SendMessage($"<@{e.User.Id}>, I will send you a private message with instructions on how to proceed with linking your Discord user with Steam!");
+            var state = await _openId.LinkWithSteamTaskAsync(e.User.Id);
+            var sb = new StringBuilder();
+            sb.AppendLine($"**Proceed to link your Discord user with your Steam ID by following this link:**");
+            sb.AppendLine($"{await ShortenUrl(state.StartUrl)}");
+            await e.User.PrivateChannel.SendMessage(sb.ToString().Trim('\r', '\n'));
         }
 
         private async Task ListCommands(CommandEventArgs e)
@@ -81,6 +241,9 @@ namespace ArkBot
                 sb.AppendLine($"● **!playerlist**");
                 sb.AppendLine($"● **!stats** [***tribe <name>***] [***player <name>***] [***skip <number>***]");
                 sb.AppendLine($"● **!status**");
+                sb.AppendLine($"● **!linksteam**");
+                sb.AppendLine($"● **!unlinksteam**");
+                sb.AppendLine($"● **!whoami**");
             }
             else
             {
@@ -110,6 +273,15 @@ namespace ArkBot
                         sb.AppendLine($"● **!stats tribe epic**: Statistics for the ***tribe 'epic'***");
                         sb.AppendLine($"● **!stats player nils**: Statistics for the ***player 'nils'***");
                         break;
+                    case "linksteam":
+                        sb.AppendLine($"● **!linksteam**: Link your Discord user with your Steam ID");
+                        break;
+                    case "unlinksteam":
+                        sb.AppendLine($"● **!unlinksteam**: Unlink your Discord user from your Steam ID");
+                        break;
+                    case "whoami":
+                        sb.AppendLine($"● **!whoami**: Find out what we know about you");
+                        break;
                     default:
                         sb.Clear();
                         sb.AppendLine($"**The specified command does not exist!**");
@@ -120,6 +292,100 @@ namespace ArkBot
             {
                 await e.Channel.SendMessage(msg.Trim('\r', '\n'));
             }
+        }
+
+        private async Task MyDinos(CommandEventArgs e)
+        {
+            using (var ctx = new DatabaseContext(_databaseConnectionString))
+            {
+                var user = ctx.Users.FirstOrDefault(x => x.DiscordId == e.User.Id);
+                if (user == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam ID using **!linksteam**.");
+                    return;
+                }
+
+                var player = _context.Players.FirstOrDefault(x => x.SteamId.Equals(user.SteamId.ToString()));
+                if (player == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");
+                    return;
+                }
+
+                var mydinos = _context.Creatures
+                    .Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId))
+                    .Select(x =>
+                    {
+                        //!_context.ArkSpeciesStatsData.SpeciesStats.Any(y => y.Name.Equals(x.SpeciesName, StringComparison.OrdinalIgnoreCase)) ? _context.ArkSpeciesStatsData.SpeciesStats.Select(y => new { name = y.Name, similarity = StatisticsHelper.CompareToCharacterSequence(x.Name, x.SpeciesName.ToCharArray()) }).OrderByDescending(y => y.similarity).FirstOrDefault()?.name : null;
+                        var speciesAliases = _context.SpeciesAliases?.GetAliases(x.SpeciesClass) ?? new[] { x.SpeciesName };
+                        return new
+                        {
+                            creature = x,
+                            maxFood = _context.ArkSpeciesStatsData?.GetMaxValue(
+                                speciesAliases, //a list of alternative species names
+                                Data.ArkSpeciesStatsData.Stat.Food,
+                                x.WildLevels?.Food ?? 0,
+                                x.TamedLevels?.Food ?? 0,
+                                1d, //todo: taming efficiency is missing from ark-tools (?)
+                                (double)(x.ImprintingQuality ?? 0m))
+                        };
+                    })
+                    .ToArray();
+                var foodStatus = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => (double)x.creature.CurrentFood.Value / x.maxFood.Value)
+                    .Where(x => x <= 1d).OrderBy(x => x).ToArray();
+                var min = foodStatus.Min();
+                var avg = foodStatus.Average();
+                var max = foodStatus.Max();
+
+                var stateFun = min <= 0.25 ? "starving... :(" : min <= 0.5 ? "hungry... :|" : min <= 0.75 ? "feeling satisfied. :)" : "feeling happy! :D";
+
+                var sb = new StringBuilder();
+                sb.AppendLine($"**Your dinos are {stateFun}**");
+                sb.AppendLine($"{min:P0} ≤ {avg:P0} ≤ {max:P0}");
+
+                foreach (var msg in sb.ToString().Partition(2000))
+                {
+                    await e.Channel.SendMessage(msg.Trim('\r', '\n'));
+                }
+
+                var filepath = Path.Combine(_config.TempFileOutputDirPath, "chart.jpg");
+                if (AreaPlotSaveAs(foodStatus.Select((x, i) => new DataPoint(i, x)).ToArray(), filepath))
+                {
+                    await e.Channel.SendFile(filepath);
+                }
+                if (File.Exists(filepath)) File.Delete(filepath);
+            }
+        }
+
+        private bool AreaPlotSaveAs(DataPoint[] series, string filepath)
+        {
+            try
+            {
+                using (var ch = new Chart { Width = 400, Height = 200 })
+                {
+                    var area = new ChartArea();
+                    //area.Area3DStyle.Enable3D = true;
+                    //area.Area3DStyle.LightStyle = LightStyle.Realistic;
+                    area.AxisY.LabelStyle.Format = "{P0}";
+                    area.AxisX.LabelStyle.Enabled = false;
+                    ch.ChartAreas.Add(area);
+
+                    var s = new Series
+                    {
+                        ChartType = SeriesChartType.SplineArea
+                    };
+
+                    foreach (var point in series) s.Points.Add(point);
+
+                    ch.Series.Add(s);
+                    ch.SaveImage(filepath, ChartImageFormat.Jpeg);
+
+                    return true;
+                }
+            }
+            catch { /* ignore exceptions */  }
+
+            return false;
         }
 
         private async Task ServerStatus(CommandEventArgs e)
@@ -444,9 +710,18 @@ namespace ArkBot
             }
         }
 
-        public async Task Start(string botToken)
+        private async Task<string> ShortenUrl(string longUrl)
         {
-            await _context.Initialize();
+            var url = new Google.Apis.Urlshortener.v1.Data.Url
+            {
+                LongUrl = longUrl
+            };
+            return (await _urlShortenerService.Url.Insert(url).ExecuteAsync())?.Id;
+        }
+
+        public async Task Start(string botToken, ArkSpeciesAliases aliases = null)
+        {
+            await _context.Initialize(aliases);
 
             _progress.Report("Initialization done, connecting bot..." + Environment.NewLine);
             await _discord.Connect(botToken, TokenType.Bot);
@@ -477,6 +752,9 @@ namespace ArkBot
 
                     _context?.Dispose();
                     _context = null;
+
+                    _openId?.Dispose();
+                    _openId = null;
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

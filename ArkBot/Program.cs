@@ -1,4 +1,5 @@
-﻿using ArkBot.Helpers;
+﻿using ArkBot.Data;
+using ArkBot.Helpers;
 using Newtonsoft.Json;
 using Nito.AsyncEx;
 using System;
@@ -13,7 +14,7 @@ namespace ArkBot
 {
     class Program
     {
-        static private ArkBot _bot;
+        static private ArkDiscordBot _bot;
         static private Config _config;
 
         static void Main(string[] args)
@@ -82,6 +83,47 @@ namespace ArkBot
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotToken))}");
                 sb.AppendLine();
             }
+            if (string.IsNullOrWhiteSpace(config.SteamOpenIdRedirectUri))
+            {
+                sb.AppendLine($@"Error: {nameof(config.SteamOpenIdRedirectUri)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamOpenIdRedirectUri))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.SteamOpenIdRelyingServiceListenPrefix))
+            {
+                sb.AppendLine($@"Error: {nameof(config.SteamOpenIdRelyingServiceListenPrefix)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamOpenIdRelyingServiceListenPrefix))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.GoogleApiKey))
+            {
+                sb.AppendLine($@"Error: {nameof(config.GoogleApiKey)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.GoogleApiKey))}");
+                sb.AppendLine();
+            }
+            if (string.IsNullOrWhiteSpace(config.SteamApiKey))
+            {
+                sb.AppendLine($@"Error: {nameof(config.SteamApiKey)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamApiKey))}");
+                sb.AppendLine();
+            }
+
+            //load aliases and check integrity
+            var aliases = ArkSpeciesAliases.Load().GetAwaiter().GetResult();
+            if (aliases == null || !aliases.CheckIntegrity)
+            {
+                sb.AppendLine($@"Error: ""{ArkSpeciesAliases._filepath}"" is missing, contains invalid json or duplicate aliases.");
+                if(aliases != null)
+                {
+                    foreach(var duplicateAlias in aliases.Aliases?.SelectMany(x => x).GroupBy(x => x)
+                             .Where(g => g.Count() > 1)
+                             .Select(g => g.Key))
+                    {
+                        sb.AppendLine($@"Duplicate alias: ""{duplicateAlias}""");
+                    }
+                }
+                sb.AppendLine();
+            }
 
             var errors = sb.ToString();
             if(errors.Length > 0)
@@ -101,7 +143,7 @@ namespace ArkBot
             {
                 Console.WriteLine(message);
             });
-            using (_bot = new ArkBot(_config, progress))
+            using (_bot = new ArkDiscordBot(_config, progress))
             {
                 await _bot.Start(_config.BotToken);
 

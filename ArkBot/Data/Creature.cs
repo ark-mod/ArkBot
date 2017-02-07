@@ -68,6 +68,8 @@ namespace ArkBot.Data
         public CreatureStats TamedLevels { get; set; }
         [JsonProperty(PropertyName = "experience")]
         public decimal? Experience { get; set; }
+        [JsonProperty(PropertyName = "currentFood")]
+        public decimal? CurrentFood { get; set; }
         [JsonProperty(PropertyName = "imprintingQuality")]
         public decimal? ImprintingQuality { get; set; }
 

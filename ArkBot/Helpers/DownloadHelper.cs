@@ -72,8 +72,8 @@ namespace ArkBot.Helpers
 
                     File.Delete(path);
                 }
-
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var dirPath = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dirPath)) Directory.CreateDirectory(dirPath);
 
                 using (var wc = new System.Net.WebClient())
                 {

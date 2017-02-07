@@ -34,6 +34,22 @@ namespace ArkBot
         [Description("Bot authentication token from https://discordapp.com/developers")]
         public string BotToken { get; set; }
 
+        [JsonProperty(PropertyName = "steamOpenIdRelyingServiceListenPrefix")]
+        [Description("Http listen prefix for Steam OpenID Relying Party webservice (requires a port that is open to external connections)")]
+        public string SteamOpenIdRelyingServiceListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "steamOpenIdRedirectUri")]
+        [Description("Publicly accessible url for incoming Steam OpenID Relying Party webservice connections (requires a port that is open to external connections)")]
+        public string SteamOpenIdRedirectUri { get; set; }
+
+        [JsonProperty(PropertyName = "googleApiKey")]
+        [Description("Google API key used for url-shortening services.")]
+        public string GoogleApiKey { get; set; }
+
+        [JsonProperty(PropertyName = "steamApiKey")]
+        [Description("Steam API key used for fetching user information.")]
+        public string SteamApiKey { get; set; }
+
         [JsonProperty(PropertyName = "debugNoExtract")]
         [Description("Skips ark-tool extraction and uses already extracted files in json output directory path.")]
         public bool DebugNoExtract { get; set; }
