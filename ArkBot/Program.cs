@@ -37,14 +37,6 @@ namespace ArkBot
             Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-            var WriteAndWaitForKey = new Action<string>((msg) =>
-            {
-                Console.WriteLine(msg);
-                Console.WriteLine();
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
-            });
-
             Console.WriteLine("ARK Discord Bot");
             Console.WriteLine("------------------------------------------------------");
             Console.WriteLine();
@@ -58,14 +50,20 @@ namespace ArkBot
             }
 
             Config config = null;
+            string exceptionMessage = null;
             try
             {
                 config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
             }
-            catch { /* ignore exceptions */ }
+            catch(Exception ex)
+            {
+                exceptionMessage = ex.Message;
+            }
             if (config == null)
             {
-                WriteAndWaitForKey($@"The required file config.json is empty or contains errors. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
+                WriteAndWaitForKey(
+                    $@"The required file config.json is empty or contains errors. Please copy defaultconfig.json, set the correct values for your environment and restart the application.",
+                    exceptionMessage);
                 return;
             }
 
@@ -176,6 +174,14 @@ namespace ArkBot
             _config = config;
 
             AsyncContext.Run(() => MainAsync());
+        }
+
+        static void WriteAndWaitForKey(params string[] msgs)
+        {
+            foreach(var msg in msgs) if(msg != null) Console.WriteLine(msg);
+            Console.WriteLine();
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
         }
 
         static async Task MainAsync()
