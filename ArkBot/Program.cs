@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RazorEngine;
 using RazorEngine.Templating;
+using System.Windows.Forms;
 
 namespace ArkBot
 {
@@ -20,8 +21,22 @@ namespace ArkBot
         static private ArkDiscordBot _bot;
         static private Config _config;
 
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (e.ExceptionObject is Exception) ExceptionLogging.LogUnhandledException(e.ExceptionObject as Exception, true);
+        }
+
+        static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            ExceptionLogging.LogUnhandledException(e.Exception, true);
+        }
+
         static void Main(string[] args)
         {
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+
             var WriteAndWaitForKey = new Action<string>((msg) =>
             {
                 Console.WriteLine(msg);

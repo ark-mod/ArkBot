@@ -200,6 +200,7 @@
     <Compile Include="Data\EntityNameWithCount.cs" />
     <Compile Include="Data\Player.cs" />
     <Compile Include="Data\Tribe.cs" />
+    <Compile Include="ExceptionLogging.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Extensions\GraphicsExtensions.cs" />
     <Compile Include="Helpers\DownloadHelper.cs" />
