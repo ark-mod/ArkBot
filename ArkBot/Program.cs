@@ -192,8 +192,8 @@ namespace ArkBot
                 {
                     if(Console.KeyAvailable)
                     {
-                        Console.ReadKey(true);
-                        break;
+                        var key = Console.ReadKey(true);
+                        if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
                     }
 
                     await Task.Delay(100);
