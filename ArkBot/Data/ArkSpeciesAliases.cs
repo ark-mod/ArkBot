@@ -12,6 +12,11 @@ namespace ArkBot.Data
     {
         public const string _filepath = @"aliases.json";
 
+        public ArkSpeciesAliases()
+        {
+            Aliases = new string[][] { };
+        }
+
         public string[][] Aliases { get; set; }
 
         /// <summary>
@@ -19,6 +24,8 @@ namespace ArkBot.Data
         /// </summary>
         public string[] GetAliases(string name)
         {
+            if (name == null) return null;
+
             var aliases = Aliases?.FirstOrDefault(x => x.Contains(name, StringComparer.OrdinalIgnoreCase));
 
             return aliases;

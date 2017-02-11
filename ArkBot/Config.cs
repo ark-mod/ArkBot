@@ -10,6 +10,11 @@ namespace ArkBot
 {
     public class Config
     {
+        public Config()
+        {
+            ArkMultipliers = new ArkMultipliersConfigSection();
+        }
+
         [JsonProperty(PropertyName = "botId")]
         [Description("Simple non-whitespace or special character ID to identify the bot (A-Za-z0-9)")]
         public string BotId { get; set; }
@@ -69,5 +74,35 @@ namespace ArkBot
         [JsonProperty(PropertyName = "debugNoExtract")]
         [Description("Skips ark-tool extraction and uses already extracted files in json output directory path.")]
         public bool DebugNoExtract { get; set; }
+
+        [JsonProperty(PropertyName = "debug")]
+        [Description("Run tool with debug option set (includes experimental features etc.)")]
+        public bool Debug { get; set; }
+
+        [JsonProperty(PropertyName = "arkMultipliers")]
+        [Description("Server specific multipliers.")]
+        public ArkMultipliersConfigSection ArkMultipliers { get; set; }
+    }
+
+    public class ArkMultipliersConfigSection
+    {
+        public ArkMultipliersConfigSection()
+        {
+            EggHatchSpeedMultiplier = 1d;
+            BabyMatureSpeedMultiplier = 1d;
+            CuddleIntervalMultiplier = 1d;
+        }
+
+        [JsonProperty(PropertyName = "eggHatchSpeedMultiplier")]
+        [Description("Pregnancy/incubation time multiplier.")]
+        public double EggHatchSpeedMultiplier { get; set; }
+
+        [JsonProperty(PropertyName = "babyMatureSpeedMultiplier")]
+        [Description("Baby mature time multiplier.")]
+        public double BabyMatureSpeedMultiplier { get; set; }
+
+        [JsonProperty(PropertyName = "cuddleIntervalMultiplier")]
+        [Description("Multiplier for duration between cuddles.")]
+        public double CuddleIntervalMultiplier { get; set; }
     }
 }

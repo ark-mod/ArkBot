@@ -31,6 +31,55 @@ namespace ArkBot.Data
 
             [JsonProperty("statsRaw")]
             public double[][] Stats { get; set; }
+
+            [JsonProperty("breeding")]
+            public SpeciesStatBreeding Breeding { get; set; }
+        }
+
+        public class SpeciesStatBreeding : IArkMultiplierAdjustable<SpeciesStatBreeding>
+        {
+            [JsonProperty("pregnancyTime")]
+            public double PregnancyTime { get; set; }
+
+            [JsonProperty("incubationTime")]
+            public double IncubationTime { get; set; }
+
+            [JsonProperty("maturationTime")]
+            public double MaturationTime { get; set; }
+
+            [JsonProperty("matingCooldownMin")]
+            public double MatingCooldownMin { get; set; }
+
+            [JsonProperty("matingCooldownMax")]
+            public double MatingCooldownMax { get; set; }
+
+            [JsonProperty("eggTempMin")]
+            public double EggTempMin { get; set; }
+
+            [JsonProperty("eggTempMax")]
+            public double EggTempMax { get; set; }
+
+            [JsonIgnore]
+            internal protected bool _isAdjusted = false;
+            public SpeciesStatBreeding GetAdjusted(ArkMultipliersConfigSection config)
+            {
+                return _isAdjusted ? this : new SpeciesStatBreeding
+                {
+                    PregnancyTime = PregnancyTime / config.EggHatchSpeedMultiplier,
+                    IncubationTime = IncubationTime / config.EggHatchSpeedMultiplier,
+                    MaturationTime = MaturationTime / config.BabyMatureSpeedMultiplier,
+                    MatingCooldownMin = MatingCooldownMin,
+                    MatingCooldownMax = MatingCooldownMax,
+                    EggTempMin = EggTempMin,
+                    EggTempMax = EggTempMax,
+                    _isAdjusted = true
+                };
+            }
+        }
+
+        public interface IArkMultiplierAdjustable<TClass>
+        {
+            TClass GetAdjusted(ArkMultipliersConfigSection config);
         }
 
         public enum Stat { Health, Stamina, Oxygen, Food, Weight, Damage, Speed, Torpor }
@@ -109,30 +158,5 @@ namespace ArkBot.Data
 
             return V;
         }
-
-        //public void applyMultipliersToStats(double[][] multipliers)
-        //{
-        //    for (int sp = 0; sp < species.Count; sp++)
-        //    {
-        //        for (int s = 0; s < 8; s++)
-        //        {
-        //            species[sp].stats[s].BaseValue = species[sp].statsRaw[s].BaseValue;
-        //            // don't apply the multiplier if AddWhenTamed is negative (currently the only case is the Giganotosaurus, which does not get the subtraction multiplied)
-        //            species[sp].stats[s].AddWhenTamed = species[sp].statsRaw[s].AddWhenTamed * (species[sp].statsRaw[s].AddWhenTamed > 0 ? multipliers[s][0] : 1);
-        //            species[sp].stats[s].MultAffinity = species[sp].statsRaw[s].MultAffinity * multipliers[s][1];
-        //            species[sp].stats[s].IncPerTamedLevel = species[sp].statsRaw[s].IncPerTamedLevel * multipliers[s][2];
-        //            species[sp].stats[s].IncPerWildLevel = species[sp].statsRaw[s].IncPerWildLevel * multipliers[s][3];
-        //        }
-        //    }
-        //}
-
-        //public class CreatureStat
-        //{
-        //    /// <summary>
-        //    /// In order: Base value, Increase per wild level, increase per tamed level, add. when tamed, multi. affinity
-        //    /// </summary>
-        //    [JsonProperty("stats")]
-        //    public double[] Stats { get; set; }
-        //}
     }
 }

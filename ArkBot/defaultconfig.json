@@ -12,5 +12,11 @@
   "steamOpenIdRelyingServiceListenPrefix":  "http://+:<your open port>/openid/",
   "steamOpenIdRedirectUri": "http://<your public ip or domain>:<your open port>/openid/",
   "googleApiKey": "<google api key>",
-  "steamApiKey": "<steam webapi key>"
+  "steamApiKey": "<steam webapi key>",
+  "debug": false,
+  "arkMultipliers": {
+    "eggHatchSpeedMultiplier": 1.0,
+    "babyMatureSpeedMultiplier": 1.0,
+    "cuddleIntervalMultiplier":  1.0
+  }
 }

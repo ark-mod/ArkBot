@@ -146,6 +146,13 @@ namespace ArkBot
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamApiKey))}");
                 sb.AppendLine();
             }
+            //todo: for now this section is not really needed unless !imprintcheck is used
+            //if (config.ArkMultipliers == null)
+            //{
+            //    sb.AppendLine($@"Error: {nameof(config.ArkMultipliers)} section is missing from config file.");
+            //    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ArkMultipliers))}");
+            //    sb.AppendLine();
+            //}
 
             //load aliases and check integrity
             var aliases = ArkSpeciesAliases.Load().GetAwaiter().GetResult();

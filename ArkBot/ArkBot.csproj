@@ -201,6 +201,8 @@
     <Compile Include="Data\Player.cs" />
     <Compile Include="Data\Tribe.cs" />
     <Compile Include="ExceptionLogging.cs" />
+    <Compile Include="Extensions\DateTimeExtensions.cs" />
+    <Compile Include="Helpers\TimeSpanHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
     <Compile Include="Extensions\GraphicsExtensions.cs" />
     <Compile Include="Helpers\DownloadHelper.cs" />

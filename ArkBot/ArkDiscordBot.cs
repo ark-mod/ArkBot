@@ -125,6 +125,16 @@ namespace ArkBot
                 //    return ch.IsPrivate;
                 //})
                 .Do(WhoAmI);
+            if (_config.Debug)
+            {
+                commands.CreateCommand("imprintcheck")
+                    .Parameter("species", ParameterType.Required)
+                    .Parameter("imprintPercentage", ParameterType.Required)
+                    .Parameter("currentWeight", ParameterType.Required)
+                    .Parameter("maxWeight", ParameterType.Required)
+                    .Parameter("timeUntilNextImprint", ParameterType.Multiple)
+                    .Do(ImprintCheck);
+            }
         }
 
         private async void _openId_SteamOpenIdCallback(object sender, SteamOpenIdCallbackEventArgs e)
@@ -182,6 +192,172 @@ namespace ArkBot
             {
                 await ch.SendMessage($"Something went wrong during the linking process. Please try again later!");
             }
+        }
+
+        private async Task ImprintCheck(CommandEventArgs e)
+        {
+            var species = e.GetArg("species");
+            var speciesNames = _context.SpeciesAliases?.GetAliases(species);
+            if (speciesNames?.Length <= 0) return;
+
+            species = speciesNames.FirstOrDefault(x => x.Equals(species, StringComparison.OrdinalIgnoreCase)) ?? species;
+
+            double imprintPercentage = 0d;
+            if (double.TryParse(e.GetArg("imprintPercentage")?.Replace(",", ".").Replace("%", "").Trim() ?? "", NumberStyles.Float & ~NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out imprintPercentage))
+            {
+                if (e.GetArg("imprintPercentage")?.IndexOf('%') == -1) imprintPercentage *= 100d;
+            }
+            else return;
+
+            double currentWeight = 0d;
+            if (!double.TryParse(e.GetArg("currentWeight")?.Replace(",", ".") ?? "", NumberStyles.Float & (NumberStyles.Float & ~NumberStyles.AllowExponent), CultureInfo.InvariantCulture, out currentWeight)) return;
+
+            double maxWeight = 0d;
+            if (!double.TryParse(e.GetArg("maxWeight")?.Replace(",", ".") ?? "", NumberStyles.Float & ~NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out maxWeight)) return;
+
+            if (e.Command["timeUntilNextImprint"] == null) return;
+            var timeUntilNextImprint = TimeSpanHelper.ParseFromString(string.Join(" ", e.Args.Skip(e.Command["timeUntilNextImprint"].Id).ToArray()));
+            if (timeUntilNextImprint?.TotalSeconds < 0) return;
+
+            var breedingStats = _context.ArkSpeciesStatsData?.SpeciesStats.FirstOrDefault(x => speciesNames.Contains(x.Name, StringComparer.OrdinalIgnoreCase))?.Breeding.GetAdjusted(_config.ArkMultipliers);
+            if (breedingStats == null) return;
+
+            var grownFraction = currentWeight / maxWeight;
+
+            var imprintBonus = Math.Round(
+                Math.Round(imprintPercentage * breedingStats.MaturationTime / (14400 * _config.ArkMultipliers.CuddleIntervalMultiplier)) 
+                * 14400 * _config.ArkMultipliers.CuddleIntervalMultiplier / (breedingStats.MaturationTime)
+            , 4);
+
+            var now = DateTime.Now;
+            var nextImprintWhen = now + timeUntilNextImprint.Value;
+            var maturationFinishedWhen = now.AddSeconds(breedingStats.MaturationTime - (breedingStats.MaturationTime * grownFraction));
+
+            //todo: is this correct?
+            var cuddlesTotal = (int)Math.Ceiling((breedingStats.MaturationTime / (14400 * _config.ArkMultipliers.CuddleIntervalMultiplier)));
+            var cuddlesGiven = (int)Math.Round((imprintBonus / 100) * cuddlesTotal);
+            var cuddlesRemaining = cuddlesTotal - cuddlesGiven;
+
+            if (cuddlesGiven >= cuddlesTotal) return;
+
+            var totalSecondsSinceEpoch = new Func<DateTime, double>((dt) => dt.ToUniversalTime().Subtract(
+                    new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                ).TotalSeconds);
+
+            var data = Enumerable.Range(cuddlesGiven + 1, cuddlesRemaining).Select(x => new
+            {
+                cuddle = x,
+                dates = new[]
+                {
+                    nextImprintWhen.AddSeconds(x == cuddlesGiven + 1 ?
+                       3600
+                        : (x - (cuddlesGiven + 1)) * (10800 * _config.ArkMultipliers.CuddleIntervalMultiplier)),
+                    nextImprintWhen.AddSeconds((x - (cuddlesGiven + 1)) * (14400 * _config.ArkMultipliers.CuddleIntervalMultiplier))
+                }
+            }).ToArray();
+
+            //Debug.WriteLine($"Next imprint at {nextImprintWhen:yyyy-MM-dd HH:mm}");
+            //Debug.WriteLine($"Fully grown at {maturationFinishedWhen:yyyy-MM-dd HH:mm}");
+            //Debug.WriteLine($"{cuddlesGiven} of {cuddlesTotal} given ({cuddlesRemaining} remain)");
+            //foreach (var d in data)
+            //{
+            //    Debug.WriteLine($"Cuddle #{d.cuddle}: {d.dates[0]:yyyy-MM-dd HH:mm} - {d.dates[1]:yyyy-MM-dd HH:mm}");
+            //}
+
+            var noChart = false;
+            var finalCuddle = data.LastOrDefault()?.dates;
+            string fullImprintProbabilityText = null;
+            if (finalCuddle != null && finalCuddle.Length >= 2)
+            {
+                if (finalCuddle.First() > maturationFinishedWhen)
+                {
+                    fullImprintProbabilityText = " but sadly it will not reach 100% imprint... :(";
+                    noChart = true;
+                }
+                else
+                {
+                    var finalCuddleMean = finalCuddle.First().AddSeconds((finalCuddle.Last() - finalCuddle.First()).TotalSeconds / 2d);
+                    var diff = maturationFinishedWhen - finalCuddleMean;
+                    fullImprintProbabilityText = diff >= TimeSpan.FromHours(2) ? "Great! :D" : diff >= TimeSpan.FromHours(1) ? "Good! :)" : diff >= TimeSpan.Zero ? "Okay. :|" : diff <= TimeSpan.FromHours(-1) ? "Bad.. :(" : diff <= TimeSpan.FromHours(-2) ? "Lousy... :(" : "Not gonna happen... :(";
+                    fullImprintProbabilityText = $" and your chance of 100% imprint is {fullImprintProbabilityText}";
+                }
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"**Your {species} will be fully grown at {maturationFinishedWhen.ToStringWithRelativeDay()}" + (fullImprintProbabilityText != null ? fullImprintProbabilityText : "!") + "**");
+            sb.AppendLine($"{cuddlesGiven} out of {cuddlesTotal} cuddles given with {cuddlesRemaining} remaining.");
+            await e.Channel.SendMessage(sb.ToString().Trim('\r', '\n'));
+
+            if(noChart)
+            {
+                return;
+            }
+
+            var series = data.Select(x => new DataPoint
+            {
+                XValue = x.cuddle / (double)cuddlesTotal,
+                YValues = x.dates.Select(y => y.ToOADate()).ToArray(),
+                Color = System.Drawing.Color.FromArgb(new int[] { (int)Math.Round((255f * 2) * (1 - (x.cuddle / (double)cuddlesTotal))), 255 }.Min(), new int[] { (int)Math.Round((255.0f * 2) * (x.cuddle / (double)cuddlesTotal)), 255 }.Min(), 0)
+                //, Label = $"{x.cuddle:N0}/{cuddlesTotal:N0}"
+            }).ToArray();
+
+            //plot chart
+            try
+            {
+                //using (var font = new Font("Arial", 8f))
+                //{
+                using (var ch = new Chart { Width = 800, Height = 400, AntiAliasing = AntiAliasingStyles.All, TextAntiAliasingQuality = TextAntiAliasingQuality.High })
+                {
+                    var area = new ChartArea();
+                    area.AxisX.LabelStyle.Format = "{P0}";
+                    area.AxisX.Maximum = 1.05;
+                    area.AxisX.Interval = 0.05;
+                    area.AxisX.LabelStyle.IsEndLabelVisible = false;
+                    area.AxisY.LabelStyle.Format = "yyyy-MM-dd HH:mm";
+                    area.AxisY.IntervalType = DateTimeIntervalType.Auto;
+                    //area.AxisY.IntervalOffset = 4;
+                    area.AxisY.Minimum = nextImprintWhen.AddSeconds(-3600).ToOADate();
+                    area.AxisY.Maximum = new[]
+                    {
+                                maturationFinishedWhen,
+                                nextImprintWhen.AddSeconds((cuddlesRemaining - 1) * (14400 * _config.ArkMultipliers.CuddleIntervalMultiplier))
+                            }.Max().AddSeconds(3600 * _config.ArkMultipliers.CuddleIntervalMultiplier).ToOADate();
+                    area.AxisX.MajorGrid.LineColor = area.AxisY.MajorGrid.LineColor = System.Drawing.Color.Silver;
+
+                    //area.AxisX.LabelStyle.Enabled = false;
+                    ch.ChartAreas.Add(area);
+
+                    var s = new Series
+                    {
+                        ChartType = SeriesChartType.RangeBar,
+                        YValueType = ChartValueType.DateTime
+                        //, Font = font
+                    };
+                    //s.SetCustomProperty("PixelPointWidth", "15");
+
+                    foreach (var point in series) s.Points.Add(point);
+
+                    var stripline = new StripLine
+                    {
+                        Interval = 0,
+                        IntervalOffset = maturationFinishedWhen.ToOADate(),
+                        StripWidth = 1,
+                        BackHatchStyle = ChartHatchStyle.WideDownwardDiagonal,
+                        BackColor = System.Drawing.Color.FromArgb(125, System.Drawing.Color.Silver) //System.Drawing.Color.FromArgb(50, System.Drawing.Color.Red)
+                        ,
+                        Text = "Fully Grown"
+                    };
+                    area.AxisY.StripLines.Add(stripline);
+
+                    ch.Series.Add(s);
+                    var filepath = Path.Combine(_config.TempFileOutputDirPath, "chart.jpg");
+                    ch.SaveImage(filepath, ChartImageFormat.Jpeg);
+
+                    await e.Channel.SendFile(filepath);
+                }
+                //}
+            }
+            catch { /* ignore exceptions */  }
         }
 
         private async Task WhoAmI(CommandEventArgs e)
@@ -358,15 +534,23 @@ namespace ArkBot
                     .ToArray();
                 var foodStatus = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => (double)x.creature.CurrentFood.Value / x.maxFood.Value)
                     .Where(x => x <= 1d).OrderBy(x => x).ToArray();
+                var starving = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => new { creature = x.creature, p = (double)x.creature.CurrentFood.Value / x.maxFood.Value })
+                    .Where(x => x.p <= (1/3d)).OrderBy(x => x.p).ToArray(); //any dino below 1/3 food is considered to be starving
+                //todo: babys are not idenftified in this code and as such are always considered to be starving
                 var min = foodStatus.Min();
                 var avg = foodStatus.Average();
                 var max = foodStatus.Max();
 
-                var stateFun = min <= 0.25 ? "starving... :(" : min <= 0.5 ? "hungry... :|" : min <= 0.75 ? "feeling satisfied. :)" : "feeling happy! :D";
+                var stateFun = min <= 0.25 ? "starving... :(" : min <= 0.5 ? "hungry... :|" : min <= 0.75 ? "feeling satisfied :)" : "feeling happy! :D";
 
                 var sb = new StringBuilder();
                 sb.AppendLine($"**Your dinos are {stateFun}**");
                 sb.AppendLine($"{min:P0} ≤ {avg:P0} ≤ {max:P0}");
+                if (starving.Length > 0)
+                {
+                    var tmp = starving.Select(x => $"{x.creature.Name ?? x.creature.SpeciesName}, lvl {x.creature.FullLevel ?? x.creature.BaseLevel}" + $" ({x.p:P0})").ToArray().Join((n, l) => n == l ? " and " : ", ");
+                    sb.AppendLine(tmp);
+                }
 
                 foreach (var msg in sb.ToString().Partition(2000))
                 {
@@ -483,6 +667,7 @@ namespace ArkBot
         private async Task FindTame(CommandEventArgs e)
         {
             var query = e.GetArg("name");
+            var speciesNames = _context.SpeciesAliases?.GetAliases(query);
             var optional = e.Args.Skip(1).ToArray();
             var matchExact = optional.Any(x => x.Equals("exact", StringComparison.OrdinalIgnoreCase));
             var matchSpecies = optional.Any(x => x.Equals("species", StringComparison.OrdinalIgnoreCase));
@@ -504,42 +689,42 @@ namespace ArkBot
             if (owner != null) filtered = filtered.Where(x => x.OwnerName != null && x.OwnerName.Equals(owner, StringComparison.OrdinalIgnoreCase));
 
             if (matchExact) filtered = filtered?.Where(x => x.Name != null && x.Name.Equals(query, StringComparison.OrdinalIgnoreCase));
-            else if (matchSpecies) filtered = filtered?.Where(x => x.SpeciesName != null && x.SpeciesName.Equals(query, StringComparison.OrdinalIgnoreCase));
-            else filtered = filtered?.Where(x => x.Name != null && x.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1);
+            else if (matchSpecies) filtered = filtered?.Where(x => speciesNames != null && x.SpeciesClass != null && speciesNames.Contains(x.SpeciesClass, StringComparer.OrdinalIgnoreCase));
+            else filtered = filtered?.Where(x => (x.Name != null && x.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1) 
+                || (speciesNames != null && x.SpeciesClass != null && speciesNames.Contains(x.SpeciesClass, StringComparer.OrdinalIgnoreCase)));
 
             var matches = filtered?.OrderByDescending(x => x.FullLevel ?? x.BaseLevel).ThenByDescending(x => x.Experience ?? decimal.MinValue).Skip(_skip != null ? skip : 0).Take(take).ToArray();
             var count = filtered.Count();
             var nextUpdate = _context.ApproxTimeUntilNextUpdate;
-            var nextUpdateString = (nextUpdate.HasValue ? (nextUpdate.Value.TotalSeconds >= 0 ? $", next update in ~{nextUpdate.Value.ToStringCustom()}" : ", waiting for new update ...") : "");
+            var nextUpdateTmp = nextUpdate?.ToStringCustom();
+            var nextUpdateString = (nextUpdate.HasValue ? (!string.IsNullOrWhiteSpace(nextUpdateTmp) ? $", next update in ~{nextUpdateTmp}" : ", waiting for new update ...") : "");
             var lastUpdate = _context.LastUpdate;
-            var isToday = DateTime.Today == lastUpdate.Date;
-            var isYesterday = DateTime.Today.AddDays(-1).Date == lastUpdate.Date;
-            var lastUpdateString = isToday ? $"{lastUpdate:'today at' HH:mm}" : isYesterday ? $"{lastUpdate:'yesterday at' HH:mm}" : $"{lastUpdate:yyyy-MM-dd HH:mm}";
+            var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
 
             if (nextUpdate.HasValue) nextUpdate = TimeSpan.FromSeconds(Math.Round(nextUpdate.Value.TotalSeconds));
             if (matches == null || matches.Length < 1)
             {
                 await e.Channel.SendMessage($"**No matching tamed creatures found!** (updated {lastUpdateString}{nextUpdateString})");
-                if (matchSpecies && _context.Creatures != null)
+                if (matchSpecies && _context.Creatures != null && _context.SpeciesAliases != null && _context.ArkSpeciesStatsData?.SpeciesStats != null)
                 {
-
-                    var allspecies = _context.Creatures.Select(x => x.SpeciesName).Distinct(StringComparer.OrdinalIgnoreCase).Where(x => !x.Equals("raft", StringComparison.OrdinalIgnoreCase)).ToArray();
+                    //var allspecies = _context.Creatures.Select(x => x.SpeciesName).Distinct(StringComparer.OrdinalIgnoreCase).Where(x => !x.Equals("raft", StringComparison.OrdinalIgnoreCase)).ToArray();
                     var sequence = query.ToLower().ToCharArray();
-                    var similarity = allspecies.Select(x =>
+                    var tamableSpecies = _context.ArkSpeciesStatsData.SpeciesStats.Select(x => x.Name).ToArray();
+                    var similarity = _context.SpeciesAliases.Aliases.Where(x => tamableSpecies.Intersect(x, StringComparer.OrdinalIgnoreCase).Count() > 0).Select(x =>
                     {
-                        var s = StatisticsHelper.CompareToCharacterSequence(x, sequence);
-                        return new { key = x, val = s /*s >= 0 ? s : 0*/ };
+                        var s = x.Select(y => new { key = y, s = StatisticsHelper.CompareToCharacterSequence(y, sequence) }).OrderByDescending(y => y.s).FirstOrDefault();
+                        return new { key = s.key, primary = x.FirstOrDefault(), all = x, val = s.s /*s >= 0 ? s : 0*/ };
                     }).ToArray();
                     var possible = StatisticsHelper.FilterUsingStandardDeviation(similarity, x => x.val, (dist, sd) => dist >= sd * 1.5, false);
                     if (possible != null && possible.Length > 0)
                     {
-                        var distances = possible.Select((x, i) => new { key = x.key, index = i, similarity = x.val, result = query.FindLowestLevenshteinWordDistanceInString(x.key) })
+                        var distances = possible.Select((x, i) => new { key = x.key, primary = x.primary, index = i, similarity = x.val, result = query.FindLowestLevenshteinWordDistanceInString(x.key) })
                             .Where(x => x.result != null)
                             .OrderBy(x => x.result.Item2).ThenBy(x => x.similarity).ToArray();
                         var best = StatisticsHelper.FilterUsingStandardDeviation(distances, x => x.result.Item2, (dist, sd) => dist <= sd, false);
 
-                        var suggestions = best.Select(x => $"***{x.key}***").ToArray().Join((n, l) => n == l ? " *or* " : "\u200B*,* ");
-                        await e.Channel.SendMessage($"*Did you perhaps mean \"*\u200B{suggestions}\u200B*\"?*");
+                        var suggestions = best.Select(x => $"***\"{x.primary}\"***").ToArray().Join((n, l) => n == l ? " *or* " : "\u200B*,* ");
+                        await e.Channel.SendMessage($"*Did you perhaps mean* {suggestions}\u200B*?*"); //\u200B
                     }
                 }
             }
