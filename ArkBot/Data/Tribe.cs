@@ -22,7 +22,6 @@ namespace ArkBot.Data
         public string[] TribeLog { get; set; }
         [JsonProperty(PropertyName = "structures")]
         public EntityNameWithCount[] Structures { get; set; }
-        [JsonIgnore]
         [JsonProperty(PropertyName = "items")]
         public EntityNameWithCount[] Items { get; set; }
         [JsonIgnore]

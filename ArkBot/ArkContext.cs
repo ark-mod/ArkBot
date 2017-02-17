@@ -265,7 +265,13 @@ namespace ArkBot
                     if(int.TryParse(x.Item1, out tribeId)) tribe.Id = tribeId;
                     return tribe;
                 }).ToArray();
-                var players = results?.Where(x => x.Item2 is Player)?.Select(x => x.Item2 as Player).ToArray();
+                var players = results?.Where(x => x.Item2 is Player)?.Select(x =>
+                {
+                    var player = x.Item2 as Player;
+                    //SteamId
+                    if (string.IsNullOrEmpty(player.SteamId)) player.SteamId = x.Item1;
+                    return x.Item2 as Player;
+                }).ToArray();
 
                 //todo: not sure how playerid is set
                 var clusterlist = results?.Where(x => x.Item2 is Cluster)?.Select(x => x.Item2 as Cluster).ToArray();

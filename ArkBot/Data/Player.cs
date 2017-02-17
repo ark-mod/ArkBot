@@ -27,21 +27,20 @@ namespace ArkBot.Data
         [JsonIgnore]
         [JsonProperty(PropertyName = "attributes")]
         public Dictionary<string, int> Attributes { get; set; }
-        [JsonIgnore]
         [JsonProperty(PropertyName = "inventory")]
         public EntityNameWithCount[] Inventory { get; set; }
         [JsonProperty(PropertyName = "x")]
-        public decimal X { get; set; }
+        public decimal? X { get; set; }
         [JsonProperty(PropertyName = "y")]
-        public decimal Y { get; set; }
+        public decimal? Y { get; set; }
         [JsonProperty(PropertyName = "z")]
-        public decimal Z { get; set; }
+        public decimal? Z { get; set; }
         [JsonProperty(PropertyName = "lat")]
-        public decimal Latitude { get; set; }
+        public decimal? Latitude { get; set; }
         [JsonProperty(PropertyName = "lon")]
-        public decimal Longitude { get; set; }
+        public decimal? Longitude { get; set; }
         [JsonProperty(PropertyName = "tribeId")]
-        public int TribeId { get; set; }
+        public int? TribeId { get; set; }
         [JsonProperty(PropertyName = "tribeName")]
         public string TribeName { get; set; }
     }

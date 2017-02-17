@@ -114,6 +114,22 @@ namespace ArkBot.Extensions
             return indices.ToArray();
         }
 
+        public static int[] IndexOfAll(this string self, string substring, int startIndex = 0, StringComparison comp = StringComparison.OrdinalIgnoreCase)
+        {
+            var indices = new List<int>();
+            int index = -1;
+            var position = startIndex;
+
+            while (position <= self.Length - 1 && (index = self.IndexOf(substring, position, comp)) != -1)
+            {
+                indices.Add(index);
+
+                position = index + substring.Length;
+            }
+
+            return indices.ToArray();
+        }
+
         public static string Join(this string[] self, Func<int, int, string> separatorSelector)
         {
             if (self == null || separatorSelector == null) return null;
@@ -130,6 +146,19 @@ namespace ArkBot.Extensions
             }
 
             return sb.ToString();
+        }
+
+        public static string PadBoth(this string self, int totalWidth)
+        {
+            var padAmount = totalWidth - self.Length;
+            if (padAmount <= 1)
+            {
+                if (padAmount == 1) self.PadRight(totalWidth);
+                return self;
+            }
+
+            var padLeft = (int)Math.Floor(padAmount / 2d) + self.Length;
+            return self.PadLeft(padLeft).PadRight(totalWidth);
         }
     }
 }

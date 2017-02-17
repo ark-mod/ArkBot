@@ -14,6 +14,7 @@ using RazorEngine.Configuration;
 using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -21,6 +22,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Runtime.Caching;
 using System.Text;
@@ -112,6 +114,12 @@ namespace ArkBot
             commands.CreateCommand("mydinos")
                 .Alias("mytames", "mypets")
                 .Do(MyDinos);
+            commands.CreateCommand("mykibbles")
+                .Alias("mykibble", "myeggs")
+                .Do(MyKibbles);
+            commands.CreateCommand("myresources")
+                .Alias("mystuff", "myitems")
+                .Do(MyResources);
             commands.CreateCommand("stats")
                 .Parameter("optional", ParameterType.Multiple)
                 .Do(Stats);
@@ -440,6 +448,8 @@ namespace ArkBot
                 sb.AppendLine($"● **!unlinksteam**");
                 sb.AppendLine($"● **!whoami**");
                 sb.AppendLine($"● **!mydinos**");
+                sb.AppendLine($"● **!mykibbles**");
+                sb.AppendLine($"● **!myresources**");
             }
             else
             {
@@ -460,6 +470,16 @@ namespace ArkBot
                     case "mypets":
                     case "mytames":
                         sb.AppendLine($"● **!mydinos**: Summary of the food status of your personal- and tribe dinos");
+                        break;
+                    case "mykibbles":
+                    case "mykibble":
+                    case "myeggs":
+                        sb.AppendLine($"● **!mykibbles**: Listing of your kibbles and eggs");
+                        break;
+                    case "myresources":
+                    case "myitems":
+                    case "mystuff":
+                        sb.AppendLine($"● **!myresources**: Listing of your current resources");
                         break;
                     case "status":
                     case "serverstatus":
@@ -495,7 +515,7 @@ namespace ArkBot
             }
         }
 
-        private async Task MyDinos(CommandEventArgs e)
+        private async Task<Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e)
         {
             using (var ctx = new DatabaseContext(_databaseConnectionString))
             {
@@ -503,67 +523,190 @@ namespace ArkBot
                 if (user == null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam ID using **!linksteam**.");
-                    return;
+                    return null;
                 }
 
-                var player = _context.Players.FirstOrDefault(x => x.SteamId.Equals(user.SteamId.ToString()));
+                var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
                 if (player == null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");
-                    return;
+                    return null;
                 }
 
-                var mydinos = _context.Creatures
-                    .Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId))
-                    .Select(x =>
-                    {
-                        //!_context.ArkSpeciesStatsData.SpeciesStats.Any(y => y.Name.Equals(x.SpeciesName, StringComparison.OrdinalIgnoreCase)) ? _context.ArkSpeciesStatsData.SpeciesStats.Select(y => new { name = y.Name, similarity = StatisticsHelper.CompareToCharacterSequence(x.Name, x.SpeciesName.ToCharArray()) }).OrderByDescending(y => y.similarity).FirstOrDefault()?.name : null;
-                        var speciesAliases = _context.SpeciesAliases?.GetAliases(x.SpeciesClass) ?? new[] { x.SpeciesName };
-                        return new
-                        {
-                            creature = x,
-                            maxFood = _context.ArkSpeciesStatsData?.GetMaxValue(
-                                speciesAliases, //a list of alternative species names
-                                Data.ArkSpeciesStatsData.Stat.Food,
-                                x.WildLevels?.Food ?? 0,
-                                x.TamedLevels?.Food ?? 0,
-                                1d, //todo: taming efficiency is missing from ark-tools (?)
-                                (double)(x.ImprintingQuality ?? 0m))
-                        };
-                    })
-                    .ToArray();
-                var foodStatus = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => (double)x.creature.CurrentFood.Value / x.maxFood.Value)
-                    .Where(x => x <= 1d).OrderBy(x => x).ToArray();
-                var starving = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => new { creature = x.creature, p = (double)x.creature.CurrentFood.Value / x.maxFood.Value })
-                    .Where(x => x.p <= (1/3d)).OrderBy(x => x.p).ToArray(); //any dino below 1/3 food is considered to be starving
-                //todo: babys are not idenftified in this code and as such are always considered to be starving
-                var min = foodStatus.Min();
-                var avg = foodStatus.Average();
-                var max = foodStatus.Max();
-
-                var stateFun = min <= 0.25 ? "starving... :(" : min <= 0.5 ? "hungry... :|" : min <= 0.75 ? "feeling satisfied :)" : "feeling happy! :D";
-
-                var sb = new StringBuilder();
-                sb.AppendLine($"**Your dinos are {stateFun}**");
-                sb.AppendLine($"{min:P0} ≤ {avg:P0} ≤ {max:P0}");
-                if (starving.Length > 0)
-                {
-                    var tmp = starving.Select(x => $"{x.creature.Name ?? x.creature.SpeciesName}, lvl {x.creature.FullLevel ?? x.creature.BaseLevel}" + $" ({x.p:P0})").ToArray().Join((n, l) => n == l ? " and " : ", ");
-                    sb.AppendLine(tmp);
-                }
-
-                foreach (var msg in sb.ToString().Partition(2000))
-                {
-                    await e.Channel.SendMessage(msg.Trim('\r', '\n'));
-                }
-
-                var filepath = Path.Combine(_config.TempFileOutputDirPath, "chart.jpg");
-                if (AreaPlotSaveAs(foodStatus.Select((x, i) => new DataPoint(i, x)).ToArray(), filepath))
-                {
-                    await e.Channel.SendFile(filepath);
-                }
-                if (File.Exists(filepath)) File.Delete(filepath);
+                return player;
             }
+        }
+
+        private async Task MyKibbles(CommandEventArgs e)
+        {
+            var player = await GetCurrentPlayerOrSendErrorMessage(e);
+            if (player == null) return;
+
+            var inv = (player.Inventory ?? new EntityNameWithCount[] { });
+            if (player.TribeId.HasValue) inv = inv.Concat(_context.Tribes.FirstOrDefault(x => x.Id.HasValue && x.Id == player.TribeId.Value)?.Items ?? new EntityNameWithCount[] { }).ToArray();
+
+            var _rEgg = new Regex(@"^(?<name>.+?)\s+Egg$", RegexOptions.Singleline);
+            var _rKibble = new Regex(@"^Kibble\s+\((?<name>.+?)\s+Egg\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            var kibbles = inv.Where(x => x.Name.StartsWith("Kibble", StringComparison.Ordinal))
+                .GroupBy(x => x.Name)
+                .Select(x => new EntityNameWithCount { Name = x.Key, Count = x.Sum(y => y.Count) })
+                .OrderByDescending(x => x.Count)
+                .ToArray();
+
+            var eggs = inv.Where(x => x.Name.EndsWith("Egg", StringComparison.Ordinal))
+                .GroupBy(x => x.Name)
+                .Select(x => new EntityNameWithCount { Name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key), Count = x.Sum(y => y.Count) })
+                .OrderByDescending(x => x.Count)
+                .ToArray();
+
+            
+            var results = kibbles.Select(x =>
+            {
+                var name = _rKibble.Match(x.Name, m => m.Success ? m.Groups["name"].Value : x.Name);
+                var aliases = _context.SpeciesAliases.GetAliases(name);
+                return new
+                {
+                    Name = name,
+                    Count = x.Count,
+                    EggCount = aliases == null || aliases.Length == 0 ? 0 : eggs.FirstOrDefault(y =>
+                    {
+                        return aliases.Contains(y.Name, StringComparer.OrdinalIgnoreCase);
+                    })?.Count ?? 0
+                };
+            }).ToArray();
+
+            if(results.Length <= 0)
+            {
+                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no kibbles! :(");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these kibbles**");
+
+            sb.AppendLine("```");
+            sb.AppendLine(FixedWidthTableHelper.ToString(results, x => x
+                .For(y => y.Name, "Type")
+                .For(y => y.EggCount, "Eggs", 1, "N0", total: true)
+                .For(y => y.Count, "Kibbles", 1, "N0", total: true)));
+            sb.AppendLine("```");
+
+            await SendPartitioned(e.Channel, sb.ToString());
+        }
+
+        private async Task MyResources(CommandEventArgs e)
+        {
+            var player = await GetCurrentPlayerOrSendErrorMessage(e);
+            if (player == null) return;
+
+            var inv = (player.Inventory ?? new EntityNameWithCount[] { });
+            if (player.TribeId.HasValue) inv = inv.Concat(_context.Tribes.FirstOrDefault(x => x.Id.HasValue && x.Id == player.TribeId.Value)?.Items ?? new EntityNameWithCount[] { }).ToArray();
+
+            var includedResources = new[]
+            {
+                "Hide", "Thatch", "Cementing Paste", "Fiber", "Narcotic", "Spoiled Meat", "Raw Meat",
+                "Wood", "Chitin", "Flint", "Silica Pearls", "Metal Ingot", "Obsidian", "Stone",
+                "Keratin", "Cooked Meat Jerky", "Oil", "Prime Meat Jerky", "Pelt", "Crystal",
+                "Narcoberry", "Mejoberry", "Stimberry",
+                "Amarberry", "Azulberry", "Tintoberry"
+            };
+
+            var combined = new Dictionary<string, string[]> {
+                { "Chitin",  new [] { "Chitin", "Keratin", "Chitin/Keratin" } },
+                { "Editable berries",  new [] { "Amarberry", "Azulberry", "Tintoberry", "Mejoberry" } }
+            };
+
+            var resources = inv.Where(x => includedResources.Contains(x.Name, StringComparer.OrdinalIgnoreCase))
+                .GroupBy(x => x.Name)
+                .Select(x => new EntityNameWithCount { Name = x.Key, Count = x.Sum(y => y.Count) })
+                .ToList();
+
+            var n = combined.Select(c => new EntityNameWithCount { Name = c.Key, Count = resources.Where(x => c.Value.Contains(x.Name, StringComparer.OrdinalIgnoreCase)).Sum(x => x.Count) }).ToArray();
+            var remove = combined.SelectMany(y => y.Value).Except(new[] { "Mejoberry" }).ToArray();
+            resources.RemoveAll(x => remove.Contains(x.Name));
+
+            resources = resources.Concat(n).OrderBy(x => x.Name).ToList();
+
+            if (resources.Count <= 0)
+            {
+                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no resources! :(");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these major resources**");
+
+            sb.AppendLine("```");
+            sb.AppendLine(FixedWidthTableHelper.ToString(resources, x => x
+                .For(y => y.Name, "Type")
+                .For(y => y.Count, null, 1, "N0")));
+            sb.AppendLine("```");
+
+            await SendPartitioned(e.Channel, sb.ToString());
+        }
+
+        private async Task MyDinos(CommandEventArgs e)
+        {
+            var player = await GetCurrentPlayerOrSendErrorMessage(e);
+            if (player == null) return;
+
+            var mydinos = _context.Creatures
+                .Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId))
+                .Select(x =>
+                {
+                    //!_context.ArkSpeciesStatsData.SpeciesStats.Any(y => y.Name.Equals(x.SpeciesName, StringComparison.OrdinalIgnoreCase)) ? _context.ArkSpeciesStatsData.SpeciesStats.Select(y => new { name = y.Name, similarity = StatisticsHelper.CompareToCharacterSequence(x.Name, x.SpeciesName.ToCharArray()) }).OrderByDescending(y => y.similarity).FirstOrDefault()?.name : null;
+                    var speciesAliases = _context.SpeciesAliases?.GetAliases(x.SpeciesClass) ?? new[] { x.SpeciesName };
+                    return new
+                    {
+                        creature = x,
+                        maxFood = _context.ArkSpeciesStatsData?.GetMaxValue(
+                            speciesAliases, //a list of alternative species names
+                            Data.ArkSpeciesStatsData.Stat.Food,
+                            x.WildLevels?.Food ?? 0,
+                            x.TamedLevels?.Food ?? 0,
+                            1d, //todo: taming efficiency is missing from ark-tools (?)
+                            (double)(x.ImprintingQuality ?? 0m))
+                    };
+                })
+                .ToArray();
+            var foodStatus = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => (double)x.creature.CurrentFood.Value / x.maxFood.Value)
+                .Where(x => x <= 1d).OrderBy(x => x).ToArray();
+            var starving = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => new { creature = x.creature, p = (double)x.creature.CurrentFood.Value / x.maxFood.Value })
+                .Where(x => x.p <= (1/3d)).OrderBy(x => x.p).ToArray(); //any dino below 1/3 food is considered to be starving
+            //todo: babys are not idenftified in this code and as such are always considered to be starving
+            if(foodStatus.Length <= 0)
+            {
+                await e.Channel.SendMessage($"<@{e.User.Id}>, we could not get the food status of your dinos! :(");
+                return;
+            }
+
+            var min = foodStatus.Min();
+            var avg = foodStatus.Average();
+            var max = foodStatus.Max();
+
+            var stateFun = min <= 0.25 ? "starving... :(" : min <= 0.5 ? "hungry... :|" : min <= 0.75 ? "feeling satisfied :)" : "feeling happy! :D";
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"**Your dinos are {stateFun}**");
+            sb.AppendLine($"{min:P0} ≤ {avg:P0} ≤ {max:P0}");
+            if (starving.Length > 0)
+            {
+                var tmp = starving.Select(x => $"{x.creature.Name ?? x.creature.SpeciesName}, lvl {x.creature.FullLevel ?? x.creature.BaseLevel}" + $" ({x.p:P0})").ToArray().Join((n, l) => n == l ? " and " : ", ");
+                sb.AppendLine(tmp);
+            }
+
+            foreach (var msg in sb.ToString().Partition(2000))
+            {
+                await e.Channel.SendMessage(msg.Trim('\r', '\n'));
+            }
+
+            var filepath = Path.Combine(_config.TempFileOutputDirPath, "chart.jpg");
+            if (AreaPlotSaveAs(foodStatus.Select((x, i) => new DataPoint(i, x)).ToArray(), filepath))
+            {
+                await e.Channel.SendFile(filepath);
+            }
+            if (File.Exists(filepath)) File.Delete(filepath);
         }
 
         private bool AreaPlotSaveAs(DataPoint[] series, string filepath)
@@ -917,6 +1060,30 @@ namespace ArkBot
                     await channel.SendFile(path);
                     File.Delete(path);
                 }
+            }
+        }
+        
+        private async Task SendPartitioned(Channel channel, string message)
+        {
+            const int maxChars = 2000;
+            var _rMarkdownTokenBegin = new Regex(@"```(?<key>[^\s]*)\s+", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            var markdownTokenAddedToPrev = (string)null;
+            foreach (var msg in message.Partition(maxChars - 100))
+            {
+                var value = msg.Trim('\r', '\n');
+                if (markdownTokenAddedToPrev != null)
+                {
+                    value = $"```{markdownTokenAddedToPrev}" + Environment.NewLine + value;
+                    markdownTokenAddedToPrev = null;
+                }
+                var indices = value.IndexOfAll("```");
+                if (indices.Length % 2 == 1)
+                {
+                    var m = _rMarkdownTokenBegin.Match(value, indices.Last(), value.Length - indices.Last());
+                    markdownTokenAddedToPrev = m.Success ? m.Groups["key"].Value : "";
+                    value = value + Environment.NewLine + "```";
+                }
+                await channel.SendMessage(value);
             }
         }
 
