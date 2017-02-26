@@ -13,13 +13,19 @@ using System.Threading.Tasks;
 using RazorEngine;
 using RazorEngine.Templating;
 using System.Windows.Forms;
+using Autofac;
+using System.Reflection;
+using ArkBot.Commands;
+using ArkBot.OpenID;
+using RazorEngine.Configuration;
+using ArkBot.Services;
+using ArkBot.Database;
 
 namespace ArkBot
 {
     class Program
     {
-        static private ArkDiscordBot _bot;
-        static private Config _config;
+        private static IContainer Container { get; set; }
 
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -178,7 +184,54 @@ namespace ArkBot
                 return;
             }
 
-            _config = config;
+            IProgress<string> progress = new Progress<string>(message =>
+            {
+                Console.WriteLine(message);
+            });
+
+            var constants = new Constants();
+            //var context = new ArkContext(config, constants, progress);
+
+            var options = new SteamOpenIdOptions
+            {
+                ListenPrefixes = new[] { config.SteamOpenIdRelyingServiceListenPrefix },
+                RedirectUri = config.SteamOpenIdRedirectUri,
+            };
+            var openId = new BarebonesSteamOpenId(options,
+                new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
+                {
+                    var razorConfig = new TemplateServiceConfiguration
+                    {
+                        DisableTempFileLocking = true,
+                        CachingProvider = new DefaultCachingProvider(t => { })
+                    };
+
+                    using (var service = RazorEngineService.Create(razorConfig))
+                    {
+                        var html = await FileHelper.ReadAllTextTaskAsync(constants.OpenidresponsetemplatePath);
+                        return service.RunCompile(html, constants.OpenidresponsetemplatePath, null, new { Success = success, botName = config.BotName, botUrl = config.BotUrl });
+                    }
+                }));
+
+            //setup dependency injection
+            var thisAssembly = Assembly.GetExecutingAssembly();
+            var builder = new ContainerBuilder();
+            builder.RegisterType<ArkDiscordBot>();
+            builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
+            builder.RegisterInstance(constants).As<IConstants>();
+            builder.RegisterInstance(config).As<IConfig>();
+            builder.RegisterType<ArkContext>().As<IArkContext>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
+            builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().SingleInstance()
+                .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
+            builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
+            builder.RegisterType<EfDatabaseContext>().As<IEfDatabaseContext>();
+            builder.RegisterType<DatabaseContextFactory<IEfDatabaseContext>>();
+            builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
+
+            Container = builder.Build();
+
+            //update database
+            System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(false, Container.Resolve<Migrations.Configuration>()));
 
             AsyncContext.Run(() => MainAsync());
         }
@@ -193,17 +246,21 @@ namespace ArkBot
 
         static async Task MainAsync()
         {
-            IProgress<string> progress = new Progress<string>(message =>
+            using (var scope = Container.BeginLifetimeScope())
             {
-                Console.WriteLine(message);
-            });
-            using (_bot = new ArkDiscordBot(_config, progress))
-            {
-                await _bot.Start(_config.BotToken);
-
-                while(true)
+                //create database immediately to support direct (non-ef) access in application
+                using (var context = scope.Resolve<IEfDatabaseContext>())
                 {
-                    if(Console.KeyAvailable)
+                    context.Database.Initialize(false);
+                    //context.Database.Create();
+                }
+
+                var _bot = scope.Resolve<ArkDiscordBot>();
+                await _bot.Start();
+
+                while (true)
+                {
+                    if (Console.KeyAvailable)
                     {
                         var key = Console.ReadKey(true);
                         if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;

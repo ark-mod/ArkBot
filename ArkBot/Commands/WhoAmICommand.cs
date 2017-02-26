@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Discord.Commands;
+using ArkBot.Helpers;
+using ArkBot.Extensions;
+using static System.FormattableString;
+using System.Drawing;
+using System.Text.RegularExpressions;
+using QueryMaster.GameServer;
+using System.Runtime.Caching;
+using ArkBot.Database;
+
+namespace ArkBot.Commands
+{
+    public class WhoAmICommand : ICommand
+    {
+        public string Name => "whoami";
+        public string[] Aliases => null;
+        public string Description => "Find out what we know about you";
+        public string SyntaxHelp => null;
+        public string[] UsageExamples => null;
+
+        public bool DebugOnly => false;
+        public bool HideFromCommandList => false;
+
+        private IConstants _constants;
+        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+
+        public WhoAmICommand(IConstants constants, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        {
+            _constants = constants;
+            _databaseContextFactory = databaseContextFactory;
+        }
+
+        public void Register(CommandBuilder command)
+        {
+            //command.AddCheck((cmd, usr, ch) =>
+            //    {
+            //        return ch.IsPrivate;
+            //    });
+        }
+
+        public async Task Run(CommandEventArgs e)
+        {
+            using (var context = _databaseContextFactory.Create())
+            {
+                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id);
+                if (user == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, your existence is a mystery to us! :(");
+                }
+                else
+                {
+                    if(e.Channel != e.User.PrivateChannel) await e.Channel.SendMessage($"<@{e.User.Id}>, I will send you a private message with everything we know about you!");
+
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"**This is what we know about you:**");
+                    sb.AppendLine($"● **Discord ID:** {user.DiscordId}");
+                    sb.AppendLine($"● **Steam ID:** {user.SteamId}");
+                    if (user.SteamDisplayName != null) sb.AppendLine($"● **Steam nick:** {user.SteamDisplayName}");
+                    if (user.RealName != null) sb.AppendLine($"● **Real name:** {user.RealName}");
+
+                    foreach (var msg in sb.ToString().Partition(2000))
+                    {
+                        await e.User.PrivateChannel.SendMessage(msg.Trim('\r', '\n'));
+                    }
+                }
+            }
+        }
+    }
+}

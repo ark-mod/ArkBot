@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ArkBot
 {
-    public class Config
+    public class Config : IConfig
     {
         public Config()
         {

@@ -14,7 +14,7 @@ using System.Xml.Linq;
 
 namespace ArkBot.OpenID
 {
-    public class BarebonesSteamOpenId : IDisposable
+    public class BarebonesSteamOpenId : IBarebonesSteamOpenId
     {
         private const string _authority = @"http://steamcommunity.com/openid";
         private AsyncLazy<string> _endpoint = new AsyncLazy<string>(async () => await Discovery());

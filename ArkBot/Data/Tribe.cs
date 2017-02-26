@@ -17,7 +17,6 @@ namespace ArkBot.Data
         public string[] Admins { get; set; }
         [JsonProperty(PropertyName = "owner")]
         public string Owner { get; set; }
-        [JsonIgnore]
         [JsonProperty(PropertyName = "tribeLog")]
         public string[] TribeLog { get; set; }
         [JsonProperty(PropertyName = "structures")]

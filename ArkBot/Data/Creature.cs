@@ -7,6 +7,14 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Data
 {
+    public partial class TamedCreature : Creature
+    {
+    }
+
+    public partial class WildCreature : Creature
+    {
+    }
+
     public partial class Creature
     {
         public Creature()
