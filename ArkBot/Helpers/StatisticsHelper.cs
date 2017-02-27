@@ -17,7 +17,7 @@ namespace ArkBot.Helpers
         /// <param name="comparer">Decides which elements to keep based on [distance from average, standard deviation]</param>
         public static TValue[] FilterUsingStandardDeviation<TValue>(TValue[] array, Func<TValue, double> valueSelector, Func<double, double, bool> comparer, bool sample = true)
         {
-            if (valueSelector == null || comparer == null || array.Length == 0 || (array.Length == 1 && sample == true)) return null;
+            if (valueSelector == null || comparer == null || array == null || array.Length == 0 || (array.Length == 1 && sample == true)) return null;
 
             var avg = array.Average(x => valueSelector(x));
             var sums = array.Sum(val => (valueSelector(val) - avg) * (valueSelector(val) - avg));
