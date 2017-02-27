@@ -48,8 +48,6 @@ namespace ArkBot.Commands
         {
             var take = 10;
 
-            throw new ApplicationException("Fail!");
-
             var args = CommandHelper.ParseArgs(e, new { Query = "", Exact = false, Species = false, Tribe = "", Owner = "", Skip = 0 }, x =>
                 x.For(y => y.Query, noPrefix: true, untilNextToken: true, isRequired: true)
                 .For(y => y.Exact, flag: true)
