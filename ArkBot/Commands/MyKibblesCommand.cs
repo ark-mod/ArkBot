@@ -42,6 +42,8 @@ namespace ArkBot.Commands
 
         public async Task Run(CommandEventArgs e)
         {
+            var myEggs = e.Message.Text.EndsWith("myeggs", StringComparison.OrdinalIgnoreCase);
+
             var player = await CommandHelper.GetCurrentPlayerOrSendErrorMessage(e, _databaseContextFactory, _context);
             if (player == null) return;
 
@@ -53,40 +55,45 @@ namespace ArkBot.Commands
 
             var kibbles = inv.Where(x => x.Name.StartsWith("Kibble", StringComparison.Ordinal))
                 .GroupBy(x => x.Name)
-                .Select(x => new EntityNameWithCount { Name = x.Key, Count = x.Sum(y => y.Count) })
-                .OrderByDescending(x => x.Count)
+                .Select(x => new EntityNameWithCount { Name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key), Count = x.Sum(y => y.Count) })
                 .ToArray();
 
-            var eggs = inv.Where(x => x.Name.EndsWith("Egg", StringComparison.Ordinal))
+            var eggs = inv.Where(x => x.Name.EndsWith("Egg", StringComparison.Ordinal) && !x.Name.StartsWith("Fertilized"))
                 .GroupBy(x => x.Name)
                 .Select(x => new EntityNameWithCount { Name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key), Count = x.Sum(y => y.Count) })
-                .OrderByDescending(x => x.Count)
-                .ToArray();
-
+                .ToList();
 
             var results = kibbles.Select(x =>
             {
-                var name = _rKibble.Match(x.Name, m => m.Success ? m.Groups["name"].Value : x.Name);
-                var aliases = _context.SpeciesAliases.GetAliases(name);
+                var aliases = _context.SpeciesAliases.GetAliases(x.Name);
+                var egg = aliases == null || aliases.Length == 0 ? null : eggs.FirstOrDefault(y =>
+                {
+                    return aliases.Contains(y.Name, StringComparer.OrdinalIgnoreCase);
+                });
+                if (egg != null) eggs.Remove(egg);
                 return new
                 {
-                    Name = name,
+                    Name = x.Name,
                     Count = x.Count,
-                    EggCount = aliases == null || aliases.Length == 0 ? 0 : eggs.FirstOrDefault(y =>
-                    {
-                        return aliases.Contains(y.Name, StringComparer.OrdinalIgnoreCase);
-                    })?.Count ?? 0
+                    EggCount = egg?.Count ?? 0
                 };
-            }).ToArray();
+            }).Concat(eggs.Select(x => new
+            {
+                Name = x.Name,
+                Count = 0,
+                EggCount = x.Count
+            })).OrderByDescending(x => myEggs ? x.EggCount : x.Count).ThenByDescending(x => myEggs ? x.Count : x.EggCount).ToArray();
+
+            var type = myEggs ? "eggs" : "kibbles";
 
             if (results.Length <= 0)
             {
-                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no kibbles! :(");
+                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no {type}! :(");
                 return;
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these kibbles**");
+            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these {type}**");
 
             sb.AppendLine("```");
             sb.AppendLine(FixedWidthTableHelper.ToString(results, x => x
