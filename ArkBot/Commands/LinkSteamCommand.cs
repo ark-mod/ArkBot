@@ -47,7 +47,7 @@ namespace ArkBot.Commands
         {
             using (var context = _databaseContextFactory.Create())
             {
-                if (context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id) != null)
+                if (context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)e.User.Id) != null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, your user is already linked with Steam. If you wish to remove this link use the command **!unlinksteam**.");
                     return;
@@ -55,12 +55,18 @@ namespace ArkBot.Commands
             }
 
             var state = await _openId.LinkWithSteamTaskAsync(e.User.Id);
+            if (state == null)
+            {
+                await e.Channel.SendMessage($"<@{e.User.Id}>, something went wrong... :( Please try sending the **!linksteam** command to me in a private conversation instead!");
+                return;
+            }
+
             var sb = new StringBuilder();
             sb.AppendLine($"**Proceed to link your Discord user with your Steam account by following this link:**");
-            sb.AppendLine($"{await _urlShortenerService.ShortenUrl(state.StartUrl)}");
+            sb.AppendLine($"{(await _urlShortenerService?.ShortenUrl(state.StartUrl)) ?? state.StartUrl}");
             var msg = await e.User.PrivateChannel.SendMessage(sb.ToString().Trim('\r', '\n'));
 
-            if (e.User.PrivateChannel == e.Channel) return;
+            if (e.Channel.IsPrivate) return;
 
             if (msg.State == Discord.MessageState.Normal || msg.State == Discord.MessageState.Queued)
                 await e.Channel.SendMessage($"<@{e.User.Id}>, I have sent you a private message with instructions on how to proceed with linking your Discord user with Steam! If you do not receive this message, please try sending the **!linksteam** command to me in a private conversation!");

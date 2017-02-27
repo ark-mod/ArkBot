@@ -1,6 +1,6 @@
 # ARK Survival Evolved Discord bot
 
-A Discord bot for ARK Survival Evolved utilizing https://github.com/arktools to extract data from savegame-files on your server.
+A Discord bot for ARK Survival Evolved utilizing https://github.com/Qowyn/ark-tools to extract data from savegame-files on your server.
 
 
 ## Latest release
