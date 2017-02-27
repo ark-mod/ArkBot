@@ -66,7 +66,7 @@ namespace ArkBot.Commands
 
             if (tribe != null)
             {
-                if (_context.Tribes.Count(x => x.Name.Equals(tribe, StringComparison.OrdinalIgnoreCase)) > 1)
+                if (_context.Tribes.Count(x => x.Name != null && x.Name.Equals(tribe, StringComparison.OrdinalIgnoreCase)) > 1)
                 {
                     await e.Channel.SendMessage($"**There is more than one tribe with the specified name! :(**");
                     return;
@@ -76,7 +76,7 @@ namespace ArkBot.Commands
             }
             else if (player != null)
             {
-                if (_context.Players.Count(x => x.Name.Equals(player, StringComparison.OrdinalIgnoreCase)) > 1)
+                if (_context.Players.Count(x => x.Name != null && x.Name.Equals(player, StringComparison.OrdinalIgnoreCase)) > 1)
                 {
                     await e.Channel.SendMessage($"**There is more than one player with the specified name! :(**");
                     return;

@@ -125,17 +125,21 @@ namespace ArkBot
 
         private void Commands_CommandErrored(object sender, CommandErrorEventArgs e)
         {
-            if (e == null || e.Command == null) return;
+            if (e == null || e.Command == null || e.Command.IsHidden) return;
             var sb = new StringBuilder();
-            sb.AppendLine($@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command error...");
+            var message = $@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command error...";
+            sb.AppendLine(message);
             if(e.Exception != null) sb.AppendLine($"Exception: {e.Exception.ToString()}");
             sb.AppendLine();
             _context.Progress.Report(sb.ToString());
+
+            //log to disk
+            ExceptionLogging.LogException(e.Exception, message: message, source: nameof(ArkDiscordBot) + "_command");
         }
 
         private void Commands_CommandExecuted(object sender, CommandEventArgs e)
         {
-            if (e == null || e.Command == null) return;
+            if (e == null || e.Command == null || e.Command.IsHidden) return;
 
             var sb = new StringBuilder();
             sb.AppendLine($@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command successful!");

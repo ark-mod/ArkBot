@@ -48,6 +48,8 @@ namespace ArkBot.Commands
         {
             var take = 10;
 
+            throw new ApplicationException("Fail!");
+
             var args = CommandHelper.ParseArgs(e, new { Query = "", Exact = false, Species = false, Tribe = "", Owner = "", Skip = 0 }, x =>
                 x.For(y => y.Query, noPrefix: true, untilNextToken: true, isRequired: true)
                 .For(y => y.Exact, flag: true)
@@ -73,7 +75,7 @@ namespace ArkBot.Commands
             {
                 //this is what the user expect when they issue the command
                 //if they are in a tribe they want the dinos from the tribe
-                var tribes = _context.Tribes.Where(x => x.Members.Contains(args.Owner, StringComparer.OrdinalIgnoreCase)).Select(x => x.Name).ToArray();
+                var tribes = _context.Tribes.Where(x => x.Members != null && x.Members.Contains(args.Owner, StringComparer.OrdinalIgnoreCase)).Select(x => x.Name).ToArray();
                 filtered = filtered.Where(x => (x.OwnerName != null && x.OwnerName.Equals(args.Owner, StringComparison.OrdinalIgnoreCase))
                     || (x.Tribe != null && tribes.Length > 0 && tribes.Contains(x.Tribe)));
             }

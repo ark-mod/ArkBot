@@ -210,6 +210,7 @@
     <Compile Include="ArkSaveFileWatcher.cs" />
     <Compile Include="Commands\CommandListCommand.cs" />
     <Compile Include="Commands\CheckFoodCommand.cs" />
+    <Compile Include="Commands\Experimental\DebugCommand.cs" />
     <Compile Include="Commands\MyResourcesCommand.cs" />
     <Compile Include="Commands\PlayerListCommand.cs" />
     <Compile Include="Commands\MyKibblesCommand.cs" />

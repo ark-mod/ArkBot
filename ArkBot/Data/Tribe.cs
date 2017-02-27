@@ -9,6 +9,16 @@ namespace ArkBot.Data
 {
     public partial class Tribe
     {
+        public Tribe()
+        {
+            Members = new string[] { };
+            Admins = new string[] { };
+            TribeLog = new string[] { };
+            Structures = new EntityNameWithCount[] { };
+            Items = new EntityNameWithCount[] { };
+            Blueprints = new EntityNameWithCount[] { };
+        }
+
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
         [JsonProperty(PropertyName = "members")]

@@ -54,7 +54,7 @@ namespace ArkBot.Commands
                 }
                 else
                 {
-                    if(e.Channel != e.User.PrivateChannel) await e.Channel.SendMessage($"<@{e.User.Id}>, I will send you a private message with everything we know about you!");
+                    if(!e.Channel.IsPrivate) await e.Channel.SendMessage($"<@{e.User.Id}>, I will send you a private message with everything we know about you!");
 
                     var sb = new StringBuilder();
                     sb.AppendLine($"**This is what we know about you:**");

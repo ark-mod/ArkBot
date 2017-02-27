@@ -9,6 +9,13 @@ namespace ArkBot.Data
 {
     public class ArkSpeciesStatsData
     {
+        public ArkSpeciesStatsData()
+        {
+            StatMultipliers = new double[0][];
+            SpeciesStats = new List<SpeciesStat>();
+            SpeciesNames = new List<string>();
+        }
+
         /// <summary>
         /// These are the default stat multipliers (on official servers)
         /// </summary>
@@ -26,6 +33,12 @@ namespace ArkBot.Data
         /// </summary>
         public class SpeciesStat
         {
+            public SpeciesStat()
+            {
+                Stats = new double[0][];
+                Breeding = new SpeciesStatBreeding();
+            }
+
             [JsonProperty("name")]
             public string Name { get; set; }
 
@@ -38,6 +51,11 @@ namespace ArkBot.Data
 
         public class SpeciesStatBreeding : IArkMultiplierAdjustable<SpeciesStatBreeding>
         {
+            public SpeciesStatBreeding()
+            {
+
+            }
+
             [JsonProperty("pregnancyTime")]
             public double PregnancyTime { get; set; }
 

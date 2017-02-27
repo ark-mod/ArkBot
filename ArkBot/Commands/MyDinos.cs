@@ -108,9 +108,42 @@ namespace ArkBot.Commands
                 sb.Append($"**My records show you have {count:N0}" + (args.Uploaded ? " uploaded" : "") + " dinos");
                 if (count > 10) sb.Append($" (showing {args.Skip + 1}-{args.Skip + dinos.Length})");
                 sb.AppendLine($"** (updated {lastUpdateString}{nextUpdateString})");
+
+                //todo: cluster does not appear to have species name which makes it a bit hard to present which dinos are in the cluster
+                Dictionary<long, string> species = new Dictionary<long, string>();
+                if (args.Uploaded)
+                {
+                    var ids = dinos.Where(x => string.IsNullOrWhiteSpace(x.SpeciesClass)).Select(x => x.Id).ToArray();
+                    if (ids.Length > 0)
+                    {
+                        using (var db = _databaseContextFactory.Create())
+                        {
+                            foreach (var item in db.TamedCreatureLogEntries.Where(x => ids.Contains(x.Id)).Select(x => new { id = x.Id, species = x.SpeciesClass }).ToArray())
+                            {
+                                species.Add(item.id, _context.SpeciesAliases?.GetAliases(item.species)?.FirstOrDefault() ?? item.species);
+                            }
+                        }
+                    }
+                }
+
                 foreach (var x in dinos)
                 {
-                    sb.AppendLine($"● {(!string.IsNullOrWhiteSpace(x.Name) ? $"**{x.Name}**, ***{x.SpeciesName}***" : $"**{x.SpeciesName}**")} (lvl ***{x.FullLevel ?? x.BaseLevel}***)");
+                    //todo: cluster does not appear to have species name which makes it a bit hard to present which dinos are in the cluster
+                    if (args.Uploaded)
+                    {
+                        var primary = x.Name;
+                        var secondary = x.SpeciesName ?? (species.ContainsKey(x.Id) ? species[x.Id] : null);
+                        if (string.IsNullOrWhiteSpace(primary))
+                        {
+                            primary = secondary ?? x.Id.ToString();
+                            secondary = null;
+                        }
+                        sb.AppendLine($"● **{primary}**" + (secondary != null ? $", ***{secondary}***" : "") + $" (lvl ***{x.FullLevel ?? x.BaseLevel}***)");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"● {(!string.IsNullOrWhiteSpace(x.Name) ? $"**{x.Name}**, ***{x.SpeciesName}***" : $"**{x.SpeciesName}**")} (lvl ***{x.FullLevel ?? x.BaseLevel}***)");
+                    }
                 }
 
                 await CommandHelper.SendPartitioned(e.Channel, sb.ToString());

@@ -43,7 +43,8 @@
       "Mega_Tusoteuthis_Character_BP_C"
     ],
     [
-      "Ammonite"
+      "Ammonite",
+      "Ammonite_Character"
     ],
     [
       "Angler",
@@ -232,7 +233,10 @@
       "Dunkle"
     ],
     [
-      "Electrophorus"
+      "Electrophorus",
+      "Eel_Character_BP_C",
+      "Eel",
+      "Electro"
     ],
     [
       "Equus"
@@ -379,7 +383,8 @@
       "Monkey"
     ],
     [
-      "Microraptor"
+      "Microraptor",
+      "Microraptor_Character_BP_C"
     ],
     [
       "Morellatops",
@@ -599,7 +604,8 @@
       "Spiney Lizard"
     ],
     [
-      "Thylacoleo"
+      "Thylacoleo",
+      "Thylacoleo_Character_BP"
     ],
     [
       "Titanoboa",

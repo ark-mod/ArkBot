@@ -91,25 +91,35 @@ namespace ArkBot
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
             Progress = progress;
+
+            Creatures = new Creature[] { };
+            Wild = new Creature[] { };
+            Tribes = new Tribe[] { };
+            Players = new Player[] { };
+            Classes = new CreatureClass[] { };
+            Cluster = new Cluster();
+            TribeLogs = new List<TribeLog>();
+            SpeciesAliases = new ArkSpeciesAliases();
+            ArkSpeciesStatsData = new ArkSpeciesStatsData();
         }
 
         public async Task Initialize(ArkSpeciesAliases aliases = null)
         {
             Progress.Report("Context initialization started...");
 
-            SpeciesAliases = aliases ?? await ArkSpeciesAliases.Load();
+            SpeciesAliases = aliases ?? await ArkSpeciesAliases.Load() ?? new ArkSpeciesAliases();
 
             TribeLogs = new List<TribeLog>();
             var data = await ExtractAndLoadData();
             if (data != null)
             {
-                ArkSpeciesStatsData = data.Item1;
-                Classes = data.Item2;
-                Creatures = data.Item3;
-                Players = data.Item4;
-                Tribes = data.Item5;
-                Cluster = data.Item6;
-                Wild = data.Item7;
+                ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
+                Classes = data.Item2 ?? new CreatureClass[] { };
+                Creatures = data.Item3 ?? new Creature[] { };
+                Players = data.Item4 ?? new Player[] { };
+                Tribes = data.Item5 ?? new Tribe[] { };
+                Cluster = data.Item6 ?? new Cluster();
+                Wild = data.Item7 ?? new Creature[] { };
                 _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
 
                 //LogWildCreatures(); //skip doing this here in order to only log events that happen while the bot is running
@@ -346,13 +356,13 @@ namespace ArkBot
             var data = await ExtractAndLoadData();
             if (data != null)
             {
-                ArkSpeciesStatsData = data.Item1;
-                Classes = data.Item2;
-                Creatures = data.Item3;
-                Players = data.Item4;
-                Tribes = data.Item5;
-                Cluster = data.Item6;
-                Wild = data.Item7;
+                ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
+                Classes = data.Item2 ?? new CreatureClass[] { };
+                Creatures = data.Item3 ?? new Creature[] { };
+                Players = data.Item4 ?? new Player[] { };
+                Tribes = data.Item5 ?? new Tribe[] { };
+                Cluster = data.Item6 ?? new Cluster();
+                Wild = data.Item7 ?? new Creature[] { };
 
                 LastUpdate = DateTime.Now;
 

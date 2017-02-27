@@ -251,6 +251,9 @@ namespace ArkBot
                 //create database immediately to support direct (non-ef) access in application
                 using (var context = scope.Resolve<IEfDatabaseContext>())
                 {
+                    var constants = scope.Resolve<IConstants>();
+                    if (!Directory.Exists(constants.DatabaseDirectoryPath)) Directory.CreateDirectory(constants.DatabaseDirectoryPath);
+
                     context.Database.Initialize(false);
                     //context.Database.Create();
                 }

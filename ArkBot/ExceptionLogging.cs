@@ -11,9 +11,9 @@ namespace ArkBot
 {
     public class ExceptionLogging
     {
-        public static void LogUnhandledException(Exception exception, bool isCrash = false)
+        public static void LogUnhandledException(Exception exception, bool isCrash = false, string message = null, string source = null)
         {
-            var filename = string.Format(@"{0}_{1}", (isCrash ? "applicationcrash" : "exception"), DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff"));
+            var filename = string.Format(@"{0}_{1}", (isCrash ? "applicationcrash" + (source != null ? "_" + source : "") : "exception" + (source != null ? "_" + source : "")), DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff"));
             var ext = ".log";
             string path = null;
             var n = 0;
@@ -27,6 +27,7 @@ namespace ArkBot
             {
                 using (var sw = new StreamWriter(ifs))
                 {
+                    if (message != null) sw.WriteLine(message);
                     XElement root = new XElement("Exception");
                     root.Add(GetXElementExeception(exception));
                     sw.Write(root);
@@ -37,9 +38,10 @@ namespace ArkBot
         /// <summary>
         /// Log a non-fatal handled exception to file in order to keep track of runtime events.
         /// </summary>
-        public static void LogException(Exception exception)
+        public static void LogException(Exception exception, string message = null, string source = null)
         {
-            //LogUnhandledException(exception, false);
+            if (exception == null) return;
+            LogUnhandledException(exception, false, message, source);
         }
 
         protected static XElement GetXElementExeception(Exception ex)
