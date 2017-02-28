@@ -110,7 +110,14 @@ namespace ArkBot
                     }
                     else
                     {
-                        context.Users.Add(new Database.Model.User { DiscordId = (long)e.DiscordUserId, SteamId = (long)e.SteamId, RealName = player?.RealName, SteamDisplayName = player?.PersonaName });
+                        user = new Database.Model.User { DiscordId = (long)e.DiscordUserId, SteamId = (long)e.SteamId, RealName = player?.RealName, SteamDisplayName = player?.PersonaName };
+                        context.Users.Add(user);
+                    }
+
+                    foreach(var associatePlayed in context.Played.Where(x => x.SteamId == (long)e.SteamId))
+                    {
+                        associatePlayed.SteamId = null;
+                        user.Played.Add(associatePlayed);
                     }
 
                     context.SaveChanges();

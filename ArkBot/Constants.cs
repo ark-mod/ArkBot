@@ -12,5 +12,8 @@ namespace ArkBot
         public string OpenidresponsetemplatePath => @"Resources\openidresponse.html";
         public string DatabaseDirectoryPath => ".\\Database";
         public string SavedStateFilePath => "savedstate.json";
+        //todo: move this to config
+        public string ServerIp => "85.227.28.132";
+        public int ServerPort => 27003;
     }
 }

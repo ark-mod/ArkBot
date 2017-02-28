@@ -18,6 +18,7 @@ namespace ArkBot.Database
         public DbSet<WildCreatureLog> WildCreatureLogs { get; set; }
         public DbSet<WildCreatureLogEntry> WildCreatureLogEntries { get; set; }
         public DbSet<TamedCreatureLogEntry> TamedCreatureLogEntries { get; set; }
+        public DbSet<PlayedEntry> Played { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -29,6 +30,10 @@ namespace ArkBot.Database
             modelBuilder.Entity<WildCreatureLogEntry>()
                 .HasRequired(s => s.Log)
                 .WithMany(s => s.Entries);
+
+            modelBuilder.Entity<PlayedEntry>()
+                .HasOptional(s => s.User)
+                .WithMany(s => s.Played);
         }
     }
 }

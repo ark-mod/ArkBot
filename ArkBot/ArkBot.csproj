@@ -217,7 +217,12 @@
     <Compile Include="Commands\StatusCommand.cs" />
     <Compile Include="Commands\FindTameCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Database\Model\PlayedEntry.cs" />
     <Compile Include="ISavedState.cs" />
+    <Compile Include="Migrations\201702280520255_UserPlayed.cs" />
+    <Compile Include="Migrations\201702280520255_UserPlayed.Designer.cs">
+      <DependentUpon>201702280520255_UserPlayed.cs</DependentUpon>
+    </Compile>
     <Compile Include="SavedState.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Constants.cs" />
@@ -270,7 +275,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="Services\IPlayedTimeWatcher.cs" />
     <Compile Include="Services\IUrlShortenerService.cs" />
+    <Compile Include="Services\PlayedTimeWatcher.cs" />
     <Compile Include="Services\UrlShortenerService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -300,6 +307,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201702251216156_InitialCreate.resx">
       <DependentUpon>201702251216156_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702280520255_UserPlayed.resx">
+      <DependentUpon>201702280520255_UserPlayed.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

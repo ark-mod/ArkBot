@@ -40,7 +40,7 @@ namespace ArkBot.Helpers
                 for (int j = 0; j < props.Count; j++)
                 {
                     var pc = config.Get(props[j].Name);
-                    var value = pc?.Hide == true ? null : (pc != null && pc.Format != null ? string.Format(pc.FormatProvider, "{0:" + pc.Format + "}", props[j].GetValue(item)) : props[j].GetValue(item).ToString());
+                    var value = pc?.Hide == true ? null : (pc != null && pc.Format != null ? string.Format(pc.FormatProvider, "{0:" + pc.Format + "}", props[j].GetValue(item)) : (props[j].GetValue(item) ?? "").ToString());
                     array[i, j] = value;
                     columnsizes[j] = value?.Length > columnsizes[j] ? value.Length : columnsizes[j];
                     if (pc != null && !pc.Hide && pc.Total) totals[j] += (dynamic)props[j].GetValue(item);

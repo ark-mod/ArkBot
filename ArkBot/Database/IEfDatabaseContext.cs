@@ -12,6 +12,7 @@ namespace ArkBot.Database
         DbSet<WildCreatureLogEntry> WildCreatureLogEntries { get; set; }
         DbSet<WildCreatureLog> WildCreatureLogs { get; set; }
         DbSet<TamedCreatureLogEntry> TamedCreatureLogEntries { get; set; }
+        DbSet<PlayedEntry> Played { get; set; }
 
         int SaveChanges();
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);

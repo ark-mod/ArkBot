@@ -98,7 +98,7 @@ namespace ArkBot.Helpers
             return false;
         }
 
-        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus()
+        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(IConstants constants)
         {
             var cache = MemoryCache.Default;
 
@@ -108,8 +108,7 @@ namespace ArkBot.Helpers
             {
                 await Task.Factory.StartNew(() =>
                 {
-                    //todo: remove hardcoded value
-                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, "85.227.28.132", 27003, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
+                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, constants.ServerIp, (ushort)constants.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
                     {
                         var serverInfo = server.GetInfo();
                         var serverRules = server.GetRules();

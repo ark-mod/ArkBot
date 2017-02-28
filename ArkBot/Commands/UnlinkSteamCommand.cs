@@ -48,6 +48,11 @@ namespace ArkBot.Commands
                 }
                 else
                 {
+                    foreach(var played in user.Played)
+                    {
+                        played.SteamId = user.SteamId;
+                    }
+
                     context.Users.Remove(user);
                     var result = context.SaveChanges();
                     await e.Channel.SendMessage($"<@{e.User.Id}>, your user is no longer linked with Steam.");

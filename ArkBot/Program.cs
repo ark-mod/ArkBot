@@ -203,6 +203,8 @@ namespace ArkBot
             savedstate = savedstate ?? new SavedState(constants.SavedStateFilePath);
             //var context = new ArkContext(config, constants, progress);
 
+            var playedTimeWatcher = new PlayedTimeWatcher(constants);
+
             var options = new SteamOpenIdOptions
             {
                 ListenPrefixes = new[] { config.SteamOpenIdRelyingServiceListenPrefix },
@@ -232,6 +234,7 @@ namespace ArkBot
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(savedstate).As<ISavedState>();
             builder.RegisterInstance(config).As<IConfig>();
+            builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
             builder.RegisterType<ArkContext>().As<IArkContext>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
             builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);

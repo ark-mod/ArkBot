@@ -15,6 +15,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Data.Entity.Migrations;
 using ArkBot.Extensions;
+using ArkBot.Services;
+using System.Data.Entity;
 
 namespace ArkBot
 {
@@ -25,6 +27,7 @@ namespace ArkBot
         private IConstants _constants;
         private ISavedState _savedstate;
         private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private IPlayedTimeWatcher _playedTimeWatcher;
         public IProgress<string> Progress { get; private set; }
 
         private string _jsonOutputDirPathTamed => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "tamed") : null;
@@ -89,12 +92,19 @@ namespace ArkBot
 
         public IEnumerable<Creature> CreaturesNoRaft => Creatures?.Where(x => !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
 
-        public ArkContext(IConfig config, IConstants constants, IProgress<string> progress, ISavedState savedstate, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public ArkContext(
+            IConfig config, 
+            IConstants constants, 
+            IProgress<string> progress,
+            ISavedState savedstate, 
+            DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory,
+            IPlayedTimeWatcher playedTimeWatcher)
         {
             _config = config;
             _constants = constants;
             _savedstate = savedstate;
             _databaseContextFactory = databaseContextFactory;
+            _playedTimeWatcher = playedTimeWatcher;
             Progress = progress;
 
             Creatures = new Creature[] { };
@@ -135,6 +145,42 @@ namespace ArkBot
             {
                 _watcher = new ArkSaveFileWatcher { SaveFilePath = _config.SaveFilePath };
                 _watcher.Changed += _watcher_Changed;
+            }
+
+            _playedTimeWatcher.PlayedTimeUpdate += _playedTimeWatcher_PlayedTimeUpdate;
+            _playedTimeWatcher.Start();
+        }
+
+        private void _playedTimeWatcher_PlayedTimeUpdate(object sender, PlayedTimeWatcher.PlayedTimeEventArgs e)
+        {
+            var now = DateTime.Now.Date;
+            var totalSeconds = (int)Math.Round(e.TimeToAdd.TotalSeconds);
+            using (var db = _databaseContextFactory.Create())
+            {
+                foreach(var name in e.Players)
+                {
+                    var player = Players?.FirstOrDefault(x => x.PlayerName.Equals(name, StringComparison.Ordinal));
+                    long steamId;
+                    if (player == null || !long.TryParse(player.SteamId, out steamId)) continue;
+                    
+                    var user = db.Users.FirstOrDefault(x => x.SteamId == steamId);
+                    if (user != null)
+                    {
+                        //update user
+                        var today = user.Played.OrderByDescending(x => x.Date).FirstOrDefault(x => x.Date.Date == now);
+                        if (today != null) today.TimeInSeconds += totalSeconds;
+                        else user.Played.Add(new Database.Model.PlayedEntry { Date = now, TimeInSeconds = totalSeconds });
+                    }
+                    else
+                    {
+                        //update using steamid
+                        var today = db.Played.OrderByDescending(x => x.Date).FirstOrDefault(x => x.SteamId == steamId && DbFunctions.TruncateTime(x.Date) == now);
+                        if (today != null) today.TimeInSeconds += totalSeconds;
+                        else db.Played.Add(new Database.Model.PlayedEntry { Date = now, TimeInSeconds = totalSeconds, SteamId = steamId });
+                    }
+                }
+
+                db.SaveChanges();
             }
         }
 

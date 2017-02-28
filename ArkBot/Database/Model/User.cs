@@ -10,11 +10,16 @@ namespace ArkBot.Database.Model
 {
     public class User
     {
-        public int Id { get; set; }
+        public User()
+        {
+            Played = new List<PlayedEntry>();
+        }
 
+        public int Id { get; set; }
         public long DiscordId { get; set; }
         public long SteamId { get; set; }
         public string RealName { get; set; }
         public string SteamDisplayName { get; set; }
+        public virtual ICollection<PlayedEntry> Played { get; set; }
     }
 }
