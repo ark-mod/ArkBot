@@ -29,18 +29,6 @@ namespace ArkBot.Migrations
             //      new Person { FullName = "Rowan Miller" }
             //    );
             //
-
-            if (context.Users.Count() > 0) return;
-            using (var ctx = new ArkBot.Database.DatabaseContext(Constants.DatabaseConnectionString))
-            {
-                var users = ctx.Users.ToArray();
-                foreach(var user in users)
-                {
-                    context.Users.Add(new ArkBot.Database.Model.User { SteamId = (long)user.SteamId, DiscordId = (long)user.DiscordId, RealName = user.RealName, SteamDisplayName = user.SteamDisplayName });
-                }
-
-                context.SaveChanges();
-            }
         }
     }
 }
