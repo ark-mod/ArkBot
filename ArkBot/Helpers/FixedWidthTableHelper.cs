@@ -40,14 +40,16 @@ namespace ArkBot.Helpers
                 for (int j = 0; j < props.Count; j++)
                 {
                     var pc = config.Get(props[j].Name);
-                    var value = pc?.Hide == true ? null : (pc != null && pc.Format != null ? string.Format(pc.FormatProvider, "{0:" + pc.Format + "}", props[j].GetValue(item)) : (props[j].GetValue(item) ?? "").ToString());
+                    var v = (dynamic)props[j].GetValue(item);
+                    var d = (dynamic)(props[j].PropertyType.IsValueType ? Activator.CreateInstance(props[j].PropertyType) : null);
+                    var value = pc?.Hide == true ? null : (pc != null && pc.ForDefault != null && v == d ? pc.ForDefault : (pc != null && pc.Format != null ? string.Format(pc.FormatProvider, "{0:" + pc.Format + "}", v) : v ?? "").ToString());
                     array[i, j] = value;
                     columnsizes[j] = value?.Length > columnsizes[j] ? value.Length : columnsizes[j];
                     if (pc != null && !pc.Hide && pc.Total) totals[j] += (dynamic)props[j].GetValue(item);
 
                     if (i == collection.Count && pc != null && (pc.Total || pc.Aggregate != null))
                     {
-                        var total = pc?.Hide == true ? null : (pc != null && pc.Format != null ? string.Format(pc.FormatProvider, "{0:" + pc.Format + "}", totals[j]) : totals[j].ToString());
+                        var total = pc?.Hide == true ? null : (pc != null && pc.ForDefault != null && (dynamic)totals[j] == d ? pc.ForDefault : (pc != null && pc.Format != null ? string.Format(pc.FormatProvider, "{0:" + pc.Format + "}", totals[j]) : totals[j].ToString()));
                         columnsizes[j] = total?.Length > columnsizes[j] ? total.Length : columnsizes[j];
                         totalsStr[j] = total;
                     }
@@ -114,11 +116,11 @@ namespace ArkBot.Helpers
         }
 
         /// <param name="alignment">-1: left, 0: middle, 1: right</param>
-        public FixedWidthTableConfigurationBuilder<T> For(Expression<Func<T, object>> selector, string header = null, int alignment = -1, string format = null, IFormatProvider formatProvider = null, bool total = false, Func<IList<T>, object> aggregate = null, bool hide = false)
+        public FixedWidthTableConfigurationBuilder<T> For(Expression<Func<T, object>> selector, string header = null, int alignment = -1, string format = null, IFormatProvider formatProvider = null, bool total = false, Func<IList<T>, object> aggregate = null, bool hide = false, string fordefault = null)
         {
             var name = selector.Body is MemberExpression ? (selector.Body as MemberExpression)?.Member?.Name :
                 selector.Body is UnaryExpression ? ((selector.Body as UnaryExpression)?.Operand as MemberExpression)?.Member?.Name : null;
-            if (name != null) _configuration.Add(name, header, alignment, format, formatProvider, total, aggregate, hide);
+            if (name != null) _configuration.Add(name, header, alignment, format, formatProvider, total, aggregate, hide, fordefault);
 
             return this;
         }
@@ -137,9 +139,9 @@ namespace ArkBot.Helpers
                 Properties = new Dictionary<string, FixedWidthTableConfigurationProperty>();
             }
 
-            public void Add(string name, string header = null, int alignment = -1, string format = null, IFormatProvider formatProvider = null, bool total = false, Func<IList<T>, object> aggregate = null, bool hide = false)
+            public void Add(string name, string header = null, int alignment = -1, string format = null, IFormatProvider formatProvider = null, bool total = false, Func<IList<T>, object> aggregate = null, bool hide = false, string forDefault = null)
             {
-                Properties.Add(name, new FixedWidthTableConfigurationProperty { Header = header, Alignment = alignment, Format = format, FormatProvider = formatProvider, Total = total, Aggregate = aggregate, Hide = hide });
+                Properties.Add(name, new FixedWidthTableConfigurationProperty { Header = header, Alignment = alignment, Format = format, FormatProvider = formatProvider, Total = total, Aggregate = aggregate, Hide = hide, ForDefault = forDefault });
             }
 
             public FixedWidthTableConfigurationProperty Get(string name)
@@ -157,6 +159,7 @@ namespace ArkBot.Helpers
             public bool Total { get; set; }
             public bool Hide { get; set; }
             public Func<IList<T>, object> Aggregate { get; set; }
+            public string ForDefault { get; set; }
         }
     }
 }
