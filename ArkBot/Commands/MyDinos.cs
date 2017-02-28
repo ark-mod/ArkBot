@@ -88,7 +88,7 @@ namespace ArkBot.Commands
                 IEnumerable<Creature> filtered = null;
 
                 if (args.Uploaded) filtered = _context.Cluster?.Creatures.Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId));
-                else filtered = _context.Creatures?.Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId));
+                else filtered = _context.CreaturesNoRaft?.Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId));
 
                 var dinos = filtered?.OrderByDescending(x => x.FullLevel ?? x.BaseLevel).ThenByDescending(x => x.Experience ?? decimal.MinValue).Skip(args.Skip).Take(take).ToArray();
                 var count = filtered?.Count() ?? 0;

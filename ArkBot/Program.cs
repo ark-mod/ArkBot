@@ -190,6 +190,17 @@ namespace ArkBot
             });
 
             var constants = new Constants();
+            SavedState savedstate = null;
+            try
+            {
+                if (File.Exists(constants.SavedStateFilePath))
+                {
+                    savedstate = JsonConvert.DeserializeObject<SavedState>(File.ReadAllText(constants.SavedStateFilePath));
+                    savedstate._Path = constants.SavedStateFilePath;
+                }
+            }
+            catch { /*ignore exceptions */}
+            savedstate = savedstate ?? new SavedState(constants.SavedStateFilePath);
             //var context = new ArkContext(config, constants, progress);
 
             var options = new SteamOpenIdOptions
@@ -219,6 +230,7 @@ namespace ArkBot
             builder.RegisterType<ArkDiscordBot>();
             builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
             builder.RegisterInstance(constants).As<IConstants>();
+            builder.RegisterInstance(savedstate).As<ISavedState>();
             builder.RegisterInstance(config).As<IConfig>();
             builder.RegisterType<ArkContext>().As<IArkContext>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
             builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().SingleInstance()

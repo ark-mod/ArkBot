@@ -23,6 +23,7 @@ namespace ArkBot
         private ArkSaveFileWatcher _watcher;
         private IConfig _config;
         private IConstants _constants;
+        private ISavedState _savedstate;
         private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
         public IProgress<string> Progress { get; private set; }
 
@@ -35,6 +36,7 @@ namespace ArkBot
         private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
 
         private List<DateTime> _previousUpdates = new List<DateTime>();
+        private TribeLog _latestTribeLog;
 
         private DateTime _lastUpdate;
         public DateTime LastUpdate
@@ -85,10 +87,13 @@ namespace ArkBot
         public Cluster Cluster { get; private set; }
         public List<TribeLog> TribeLogs { get; set; }
 
-        public ArkContext(IConfig config, IConstants constants, IProgress<string> progress, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public IEnumerable<Creature> CreaturesNoRaft => Creatures?.Where(x => !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
+
+        public ArkContext(IConfig config, IConstants constants, IProgress<string> progress, ISavedState savedstate, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
         {
             _config = config;
             _constants = constants;
+            _savedstate = savedstate;
             _databaseContextFactory = databaseContextFactory;
             Progress = progress;
 
@@ -312,6 +317,15 @@ namespace ArkBot
 
                     return tribe;
                 }).ToArray();
+
+                //save the latest tribe log date to database
+                if (_latestTribeLog != null)
+                {
+                    _savedstate.LatestTribeLogDay = _latestTribeLog.Day;
+                    _savedstate.LatestTribeLogTime = _latestTribeLog.Time;
+                    _savedstate.Save();
+                }
+
                 var players = results?.Where(x => x.Item2 is Player)?.Select(x =>
                 {
                     var player = x.Item2 as Player;
@@ -338,15 +352,24 @@ namespace ArkBot
         {
             if (logs == null || tribeName == null) return;
 
+            TribeLog latestLog = null;
             foreach (var log in logs)
             {
-                var item = TameWasKilledTribeLog.FromLog(log);
+                TribeLog currentLog;
+                TameWasKilledTribeLog item;
+                currentLog = item = TameWasKilledTribeLog.FromLog(log);
+                if (item == null) currentLog = TribeLog.FromLog(log);
+
+                if (currentLog != null && (latestLog == null || (currentLog.Day > latestLog.Day || (currentLog.Day == latestLog.Day && currentLog.Time >= latestLog.Time)))) latestLog = currentLog;
+
                 if (item == null) continue;
-                
+
                 item.TribeId = tribeId;
                 item.TribeName = tribeName;
                 TribeLogs?.Add(item);
             }
+
+            if (latestLog != null && (_latestTribeLog == null || (latestLog.Day > _latestTribeLog.Day || (latestLog.Day == _latestTribeLog.Day && latestLog.Time >= _latestTribeLog.Time)))) _latestTribeLog = latestLog;
         }
 
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
@@ -461,46 +484,49 @@ namespace ArkBot
                                         var tame = tamed.FirstOrDefault(x => x.Id == id);
                                         if (tame == null)
                                         {
-                                            //this tame is now dead or missing we should update the state
-                                            var name = resultSet.SafeGet<string>(nameof(l.Name));
-                                            var team = resultSet.SafeGet<int?>(nameof(l.Team));
-                                            var speciesClass = resultSet.SafeGet<string>(nameof(l.SpeciesClass));
-                                            var fullLevel = resultSet.SafeGet<int?>(nameof(l.FullLevel));
-                                            var baseLevel = resultSet.SafeGet<int>(nameof(l.BaseLevel));
-
-                                            var tst = team.HasValue && name != null && speciesClass != null ? TribeLogs?.OfType<TameWasKilledTribeLog>()
-                                                .Where(x =>
-                                                        x.TribeId == team.Value).ToArray() : null;
-
-                                            var relatedLogs = team.HasValue && name != null && speciesClass != null ? TribeLogs?.OfType<TameWasKilledTribeLog>()
-                                                .Where(x =>
-                                                        x.TribeId == team.Value
-                                                        && name.Equals(x.Name, StringComparison.Ordinal)
-                                                        && x.Level == (fullLevel ?? baseLevel)
-                                                        && ((SpeciesAliases.GetAliases(x.SpeciesName)?.Contains(speciesClass)) ?? false)).ToArray() : null;
-
-                                            //is confirmed dead
-                                            var isConfirmedDead = resultSet.SafeGet<bool>(nameof(l.IsConfirmedDead));
-                                            isConfirmedDead = isConfirmedDead || (relatedLogs != null && relatedLogs.Length > 0);
-                                            resultSet.SetBoolean(ordinal(nameof(l.IsConfirmedDead)), isConfirmedDead);
-
-                                            //is in cluster
-                                            var isInCluster = Cluster?.Creatures.Any(x => x.Id == id) ?? false;
-                                            resultSet.SetBoolean(ordinal(nameof(l.IsInCluster)), isInCluster);
-
-                                            //is unavailable
-                                            resultSet.SetBoolean(ordinal(nameof(l.IsUnavailable)), true);
-
-                                            //related logs
-                                            if (relatedLogs != null && relatedLogs.Length > 0)
+                                            var isUnavailable = resultSet.SafeGet<bool>(nameof(l.IsUnavailable));
+                                            var isInCluster = resultSet.SafeGet<bool>(nameof(l.IsInCluster));
+                                            var isNowInCluster = Cluster?.Creatures.Any(x => x.Id == id) ?? false;
+                                            if (isUnavailable == false || (isInCluster == false && isNowInCluster == true))
                                             {
-                                                var oldRelatedLogs = resultSet.SafeGet<string>(nameof(l.RelatedLogEntries));
-                                                var newRelatedLogs = relatedLogs.Select(x => x.Message).ToArray();
-                                                if (oldRelatedLogs != null) newRelatedLogs = oldRelatedLogs.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Concat(newRelatedLogs).Distinct().ToArray();
-                                                resultSet.SetString(ordinal(nameof(l.RelatedLogEntries)), string.Join(Environment.NewLine, newRelatedLogs));
-                                            }
+                                                //this tame is now dead, missing or uploaded we should update the state
+                                                var name = resultSet.SafeGet<string>(nameof(l.Name));
+                                                var team = resultSet.SafeGet<int?>(nameof(l.Team));
+                                                var speciesClass = resultSet.SafeGet<string>(nameof(l.SpeciesClass));
+                                                var fullLevel = resultSet.SafeGet<int?>(nameof(l.FullLevel));
+                                                var baseLevel = resultSet.SafeGet<int>(nameof(l.BaseLevel));
+                                                var isConfirmedDead = resultSet.SafeGet<bool>(nameof(l.IsConfirmedDead));
 
-                                            resultSet.Update();
+                                                //get any kill logs that could relate to this creature.
+                                                //since tribe logs do not include the id of the creature, we have to make an informed guess
+                                                var relatedLogs = team.HasValue && speciesClass != null ? TribeLogs?.OfType<TameWasKilledTribeLog>()
+                                                    .Where(x =>
+                                                            (x.Day > _savedstate.LatestTribeLogDay || (x.Day == _savedstate.LatestTribeLogDay && x.Time >= _savedstate.LatestTribeLogTime))
+                                                            && x.TribeId == team.Value
+                                                            && (!string.IsNullOrWhiteSpace(name) ? name.Equals(x.Name, StringComparison.Ordinal) : x.Name.Equals(x.SpeciesName, StringComparison.Ordinal))
+                                                            && x.Level >= (fullLevel ?? baseLevel)
+                                                            && ((SpeciesAliases.GetAliases(x.SpeciesName)?.Contains(speciesClass)) ?? false)).ToArray() : null;
+
+                                                //is in cluster
+                                                resultSet.SetBoolean(ordinal(nameof(l.IsInCluster)), isNowInCluster);
+
+                                                //is confirmed dead
+                                                isConfirmedDead = (isNowInCluster == false && (relatedLogs != null && relatedLogs.Length > 0));
+                                                resultSet.SetBoolean(ordinal(nameof(l.IsConfirmedDead)), isConfirmedDead);
+
+                                                //is unavailable
+                                                resultSet.SetBoolean(ordinal(nameof(l.IsUnavailable)), true);
+
+                                                //related logs
+                                                if (isConfirmedDead)
+                                                {
+                                                    //this could end up picking the wrong log, or the same log for two creatures, but we lack the information to make a better guess
+                                                    var mostProbableRelatedLog = relatedLogs.OrderBy(x => x.Level - (fullLevel ?? baseLevel)).FirstOrDefault()?.Message;
+                                                    resultSet.SetString(ordinal(nameof(l.RelatedLogEntries)), mostProbableRelatedLog);
+                                                }
+
+                                                resultSet.Update();
+                                            }
 
                                             continue;
                                         }

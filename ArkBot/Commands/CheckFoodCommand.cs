@@ -48,7 +48,7 @@ namespace ArkBot.Commands
             var player = await CommandHelper.GetCurrentPlayerOrSendErrorMessage(e, _databaseContextFactory, _context);
             if (player == null) return;
 
-            var mydinos = _context.Creatures
+            var mydinos = _context.CreaturesNoRaft
                 .Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId))
                 .Select(x =>
                 {

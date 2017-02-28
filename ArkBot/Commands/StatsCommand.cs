@@ -146,7 +146,7 @@ namespace ArkBot.Commands
                         "Keratin", "Cooked Meat Jerky", "Oil", "Prime Meat Jerky", "Pelt", "Crystal",
                         "Narcoberry", "Mejoberry", "Stimberry",
                         "Amarberry", "Azulberry", "Tintoberry",
-                        "Black Pearl"
+                        "Black Pearl", "Element"
                     };
 
                     var resources = _context.Tribes.Where(x => x.Id != t.key).GroupBy(x => x.Id).Select(x => new { Id = x.Key, Name = x.FirstOrDefault()?.Name, Items = x.SelectMany(y => y.Items).GroupBy(y => y.Name).Select(y => new { Name = y.Key, Count = y.Sum(z => z.Count) }).ToArray() }).ToArray();
@@ -175,10 +175,10 @@ namespace ArkBot.Commands
                     }
 
                     //top dinos
-                    var dinos = _context.Creatures.Where(x => x.Team == t.key && !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase)).GroupBy(x => x.SpeciesClass).Select(x => {
+                    var dinos = _context.CreaturesNoRaft.Where(x => x.Team == t.key).GroupBy(x => x.SpeciesClass).Select(x => {
                         var baseLevel = x.Max(y => y.BaseLevel);
                         var level = x.Max(y => y.FullLevel ?? y.BaseLevel);
-                        var opponents = _context.Creatures.Where(y => y.SpeciesClass.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
+                        var opponents = _context.CreaturesNoRaft.Where(y => y.SpeciesClass.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
                                 .GroupBy(y => y.Team);
                         return new
                         {

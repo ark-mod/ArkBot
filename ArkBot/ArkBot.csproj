@@ -225,6 +225,8 @@
     <Compile Include="Commands\StatusCommand.cs" />
     <Compile Include="Commands\FindTameCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="ISavedState.cs" />
+    <Compile Include="SavedState.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Database\DatabaseContextFactory.cs" />

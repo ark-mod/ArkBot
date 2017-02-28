@@ -55,7 +55,7 @@ namespace ArkBot.Commands
                 "Keratin", "Cooked Meat Jerky", "Oil", "Prime Meat Jerky", "Pelt", "Crystal",
                 "Narcoberry", "Mejoberry", "Stimberry",
                 "Amarberry", "Azulberry", "Tintoberry",
-                "Black Pearl"
+                "Black Pearl", "Element"
             };
 
             var combined = new Dictionary<string, string[]> {

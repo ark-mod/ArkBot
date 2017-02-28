@@ -7,11 +7,33 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Data
 {
-    public abstract class TribeLog
+    public class TribeLog
     {
         public int Day { get; set; }
         public TimeSpan Time { get; set; }
         public string Message { get; set; }
+
+        private static Regex _rParseLog = new Regex(@"^Day\s+(?<day>\d+),\s+(?<hour>\d{2,2})\:(?<minute>\d{2,2})\:(?<second>\d{2,2})\:\s+(?<message>.+)$", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+        public static TribeLog FromLog(string log)
+        {
+            try
+            {
+                var m = _rParseLog.Match(log);
+                if (!m.Success) return null;
+
+                var item = new TribeLog
+                {
+                    Day = int.Parse(m.Groups["day"].Value),
+                    Time = new TimeSpan(int.Parse(m.Groups["hour"].Value), int.Parse(m.Groups["minute"].Value), int.Parse(m.Groups["second"].Value)),
+                    Message = log
+                };
+                return item;
+            }
+            catch { /* ignore exception */}
+
+            return null;
+        }
     }
 
     public class TameWasKilledTribeLog : TribeLog
@@ -26,7 +48,7 @@ namespace ArkBot.Data
 
         private static Regex _rParseKilled = new Regex(@"^Day\s+(?<day>\d+),\s+(?<hour>\d{2,2})\:(?<minute>\d{2,2})\:(?<second>\d{2,2})\:\s+.*?Your\s+(?<name>.+?)\s+\-\s+Lvl\s+(?<level>\d+)\s+\((?<species>[^\)]+)\)\s+was\s+killed(?:\!|(?:\s+by\s+a\s+(?<killedBy>.+?)\s+\-\s+Lvl\s+(?<killedByLevel>\d+)\!)).+$", RegexOptions.Singleline | RegexOptions.IgnoreCase);
        
-        public static TameWasKilledTribeLog FromLog(string log)
+        public static new TameWasKilledTribeLog FromLog(string log)
         {
             //relatedlogs
             //"Day 12433, 22:47:56: <RichColor Color=\"1, 0, 0, 1\">Your Direbear AH - Lvl 243 (Dire Bear) was killed by a Dilophosaurus - Lvl 100!</>",
@@ -37,7 +59,7 @@ namespace ArkBot.Data
             try
             {
                 var m = _rParseKilled.Match(log);
-                if (!m.Success) return null; ;
+                if (!m.Success) return null;
 
                 var item = new TameWasKilledTribeLog
                 {

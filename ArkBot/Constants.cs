@@ -11,5 +11,6 @@ namespace ArkBot
         public string DatabaseConnectionString => "type=embedded;storesdirectory=.\\Database;storename=Default";
         public string OpenidresponsetemplatePath => @"Resources\openidresponse.html";
         public string DatabaseDirectoryPath => ".\\Database";
+        public string SavedStateFilePath => "savedstate.json";
     }
 }

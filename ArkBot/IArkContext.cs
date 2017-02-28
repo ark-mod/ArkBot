@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ArkBot.Data;
+using System.Collections.Generic;
 
 namespace ArkBot
 {
@@ -12,6 +13,7 @@ namespace ArkBot
         CreatureClass[] Classes { get; }
         Cluster Cluster { get; }
         Creature[] Creatures { get; }
+        IEnumerable<Creature> CreaturesNoRaft { get; }
         Creature[] Wild { get; }
         DateTime LastUpdate { get; }
         Player[] Players { get; }
