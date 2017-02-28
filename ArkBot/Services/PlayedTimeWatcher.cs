@@ -13,7 +13,7 @@ namespace ArkBot.Services
     {
         private bool _isStarted;
         private Timer _timer;
-        private readonly TimeSpan _delay = TimeSpan.FromSeconds(20);
+        private readonly TimeSpan _delay = TimeSpan.FromMinutes(5);
         private DateTime? _lastCheck = null;
         private string[] _lastOnline;
 
