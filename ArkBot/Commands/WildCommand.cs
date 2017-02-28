@@ -88,7 +88,7 @@ namespace ArkBot.Commands
                         Key = _context.SpeciesAliases.GetAliases(x.Key)?.FirstOrDefault() ?? x.Key,
                         Now = count,
                         Prev = logIds != null ? logIds.Length : 0,
-                        ChangePercent = logIds != null ? logIds.Length > 0 ? ((count / (double)logIds.Length) - 1) * 100 : 0d : 0d,
+                        ChangePercent = logIds != null ? logIds.Length > 0 ? Math.Round(((count / (double)logIds.Length) - 1) * 100) : 0d : 0d,
                         Additions = logIds != null ? ids.Except(logIds).Count() : 0,
                         Deletions = logIds != null ? -logIds.Except(ids).Count() : 0,
                         Same = same,
@@ -110,12 +110,12 @@ namespace ArkBot.Commands
                     sb.AppendLine(FixedWidthTableHelper.ToString(results, x => x
                         .For(y => y.Key, "Species")
                         .For(y => y.Now, "Now", 1, "N0", total: true)
-                        .For(y => y.Prev, "Prev", 1, "N0", fordefault: "-", total: true)
-                        .For(y => y.ChangePercent, "% Change", 1, "+#'%';-#'%';0'%'", fordefault: "-", aggregate: (r) => { var t = (double)r.Sum(z => z.Prev); return t > 0 ? ((r.Sum(z => z.Now) / t) - 1) * 100 : 0d; })
-                        .For(y => y.Additions, "Additions", 1, "+#,#;-#,#;0", fordefault: "-", total: true)
-                        .For(y => y.Deletions, "Deletions", 1, "+#,#;-#,#;0", fordefault: "-", total: true)
+                        .For(y => y.Prev, "Prev", 1, "N0", fordefault: "", total: true)
+                        .For(y => y.ChangePercent, "% Change", 1, "+#'%';-#'%';0'%'", fordefault: "", aggregate: (r) => { var t = (double)r.Sum(z => z.Prev); return t > 0 ? ((r.Sum(z => z.Now) / t) - 1) * 100 : 0d; })
+                        .For(y => y.Additions, "Additions", 1, "+#,#;-#,#;0", fordefault: "", total: true)
+                        .For(y => y.Deletions, "Deletions", 1, "+#,#;-#,#;0", fordefault: "", total: true)
                         .For(y => y.Same, hide: true)
-                        .For(y => y.SamePercentage, "% Same", 1, "+#'%';-#'%';0'%'", fordefault: "-", aggregate: (r) => { var t = (double)r.Sum(z => z.Now); return t > 0 ? r.Sum(z => z.Same) / t * 100 : 0d; })
+                        .For(y => y.SamePercentage, "% Same", 1, "#'%';-#'%';0'%'", fordefault: "", aggregate: (r) => { var t = (double)r.Sum(z => z.Now); return t > 0 ? r.Sum(z => z.Same) / t * 100 : 0d; })
                         .For(y => y.Ids, hide: true)));
                     sb.AppendLine("```");
                 }
