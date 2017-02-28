@@ -91,7 +91,7 @@ namespace ArkBot.Commands
 
                             ids.Add(item.Item1.Id);
 
-                            var discordUser = e.Server.GetUser((ulong)user.DiscordId);
+                            var discordUser = e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
                             var playedLastSevenDays = TimeSpan.FromSeconds(user?.Played?.OrderByDescending(x => x.Date).Take(7).Sum(x => x.TimeInSeconds) ?? 0);
 
                             d[item.Item1.PlayerName] = new Tuple<Data.Player, Database.Model.User, Discord.User, long?, TimeSpan>(item.Item1, user, discordUser, item.Item4, playedLastSevenDays);
