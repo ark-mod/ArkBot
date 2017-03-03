@@ -6,6 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+ArkBot/todo.txt
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
