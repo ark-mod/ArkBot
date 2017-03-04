@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,6 @@ namespace ArkBot.Commands
 
         Task Run(CommandEventArgs e);
         void Register(CommandBuilder command);
+        void Init(DiscordClient client);
     }
 }

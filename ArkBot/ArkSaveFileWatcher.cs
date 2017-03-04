@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace ArkBot
 {
-    public class ArkSaveFileWatcher : IDisposable
+    public class ArkSaveFileWatcher : IArkSaveFileWatcher
     {
         private FileSystemWatcher _watcher;
         private string _saveFilePath;
 
-        public string SaveFilePath
+        private string SaveFilePath
         {
             get
             {
@@ -29,18 +29,16 @@ namespace ArkBot
             }
         }
 
-        public delegate void ArkSaveFileChangedEventHandler(object sender, ArkSaveFileChangedEventArgs e);
-
-        public DateTime? LastChanged { get; private set; }
+        private DateTime? LastChanged { get; set; }
         public event ArkSaveFileChangedEventHandler Changed;
 
-        public ArkSaveFileWatcher()
+        public ArkSaveFileWatcher(string saveFilePath)
         {
             _watcher = new FileSystemWatcher();
             _watcher.Changed += _watcher_Changed;
             _watcher.Created += _watcher_Changed;
 
-            updateWatcher();
+            SaveFilePath = saveFilePath;
         }
 
         private void updateWatcher()
@@ -70,7 +68,7 @@ namespace ArkBot
         private void OnChanged()
         {
             LastChanged = DateTime.Now;
-            Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { SaveFileName = SaveFilePath });
+            Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { PathToLoad = SaveFilePath });
         }
 
         #region IDisposable Support

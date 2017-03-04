@@ -19,5 +19,6 @@
         string SteamOpenIdRedirectUri { get; set; }
         string SteamOpenIdRelyingServiceListenPrefix { get; set; }
         string TempFileOutputDirPath { get; set; }
+        bool DisableDeveloperFetchSaveData { get; set; }
     }
 }

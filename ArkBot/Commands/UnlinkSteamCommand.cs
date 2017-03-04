@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Database;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -27,15 +28,21 @@ namespace ArkBot.Commands
         public bool HideFromCommandList => false;
 
         private IConstants _constants;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
+        private DiscordClient _discord;
 
-        public UnlinkSteamCommand(IConstants constants, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public UnlinkSteamCommand(IConstants constants, EfDatabaseContextFactory databaseContextFactory)
         {
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
         }
 
         public void Register(CommandBuilder command) { }
+
+        public void Init(DiscordClient client)
+        {
+            _discord = client;
+        }
 
         public async Task Run(CommandEventArgs e)
         {
@@ -55,6 +62,27 @@ namespace ArkBot.Commands
 
                     context.Users.Remove(user);
                     var result = context.SaveChanges();
+
+                    //remove ark role from users when they link
+                    if (_discord?.Servers != null)
+                    {
+                        foreach (var server in _discord.Servers)
+                        {
+                            try
+                            {
+                                var duser = server.GetUser(e.User.Id);
+                                var role = server.FindRoles("ark", true).FirstOrDefault();
+                                if (duser != null && role == null) continue;
+
+                                if (duser.HasRole(role)) await duser.RemoveRoles(role);
+                            }
+                            catch(Discord.Net.HttpException)
+                            {
+                                //could be due to the order of roles on the server. bot role with "manage roles" permission must be higher up than the role it is trying to set
+                            }
+                        }
+                    }
+
                     await e.Channel.SendMessage($"<@{e.User.Id}>, your user is no longer linked with Steam.");
                 }
             }

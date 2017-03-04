@@ -24,8 +24,10 @@ namespace ArkBot.Helpers
 {
     public static class CommandHelper
     {
-        public static async Task SendAnnotatedMap(Channel channel, PointF[] points, string tempFileOutputDirPath)
+        public static async Task SendAnnotatedMap(Channel channel, PointF[] points, string tempFileOutputDirPath, float pointRadius = 5f, Brush pointBrush = null)
         {
+            if (pointBrush == null) pointBrush = Brushes.Magenta;
+
             //send map with locations marked
             var templatePath = @"Resources\theisland-template.png";
             if (!File.Exists(templatePath)) return;
@@ -50,7 +52,7 @@ namespace ArkBot.Helpers
                         var x = (float)(((loc.X - 10) / 10) * gx + rc.Left);
                         var y = (float)(((loc.Y - 10) / 10) * gy + rc.Top);
 
-                        g.FillCircle(Brushes.Magenta, x, y, 5f);
+                        g.FillCircle(pointBrush, x, y, pointRadius);
                     }
 
                     var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
@@ -141,7 +143,7 @@ namespace ArkBot.Helpers
         }
 
         //todo: this method does not really belong here and should be moved elsewhere
-        public static async Task<Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory, IArkContext _context)
+        public static async Task<Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, IArkContext _context)
         {
             using (var db = databaseContextFactory.Create())
             {
@@ -241,7 +243,7 @@ namespace ArkBot.Helpers
                 object converted;
                 try
                 {
-                    converted = pc.FormatProvider == null ? Convert.ChangeType(value, prop.PropertyType) : Convert.ChangeType(value, prop.PropertyType, pc.FormatProvider);
+                    converted = pc?.FormatProvider == null ? Convert.ChangeType(value, prop.PropertyType) : Convert.ChangeType(value, prop.PropertyType, pc.FormatProvider);
                 }
                 catch
                 {

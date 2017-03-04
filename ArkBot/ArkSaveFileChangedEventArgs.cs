@@ -8,6 +8,6 @@ namespace ArkBot
 {
     public class ArkSaveFileChangedEventArgs : EventArgs
     {
-        public string SaveFileName { get; set; }
+        public string PathToLoad { get; set; }
     }
 }

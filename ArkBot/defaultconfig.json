@@ -13,6 +13,7 @@
   "steamOpenIdRedirectUri": "http://<your public ip or domain>:<your open port>/openid/",
   "googleApiKey": "<google api key>",
   "steamApiKey": "<steam webapi key>",
+  "disableDeveloperFetchSaveData" :  false,
   "debug": false,
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,

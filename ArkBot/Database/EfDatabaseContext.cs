@@ -10,7 +10,7 @@ namespace ArkBot.Database
 {
     public class EfDatabaseContext : DbContext, IEfDatabaseContext
     {
-        public EfDatabaseContext() : base("EfDatabaseContext")
+        public EfDatabaseContext(string nameOrConnectionString = null) : base(nameOrConnectionString)
         {
         }
 

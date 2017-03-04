@@ -36,6 +36,8 @@ namespace ArkBot.Commands
             command.Parameter("name", ParameterType.Optional);
         }
 
+        public void Init(Discord.DiscordClient client) { }
+
         public async Task Run(CommandEventArgs e)
         {
             var name = e.GetArg("name")?.TrimStart('!').ToLower();

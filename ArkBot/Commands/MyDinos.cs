@@ -36,9 +36,9 @@ namespace ArkBot.Commands
         public bool HideFromCommandList => false;
 
         private IArkContext _context;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
 
-        public MyDinoHistoryCommand(IArkContext context, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public MyDinoHistoryCommand(IArkContext context, EfDatabaseContextFactory databaseContextFactory)
         {
             _context = context;
             _databaseContextFactory = databaseContextFactory;
@@ -48,6 +48,8 @@ namespace ArkBot.Commands
         {
             command.Parameter("optional", ParameterType.Multiple);
         }
+
+        public void Init(Discord.DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
@@ -152,7 +154,7 @@ namespace ArkBot.Commands
             {
                 using (var db = _databaseContextFactory.Create())
                 {
-                    var filtered = db.TamedCreatureLogEntries.Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId));
+                    var filtered = db.TamedCreatureLogEntries.Where(x => ((x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId)) && !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
 
                     if (args.Unavailable) filtered = filtered.Where(x => x.IsUnavailable);
                     else if (args.Dead) filtered = filtered.Where(x => x.IsConfirmedDead);
@@ -194,7 +196,7 @@ namespace ArkBot.Commands
                         else if (x.IsInCluster) sb.Append(" **[Uploaded]**");
                         else if (x.IsUnavailable && x.IsConfirmedDead == false && x.IsInCluster == false)
                         {
-                            sb.Append($" was last seen ***{x.LastSeen.ToStringWithRelativeDay()}*** at " + Invariant($"***{x.Latitude:N1}***, ***{x.Longitude:N1}***, ***altitude {_context.GetElevationAsText(x.Z)}***") + (x.ApproxFoodPercentage.HasValue ? $" with ***{x.ApproxFoodPercentage.Value:N0}% food remaining***" : "") + " and is now missing");
+                            sb.Append($" was last seen ***{x.LastSeen.ToStringWithRelativeDay()}*** at " + Invariant($"***{x.Latitude:N1}***, ***{x.Longitude:N1}***, ***altitude {_context.GetElevationAsText(x.Z)}***") + (x.ApproxFoodPercentage.HasValue ? $" with ***{(x.ApproxFoodPercentage.Value * 100):N0}% food remaining***" : "") + " and is now missing");
                         }
                         sb.AppendLine();
                     }

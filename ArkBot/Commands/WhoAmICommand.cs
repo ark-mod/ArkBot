@@ -27,9 +27,9 @@ namespace ArkBot.Commands
         public bool HideFromCommandList => false;
 
         private IConstants _constants;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
 
-        public WhoAmICommand(IConstants constants, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public WhoAmICommand(IConstants constants, EfDatabaseContextFactory databaseContextFactory)
         {
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
@@ -42,6 +42,8 @@ namespace ArkBot.Commands
             //        return ch.IsPrivate;
             //    });
         }
+
+        public void Init(Discord.DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
@@ -63,6 +65,7 @@ namespace ArkBot.Commands
                     if (user.SteamDisplayName != null) sb.AppendLine($"● **Steam nick:** {user.SteamDisplayName}");
                     if (user.RealName != null) sb.AppendLine($"● **Real name:** {user.RealName}");
 
+                    if (e.User.PrivateChannel == null) await e.User.CreatePMChannel();
                     foreach (var msg in sb.ToString().Partition(2000))
                     {
                         await e.User.PrivateChannel.SendMessage(msg.Trim('\r', '\n'));

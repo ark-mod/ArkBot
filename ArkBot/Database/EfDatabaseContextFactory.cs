@@ -1,26 +1,25 @@
 ﻿using Autofac;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ArkBot.Database
 {
-    //todo: this is a really crappy factory
-    public class DatabaseContextFactory<T>
-        where T: IDisposable
+    public class EfDatabaseContextFactory : IDbContextFactory<EfDatabaseContext>
     {
         private ILifetimeScope _scope;
 
-        public DatabaseContextFactory(ILifetimeScope scope)
+        public EfDatabaseContextFactory(ILifetimeScope scope)
         {
             _scope = scope;
         }
 
-        public T Create()
+        public EfDatabaseContext Create()
         {
-            return _scope.Resolve<T>();
+            return _scope.Resolve<EfDatabaseContext>();
         }
     }
 }

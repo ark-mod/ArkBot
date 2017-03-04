@@ -30,12 +30,14 @@ namespace ArkBot.Commands
 
         public void Register(CommandBuilder command) { }
 
+        public void Init(Discord.DiscordClient client) { }
+
         private IConfig _config;
         private IArkContext _context;
         private IConstants _constants;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
 
-        public CheckFoodCommand(IConfig config, IArkContext context, IConstants constants, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public CheckFoodCommand(IConfig config, IArkContext context, IConstants constants, EfDatabaseContextFactory databaseContextFactory)
         {
             _config = config;
             _context = context;

@@ -8,9 +8,9 @@ namespace ArkBot
 {
     public class Constants : IConstants
     {
-        public string DatabaseConnectionString => "type=embedded;storesdirectory=.\\Database;storename=Default";
+        public string DatabaseFilePath => ".\\Database\\Database.sdf";
+        public string DatabaseConnectionString => $"Data Source={DatabaseFilePath};Max Database Size=4091";
         public string OpenidresponsetemplatePath => @"Resources\openidresponse.html";
-        public string DatabaseDirectoryPath => ".\\Database";
         public string SavedStateFilePath => "savedstate.json";
         //todo: move this to config
         public string ServerIp => "85.227.28.132";

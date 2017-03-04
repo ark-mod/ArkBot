@@ -36,6 +36,8 @@ namespace ArkBot.Commands
 
         public void Register(CommandBuilder command) { }
 
+        public void Init(Discord.DiscordClient client) { }
+
         public async Task Run(CommandEventArgs e)
         {
             var status = await CommandHelper.GetServerStatus(_constants);

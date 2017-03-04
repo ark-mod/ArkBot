@@ -22,5 +22,7 @@ namespace ArkBot
         Task Initialize(ArkSpeciesAliases aliases = null);
         double? CalculateMaxFood(string speciesNameOrClass, int? wildLevelFood, int? tamedLevelFood, decimal? imprintingQuality);
         string GetElevationAsText(decimal z);
+        event ArkContext.ContextUpdated Updated;
+        void DebugTriggerOnChange();
     }
 }

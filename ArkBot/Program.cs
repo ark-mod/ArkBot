@@ -20,6 +20,8 @@ using ArkBot.OpenID;
 using RazorEngine.Configuration;
 using ArkBot.Services;
 using ArkBot.Database;
+using Discord;
+using System.Data.Entity;
 
 namespace ArkBot
 {
@@ -190,6 +192,18 @@ namespace ArkBot
             });
 
             var constants = new Constants();
+
+            if (config.Debug)
+            {
+                //we reset the state so that every run will be the same
+                if (File.Exists(constants.DatabaseFilePath)) File.Delete(constants.DatabaseFilePath);
+                if (File.Exists(constants.SavedStateFilePath)) File.Delete(constants.SavedStateFilePath);
+
+                //optionally use a saved database state
+                var databaseStateFilePath = Path.Combine(config.JsonOutputDirPath, "Database.state");
+                if (File.Exists(databaseStateFilePath)) File.Copy(databaseStateFilePath, constants.DatabaseFilePath);
+            }
+
             SavedState savedstate = null;
             try
             {
@@ -235,18 +249,20 @@ namespace ArkBot
             builder.RegisterInstance(savedstate).As<ISavedState>();
             builder.RegisterInstance(config).As<IConfig>();
             builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
-            builder.RegisterType<ArkContext>().As<IArkContext>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
+            builder.RegisterType<ArkContext>().As<IArkContext>()
+                .WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
             builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
             builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
-            builder.RegisterType<EfDatabaseContext>().As<IEfDatabaseContext>();
-            builder.RegisterType<DatabaseContextFactory<IEfDatabaseContext>>();
+            builder.RegisterType<EfDatabaseContext>().AsSelf().As<IEfDatabaseContext>()
+                .WithParameter(new TypedParameter(typeof(string), constants.DatabaseConnectionString));
+            builder.RegisterType<EfDatabaseContextFactory>();
             builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
 
             Container = builder.Build();
 
             //update database
-            System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(false, Container.Resolve<Migrations.Configuration>()));
+            System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
 
             AsyncContext.Run(() => MainAsync());
         }
@@ -263,13 +279,17 @@ namespace ArkBot
         {
             using (var scope = Container.BeginLifetimeScope())
             {
-                //create database immediately to support direct (non-ef) access in application
-                using (var context = scope.Resolve<IEfDatabaseContext>())
-                {
-                    var constants = scope.Resolve<IConstants>();
-                    if (!Directory.Exists(constants.DatabaseDirectoryPath)) Directory.CreateDirectory(constants.DatabaseDirectoryPath);
+                var config = scope.Resolve<IConfig>();
+                var constants = scope.Resolve<IConstants>();
+                var context = scope.Resolve<IArkContext>();
 
-                    context.Database.Initialize(false);
+                //create database immediately to support direct (non-ef) access in application
+                using (var db = scope.Resolve<IEfDatabaseContext>())
+                {
+                    var dir = Path.GetDirectoryName(constants.DatabaseFilePath);
+                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                    db.Database.Initialize(false);
                     //context.Database.Create();
                 }
 
@@ -282,6 +302,11 @@ namespace ArkBot
                     {
                         var key = Console.ReadKey(true);
                         if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
+                        else if(key.Key == ConsoleKey.N && config.Debug)
+                        {
+                            //if we are debugging, trigger new changed event
+                            context.DebugTriggerOnChange();
+                        }
                     }
 
                     await Task.Delay(100);

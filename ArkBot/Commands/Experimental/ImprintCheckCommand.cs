@@ -46,6 +46,8 @@ namespace ArkBot.Commands.Experimental
                 .Parameter("timeUntilNextImprint", ParameterType.Multiple);
         }
 
+        public void Init(Discord.DiscordClient client) { }
+
         public async Task Run(CommandEventArgs e)
         {
             var species = e.GetArg("species");

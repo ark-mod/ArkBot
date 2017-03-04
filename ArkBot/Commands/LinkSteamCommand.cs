@@ -31,9 +31,9 @@ namespace ArkBot.Commands
         private IConstants _constants;
         private IBarebonesSteamOpenId _openId;
         private IUrlShortenerService _urlShortenerService;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
 
-        public LinkSteamCommand(IConstants constants, IBarebonesSteamOpenId openId, IUrlShortenerService urlShortenerService, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public LinkSteamCommand(IConstants constants, IBarebonesSteamOpenId openId, IUrlShortenerService urlShortenerService, EfDatabaseContextFactory databaseContextFactory)
         {
             _constants = constants;
             _openId = openId;
@@ -42,6 +42,8 @@ namespace ArkBot.Commands
         }
 
         public void Register(CommandBuilder command) { }
+
+        public void Init(Discord.DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
@@ -64,6 +66,7 @@ namespace ArkBot.Commands
             var sb = new StringBuilder();
             sb.AppendLine($"**Proceed to link your Discord user with your Steam account by following this link:**");
             sb.AppendLine($"{(await _urlShortenerService?.ShortenUrl(state.StartUrl)) ?? state.StartUrl}");
+            if (e.User.PrivateChannel == null) await e.User.CreatePMChannel();
             var msg = await e.User.PrivateChannel.SendMessage(sb.ToString().Trim('\r', '\n'));
 
             if (e.Channel.IsPrivate) return;

@@ -82,6 +82,10 @@ namespace ArkBot
         [JsonProperty(PropertyName = "arkMultipliers")]
         [Description("Server specific multipliers.")]
         public ArkMultipliersConfigSection ArkMultipliers { get; set; }
+
+        [JsonProperty(PropertyName = "disableDeveloperFetchSaveData")]
+        [Description("Diable users in \"developer\"-role fetching json or save file data.")]
+        public bool DisableDeveloperFetchSaveData { get; set; }
     }
 
     public class ArkMultipliersConfigSection

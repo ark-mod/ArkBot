@@ -22,19 +22,28 @@ namespace ArkBot
 {
     public class ArkContext : IArkContext
     {
-        private ArkSaveFileWatcher _watcher;
+        private IArkSaveFileWatcher _watcher;
         private IConfig _config;
         private IConstants _constants;
         private ISavedState _savedstate;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
         private IPlayedTimeWatcher _playedTimeWatcher;
         public IProgress<string> Progress { get; private set; }
 
-        private string _jsonOutputDirPathTamed => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "tamed") : null;
-        private string _jsonOutputDirPathWild => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "wild") : null;
-        private string _jsonOutputDirPathTribes => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "tribes") : null;
-        private string _jsonOutputDirPathPlayers => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "players") : null;
-        private string _jsonOutputDirPathCluster => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, "cluster") : null;
+        public delegate void ContextUpdated(object sender, EventArgs e);
+        public event ContextUpdated Updated;
+
+        private const string _jsonSubDirTamed = "tamed";
+        private const string _jsonSubDirWild = "wild";
+        private const string _jsonSubDirTribes = "tribes";
+        private const string _jsonSubDirPlayers = "players";
+        private const string _jsonSubDirCluster = "cluster";
+
+        private string _jsonOutputDirPathTamed => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirTamed) : null;
+        private string _jsonOutputDirPathWild => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirWild) : null;
+        private string _jsonOutputDirPathTribes => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirTribes) : null;
+        private string _jsonOutputDirPathPlayers => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirPlayers) : null;
+        private string _jsonOutputDirPathCluster => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirCluster) : null;
 
         private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
 
@@ -96,8 +105,8 @@ namespace ArkBot
             IConfig config, 
             IConstants constants, 
             IProgress<string> progress,
-            ISavedState savedstate, 
-            DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory,
+            ISavedState savedstate,
+            EfDatabaseContextFactory databaseContextFactory,
             IPlayedTimeWatcher playedTimeWatcher)
         {
             _config = config;
@@ -138,17 +147,31 @@ namespace ArkBot
                 _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
 
                 //LogWildCreatures(); //skip doing this here in order to only log events that happen while the bot is running
-                //LogTamedCreaturesNew();
+                LogTamedCreaturesNew();
+
+                Updated?.Invoke(this, EventArgs.Empty);
             }
 
             if (!_config.DebugNoExtract)
             {
-                _watcher = new ArkSaveFileWatcher { SaveFilePath = _config.SaveFilePath };
+                _watcher = new ArkSaveFileWatcher(_config.SaveFilePath);
                 _watcher.Changed += _watcher_Changed;
+            }
+            else if (_config.Debug)
+            {
+                _watcher = new DebugFakeSaveFileWatcher(_config, TimeSpan.FromMinutes(1));
+                _watcher.Changed += _watcher_DebugFakeChanged;
             }
 
             _playedTimeWatcher.PlayedTimeUpdate += _playedTimeWatcher_PlayedTimeUpdate;
             _playedTimeWatcher.Start();
+        }
+
+        public void DebugTriggerOnChange()
+        {
+            if (!(_watcher is DebugFakeSaveFileWatcher)) return;
+
+            (_watcher as DebugFakeSaveFileWatcher).OnChanged();
         }
 
         private void _playedTimeWatcher_PlayedTimeUpdate(object sender, PlayedTimeWatcher.PlayedTimeEventArgs e)
@@ -184,15 +207,18 @@ namespace ArkBot
             }
         }
 
-        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData()
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(string jsonPathOverride = null)
         {
             //extract the save file data to json using ark-tools
-            Progress.Report("Extracting ARK gamedata...");
-            if (!_config.DebugNoExtract && !await ExtractSaveFileData()) return null;
+            if (!_config.DebugNoExtract)
+            {
+                Progress.Report("Extracting ARK gamedata...");
+                if (!await ExtractSaveFileData()) return null;
+            }
 
             //load the resulting json into memory
             Progress.Report("Loading json data into memory...");
-            var data = await LoadDataFromJson();
+            var data = await LoadDataFromJson(jsonPathOverride);
 
             return data;
         }
@@ -286,7 +312,7 @@ namespace ArkBot
             return success;
         }
 
-        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> LoadDataFromJson()
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> LoadDataFromJson(string jsonPathOverride = null)
         {
             try
             {
@@ -296,17 +322,17 @@ namespace ArkBot
                 {
                     new
                     {
-                        path = _jsonOutputDirPathTamed,
+                        path = jsonPathOverride != null ? Path.Combine(jsonPathOverride, _jsonSubDirTamed) : _jsonOutputDirPathTamed,
                         selector = (Func<string, Type>)((x) => x.Equals("classes", StringComparison.OrdinalIgnoreCase) ? typeof(CreatureClass[]) : typeof(TamedCreature[]))
                     },
                     new
                     {
-                        path = _jsonOutputDirPathWild,
+                        path = jsonPathOverride != null ? Path.Combine(jsonPathOverride, _jsonSubDirWild) : _jsonOutputDirPathWild,
                         selector = (Func<string, Type>)((x) => x.Equals("classes", StringComparison.OrdinalIgnoreCase) ? typeof(CreatureClass[]) : typeof(WildCreature[]))
                     },
-                    new { path = _jsonOutputDirPathTribes, selector = (Func<string, Type>)((x) => typeof(Tribe)) },
-                    new { path = _jsonOutputDirPathPlayers, selector = (Func<string, Type>)((x) => typeof(Player)) },
-                    new { path = _jsonOutputDirPathCluster, selector = (Func<string, Type>)((x) => typeof(Cluster)) }
+                    new { path = jsonPathOverride != null ? Path.Combine(jsonPathOverride, _jsonSubDirTribes) : _jsonOutputDirPathTribes, selector = (Func<string, Type>)((x) => typeof(Tribe)) },
+                    new { path = jsonPathOverride != null ? Path.Combine(jsonPathOverride, _jsonSubDirPlayers) : _jsonOutputDirPathPlayers, selector = (Func<string, Type>)((x) => typeof(Player)) },
+                    new { path = jsonPathOverride != null ? Path.Combine(jsonPathOverride, _jsonSubDirCluster) : _jsonOutputDirPathCluster, selector = (Func<string, Type>)((x) => typeof(Cluster)) }
                 };
 
                 foreach (var action in actions)
@@ -418,11 +444,21 @@ namespace ArkBot
             if (latestLog != null && (_latestTribeLog == null || (latestLog.Day > _latestTribeLog.Day || (latestLog.Day == _latestTribeLog.Day && latestLog.Time >= _latestTribeLog.Time)))) _latestTribeLog = latestLog;
         }
 
+        private async void _watcher_DebugFakeChanged(object sender, ArkSaveFileChangedEventArgs e)
+        {
+            await UpdateAll(e.PathToLoad);
+        }
+
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
+        {
+            await UpdateAll();
+        }
+
+        private async Task UpdateAll(string jsonPathOverride = null)
         {
             Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData();
+            var data = await ExtractAndLoadData(jsonPathOverride);
             if (data != null)
             {
                 ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
@@ -437,6 +473,8 @@ namespace ArkBot
 
                 LogWildCreatures();
                 LogTamedCreaturesNew();
+
+                Updated?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -462,7 +500,7 @@ namespace ArkBot
         private void LogTamedCreaturesNew()
         {
             var st = Stopwatch.StartNew();
-            using (var conn = new System.Data.SqlServerCe.SqlCeConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EfDatabaseContext"].ConnectionString))
+            using (var conn = new System.Data.SqlServerCe.SqlCeConnection(_constants.DatabaseConnectionString))
             {
                 conn.Open();
 
@@ -487,8 +525,8 @@ namespace ArkBot
 
                                 var getValues = new Func<Creature, object[]>(tame =>
                                 {
-                                    var maxFood = CalculateMaxFood(tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Food, tame.TamedLevels?.Food, tame.ImprintingQuality);
-                                    var approxFoodPercentage = tame.CurrentFood.HasValue && maxFood.HasValue ? (double)tame.CurrentFood.Value / maxFood.Value : (double?)null;
+                                    var maxFood = tame.CurrentFood.HasValue ? CalculateMaxFood(tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Food, tame.TamedLevels?.Food, tame.ImprintingQuality) : null;
+                                    var approxFoodPercentage = maxFood.HasValue ? (double)tame.CurrentFood.Value / maxFood.Value : (double?)null;
                                     return new[] {
                                         new { ordinal = ordinal(nameof(l.Id)), value = (object)tame.Id },
                                         new { ordinal = ordinal(nameof(l.LastSeen)), value = (object)LastUpdate },

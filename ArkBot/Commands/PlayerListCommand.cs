@@ -26,11 +26,11 @@ namespace ArkBot.Commands
         public bool DebugOnly => false;
         public bool HideFromCommandList => false;
 
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
         private IArkContext _context;
         private IConstants _constants;
 
-        public PlayerListCommand(DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory, IArkContext context, IConstants constants)
+        public PlayerListCommand(EfDatabaseContextFactory databaseContextFactory, IArkContext context, IConstants constants)
         {
             _databaseContextFactory = databaseContextFactory;
             _context = context;
@@ -41,6 +41,8 @@ namespace ArkBot.Commands
         {
             command.Parameter("optional", ParameterType.Multiple);
         }
+
+        public void Init(Discord.DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {

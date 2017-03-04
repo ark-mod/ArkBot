@@ -29,9 +29,9 @@ namespace ArkBot.Commands
 
         private IConstants _constants;
         private IArkContext _context;
-        private DatabaseContextFactory<IEfDatabaseContext> _databaseContextFactory;
+        private EfDatabaseContextFactory _databaseContextFactory;
 
-        public MyResourcesCommand(IArkContext context, IConstants constants, DatabaseContextFactory<IEfDatabaseContext> databaseContextFactory)
+        public MyResourcesCommand(IArkContext context, IConstants constants, EfDatabaseContextFactory databaseContextFactory)
         {
             _context = context;
             _constants = constants;
@@ -39,6 +39,8 @@ namespace ArkBot.Commands
     }
 
         public void Register(CommandBuilder command) { }
+
+        public void Init(Discord.DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {

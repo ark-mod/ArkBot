@@ -43,6 +43,8 @@ namespace ArkBot.Commands
             command.Parameter("optional", ParameterType.Multiple);
         }
 
+        public void Init(Discord.DiscordClient client) { }
+
         public async Task Run(CommandEventArgs e)
         {
             var take = 10;

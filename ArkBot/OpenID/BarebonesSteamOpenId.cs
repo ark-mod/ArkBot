@@ -163,15 +163,18 @@ namespace ArkBot.OpenID
             {
                 Task task;
                 _ongoingTasks.TryRemove(context.Request.RequestTraceIdentifier, out task);
-                OnSteamOpenIdCallback(successful, steamId, state.DiscordUserId);
-
-                if (_getHtmlContent != null)
+                if (state != null)
                 {
-                    var content = await _getHtmlContent(successful, steamId, state.DiscordUserId);
-                    var buffer = Encoding.UTF8.GetBytes(content);
-                    context.Response.ContentLength64 = buffer.Length;
-                    await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-                    context.Response.OutputStream.Close();
+                    OnSteamOpenIdCallback(successful, steamId, state.DiscordUserId);
+
+                    if (_getHtmlContent != null)
+                    {
+                        var content = await _getHtmlContent(successful, steamId, state.DiscordUserId);
+                        var buffer = Encoding.UTF8.GetBytes(content);
+                        context.Response.ContentLength64 = buffer.Length;
+                        await context.Response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                        context.Response.OutputStream.Close();
+                    }
                 }
             }
         }
