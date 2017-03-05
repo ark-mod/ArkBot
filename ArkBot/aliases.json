@@ -317,6 +317,11 @@
       "Leech_Character_C"
     ],
     [
+      "Leech Diseased",
+      "Leech_Character_Diseased_C",
+      "Diseased Leech"
+    ],
+    [
       "Leedsichthys"
     ],
     [
@@ -605,7 +610,7 @@
     ],
     [
       "Thylacoleo",
-      "Thylacoleo_Character_BP"
+      "Thylacoleo_Character_BP_C"
     ],
     [
       "Titanoboa",
