@@ -50,13 +50,14 @@ namespace ArkBot.Commands
         {
             var take = 10;
 
-            var args = CommandHelper.ParseArgs(e, new { Query = "", Exact = false, Species = false, Tribe = "", Owner = "", Skip = 0 }, x =>
+            var args = CommandHelper.ParseArgs(e, new { Query = "", Exact = false, Species = false, Tribe = "", Owner = "", Skip = 0, NewMap = false }, x =>
                 x.For(y => y.Query, noPrefix: true, untilNextToken: true, isRequired: true)
                 .For(y => y.Exact, flag: true)
                 .For(y => y.Species, flag: true)
                 .For(y => y.Tribe, untilNextToken: true)
                 .For(y => y.Owner, untilNextToken: true)
-                .For(y => y.Skip, defaultValue: 0));
+                .For(y => y.Skip, defaultValue: 0)
+                .For(y => y.NewMap, flag: true));
             if (args == null || args.Skip < 0 || string.IsNullOrWhiteSpace(args.Query) || args.Query.Length < 2)
             {
                 await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
@@ -135,7 +136,7 @@ namespace ArkBot.Commands
                 }
 
                 await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
-                await CommandHelper.SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.Longitude, (float)x.Latitude)).ToArray(), _config.TempFileOutputDirPath);
+                await CommandHelper.SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.Longitude, (float)x.Latitude)).ToArray(), _config.TempFileOutputDirPath, args.NewMap ? 10f : 5f, template: args.NewMap ? MapTemplate.Vectorized : MapTemplate.Sketch);
             }
         }
     }

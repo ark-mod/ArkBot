@@ -22,14 +22,16 @@ using System.Runtime.Serialization;
 
 namespace ArkBot.Helpers
 {
+    public enum MapTemplate { Sketch, Vectorized }
+
     public static class CommandHelper
     {
-        public static async Task SendAnnotatedMap(Channel channel, PointF[] points, string tempFileOutputDirPath, float pointRadius = 5f, Brush pointBrush = null)
+        public static async Task SendAnnotatedMap(Channel channel, PointF[] points, string tempFileOutputDirPath, float pointRadius = 5f, Brush pointBrush = null, MapTemplate template = MapTemplate.Sketch)
         {
             if (pointBrush == null) pointBrush = Brushes.Magenta;
 
             //send map with locations marked
-            var templatePath = @"Resources\theisland-template.png";
+            var templatePath = template == MapTemplate.Sketch ? @"Resources\theisland-template.png" : @"Resources\theisland-template2.png";
             if (!File.Exists(templatePath)) return;
 
             using (var image = Image.FromFile(templatePath))
@@ -46,13 +48,28 @@ namespace ArkBot.Helpers
                         //var x = (float)(((loc.X - rcf.Left) / rcf.Width) * rc.Width + rc.Left);
                         //var y = (float)(((loc.Y - rcf.Top) / rcf.Height) * rc.Height + rc.Top);
 
-                        var rc = new Rectangle(81, 86, 568, 552);
-                        var gx = rc.Width / 8f;
-                        var gy = rc.Height / 8f;
-                        var x = (float)(((loc.X - 10) / 10) * gx + rc.Left);
-                        var y = (float)(((loc.Y - 10) / 10) * gy + rc.Top);
+                        if (template == MapTemplate.Sketch)
+                        {
+                            var rc = new Rectangle(81, 86, 568, 552);
+                            var gx = rc.Width / 8f;
+                            var gy = rc.Height / 8f;
+                            var x = (float)(((loc.X - 10) / 10) * gx + rc.Left);
+                            var y = (float)(((loc.Y - 10) / 10) * gy + rc.Top);
 
-                        g.FillCircle(pointBrush, x, y, pointRadius);
+                            g.FillCircle(pointBrush, x, y, pointRadius);
+                        }
+                        else
+                        {
+                            //var rc = new Rectangle(81, 86, 568, 552);
+                            var rc = new Rectangle(0, 0, 1708, 1708);
+                            var rcf = new RectangleF(7.2f, 7.2f, (float)(92.6 - 7.2), (float)(92.6 - 7.2));
+                            var wx = rc.Width / rcf.Width;
+                            var wy = rc.Height / rcf.Height;
+                            var x = (loc.X - rcf.X) * wx;
+                            var y = (loc.Y - rcf.Y) * wy;
+
+                            g.FillCircle(pointBrush, x, y, pointRadius);
+                        }
                     }
 
                     var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);

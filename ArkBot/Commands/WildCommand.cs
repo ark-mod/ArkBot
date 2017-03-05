@@ -59,9 +59,10 @@ namespace ArkBot.Commands
 
             using (var context = _databaseContextFactory.Create())
             {
-                var args = CommandHelper.ParseArgs(e, new { CompareTo = DateTime.MinValue, Map = "" }, x =>
+                var args = CommandHelper.ParseArgs(e, new { CompareTo = DateTime.MinValue, Map = "", NewMap = false }, x =>
                     x.For(y => y.CompareTo, untilNextToken: true, formatProvider: CultureInfo.CurrentCulture)
-                    .For(y => y.Map, untilNextToken: true));
+                    .For(y => y.Map, untilNextToken: true)
+                    .For(y => y.NewMap, flag: true));
                 if (args == null || (((args.CompareTo == DateTime.MinValue || args.CompareTo > _context.LastUpdate) && (string.IsNullOrWhiteSpace(args.Map))) && e.Args.Length > 0))
                 {
                     await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
@@ -106,7 +107,7 @@ namespace ArkBot.Commands
                     }
                     else
                     {
-                        await CommandHelper.SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.lng, (float)x.lat)).ToArray(), _config.TempFileOutputDirPath, 2f);
+                        await CommandHelper.SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.lng, (float)x.lat)).ToArray(), _config.TempFileOutputDirPath, args.NewMap ? 5f : 2f, template: args.NewMap ? MapTemplate.Vectorized : MapTemplate.Sketch);
                     }
                 }
                 else
