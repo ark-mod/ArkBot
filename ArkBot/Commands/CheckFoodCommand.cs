@@ -51,14 +51,14 @@ namespace ArkBot.Commands
             if (player == null) return;
 
             var mydinos = _context.CreaturesNoRaft
-                .Where(x => (x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId))
+                .Where(x => ((x.PlayerId.HasValue && x.PlayerId.Value == player.Id) || (x.Team.HasValue && x.Team.Value == player.TribeId)) && !x.IsBaby)
                 .Select(x =>
                 {
                     //!_context.ArkSpeciesStatsData.SpeciesStats.Any(y => y.Name.Equals(x.SpeciesName, StringComparison.OrdinalIgnoreCase)) ? _context.ArkSpeciesStatsData.SpeciesStats.Select(y => new { name = y.Name, similarity = StatisticsHelper.CompareToCharacterSequence(x.Name, x.SpeciesName.ToCharArray()) }).OrderByDescending(y => y.similarity).FirstOrDefault()?.name : null;
                     return new
                     {
                         creature = x,
-                        maxFood = _context.CalculateMaxFood(x.SpeciesClass ?? x.SpeciesName, x.WildLevels?.Food, x.TamedLevels?.Food, x.ImprintingQuality)
+                        maxFood = _context.CalculateMaxStat(Data.ArkSpeciesStatsData.Stat.Food, x.SpeciesClass ?? x.SpeciesName, x.WildLevels?.Food, x.TamedLevels?.Food, x.ImprintingQuality, x.TamedIneffectivenessModifier)
                     };
                 })
                 .ToArray();
@@ -66,7 +66,6 @@ namespace ArkBot.Commands
                 .Where(x => x <= 1d).OrderBy(x => x).ToArray();
             var starving = mydinos?.Where(x => x.creature.CurrentFood.HasValue && x.maxFood.HasValue).Select(x => new { creature = x.creature, p = (double)x.creature.CurrentFood.Value / x.maxFood.Value })
                 .Where(x => x.p <= (1 / 2d)).OrderBy(x => x.p).ToArray(); //any dino below 1/2 food is considered to be starving
-            //todo: babys are not idenftified in this code and as such are always considered to be starving
             if (foodStatus.Length <= 0)
             {
                 await e.Channel.SendMessage($"<@{e.User.Id}>, we could not get the food status of your dinos! :(");

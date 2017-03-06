@@ -231,6 +231,10 @@
     <Compile Include="Migrations\201702280520255_UserPlayed.Designer.cs">
       <DependentUpon>201702280520255_UserPlayed.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201703061349270_TamesLogHealthPercentage.cs" />
+    <Compile Include="Migrations\201703061349270_TamesLogHealthPercentage.Designer.cs">
+      <DependentUpon>201703061349270_TamesLogHealthPercentage.cs</DependentUpon>
+    </Compile>
     <Compile Include="SavedState.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Constants.cs" />
@@ -321,6 +325,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201702280520255_UserPlayed.resx">
       <DependentUpon>201702280520255_UserPlayed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703061349270_TamesLogHealthPercentage.resx">
+      <DependentUpon>201703061349270_TamesLogHealthPercentage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

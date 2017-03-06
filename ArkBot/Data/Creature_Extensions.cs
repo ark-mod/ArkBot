@@ -14,5 +14,8 @@ namespace ArkBot.Data
 
         [JsonProperty(PropertyName = "speciesName")]
         public string SpeciesName { get; set; }
+
+        [JsonIgnore]
+        public double TamingEffectiveness => (double)(1 / (1 + (TamedIneffectivenessModifier ?? 0m)));
     }
 }

@@ -145,9 +145,12 @@ namespace ArkBot.Commands.Experimental
                     return;
                 }
 
+                var dir = Path.GetDirectoryName(_config.SaveFilePath);
                 var files = new[]
                 {
                     File.Exists(_config.SaveFilePath) ? new Tuple<string, string, string[]>("", "", new [] { _config.SaveFilePath }) : null,
+                    Directory.Exists(dir) ? new Tuple<string, string, string[]>("", "", Directory.GetFiles(dir, "*.arkprofile", SearchOption.TopDirectoryOnly)) : null,
+                    Directory.Exists(dir) ? new Tuple<string, string, string[]>("", "", Directory.GetFiles(dir, "*.arktribe", SearchOption.TopDirectoryOnly)) : null,
                     new Tuple<string, string, string[]>(_config.ClusterSavePath, "cluster", Directory.GetFiles(_config.ClusterSavePath, "*", SearchOption.AllDirectories))
                 }.Where(x => x != null && x.Item2 != null).ToArray();
                 if (files == null || !files.Any(x => x.Item2 != null && x.Item2.Length > 0))

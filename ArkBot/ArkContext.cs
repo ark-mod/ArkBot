@@ -511,7 +511,7 @@ namespace ArkBot
                         var l = new Database.Model.TamedCreatureLogEntry();
 
                         //add tamed creatures to database
-                        var tamed = Creatures?.OrderBy(x => x.TamedTime).GroupBy(x => x.Id).Select(x => x.FirstOrDefault()).ToArray();
+                        var tamed = CreaturesNoRaft?.OrderBy(x => x.TamedTime).GroupBy(x => x.Id).Select(x => x.FirstOrDefault()).ToArray();
                         if (tamed == null || tamed.Length == 0) return;
 
                         using (var command = conn.CreateCommand())
@@ -525,8 +525,12 @@ namespace ArkBot
 
                                 var getValues = new Func<Creature, object[]>(tame =>
                                 {
-                                    var maxFood = tame.CurrentFood.HasValue ? CalculateMaxFood(tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Food, tame.TamedLevels?.Food, tame.ImprintingQuality) : null;
-                                    var approxFoodPercentage = maxFood.HasValue ? (double)tame.CurrentFood.Value / maxFood.Value : (double?)null;
+                                    var maxFood = CalculateMaxStat(ArkSpeciesStatsData.Stat.Food, tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Food, tame.TamedLevels?.Food, tame.ImprintingQuality, tame.TamedIneffectivenessModifier);
+                                    var maxHealth = CalculateMaxStat(ArkSpeciesStatsData.Stat.Health, tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Health, tame.TamedLevels?.Health, tame.ImprintingQuality, tame.TamedIneffectivenessModifier);
+                                    var currentFood = tame.CurrentFood.HasValue ? (double)tame.CurrentFood.Value : maxFood; //todo: does no value actually mean max or is it the opposite (no food)
+                                    var currentHealth = tame.CurrentHealth.HasValue ? (double)tame.CurrentHealth.Value : maxHealth; //todo: does no value actually mean max or is it the opposite (no health)
+                                    var approxFoodPercentage = maxFood.HasValue && currentFood.HasValue && maxFood.Value > 0 ? (currentFood.Value / maxFood.Value).Clamp(min: 0, max: 1) : (double?)null;
+                                    var approxHealthPercentage = maxHealth.HasValue && currentHealth.HasValue && maxFood.Value > 0 ? (currentHealth.Value / maxHealth.Value).Clamp(min: 0, max: 1) : (double?)null;
                                     return new[] {
                                         new { ordinal = ordinal(nameof(l.Id)), value = (object)tame.Id },
                                         new { ordinal = ordinal(nameof(l.LastSeen)), value = (object)LastUpdate },
@@ -546,6 +550,7 @@ namespace ArkBot
                                         new { ordinal = ordinal(nameof(l.FullLevel)), value = (object)tame.FullLevel },
                                         new { ordinal = ordinal(nameof(l.Experience)), value = (object)tame.Experience },
                                         new { ordinal = ordinal(nameof(l.ApproxFoodPercentage)), value = (object)approxFoodPercentage },
+                                        new { ordinal = ordinal(nameof(l.ApproxHealthPercentage)), value = (object)approxHealthPercentage },
                                         new { ordinal = ordinal(nameof(l.ImprintingQuality)), value = (object)tame.ImprintingQuality },
                                         new { ordinal = ordinal(nameof(l.TamedAtTime)), value = (object)tame.TamedAtTime },
                                         new { ordinal = ordinal(nameof(l.TamedTime)), value = (object)tame.TamedTime },
@@ -812,15 +817,15 @@ namespace ArkBot
         //    Debug.WriteLine($"{nameof(LogTamedCreatures)} finished in {st.ElapsedMilliseconds:N0} ms");
         //}
 
-        public double? CalculateMaxFood(string speciesNameOrClass, int? wildLevelFood, int? tamedLevelFood, decimal? imprintingQuality)
+        public double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier)
         {
             var speciesAliases = SpeciesAliases?.GetAliases(speciesNameOrClass) ?? new[] { speciesNameOrClass };
             return ArkSpeciesStatsData?.GetMaxValue(
                             speciesAliases, //a list of alternative species names
-                            Data.ArkSpeciesStatsData.Stat.Food,
-                            wildLevelFood ?? 0,
-                            tamedLevelFood ?? 0,
-                            1d, //todo: taming efficiency is missing from ark-tools (?)
+                            stat,
+                            wildLevelStat ?? 0,
+                            tamedLevelStat ?? 0,
+                            (double)(1 / (1 + (tamedIneffectivenessModifier ?? 0m))),
                             (double)(imprintingQuality ?? 0m));
         }
 

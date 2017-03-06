@@ -12,6 +12,13 @@ namespace ArkBot.Database
     {
         private ILifetimeScope _scope;
 
+        /// <summary>
+        /// Dont use this constructor. Only for Migrations.
+        /// </summary>
+        public EfDatabaseContextFactory()
+        {
+        }
+
         public EfDatabaseContextFactory(ILifetimeScope scope)
         {
             _scope = scope;
@@ -19,7 +26,7 @@ namespace ArkBot.Database
 
         public EfDatabaseContext Create()
         {
-            return _scope.Resolve<EfDatabaseContext>();
+            return _scope != null ? _scope.Resolve<EfDatabaseContext>() : /*Only for Migrations*/ new EfDatabaseContext(new Constants().DatabaseConnectionString);
         }
     }
 }

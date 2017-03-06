@@ -20,7 +20,7 @@ namespace ArkBot
         ArkSpeciesAliases SpeciesAliases { get; set; }
         Tribe[] Tribes { get; }
         Task Initialize(ArkSpeciesAliases aliases = null);
-        double? CalculateMaxFood(string speciesNameOrClass, int? wildLevelFood, int? tamedLevelFood, decimal? imprintingQuality);
+        double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier);
         string GetElevationAsText(decimal z);
         event ArkContext.ContextUpdated Updated;
         void DebugTriggerOnChange();

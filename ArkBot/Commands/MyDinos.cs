@@ -196,7 +196,12 @@ namespace ArkBot.Commands
                         else if (x.IsInCluster) sb.Append(" **[Uploaded]**");
                         else if (x.IsUnavailable && x.IsConfirmedDead == false && x.IsInCluster == false)
                         {
-                            sb.Append($" was last seen ***{x.LastSeen.ToStringWithRelativeDay()}*** at " + Invariant($"***{x.Latitude:N1}***, ***{x.Longitude:N1}***, ***altitude {_context.GetElevationAsText(x.Z)}***") + (x.ApproxFoodPercentage.HasValue ? $" with ***{(x.ApproxFoodPercentage.Value * 100):N0}% food remaining***" : "") + " and is now missing");
+                            //(x.ApproxFoodPercentage.HasValue ? $" with ***{(x.ApproxFoodPercentage.Value * 100):N0}% food remaining***" : "")
+                            var stats = new[] {
+                                (x.ApproxHealthPercentage.HasValue ? $"***{(x.ApproxHealthPercentage.Value * 100):N0}% health" : null),
+                                (x.ApproxFoodPercentage.HasValue ? $"***{(x.ApproxFoodPercentage.Value * 100):N0}% food" : null)
+                            }.Where(y => y != null).ToArray().Join((n, l) => n == l ? "-*** and " : "-***, ");
+                            sb.Append($" was last seen ***{x.LastSeen.ToStringWithRelativeDay()}*** at " + Invariant($"***{x.Latitude:N1}***, ***{x.Longitude:N1}***, ***altitude {_context.GetElevationAsText(x.Z)}***") + (!string.IsNullOrEmpty(stats) ? $" with {stats} remaining***" : "") + " and is now missing");
                         }
                         sb.AppendLine();
                     }

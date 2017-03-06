@@ -78,8 +78,20 @@ namespace ArkBot.Data
         public decimal? Experience { get; set; }
         [JsonProperty(PropertyName = "currentFood")]
         public decimal? CurrentFood { get; set; }
+        [JsonProperty(PropertyName = "currentHealth")]
+        public decimal? CurrentHealth { get; set; }
         [JsonProperty(PropertyName = "imprintingQuality")]
         public decimal? ImprintingQuality { get; set; }
+        [JsonProperty(PropertyName = "tamedIneffectivenessModifier")]
+        public decimal? TamedIneffectivenessModifier { get; set; }
+        [JsonProperty(PropertyName = "isBaby")]
+        public bool IsBaby { get; set; }
+        [JsonProperty(PropertyName = "babyAge")]
+        public decimal? BabyAge { get; set; }
+        [JsonProperty(PropertyName = "babyNextCuddleTime")]
+        public decimal? BabyNextCuddleTime { get; set; }
+
+        //currentHealth
 
         //tamed creatures
         //        {

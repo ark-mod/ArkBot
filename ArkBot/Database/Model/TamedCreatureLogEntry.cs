@@ -35,6 +35,7 @@ namespace ArkBot.Database.Model
         public int? FullLevel { get; set; }
         public decimal? Experience { get; set; }
         public double? ApproxFoodPercentage { get; set; }
+        public double? ApproxHealthPercentage { get; set; }
         public decimal? ImprintingQuality { get; set; }
         public string SpeciesClass { get; set; }
         public bool IsConfirmedDead { get; set; }
