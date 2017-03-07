@@ -169,5 +169,33 @@ namespace ArkBot.Tests
 
             Assert.AreEqual(true, parsed.Flag1);
         }
+
+        [TestMethod]
+        public void ParseArgs_NoPrefixAfterConstantLengthTokens()
+        {
+            var args = new[] { "flag1", "some", "text" };
+
+            var parsed = CommandHelper.ParseArgs(args, null, new { Flag1 = false, Text = "" }, x =>
+                x.For(y => y.Flag1, flag: true)
+                .For(y => y.Text, noPrefix: true, untilNextToken: true));
+
+            Assert.AreEqual(true, parsed.Flag1);
+            Assert.AreEqual("some text", parsed.Text);
+        }
+
+        [TestMethod]
+        public void ParseArgs_NoPrefixButPreferPrefix()
+        {
+            var args = new[] { "flag1", "prefix", "some", "text" };
+
+            var parsed = CommandHelper.ParseArgs(args, null, new { Flag1 = false, Text = "", Prefix = "" }, x =>
+                x.For(y => y.Flag1, flag: true)
+                .For(y => y.Text, noPrefix: true, untilNextToken: true)
+                .For(y => y.Prefix, untilNextToken: true));
+
+            Assert.AreEqual(true, parsed.Flag1);
+            Assert.AreEqual("some text", parsed.Prefix);
+            Assert.IsNull(parsed.Text);
+        }
     }
 }

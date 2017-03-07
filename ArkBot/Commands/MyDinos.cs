@@ -196,7 +196,6 @@ namespace ArkBot.Commands
                         else if (x.IsInCluster) sb.Append(" **[Uploaded]**");
                         else if (x.IsUnavailable && x.IsConfirmedDead == false && x.IsInCluster == false)
                         {
-                            //(x.ApproxFoodPercentage.HasValue ? $" with ***{(x.ApproxFoodPercentage.Value * 100):N0}% food remaining***" : "")
                             var stats = new[] {
                                 (x.ApproxHealthPercentage.HasValue ? $"***{(x.ApproxHealthPercentage.Value * 100):N0}% health" : null),
                                 (x.ApproxFoodPercentage.HasValue ? $"***{(x.ApproxFoodPercentage.Value * 100):N0}% food" : null)

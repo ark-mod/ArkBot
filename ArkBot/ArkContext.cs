@@ -385,7 +385,6 @@ namespace ArkBot
                     if(int.TryParse(x.Item1, out tribeId)) tribe.Id = tribeId;
 
                     ParseTribeLogs(tribe.TribeLog, tribe.Id ?? -1, tribe.Name);
-                    tribe.TribeLog = null;
 
                     return tribe;
                 }).ToArray();
@@ -610,7 +609,7 @@ namespace ArkBot
                                                 if (isConfirmedDead)
                                                 {
                                                     //this could end up picking the wrong log, or the same log for two creatures, but we lack the information to make a better guess
-                                                    var mostProbableRelatedLog = relatedLogs.OrderBy(x => x.Level - (fullLevel ?? baseLevel)).FirstOrDefault()?.Message;
+                                                    var mostProbableRelatedLog = relatedLogs.OrderBy(x => x.Level - (fullLevel ?? baseLevel)).FirstOrDefault()?.Raw;
                                                     resultSet.SetString(ordinal(nameof(l.RelatedLogEntries)), mostProbableRelatedLog);
                                                 }
 

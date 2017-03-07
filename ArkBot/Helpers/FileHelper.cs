@@ -19,6 +19,22 @@ namespace ArkBot.Helpers
             }
         }
 
+        public static string GetAvailableFilePathSequential(string filePath)
+        {
+            if (!File.Exists(filePath)) return filePath;
+
+            var ext = Path.GetExtension(filePath);
+            var filename = string.IsNullOrEmpty(ext) ? filePath : filePath.Substring(0, filePath.Length - ext.Length);
+            string path = null;
+            var n = 0;
+            while (true)
+            {
+                path = string.Format(@"{0}{1}{2}", filename, (n > 0 ? "-" + n.ToString("000") : ""), ext);
+                if (!File.Exists(path)) return path;
+                else n++;
+            }
+        }
+
         public static string ToFileSize(this long value)
         {
             return ToFileSize((double)value);

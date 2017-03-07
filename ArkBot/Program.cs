@@ -251,7 +251,7 @@ namespace ArkBot
             builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
             builder.RegisterType<ArkContext>().As<IArkContext>()
                 .WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
-            builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().SingleInstance()
+            builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().AsSelf().SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
             builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
             builder.RegisterType<EfDatabaseContext>().AsSelf().As<IEfDatabaseContext>()

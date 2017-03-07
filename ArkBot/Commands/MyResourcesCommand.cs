@@ -50,6 +50,31 @@ namespace ArkBot.Commands
             var inv = (player.Inventory ?? new EntityNameWithCount[] { });
             if (player.TribeId.HasValue) inv = inv.Concat(_context.Tribes.FirstOrDefault(x => x.Id.HasValue && x.Id == player.TribeId.Value)?.Items ?? new EntityNameWithCount[] { }).ToArray();
 
+
+            var result = Get(player?.Id, player?.TribeId);
+
+            if (result == null)
+            {
+                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no resources! :(");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these major resources**");
+            sb.Append(result);
+
+            await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+        }
+
+        public string Get(int? playerId, int? tribeId)
+        {
+            if (playerId == null && tribeId == null) return null; //both cannot be null
+
+            var player = playerId.HasValue ? _context.Players?.FirstOrDefault(x => x.Id == playerId.Value) : null;
+            var tribe = tribeId.HasValue ? _context.Tribes?.FirstOrDefault(x => x.Id == tribeId.Value) : null;
+
+            var inv = new[] { player?.Inventory, tribe?.Items }.Where(x => x != null).SelectMany(x => x).ToArray();
+
             var includedResources = new[]
             {
                 "Hide", "Thatch", "Cementing Paste", "Fiber", "Narcotic", "Spoiled Meat", "Raw Meat",
@@ -77,22 +102,17 @@ namespace ArkBot.Commands
 
             resources = (n.Length > 0 ? resources.Concat(n) : resources).OrderBy(x => x.Name).ToList();
 
-            if (resources.Count <= 0)
-            {
-                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no resources! :(");
-                return;
-            }
+            if (resources.Count == 0) return null;
 
             var sb = new StringBuilder();
-            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these major resources**");
-
+            
             sb.AppendLine("```");
             sb.AppendLine(FixedWidthTableHelper.ToString(resources, x => x
                 .For(y => y.Name, "Type")
                 .For(y => y.Count, null, 1, "N0")));
             sb.AppendLine("```");
 
-            await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+            return sb.ToString();
         }
     }
 }

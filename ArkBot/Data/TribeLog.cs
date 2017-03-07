@@ -13,7 +13,15 @@ namespace ArkBot.Data
         public TimeSpan Time { get; set; }
         public string Message { get; set; }
 
+        public string Raw { get; set; }
+
         private static Regex _rParseLog = new Regex(@"^Day\s+(?<day>\d+),\s+(?<hour>\d{2,2})\:(?<minute>\d{2,2})\:(?<second>\d{2,2})\:\s+(?<message>.+)$", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+        private static Regex _rRemoveColors = new Regex(@"((\<RichColor Color\=\""\d+,\s*\d+,\s*\d+,\s*\d+\""\>)|(\<\/\>))", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+
+        public string ToStringPretty()
+        {
+            return $"Day {Day}, {Time:hh':'mm':'ss}: {_rRemoveColors.Replace(Message, "").TrimEnd('!')}";
+        }
 
         public static TribeLog FromLog(string log)
         {
@@ -26,7 +34,8 @@ namespace ArkBot.Data
                 {
                     Day = int.Parse(m.Groups["day"].Value),
                     Time = new TimeSpan(int.Parse(m.Groups["hour"].Value), int.Parse(m.Groups["minute"].Value), int.Parse(m.Groups["second"].Value)),
-                    Message = log
+                    Message = m.Groups["message"].Value,
+                    Raw = log
                 };
                 return item;
             }
@@ -70,7 +79,8 @@ namespace ArkBot.Data
                     SpeciesName = m.Groups["species"].Value,
                     KilledBy = m.Groups["killedBy"].Success ? m.Groups["killedBy"].Value : null,
                     KilledByLevel = m.Groups["killedByLevel"].Success ? int.Parse(m.Groups["killedByLevel"].Value) : (int?)null,
-                    Message = log
+                    Message = null,
+                    Raw = log
                 };
                 return item;
             }

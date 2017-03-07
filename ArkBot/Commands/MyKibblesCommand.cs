@@ -49,8 +49,33 @@ namespace ArkBot.Commands
             var player = await CommandHelper.GetCurrentPlayerOrSendErrorMessage(e, _databaseContextFactory, _context);
             if (player == null) return;
 
-            var inv = (player.Inventory ?? new EntityNameWithCount[] { });
-            if (player.TribeId.HasValue) inv = inv.Concat(_context.Tribes.FirstOrDefault(x => x.Id.HasValue && x.Id == player.TribeId.Value)?.Items ?? new EntityNameWithCount[] { }).ToArray();
+            //var inv = (player.Inventory ?? new EntityNameWithCount[] { });
+            //if (player.TribeId.HasValue) inv = inv.Concat(_context.Tribes.FirstOrDefault(x => x.Id.HasValue && x.Id == player.TribeId.Value)?.Items ?? new EntityNameWithCount[] { }).ToArray();
+
+            var result = Get(player?.Id, player?.TribeId, myEggs);
+
+            var type = myEggs ? "eggs" : "kibbles";
+            if (result == null)
+            {
+                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no {type}! :(");
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these {type}**");
+            sb.Append(result);
+
+            await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+        }
+
+        internal string Get(int? playerId, int? tribeId, bool sortByEggs = false)
+        {
+            if (playerId == null && tribeId == null) return null; //both cannot be null
+
+            var player = playerId.HasValue ? _context.Players?.FirstOrDefault(x => x.Id == playerId.Value) : null;
+            var tribe = tribeId.HasValue ? _context.Tribes?.FirstOrDefault(x => x.Id == tribeId.Value) : null;
+
+            var inv = new[] { player?.Inventory, tribe?.Items }.Where(x => x != null).SelectMany(x => x).ToArray();
 
             var _rEgg = new Regex(@"^(?<name>.+?)\s+Egg$", RegexOptions.Singleline);
             var _rKibble = new Regex(@"^Kibble\s+\((?<name>.+?)\s+Egg\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -84,19 +109,11 @@ namespace ArkBot.Commands
                 Name = x.Name,
                 Count = 0,
                 EggCount = x.Count
-            })).OrderByDescending(x => myEggs ? x.EggCount : x.Count).ThenByDescending(x => myEggs ? x.Count : x.EggCount).ToArray();
+            })).OrderByDescending(x => sortByEggs ? x.EggCount : x.Count).ThenByDescending(x => sortByEggs ? x.Count : x.EggCount).ToArray();
 
-            var type = myEggs ? "eggs" : "kibbles";
-
-            if (results.Length <= 0)
-            {
-                await e.Channel.SendMessage($"<@{e.User.Id}>, {(player.TribeId.HasValue ? "your tribe have" : "you have")} no {type}! :(");
-                return;
-            }
+            if (results.Length == 0) return null;
 
             var sb = new StringBuilder();
-            sb.AppendLine($"**{(player.TribeId.HasValue ? "Your tribe have" : "You have")} these {type}**");
-
             sb.AppendLine("```");
             sb.AppendLine(FixedWidthTableHelper.ToString(results, x => x
                 .For(y => y.Name, "Type")
@@ -104,7 +121,7 @@ namespace ArkBot.Commands
                 .For(y => y.Count, "Kibbles", 1, "N0", total: true)));
             sb.AppendLine("```");
 
-            await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+            return sb.ToString();
         }
     }
 }

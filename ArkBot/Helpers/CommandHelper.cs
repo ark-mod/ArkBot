@@ -253,7 +253,7 @@ namespace ArkBot.Helpers
                     else
                     {
                         value = pc?.Flag == true ? true.ToString() : list[index.Value + 1];
-                        nextNoPrefix = index.Value + 1;
+                        nextNoPrefix = index.Value + (pc?.Flag == true ? 0 : 1);
                     }
                 }
 
@@ -324,6 +324,7 @@ namespace ArkBot.Helpers
 
             public void Add(string name, object defaultValue, string named, bool untilNextToken, bool noPrefix, bool isRequired, bool flag, IFormatProvider formatProvider)
             {
+                if (Properties.ContainsKey(name)) throw new ApplicationException($"{nameof(ParseArgsConfiguration)}.{nameof(Add)}: Adding multiple configurations for the same property ('{name}') is not supported!");
                 Properties.Add(name, new ParseArgsConfigurationProperty { Named = named, DefaultValue = defaultValue, UntilNextToken = untilNextToken, NoPrefix = noPrefix, IsRequired = isRequired, Flag = flag, FormatProvider = formatProvider });
             }
 

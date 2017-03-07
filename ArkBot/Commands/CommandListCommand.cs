@@ -25,6 +25,7 @@ namespace ArkBot.Commands
         public IEnumerable<ICommand> Commands { get; set; }
 
         private IConfig _config;
+        private Discord.DiscordClient _discord;
 
         public CommandListCommand(IConfig config)
         {
@@ -36,7 +37,10 @@ namespace ArkBot.Commands
             command.Parameter("name", ParameterType.Optional);
         }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(Discord.DiscordClient client)
+        {
+            _discord = client;
+        }
 
         public async Task Run(CommandEventArgs e)
         {
@@ -54,6 +58,11 @@ namespace ArkBot.Commands
                 {
                     if (command.HideFromCommandList || (command.DebugOnly && !_config.Debug)) continue;
 
+                    var rrc = command as IRoleRestrictedCommand;
+                    if (rrc != null && (!e.Channel.IsPrivate || (rrc.ForRoles != null && rrc.ForRoles.Length > 0 
+                        && !_discord.Servers.Any(x => x.Roles.Any(y => y != null && rrc.ForRoles.Contains(y.Name, StringComparer.OrdinalIgnoreCase) == true && y.Members.Any(z => z.Id == e.User.Id))))))
+                        continue;
+
                     sb.AppendLine($"● **!{command.Name}**" + (!string.IsNullOrWhiteSpace(command.Description) ? $": {command.Description}" : ""));
                     if (!string.IsNullOrWhiteSpace(command.SyntaxHelp)) sb.AppendLine($"Syntax: **!{command.Name}** {command.SyntaxHelp}");
                 }
@@ -69,7 +78,13 @@ namespace ArkBot.Commands
                 }
                 else
                 {
-                    if(command.UsageExamples == null || command.UsageExamples.Length <= 0)
+                    var rrc = command as IRoleRestrictedCommand;
+                    if (rrc != null && (!e.Channel.IsPrivate || (rrc.ForRoles != null && rrc.ForRoles.Length > 0
+                        && !_discord.Servers.Any(x => x.Roles.Any(y => y != null && rrc.ForRoles.Contains(y.Name, StringComparer.OrdinalIgnoreCase) == true && y.Members.Any(z => z.Id == e.User.Id))))))
+                    {
+                        sb.AppendLine($"**The specified command is only available to some roles and using a private channel.**");
+                    }
+                    else if (command.UsageExamples == null || command.UsageExamples.Length <= 0)
                     {
                         sb.AppendLine($"**The specified command does not have any usage examples :(**");
                     }

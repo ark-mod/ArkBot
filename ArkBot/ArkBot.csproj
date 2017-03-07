@@ -204,6 +204,8 @@
     <Compile Include="ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />
+    <Compile Include="Commands\Admin\AdminCheckCommand.cs" />
+    <Compile Include="Commands\IRoleRestrictedCommand.cs" />
     <Compile Include="DebugFakeSaveFileWatcher.cs" />
     <Compile Include="ArkSaveFileWatcher.cs" />
     <Compile Include="Commands\CommandListCommand.cs" />
@@ -225,6 +227,7 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Database\EfDatabaseContextFactory.cs" />
     <Compile Include="Database\Model\PlayedEntry.cs" />
+    <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="IArkSaveFileWatcher.cs" />
     <Compile Include="ISavedState.cs" />
     <Compile Include="Migrations\201702280520255_UserPlayed.cs" />
