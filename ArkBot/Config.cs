@@ -86,6 +86,14 @@ namespace ArkBot
         [JsonProperty(PropertyName = "disableDeveloperFetchSaveData")]
         [Description("Diable users in \"developer\"-role fetching json or save file data.")]
         public bool DisableDeveloperFetchSaveData { get; set; }
+
+        [JsonProperty(PropertyName = "adminRoleName")]
+        [Description("The name of the admin role in Discord.")]
+        public string AdminRoleName { get; set; }
+
+        [JsonProperty(PropertyName = "developerRoleName")]
+        [Description("The name of the developer role in Discord.")]
+        public string DeveloperRoleName { get; set; }
     }
 
     public class ArkMultipliersConfigSection

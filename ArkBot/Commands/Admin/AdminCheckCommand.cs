@@ -38,7 +38,7 @@ namespace ArkBot.Commands.Experimental
         public bool DebugOnly => false;
         public bool HideFromCommandList => false;
 
-        public string[] ForRoles => new[] { "admin", "developer" };
+        public string[] ForRoles => new[] { _config.AdminRoleName, _config.DeveloperRoleName };
 
         private IArkContext _context;
         private IConfig _config;

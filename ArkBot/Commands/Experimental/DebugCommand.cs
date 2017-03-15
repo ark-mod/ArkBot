@@ -41,7 +41,7 @@ namespace ArkBot.Commands.Experimental
 
         public void Register(CommandBuilder command)
         {
-            command.AddCheck((a, b, c) => c.Client.Servers.Any(x => x.Roles.Any(y => y != null && y.Name.Equals("developer") && y.Members.Any(z => z.Id == b.Id))), null)
+            command.AddCheck((a, b, c) => c.Client.Servers.Any(x => x.Roles.Any(y => y != null && y.Name.Equals(_config.DeveloperRoleName) && y.Members.Any(z => z.Id == b.Id))), null)
                 .Parameter("optional", ParameterType.Optional)
                 .Hide();
         }
