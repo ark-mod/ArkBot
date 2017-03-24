@@ -117,7 +117,7 @@ namespace ArkBot.Helpers
             return false;
         }
 
-        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(IConstants constants)
+        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(IConfig config)
         {
             var cache = MemoryCache.Default;
 
@@ -127,22 +127,48 @@ namespace ArkBot.Helpers
             {
                 await Task.Factory.StartNew(() =>
                 {
-                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, constants.ServerIp, (ushort)constants.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
+                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, config.ServerIp, (ushort)config.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
                     {
+                        if (server == null) return;
+
                         var serverInfo = server.GetInfo();
                         var serverRules = server.GetRules();
                         var playerInfo = server.GetPlayers();
 
                         status = new Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>(serverInfo, serverRules, playerInfo);
                         cache.Set(nameof(GetServerStatus), status, new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMinutes(1) });
+                    }
+                });
+            }
 
-                        ////send rcon commands
-                        //string rconPassword = "";
-                        //if (server.GetControl(rconPassword))
-                        //{
-                        //    var result = server.Rcon.SendCommand("status");
-                        //    server.Rcon.Dispose();
-                        //}
+            return status;
+        }
+
+        /// <summary>
+        /// Sends an admin command via rcon
+        /// </summary>
+        /// <returns>Result from server on success, null if failed.</returns>
+        public static async Task<string> SendRconCommand(IConfig config, string command)
+        {
+                return await Task.Factory.StartNew(() =>
+                {
+                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, config.ServerIp, (ushort)config.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
+                    {
+                        var serverInfo = server.GetInfo();
+
+                        if (server == null) return null;
+
+                        if (server.GetControl(config.RconPassword))
+                        {
+                            try
+                            {
+                                return server.Rcon.SendCommand(command);
+                            }
+                            finally
+                            {
+                                server.Rcon?.Dispose();
+                            }
+                        }
 
                         ////listen to logs
                         //using (Logs logs = server.GetLogs(port))
@@ -153,10 +179,9 @@ namespace ArkBot.Helpers
                         //    logs.Stop();
                         //}
                     }
-                });
-            }
 
-            return status;
+                    return null;
+                });
         }
 
         //todo: this method does not really belong here and should be moved elsewhere

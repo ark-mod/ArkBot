@@ -154,6 +154,19 @@ namespace ArkBot
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamApiKey))}");
                 sb.AppendLine();
             }
+            if (string.IsNullOrWhiteSpace(config.ServerIp))
+            {
+                sb.AppendLine($@"Error: {nameof(config.ServerIp)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerIp))}");
+                sb.AppendLine();
+            }
+            if (config.ServerPort <= 0)
+            {
+                sb.AppendLine($@"Error: {nameof(config.ServerPort)} is not valid.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerPort))}");
+                sb.AppendLine();
+            }
+
             //todo: for now this section is not really needed unless !imprintcheck is used
             //if (config.ArkMultipliers == null)
             //{
@@ -220,7 +233,7 @@ namespace ArkBot
             savedstate = savedstate ?? new SavedState(constants.SavedStateFilePath);
             //var context = new ArkContext(config, constants, progress);
 
-            var playedTimeWatcher = new PlayedTimeWatcher(constants);
+            var playedTimeWatcher = new PlayedTimeWatcher(config);
 
             var options = new SteamOpenIdOptions
             {
@@ -297,7 +310,10 @@ namespace ArkBot
                 }
 
                 var _bot = scope.Resolve<ArkDiscordBot>();
-                await _bot.Start();
+                await _bot.Initialize();
+                var isConnected = false;
+                var lastAttempt = DateTime.MinValue;
+                var retryInterval = TimeSpan.FromSeconds(15);
 
                 while (true)
                 {
@@ -305,10 +321,27 @@ namespace ArkBot
                     {
                         var key = Console.ReadKey(true);
                         if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
-                        else if(key.Key == ConsoleKey.N && config.Debug)
+                        else if(isConnected && key.Key == ConsoleKey.N && config.Debug)
                         {
                             //if we are debugging, trigger new changed event
                             context.DebugTriggerOnChange();
+                        }
+                    }
+
+                    if (!isConnected && (DateTime.Now - lastAttempt) >= retryInterval)
+                    {
+                        try
+                        {
+                            lastAttempt = DateTime.Now;
+                            Console.WriteLine("Connecting bot...");
+                            await _bot.Start();
+                            //Console.WriteLine("Connected!"); //Notification already from Discord.Net
+                            isConnected = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to connect ({ex.Message})! Will retry in a moment...");
+                            ExceptionLogging.LogException(ex, "Failed to start Discord Bot", "Program.MainAsync");
                         }
                     }
 

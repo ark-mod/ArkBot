@@ -2,6 +2,7 @@
 using ArkBot.Data;
 using ArkBot.Database;
 using ArkBot.OpenID;
+using ArkBot.Extensions;
 using Discord;
 using Discord.Commands;
 using Google.Apis.Urlshortener.v1;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArkBot
@@ -23,6 +25,7 @@ namespace ArkBot
         private IConstants _constants;
         private IBarebonesSteamOpenId _openId;
         private EfDatabaseContextFactory _databaseContextFactory;
+        private Timer _timer;
 
         public ArkDiscordBot(IConfig config, IArkContext context, IConstants constants, IBarebonesSteamOpenId openId, EfDatabaseContextFactory databaseContextFactory, IEnumerable<ICommand> commands)
         {
@@ -37,7 +40,7 @@ namespace ArkBot
 
             _discord = new DiscordClient(x =>
            {
-               x.LogLevel = LogSeverity.Info;
+               x.LogLevel = _config.Debug ? LogSeverity.Info : LogSeverity.Warning;
                x.LogHandler += Log;
                x.AppName = _config.BotName;
                x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
@@ -68,9 +71,56 @@ namespace ArkBot
                     x.Roles.Any(y => y != null && rrc.ForRoles.Contains(y.Name, StringComparer.OrdinalIgnoreCase) == true && y.Members.Any(z => z.Id == b.Id))), null);
                 }
 
+                cbuilder.AddCheck((a, b, c) =>
+                {
+                    return c.IsPrivate || !(_config.EnabledChannels?.Length > 0) || (c?.Name != null && _config.EnabledChannels.Contains(c.Name, StringComparer.OrdinalIgnoreCase));
+                });
+
                 command.Init(_discord);
                 command.Register(cbuilder);
                 cbuilder.Do(command.Run);
+            }
+
+            _timer = new Timer(_timer_Callback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        }
+
+        private TimeSpan? _prevNextUpdate;
+        private DateTime _prevLastUpdate;
+
+        /// <summary>
+        /// Main proceedure
+        /// </summary>
+        private void _timer_Callback(object state)
+        {
+            try
+            {
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+                if (_config.InfoTopicChannel != null)
+                {
+                    var lastUpdate = _context.LastUpdate;
+                    var nextUpdate = _context.ApproxTimeUntilNextUpdate;
+                    if ((lastUpdate != _prevLastUpdate || nextUpdate != _prevNextUpdate))
+                    {
+                        _prevLastUpdate = lastUpdate;
+                        _prevNextUpdate = nextUpdate;
+
+                        var nextUpdateTmp = nextUpdate?.ToStringCustom();
+                        var nextUpdateString = (nextUpdate.HasValue ? (!string.IsNullOrWhiteSpace(nextUpdateTmp) ? $", Next Update in ~{nextUpdateTmp}" : ", waiting for new update ...") : "");
+                        var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
+                        var newtopic = $"Updated {lastUpdateString}{nextUpdateString} | Type !help to get started";
+
+                        var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+                        foreach (var channel in channels)
+                        {
+                            channel.Edit(topic: newtopic);
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
             }
         }
 
@@ -237,7 +287,7 @@ namespace ArkBot
 
         private void Commands_CommandErrored(object sender, CommandErrorEventArgs e)
         {
-            if (e == null || e.Command == null || e.Command.IsHidden) return;
+            if (e == null || e.Command == null || e.Command.IsHidden || e.ErrorType == CommandErrorType.BadPermissions) return;
             var sb = new StringBuilder();
             var message = $@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command error...";
             sb.AppendLine(message);
@@ -246,7 +296,7 @@ namespace ArkBot
             _context.Progress.Report(sb.ToString());
 
             //log to disk
-            ExceptionLogging.LogException(e.Exception, message: message, source: nameof(ArkDiscordBot) + "_command");
+            if (e.Exception != null) ExceptionLogging.LogException(e.Exception, message: message, source: nameof(ArkDiscordBot) + "_command");
         }
 
         private void Commands_CommandExecuted(object sender, CommandEventArgs e)
@@ -258,11 +308,13 @@ namespace ArkBot
             _context.Progress.Report(sb.ToString());
         }
 
-        public async Task Start(ArkSpeciesAliases aliases = null)
+        public async Task Initialize(ArkSpeciesAliases aliases = null)
         {
             await _context.Initialize(aliases);
+        }
 
-            _context.Progress.Report("Initialization done, connecting bot..." + Environment.NewLine);
+        public async Task Start(ArkSpeciesAliases aliases = null)
+        {
             await _discord.Connect(_config.BotToken, TokenType.Bot);
         }
 

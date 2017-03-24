@@ -165,6 +165,8 @@ namespace ArkBot
 
             _playedTimeWatcher.PlayedTimeUpdate += _playedTimeWatcher_PlayedTimeUpdate;
             _playedTimeWatcher.Start();
+
+            Progress.Report("Initialization done!" + Environment.NewLine);
         }
 
         public void DebugTriggerOnChange()
@@ -252,6 +254,15 @@ namespace ArkBot
 
             var _rJson = new Regex(@"\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             var _rCluster = new Regex(@"^\d+$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            //clean all json files in output dir
+            try
+            {
+                if (Directory.Exists(_config.JsonOutputDirPath))
+                {
+                    foreach (var filepath in Directory.GetFiles(_config.JsonOutputDirPath, "*.json", SearchOption.TopDirectoryOnly)) File.Delete(filepath);
+                }
+            } catch { /* ignore all exceptions */ }
 
             var success = true;
             foreach (var action in new[]

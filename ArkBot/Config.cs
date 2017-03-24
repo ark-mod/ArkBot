@@ -94,6 +94,30 @@ namespace ArkBot
         [JsonProperty(PropertyName = "developerRoleName")]
         [Description("The name of the developer role in Discord.")]
         public string DeveloperRoleName { get; set; }
+
+        [JsonProperty(PropertyName = "serverIp")]
+        [Description("The IP address used to connect to the ARK server.")]
+        public string ServerIp { get; set; }
+
+        [JsonProperty(PropertyName = "serverPort")]
+        [Description("The port used to connect to the ARK server.")]
+        public int ServerPort { get; set; }
+
+        [JsonProperty(PropertyName = "rconPort")]
+        [Description("The port used to connect to the ARK server over rcon.")]
+        public int RconPort { get; set; }
+
+        [JsonProperty(PropertyName = "enabledChannels")]
+        [Description("A list of channels where the bot will listen to and answer commands.")]
+        public string[] EnabledChannels { get; set; }
+
+        [JsonProperty(PropertyName = "infoTopicChannel")]
+        [Description("Channel where topic is set to display information about last update, next update and how to use bot commands.")]
+        public string InfoTopicChannel { get; set; }
+
+        [JsonProperty(PropertyName = "rconPassword")]
+        [Description("The password used to connect to the server via rcon.")]
+        public string RconPassword { get; set; }
     }
 
     public class ArkMultipliersConfigSection

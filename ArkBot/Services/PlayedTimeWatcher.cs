@@ -17,18 +17,18 @@ namespace ArkBot.Services
         private DateTime? _lastCheck = null;
         private string[] _lastOnline;
 
-        private IConstants _constants;
+        private IConfig _config;
 
         public delegate void PlayedTimeUpdateEventHandler(object sender, PlayedTimeEventArgs e);
         public event PlayedTimeUpdateEventHandler PlayedTimeUpdate;
 
 
-        public PlayedTimeWatcher(IConstants constants)
+        public PlayedTimeWatcher(IConfig config)
         {
-            _constants = constants;
+            _config = config;
             _lastOnline = new string[] { };
 
-            _timer = new Timer(new TimerCallback(_timer_Callback), null, Timeout.Infinite, Timeout.Infinite);
+            _timer = new Timer(_timer_Callback, null, Timeout.Infinite, Timeout.Infinite);
         }
 
         public void Start()
@@ -47,8 +47,8 @@ namespace ArkBot.Services
 
                 using (var server = ServerQuery.GetServerInstance(
                     QueryMaster.EngineType.Source, 
-                    _constants.ServerIp, 
-                    (ushort)_constants.ServerPort, 
+                    _config.ServerIp, 
+                    (ushort)_config.ServerPort, 
                     throwExceptions: false, 
                     retries: 5, 
                     sendTimeout: 4000, 

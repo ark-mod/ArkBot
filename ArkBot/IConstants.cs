@@ -6,7 +6,5 @@
         string OpenidresponsetemplatePath { get; }
         string DatabaseFilePath { get; }
         string SavedStateFilePath { get; }
-        string ServerIp { get; }
-        int ServerPort { get; }
     }
 }

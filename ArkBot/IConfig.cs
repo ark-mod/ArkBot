@@ -22,5 +22,11 @@
         bool DisableDeveloperFetchSaveData { get; set; }
         string AdminRoleName { get; set; }
         string DeveloperRoleName { get; set; }
+        string ServerIp { get; set; }
+        int ServerPort { get; set; }
+        int RconPort { get; set; }
+        string[] EnabledChannels { get; set; }
+        string InfoTopicChannel { get; set; }
+        string RconPassword { get; set; }
     }
 }

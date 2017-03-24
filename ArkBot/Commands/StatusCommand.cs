@@ -26,12 +26,12 @@ namespace ArkBot.Commands
         public bool HideFromCommandList => false;
 
         private IArkContext _context;
-        private IConstants _constants;
+        private IConfig _config;
 
-        public StatusCommand(IArkContext context, IConstants constants)
+        public StatusCommand(IArkContext context, IConfig config)
         {
             _context = context;
-            _constants = constants;
+            _config = config;
         }
 
         public void Register(CommandBuilder command) { }
@@ -40,7 +40,7 @@ namespace ArkBot.Commands
 
         public async Task Run(CommandEventArgs e)
         {
-            var status = await CommandHelper.GetServerStatus(_constants);
+            var status = await CommandHelper.GetServerStatus(_config);
 
             var sb = new StringBuilder();
             if (status == null || status.Item1 == null || status.Item2 == null)

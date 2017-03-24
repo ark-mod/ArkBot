@@ -28,13 +28,13 @@ namespace ArkBot.Commands
 
         private EfDatabaseContextFactory _databaseContextFactory;
         private IArkContext _context;
-        private IConstants _constants;
+        private IConfig _config;
 
-        public PlayerListCommand(EfDatabaseContextFactory databaseContextFactory, IArkContext context, IConstants constants)
+        public PlayerListCommand(EfDatabaseContextFactory databaseContextFactory, IArkContext context, IConfig config)
         {
             _databaseContextFactory = databaseContextFactory;
             _context = context;
-            _constants = constants;
+            _config = config;
         }
 
         public void Register(CommandBuilder command)
@@ -50,7 +50,7 @@ namespace ArkBot.Commands
             //    x.For(y => y.Extended, flag: true));
             var playersx = e.Message.Text.StartsWith("!playersx", StringComparison.OrdinalIgnoreCase);
 
-            var status = await CommandHelper.GetServerStatus(_constants);
+            var status = await CommandHelper.GetServerStatus(_config);
 
             var sb = new StringBuilder();
             if (status == null || status.Item1 == null || status.Item3 == null)

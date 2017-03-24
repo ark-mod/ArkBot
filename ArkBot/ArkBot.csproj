@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -204,6 +205,7 @@
     <Compile Include="ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />
+    <Compile Include="Commands\Admin\AdminCommand.cs" />
     <Compile Include="Commands\Admin\AdminCheckCommand.cs" />
     <Compile Include="Commands\IRoleRestrictedCommand.cs" />
     <Compile Include="DebugFakeSaveFileWatcher.cs" />
