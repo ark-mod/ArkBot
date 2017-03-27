@@ -79,6 +79,18 @@ namespace ArkBot
         [Description("Run tool with debug option set (includes experimental features etc.)")]
         public bool Debug { get; set; }
 
+        [JsonProperty(PropertyName = "debugSaveFilePath")]
+        [Description("Debug template path for saveFilePath.")]
+        public string DebugSaveFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "debugClusterSavePath")]
+        [Description("Debug template path for clusterSavePath.")]
+        public string DebugClusterSavePath { get; set; }
+
+        [JsonProperty(PropertyName = "debugJsonOutputDirPath")]
+        [Description("Debug template path for jsonOutputDirPath.")]
+        public string DebugJsonOutputDirPath { get; set; }
+
         [JsonProperty(PropertyName = "arkMultipliers")]
         [Description("Server specific multipliers.")]
         public ArkMultipliersConfigSection ArkMultipliers { get; set; }
@@ -94,6 +106,10 @@ namespace ArkBot
         [JsonProperty(PropertyName = "developerRoleName")]
         [Description("The name of the developer role in Discord.")]
         public string DeveloperRoleName { get; set; }
+
+        [JsonProperty(PropertyName = "memberRoleName")]
+        [Description("The name of the member role in Discord.")]
+        public string MemberRoleName { get; set; }
 
         [JsonProperty(PropertyName = "serverIp")]
         [Description("The IP address used to connect to the ARK server.")]
@@ -115,9 +131,21 @@ namespace ArkBot
         [Description("Channel where topic is set to display information about last update, next update and how to use bot commands.")]
         public string InfoTopicChannel { get; set; }
 
+        [JsonProperty(PropertyName = "announcementChannel")]
+        [Description("Channel where announcements are made (votes etc.)")]
+        public string AnnouncementChannel { get; set; }
+
         [JsonProperty(PropertyName = "rconPassword")]
         [Description("The password used to connect to the server via rcon.")]
         public string RconPassword { get; set; }
+
+        [JsonProperty(PropertyName = "updateServerBatchFilePath")]
+        [Description("Absolute file path of a batch file to run in order to update the server.")]
+        public string UpdateServerBatchFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "startServerBatchFilePath")]
+        [Description("Absolute file path of a batch file to run in order to start the server.")]
+        public string StartServerBatchFilePath { get; set; }
     }
 
     public class ArkMultipliersConfigSection

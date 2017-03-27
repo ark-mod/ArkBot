@@ -17,5 +17,8 @@ namespace ArkBot.Data
 
         [JsonIgnore]
         public double TamingEffectiveness => (double)(1 / (1 + (TamedIneffectivenessModifier ?? 0m)));
+
+        [JsonIgnore]
+        public bool IsInCluster { get; set; }
     }
 }

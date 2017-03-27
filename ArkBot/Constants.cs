@@ -26,5 +26,6 @@ namespace ArkBot
         public string DatabaseConnectionString => $"Data Source={_databaseFilePath};Max Database Size=4091";
         public string OpenidresponsetemplatePath => @"Resources\openidresponse.html";
         public string SavedStateFilePath => "savedstate.json";
+        public string ArkServerProcessName => "ShooterGameServer";
     }
 }

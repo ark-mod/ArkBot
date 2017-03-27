@@ -57,6 +57,7 @@ namespace ArkBot.Commands
                 var version = m.Success ? m.Groups["version"] : null;
                 var currentTime = serverRules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
                 var tamedDinosCount = _context.Creatures?.Count();
+                var uploadedDinosCount = _context.Cluster?.Creatures?.Count();
                 var wildDinosCount = _context.Wild?.Count();
                 var tamedDinosMax = 6000; //todo: remove hardcoded value
                 var structuresCount = _context.Tribes?.SelectMany(x => x.Structures).Sum(x => x.Count);
@@ -72,6 +73,7 @@ namespace ArkBot.Commands
 
                 sb.AppendLine().AppendLine($"**Server Statistics**");
                 if (tamedDinosCount.HasValue) sb.AppendLine($"● **Tamed dinos:** {tamedDinosCount.Value:N0}/{tamedDinosMax:N0}");
+                if (uploadedDinosCount.HasValue) sb.AppendLine($"● **Uploaded dinos:** {uploadedDinosCount.Value:N0}");
                 if (wildDinosCount.HasValue) sb.AppendLine($"● **Wild dinos:** {wildDinosCount.Value:N0}");
                 if (structuresCount.HasValue) sb.AppendLine($"● **Structures:** {structuresCount.Value:N0}");
                 if (totalPlayers.HasValue) sb.AppendLine($"● **Players:** {totalPlayers.Value:N0}");
@@ -84,7 +86,7 @@ namespace ArkBot.Commands
                 var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
 
                 sb.AppendLine($"● **Last update:** {lastUpdateString}");
-                if(nextUpdateString != null) sb.AppendLine($"● **Next update:** {nextUpdateString}");
+                if (nextUpdateString != null) sb.AppendLine($"● **Next update:** {nextUpdateString}");
 
                 
             }

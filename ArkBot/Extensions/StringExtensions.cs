@@ -9,6 +9,22 @@ namespace ArkBot.Extensions
 {
     public static class StringExtensions
     {
+        public static string FirstCharToUpper(this string self)
+        {
+            if (self == null) return null;
+            if (string.IsNullOrEmpty(self)) return self;
+
+            return self.First().ToString().ToUpper() + self.Substring(1);
+        }
+
+        public static string ReplaceRconSpecialChars(this string self)
+        {
+            if (self == null) return null;
+            if (string.IsNullOrEmpty(self)) return self;
+
+            return self.Replace('å', 'a').Replace('ä', 'a').Replace('ö', 'o').Replace('Å', 'A').Replace('Ä', 'A').Replace('Ö', 'O');
+        }
+
         public static string[] Partition(this string self, int partitionMaxLength)
         {
             var result = new List<string>();

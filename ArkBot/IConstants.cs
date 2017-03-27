@@ -6,5 +6,6 @@
         string OpenidresponsetemplatePath { get; }
         string DatabaseFilePath { get; }
         string SavedStateFilePath { get; }
+        string ArkServerProcessName { get; }
     }
 }

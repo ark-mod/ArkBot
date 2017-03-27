@@ -39,6 +39,10 @@
       <HintPath>..\packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="CoreRCON.NET-4.6, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoreRCON.NET-4.6.1.0.0-CI00003\lib\net46\CoreRCON.NET-4.6.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Discord.Net, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Discord.Net.0.9.6\lib\net45\Discord.Net.dll</HintPath>
       <Private>True</Private>
@@ -207,7 +211,17 @@
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />
     <Compile Include="Commands\Admin\AdminCommand.cs" />
     <Compile Include="Commands\Admin\AdminCheckCommand.cs" />
+    <Compile Include="Commands\IEnabledCheckCommand.cs" />
     <Compile Include="Commands\IRoleRestrictedCommand.cs" />
+    <Compile Include="Commands\VoteCommand.cs" />
+    <Compile Include="Database\Model\DestroyWildDinosVote.cs" />
+    <Compile Include="Database\Model\RestartServerVote.cs" />
+    <Compile Include="Database\Model\UpdateServerVote.cs" />
+    <Compile Include="Database\Model\UnbanVote.cs" />
+    <Compile Include="Database\Model\SetTimeOfDayVote.cs" />
+    <Compile Include="Database\Model\UserVote.cs" />
+    <Compile Include="Database\Model\BanVote.cs" />
+    <Compile Include="Database\Model\Vote.cs" />
     <Compile Include="DebugFakeSaveFileWatcher.cs" />
     <Compile Include="ArkSaveFileWatcher.cs" />
     <Compile Include="Commands\CommandListCommand.cs" />
@@ -229,7 +243,10 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Database\EfDatabaseContextFactory.cs" />
     <Compile Include="Database\Model\PlayedEntry.cs" />
+    <Compile Include="Extensions\DiscordChannelExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />
+    <Compile Include="Helpers\ProcessHelper.cs" />
+    <Compile Include="Helpers\ServerHelper.cs" />
     <Compile Include="IArkSaveFileWatcher.cs" />
     <Compile Include="ISavedState.cs" />
     <Compile Include="Migrations\201702280520255_UserPlayed.cs" />
@@ -239,6 +256,10 @@
     <Compile Include="Migrations\201703061349270_TamesLogHealthPercentage.cs" />
     <Compile Include="Migrations\201703061349270_TamesLogHealthPercentage.Designer.cs">
       <DependentUpon>201703061349270_TamesLogHealthPercentage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201703262316086_Voting.cs" />
+    <Compile Include="Migrations\201703262316086_Voting.Designer.cs">
+      <DependentUpon>201703262316086_Voting.cs</DependentUpon>
     </Compile>
     <Compile Include="SavedState.cs" />
     <Compile Include="Config.cs" />
@@ -295,6 +316,18 @@
     <Compile Include="Services\IUrlShortenerService.cs" />
     <Compile Include="Services\PlayedTimeWatcher.cs" />
     <Compile Include="Services\UrlShortenerService.cs" />
+    <Compile Include="TimedTask.cs" />
+    <Compile Include="VoteResultForcedEventArgs.cs" />
+    <Compile Include="VoteInitiatedEventArgs.cs" />
+    <Compile Include="Vote\DestroyWildDinosVoteHandler.cs" />
+    <Compile Include="Vote\UpdateServerVoteHandler.cs" />
+    <Compile Include="Vote\RestartServerVoteHandler.cs" />
+    <Compile Include="Vote\UnbanVoteHandler.cs" />
+    <Compile Include="Vote\SetTimeOfDayVoteHandler.cs" />
+    <Compile Include="Vote\BanVoteHandler.cs" />
+    <Compile Include="Vote\IVoteHandler.cs" />
+    <Compile Include="Vote\VoteStateChangeResult.cs" />
+    <Compile Include="Vote\InitiateVoteResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="aliases.json">
@@ -334,6 +367,9 @@
     <EmbeddedResource Include="Migrations\201703061349270_TamesLogHealthPercentage.resx">
       <DependentUpon>201703061349270_TamesLogHealthPercentage.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703262316086_Voting.resx">
+      <DependentUpon>201703262316086_Voting.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="ExternalTools.targets" Condition="Exists('ExternalTools.targets')" />
@@ -344,6 +380,11 @@
     if not exist "$(TargetDir)amd64" md "$(TargetDir)amd64"
     xcopy /s /y "$(SolutionDir)packages\Microsoft.SqlServer.Compact.4.0.8876.1\NativeBinaries\amd64\*.*" "$(TargetDir)amd64"</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

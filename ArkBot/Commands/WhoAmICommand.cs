@@ -49,7 +49,7 @@ namespace ArkBot.Commands
         {
             using (var context = _databaseContextFactory.Create())
             {
-                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id);
+                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
                 if (user == null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, your existence is a mystery to us! :(");

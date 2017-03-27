@@ -19,6 +19,9 @@ using System.Windows.Forms.DataVisualization.Charting;
 using System.Linq.Expressions;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using CoreRCON;
+using CoreRCON.Parsers.Standard;
+using System.Net;
 
 namespace ArkBot.Helpers
 {
@@ -127,7 +130,7 @@ namespace ArkBot.Helpers
             {
                 await Task.Factory.StartNew(() =>
                 {
-                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, config.ServerIp, (ushort)config.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
+                    using (var server = QueryMaster.GameServer.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, config.ServerIp, (ushort)config.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
                     {
                         if (server == null) return;
 
@@ -150,46 +153,45 @@ namespace ArkBot.Helpers
         /// <returns>Result from server on success, null if failed.</returns>
         public static async Task<string> SendRconCommand(IConfig config, string command)
         {
-                return await Task.Factory.StartNew(() =>
+            try
+            {
+                //// create an instance of the socket. In this case i've used the .Net 4.5 object defined in the project
+                //INetworkSocket socket = new RconSocket();
+
+                //// create the RconMessenger instance and inject the socket
+                //RconMessenger messenger = new RconMessenger(socket);
+
+                //// initiate the connection with the remote server
+                //bool isConnected = await messenger.ConnectAsync(config.ServerIp, config.RconPort);
+
+                //// try to authenticate with your supersecretpassword (... obviously this is my hackerproof key, you shoul use yours)
+                //bool authenticated = await messenger.AuthenticateAsync(config.RconPassword);
+                //if (authenticated)
+                //{
+                //    // if we fall here, we're good to go! from this point on the connection is authenticated and you can send commands 
+                //    // to the server
+                //    return await messenger.ExecuteCommandAsync(command);
+                //}
+
+                using (var rcon = new RCON(IPAddress.Parse(config.ServerIp), (ushort)config.RconPort, config.RconPassword))
                 {
-                    using (var server = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, config.ServerIp, (ushort)config.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
-                    {
-                        var serverInfo = server.GetInfo();
+                    return await rcon.SendCommandAsync(command);
+                }
+            }
+            catch(Exception ex)
+            {
+                ExceptionLogging.LogUnhandledException(ex);
+            }
 
-                        if (server == null) return null;
-
-                        if (server.GetControl(config.RconPassword))
-                        {
-                            try
-                            {
-                                return server.Rcon.SendCommand(command);
-                            }
-                            finally
-                            {
-                                server.Rcon?.Dispose();
-                            }
-                        }
-
-                        ////listen to logs
-                        //using (Logs logs = server.GetLogs(port))
-                        //{
-                        //    logs.Listen(x => Debug.WriteLine(x));
-                        //    logs.Start();
-                        //    //wait here
-                        //    logs.Stop();
-                        //}
-                    }
-
-                    return null;
-                });
+            return null;
         }
 
         //todo: this method does not really belong here and should be moved elsewhere
-        public static async Task<Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, IArkContext _context)
+        public static async Task<Data.Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, IArkContext _context)
         {
             using (var db = databaseContextFactory.Create())
             {
-                var user = db.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id);
+                var user = db.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
                 if (user == null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam account using **!linksteam**.");

@@ -49,7 +49,7 @@ namespace ArkBot.Commands
         {
             using (var context = _databaseContextFactory.Create())
             {
-                if (context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)e.User.Id) != null)
+                if (context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)e.User.Id && !x.Unlinked) != null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, your user is already linked with Steam. If you wish to remove this link use the command **!unlinksteam**.");
                     return;

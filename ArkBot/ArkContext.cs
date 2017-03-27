@@ -17,6 +17,7 @@ using System.Data.Entity.Migrations;
 using ArkBot.Extensions;
 using ArkBot.Services;
 using System.Data.Entity;
+using ArkBot.Database.Model;
 
 namespace ArkBot
 {
@@ -32,6 +33,9 @@ namespace ArkBot
 
         public delegate void ContextUpdated(object sender, EventArgs e);
         public event ContextUpdated Updated;
+
+        public event VoteInitiatedEventHandler VoteInitiated;
+        public event VoteResultForcedEventHandler VoteResultForced;
 
         private const string _jsonSubDirTamed = "tamed";
         private const string _jsonSubDirWild = "wild";
@@ -100,6 +104,8 @@ namespace ArkBot
         public List<TribeLog> TribeLogs { get; set; }
 
         public IEnumerable<Creature> CreaturesNoRaft => Creatures?.Where(x => !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
+        public IEnumerable<Creature> CreaturesInclCluster => (Creatures ?? new Creature[] { }).Concat((Cluster?.Creatures ?? new Creature[] { }));
+        public IEnumerable<Creature> CreaturesInclClusterNoRaft => CreaturesInclCluster.Where(x => !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
 
         public ArkContext(
             IConfig config, 
@@ -152,15 +158,16 @@ namespace ArkBot
                 Updated?.Invoke(this, EventArgs.Empty);
             }
 
-            if (!_config.DebugNoExtract)
-            {
-                _watcher = new ArkSaveFileWatcher(_config.SaveFilePath);
-                _watcher.Changed += _watcher_Changed;
-            }
-            else if (_config.Debug)
+            
+            if (_config.Debug)
             {
                 _watcher = new DebugFakeSaveFileWatcher(_config, TimeSpan.FromMinutes(1));
                 _watcher.Changed += _watcher_DebugFakeChanged;
+            }
+            else if (!_config.DebugNoExtract)
+            {
+                _watcher = new ArkSaveFileWatcher(_config.SaveFilePath);
+                _watcher.Changed += _watcher_Changed;
             }
 
             _playedTimeWatcher.PlayedTimeUpdate += _playedTimeWatcher_PlayedTimeUpdate;
@@ -209,13 +216,13 @@ namespace ArkBot
             }
         }
 
-        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(string jsonPathOverride = null)
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
             //extract the save file data to json using ark-tools
             if (!_config.DebugNoExtract)
             {
                 Progress.Report("Extracting ARK gamedata...");
-                if (!await ExtractSaveFileData()) return null;
+                if (!await ExtractSaveFileData(saveFilePathOverride, clusterPathOverride)) return null;
             }
 
             //load the resulting json into memory
@@ -225,7 +232,7 @@ namespace ArkBot
             return data;
         }
 
-        private async Task<bool> ExtractSaveFileData()
+        private async Task<bool> ExtractSaveFileData(string saveFilePathOverride = null, string clusterPathOverride = null)
         {
             try
             {
@@ -267,11 +274,11 @@ namespace ArkBot
             var success = true;
             foreach (var action in new[]
             {
-                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathTamed, filepathCheck = _rJson, verb = "tamed", parameters = "" }, //--pretty-print
-                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathWild, filepathCheck = _rJson, verb = "wild", parameters = "" },
-                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathTribes, filepathCheck = _rJson, verb = "tribes", parameters = "--structures --items --tribeless" },
-                new { inpath = _config.SaveFilePath, path = _jsonOutputDirPathPlayers, filepathCheck = _rJson, verb = "players", parameters = "--inventory --positions --no-privacy --max-age 2592000" }, // --max-age 2592000 //limit to last 30 days
-                new { inpath = _config.ClusterSavePath, path = _jsonOutputDirPathCluster, filepathCheck = _rCluster, verb = "cluster", parameters = "" }
+                new { inpath = saveFilePathOverride ?? _config.SaveFilePath, path = _jsonOutputDirPathTamed, filepathCheck = _rJson, verb = "tamed", parameters = "" }, //--pretty-print
+                new { inpath = saveFilePathOverride ?? _config.SaveFilePath, path = _jsonOutputDirPathWild, filepathCheck = _rJson, verb = "wild", parameters = "" },
+                new { inpath = saveFilePathOverride ?? _config.SaveFilePath, path = _jsonOutputDirPathTribes, filepathCheck = _rJson, verb = "tribes", parameters = "--structures --items --tribeless" },
+                new { inpath = saveFilePathOverride ?? _config.SaveFilePath, path = _jsonOutputDirPathPlayers, filepathCheck = _rJson, verb = "players", parameters = "--inventory --positions --no-privacy --max-age 2592000" }, // --max-age 2592000 //limit to last 30 days
+                new { inpath = clusterPathOverride ?? _config.ClusterSavePath, path = _jsonOutputDirPathCluster, filepathCheck = _rCluster, verb = "cluster", parameters = "" }
             })
             {
                 Progress.Report($"- {action.verb}");
@@ -419,6 +426,12 @@ namespace ArkBot
                 //todo: not sure how playerid is set
                 var clusterlist = results?.Where(x => x.Item2 is Cluster)?.Select(x => x.Item2 as Cluster).ToArray();
                 var cluster = new Cluster { Creatures = clusterlist?.SelectMany(x => x.Creatures).ToArray() };
+                if (cluster.Creatures != null) Array.ForEach(cluster.Creatures, x =>
+                {
+                    x.IsInCluster = true;
+                    x.Tamed = true;
+                    x.SpeciesName = classes?.FirstOrDefault(z => z.Class.Equals(x.SpeciesClass, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");
+                });
 
                 return new Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>(arkSpeciesStatsData, classes, creatures, players, tribes, cluster, wildcreatures);
             }
@@ -456,7 +469,7 @@ namespace ArkBot
 
         private async void _watcher_DebugFakeChanged(object sender, ArkSaveFileChangedEventArgs e)
         {
-            await UpdateAll(e.PathToLoad);
+            await UpdateAll(e.PathToLoad, e.SaveFilePath, e.ClusterPath);
         }
 
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
@@ -464,11 +477,20 @@ namespace ArkBot
             await UpdateAll();
         }
 
-        private async Task UpdateAll(string jsonPathOverride = null)
+        public void OnVoteInitiated(Database.Model.Vote item)
+        {
+            VoteInitiated?.Invoke(this, new VoteInitiatedEventArgs { Item = item });
+        }
+        public void OnVoteResultForced(Database.Model.Vote item, VoteResult forcedResult)
+        {
+            VoteResultForced?.Invoke(this, new VoteResultForcedEventArgs { Item = item, Result = forcedResult });
+        }
+
+        private async Task UpdateAll(string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
             Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData(jsonPathOverride);
+            var data = await ExtractAndLoadData(jsonPathOverride, saveFilePathOverride, clusterPathOverride);
             if (data != null)
             {
                 ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();

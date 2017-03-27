@@ -14,6 +14,9 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using ArkBot.Database.Model;
+using ArkBot.Helpers;
 
 namespace ArkBot
 {
@@ -26,6 +29,11 @@ namespace ArkBot
         private IBarebonesSteamOpenId _openId;
         private EfDatabaseContextFactory _databaseContextFactory;
         private Timer _timer;
+
+        private TimeSpan? _prevNextUpdate;
+        private DateTime _prevLastUpdate;
+        private ConcurrentDictionary<TimedTask, bool> _timedTasks;
+        private DateTime _prevTimedBansUpdate;
 
         public ArkDiscordBot(IConfig config, IArkContext context, IConstants constants, IBarebonesSteamOpenId openId, EfDatabaseContextFactory databaseContextFactory, IEnumerable<ICommand> commands)
         {
@@ -81,20 +89,177 @@ namespace ArkBot
                 cbuilder.Do(command.Run);
             }
 
+            _timedTasks = new ConcurrentDictionary<TimedTask, bool>();
             _timer = new Timer(_timer_Callback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
+            {
+                _context.VoteInitiated += _context_VoteInitiated;
+                _context.VoteResultForced += _context_VoteResultForced;
+            }
         }
 
-        private TimeSpan? _prevNextUpdate;
-        private DateTime _prevLastUpdate;
+        private async void _context_VoteResultForced(object sender, VoteResultForcedEventArgs args)
+        {
+            var handler = args.Item.GetHandler();
+            if (handler == null) throw new ApplicationException("Vote handler is null, this should not happen...");
+
+            var tasks = _timedTasks.Keys.Where(x => x.Tag is string && ((string)x.Tag).Equals("vote_" + args.Item.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
+            foreach (var task in tasks)
+            {
+                bool tmp;
+                _timedTasks.TryRemove(task, out tmp);
+            }
+
+            using (var db = _databaseContextFactory.Create())
+            {
+                var vote = db.Votes.FirstOrDefault(x => x.Id == args.Item.Id);
+
+                await VoteFinished(db, vote, forcedResult: args.Result);
+            }
+        }
+
+        private void _context_VoteInitiated(object sender, VoteInitiatedEventArgs args)
+        {
+            var handler = args.Item.GetHandler();
+            if (handler == null) throw new ApplicationException("Vote handler is null, this should not happen...");
+
+            //reminder, one minute before expiry
+            var reminderAt = args.Item.Finished.AddMinutes(-1);
+            if (DateTime.Now < reminderAt)
+            {
+                _timedTasks.TryAdd(new TimedTask
+                {
+                    When = reminderAt,
+                    Tag = "vote_" + args.Item.Id,
+                    Callback = new Func<Task>(async () =>
+                    {
+                        var result = handler.VoteIsAboutToExpire();
+                        if (result == null) return;
+
+                        if (result.MessageRcon != null) await CommandHelper.SendRconCommand(_config, $"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
+                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                        {
+                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+                            foreach (var channel in channels)
+                            {
+                                await channel.SendMessage(result.MessageAnnouncement);
+                            }
+                        }
+                    })
+                }, true);
+            }
+
+            //on elapsed
+            _timedTasks.TryAdd(new TimedTask
+            {
+                When = args.Item.Finished,
+                Tag = "vote_" + args.Item.Id,
+                Callback = new Func<Task>(async () =>
+                {
+                    using (var db = _databaseContextFactory.Create())
+                    {
+                        var vote = db.Votes.FirstOrDefault(x => x.Id == args.Item.Id);
+
+                        await VoteFinished(db, vote);
+                    }
+                })
+            }, true);
+        }
+
+        private async Task VoteFinished(IEfDatabaseContext db, Database.Model.Vote vote, bool noAnnouncement = false, VoteResult? forcedResult = null)
+        {
+            var handler = vote.GetHandler();
+            if (handler == null) throw new ApplicationException("Vote handler is null, this should not happen...");
+
+            var votesFor = vote.Votes.Count(x => x.VotedFor);
+            var votesAgainst = vote.Votes.Count(x => !x.VotedFor);
+            vote.Result = forcedResult ?? (vote.Votes.Count >= (_config.Debug ? 1 : 3) && votesFor > votesAgainst ? VoteResult.Passed : VoteResult.Failed);
+
+            Vote.VoteStateChangeResult result = null;
+            try
+            {
+                result = await handler.VoteFinished(_config, _constants, db);
+                try
+                {
+                    if (!noAnnouncement && result != null)
+                    {
+                        if (result.MessageRcon != null) await CommandHelper.SendRconCommand(_config, $"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
+                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                        {
+                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+                            foreach (var channel in channels)
+                            {
+                                await channel.SendMessage(result.MessageAnnouncement);
+                            }
+                        }
+                    }
+                }
+                catch { /* ignore all exceptions */ }
+
+                if (result != null && result.React != null)
+                {
+                    if (result.ReactDelayInMinutes <= 0) await result.React();
+                    else
+                    {
+                        await CommandHelper.SendRconCommand(_config, $"serverchat Countdown started: {result.ReactDelayFor} in {result.ReactDelayInMinutes} minutes...");
+                        if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                        {
+                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+                            foreach (var channel in channels)
+                            {
+                                await channel.SendMessage($"**Countdown started: {result.ReactDelayFor} in {result.ReactDelayInMinutes} minutes...**");
+                            }
+                        }
+
+                        foreach (var min in Enumerable.Range(1, result.ReactDelayInMinutes))
+                        {
+                            _timedTasks.TryAdd(new TimedTask
+                            {
+                                When = DateTime.Now.AddMinutes(min),
+                                Callback = new Func<Task>(async () =>
+                                {
+                                    var countdown = result.ReactDelayInMinutes - min;
+                                    await CommandHelper.SendRconCommand(_config, $"serverchat {result.ReactDelayFor} in {countdown} minutes...");
+                                    if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                                    {
+                                        var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+                                        foreach (var channel in channels)
+                                        {
+                                            await channel.SendMessage($"**{result.ReactDelayFor} in {countdown} minutes...**");
+                                        }
+                                    }
+                                    if (countdown <= 0) await result.React();
+                                })
+                            }, true);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                ExceptionLogging.LogUnhandledException(ex);
+            }
+            db.SaveChanges();
+            
+        }
 
         /// <summary>
         /// Main proceedure
         /// </summary>
-        private void _timer_Callback(object state)
+        private async void _timer_Callback(object state)
         {
             try
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+                var tasks = _timedTasks.Keys.Where(x => x.When <= DateTime.Now).ToArray();
+                foreach(var task in tasks)
+                {
+                    bool tmp;
+                    _timedTasks.TryRemove(task, out tmp);
+
+                    await task.Callback();
+                }
 
                 if (_config.InfoTopicChannel != null)
                 {
@@ -113,8 +278,24 @@ namespace ArkBot
                         var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
                         foreach (var channel in channels)
                         {
-                            channel.Edit(topic: newtopic);
+                            await channel.Edit(topic: newtopic);
                         }
+                    }
+                }
+
+                if (DateTime.Now- _prevTimedBansUpdate > TimeSpan.FromMinutes(5))
+                {
+                    _prevTimedBansUpdate = DateTime.Now;
+
+                    using (var db = _databaseContextFactory.Create())
+                    {
+                        var elapsedBans = db.Votes.OfType<BanVote>().Where(x => x.Result == VoteResult.Passed && x.BannedUntil.HasValue && x.BannedUntil <= DateTime.Now).ToArray();
+                        foreach(var ban in elapsedBans)
+                        {
+                                if (await CommandHelper.SendRconCommand(_config, $"unbanplayer {ban.SteamId}") != null) ban.BannedUntil = null;
+                        }
+
+                        db.SaveChanges();
                     }
                 }
             }
@@ -146,14 +327,14 @@ namespace ArkBot
                 Database.Model.User[] linkedusers = null;
                 using (var db = _databaseContextFactory.Create())
                 {
-                    linkedusers = db.Users.ToArray();
+                    linkedusers = db.Users.Where(x => !x.Unlinked).ToArray();
                 }
 
                 foreach (var server in _discord.Servers)
                 {
                     if (_server != null && server.Id != _server.Id) continue;
 
-                    var role = server.FindRoles("ark", true).FirstOrDefault();
+                    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
                     if (role == null) continue;
 
                     foreach (var user in server.Users)
@@ -230,7 +411,7 @@ namespace ArkBot
                 foreach(var server in _discord.Servers)
                 {
                     var user = server.GetUser(e.DiscordUserId);
-                    var role = server.FindRoles("ark", true).FirstOrDefault();
+                    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
                     if (user == null || role == null) continue;
 
                     try
@@ -260,6 +441,7 @@ namespace ArkBot
                         user.RealName = player?.RealName;
                         user.SteamDisplayName = player?.PersonaName;
                         user.SteamId = (long)e.SteamId;
+                        user.Unlinked = false;
                     }
                     else
                     {
@@ -311,6 +493,23 @@ namespace ArkBot
         public async Task Initialize(ArkSpeciesAliases aliases = null)
         {
             await _context.Initialize(aliases);
+
+            //handle undecided votes (may happen due to previous bot shutdown before vote finished)
+            using (var db = _databaseContextFactory.Create())
+            {
+                var votes = db.Votes.Where(x => x.Result == VoteResult.Undecided);
+                foreach (var vote in votes)
+                {
+                    if (DateTime.Now >= vote.Finished)
+                    {
+                        await VoteFinished(db, vote, true);
+                    }
+                    else
+                    {
+                        _context_VoteInitiated(null, new VoteInitiatedEventArgs { Item = vote });
+                    }
+                }
+            }
         }
 
         public async Task Start(ArkSpeciesAliases aliases = null)

@@ -177,6 +177,7 @@ namespace ArkBot
 
             if (string.IsNullOrWhiteSpace(config.AdminRoleName)) config.AdminRoleName = "admin";
             if (string.IsNullOrWhiteSpace(config.DeveloperRoleName)) config.DeveloperRoleName = "developer";
+            if (string.IsNullOrWhiteSpace(config.MemberRoleName)) config.DeveloperRoleName = "ark";
 
             //load aliases and check integrity
             var aliases = ArkSpeciesAliases.Load().GetAwaiter().GetResult();

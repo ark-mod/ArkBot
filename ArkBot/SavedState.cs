@@ -28,6 +28,9 @@ namespace ArkBot
         [JsonProperty(PropertyName = "latestTribeLogTime")]
         public TimeSpan LatestTribeLogTime { get; set; }
 
+        [JsonProperty(PropertyName = "votingDisabled")]
+        public bool VotingDisabled { get; set; }
+
         public bool Save()
         {
             try

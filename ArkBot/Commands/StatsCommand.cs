@@ -61,7 +61,7 @@ namespace ArkBot.Commands
             }
 
             var sb = new StringBuilder();
-            var filtered = _context.Creatures.Where(x => x.Tamed == true);
+            var filtered = _context.CreaturesInclCluster.Where(x => x.Tamed == true);
 
             var tribe = args.Tribe;
             var player = args.Player;
@@ -106,7 +106,7 @@ namespace ArkBot.Commands
                 .Select(x =>
                 {
                     var species = x.GroupBy(y => y.SpeciesName)
-                            .Select(y => new Tuple<string, int>(y.Key, y.Count())).OrderByDescending(y => y.Item2).ToArray();
+                            .Select(y => new Tuple<string, int, int>(y.Key, y.Count(z => !z.IsInCluster), y.Count(z => z.IsInCluster))).OrderByDescending(y => y.Item2).ToArray();
                     var structures = player != null ?
                         null /*_context.Players?.Where(y => y.Id == x.Key).SelectMany(y => y.Structures).Sum(y => y.Count)*/
                         : _context.Tribes?.Where(y => y.Id == x.Key).SelectMany(y => y.Structures).ToArray();
@@ -115,7 +115,8 @@ namespace ArkBot.Commands
                     {
                         key = x.Key,
                         name = player != null ? x.FirstOrDefault()?.OwnerName : x.FirstOrDefault()?.Tribe,
-                        num = x.Count(),
+                        num = x.Count(z => !z.IsInCluster),
+                        numCluster = x.Count(z => z.IsInCluster),
                         species = tribe != null || player != null ? species : StatisticsHelper.FilterUsingStandardDeviation(species, z => z.Item2, (dist, sd) => dist >= sd, true),
                         distinctSpeciesCount = species.Length,
                         structuresCount = structuresCount,
@@ -131,8 +132,8 @@ namespace ArkBot.Commands
             var rank = tribe == null && player == null ? args.Skip : 0;
             foreach (var t in groups)
             {
-                sb.AppendLine("**" + (tribe == null && player == null ? $"{rank + 1}. " : "") + $"{(!string.IsNullOrWhiteSpace(t.name) ? t.name : t.key.ToString())} have a total of {t.num:N0} tamed dinos, {t.distinctSpeciesCount} distinct species" + (t.structuresCount.HasValue ? $" and {t.structuresCount:N0} structures" : "") + "**");
-                if (t.species.Length > 0) sb.AppendLine((tribe == null && player == null ? "which includes *" : "") + t.species.Select(x => $"{x.Item2:N0} {x.Item1}").ToArray().Join((n, l) => n == l ? " and " : ", ") + (tribe == null && player == null ? "*" : ""));
+                sb.AppendLine("**" + (tribe == null && player == null ? $"{rank + 1}. " : "") + $"{(!string.IsNullOrWhiteSpace(t.name) ? t.name : t.key.ToString())} have a total of {t.num:N0} tamed dinos{(t.numCluster > 0 ? $" (+{t.numCluster:N0} in cluster)" : "")}, {t.distinctSpeciesCount} distinct species" + (t.structuresCount.HasValue ? $" and {t.structuresCount:N0} structures" : "") + "**");
+                if (t.species.Length > 0) sb.AppendLine((tribe == null && player == null ? "which includes *" : "") + t.species.Select(x => $"{x.Item2:N0}{(x.Item3 > 0 ? $" (+{x.Item3:N0})" : "")} {x.Item1}").ToArray().Join((n, l) => n == l ? " and " : ", ") + (tribe == null && player == null ? "*" : ""));
                 if (t.structures != null && t.structures.Length > 0)
                 {
                     sb.AppendLine().AppendLine("**Most Common Structures**");
@@ -177,10 +178,10 @@ namespace ArkBot.Commands
                     }
 
                     //top dinos
-                    var dinos = _context.CreaturesNoRaft.Where(x => x.Team == t.key).GroupBy(x => x.SpeciesClass).Select(x => {
+                    var dinos = _context.CreaturesInclClusterNoRaft.Where(x => x.Team == t.key).GroupBy(x => x.SpeciesClass).Select(x => {
                         var baseLevel = x.Max(y => y.BaseLevel);
                         var level = x.Max(y => y.FullLevel ?? y.BaseLevel);
-                        var opponents = _context.CreaturesNoRaft.Where(y => y.SpeciesClass.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
+                        var opponents = _context.CreaturesInclClusterNoRaft.Where(y => y.SpeciesClass.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
                                 .GroupBy(y => y.Team);
                         return new
                         {

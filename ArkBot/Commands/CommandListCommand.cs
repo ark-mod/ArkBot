@@ -58,6 +58,10 @@ namespace ArkBot.Commands
                 {
                     if (command.HideFromCommandList || (command.DebugOnly && !_config.Debug)) continue;
 
+                    var ecc = command as IEnabledCheckCommand;
+                    if (ecc != null && !ecc.EnabledCheck())
+                        continue;
+
                     var rrc = command as IRoleRestrictedCommand;
                     if (rrc != null && (!e.Channel.IsPrivate || (rrc.ForRoles != null && rrc.ForRoles.Length > 0 
                         && !_discord.Servers.Any(x => x.Roles.Any(y => y != null && rrc.ForRoles.Contains(y.Name, StringComparer.OrdinalIgnoreCase) == true && y.Members.Any(z => z.Id == e.User.Id))))))

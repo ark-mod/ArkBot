@@ -28,12 +28,14 @@ namespace ArkBot.Commands
         public bool HideFromCommandList => false;
 
         private IConstants _constants;
+        private IConfig _config;
         private EfDatabaseContextFactory _databaseContextFactory;
         private DiscordClient _discord;
 
-        public UnlinkSteamCommand(IConstants constants, EfDatabaseContextFactory databaseContextFactory)
+        public UnlinkSteamCommand(IConstants constants, IConfig config, EfDatabaseContextFactory databaseContextFactory)
         {
             _constants = constants;
+            _config = config;
             _databaseContextFactory = databaseContextFactory;
         }
 
@@ -48,22 +50,17 @@ namespace ArkBot.Commands
         {
             using (var context = _databaseContextFactory.Create())
             {
-                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id);
+                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
                 if (user == null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, your user is not linked with Steam.");
                 }
                 else
                 {
-                    foreach(var played in user.Played)
-                    {
-                        played.SteamId = user.SteamId;
-                    }
-
-                    context.Users.Remove(user);
+                    user.Unlinked = true;
                     var result = context.SaveChanges();
 
-                    //remove ark role from users when they link
+                    //remove ark role from users when they unlink
                     if (_discord?.Servers != null)
                     {
                         foreach (var server in _discord.Servers)
@@ -71,7 +68,7 @@ namespace ArkBot.Commands
                             try
                             {
                                 var duser = server.GetUser(e.User.Id);
-                                var role = server.FindRoles("ark", true).FirstOrDefault();
+                                var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
                                 if (duser != null && role == null) continue;
 
                                 if (duser.HasRole(role)) await duser.RemoveRoles(role);

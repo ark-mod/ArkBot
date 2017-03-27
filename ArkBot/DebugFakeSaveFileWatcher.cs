@@ -31,22 +31,29 @@ namespace ArkBot
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
                 _index += 1;
 
-                var segments = _config?.JsonOutputDirPath != null ? _config.JsonOutputDirPath.TrimEnd(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar) : null;
-                if (segments == null || segments.Length <= 0)
+                if (_config.DebugNoExtract)
                 {
-                    continueRunning = false;
-                    return;
-                }
+                    var path = _config.DebugJsonOutputDirPath?.Replace("{index}", _index.ToString());
+                    if (path == null || !Directory.Exists(path))
+                    {
+                        continueRunning = false;
+                        return;
+                    }
 
-                segments[segments.Length - 1] += _index;
-                var path = string.Join(new string(Path.DirectorySeparatorChar, 1), segments);
-                if (!Directory.Exists(path))
+                    Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { PathToLoad = path });
+                }
+                else
                 {
-                    continueRunning = false;
-                    return;
-                }
+                    var path = _config.DebugSaveFilePath?.Replace("{index}", _index.ToString());
+                    var clusterpath = _config.DebugClusterSavePath?.Replace("{index}", _index.ToString());
+                    if (path == null || !File.Exists(path) || clusterpath == null || !Directory.Exists(clusterpath))
+                    {
+                        continueRunning = false;
+                        return;
+                    }
 
-                Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { PathToLoad = path });
+                    Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { SaveFilePath = path, ClusterPath = clusterpath });
+                }
             }
             catch { /*ignore all exceptions*/ }
             finally
