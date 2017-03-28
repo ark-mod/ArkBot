@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Vote
 {
-    public class DestroyWildDinosVoteHandler : IVoteHandler
+    public class DestroyWildDinosVoteHandler : IVoteHandler<DestroyWildDinosVote>
     {
         private DestroyWildDinosVote _vote;
 

@@ -6,6 +6,8 @@ using ArkBot.Database.Model;
 
 namespace ArkBot
 {
+    public delegate void ContextUpdating(object sender, ContextUpdatingEventArgs e);
+    public delegate void ContextUpdated(object sender, EventArgs e);
     public delegate void VoteInitiatedEventHandler(object sender, VoteInitiatedEventArgs e);
     public delegate void VoteResultForcedEventHandler(object sender, VoteResultForcedEventArgs e);
 
@@ -28,11 +30,14 @@ namespace ArkBot
         Task Initialize(ArkSpeciesAliases aliases = null);
         double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier);
         string GetElevationAsText(decimal z);
-        event ArkContext.ContextUpdated Updated;
         void DebugTriggerOnChange();
         void OnVoteInitiated(Database.Model.Vote item);
         void OnVoteResultForced(Database.Model.Vote item, VoteResult forcedResult);
+        void DisableContextUpdates();
+        void EnableContextUpdates();
 
+        event ContextUpdating Updating;
+        event ContextUpdated Updated;
         event VoteInitiatedEventHandler VoteInitiated;
         event VoteResultForcedEventHandler VoteResultForced;
     }

@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using ArkBot.Threading;
+using Discord;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,15 +11,72 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Helpers
 {
-    public class ServerHelper
+    /// <summary>
+    /// Service for interacting with ARK Servers (Start/Stop/Save/Update/Restart etc.)
+    /// </summary>
+    public class ArkServerService : IArkServerService
     {
         private IConstants _constants;
         private IConfig _config;
+        private IArkContext _context;
+        private Signaller<ContextUpdatingEventArgs> _signaller;
 
-        public ServerHelper(IConstants constants, IConfig config)
+        private const int _saveWorldDefaultTimeoutSeconds = 180;
+
+        public ArkServerService(IConstants constants, IConfig config, IArkContext context)
         {
+            _signaller = new Signaller<ContextUpdatingEventArgs>();
+
             _constants = constants;
             _config = config;
+            _context = context;
+
+            _context.Updating += _context_Updating;
+        }
+
+        private void _context_Updating(object sender, ContextUpdatingEventArgs e)
+        {
+            if (e.WasTriggeredBySaveFileChange)
+            {
+                _signaller.PulseAll(e);
+            }
+        }
+
+        public async Task<bool> SaveWorld(Func<string, Task<Message>> sendMessageDirected, int timeoutSeconds = _saveWorldDefaultTimeoutSeconds, bool noUpdateForThisCall = false)
+        {
+            if (timeoutSeconds <= 0) timeoutSeconds = _saveWorldDefaultTimeoutSeconds;
+
+            if (sendMessageDirected != null) await sendMessageDirected($"saving world (may take a while)...");
+            try
+            {
+                if (noUpdateForThisCall) _context.DisableContextUpdates();
+                if (await CommandHelper.SendRconCommand(_config, "saveworld") == null)
+                {
+                    //failed to connect/exception/etc.
+                    if (sendMessageDirected != null) await sendMessageDirected($"failed to save world.");
+                    return false;
+                }
+
+                //wait for a save file change event
+                ContextUpdatingEventArgs state = null;
+                if (!_signaller.Wait(TimeSpan.FromSeconds(timeoutSeconds), out state))
+                {
+                    if (sendMessageDirected != null) await sendMessageDirected($"timeout while waiting for savegame write (save status unknown).");
+                    return false;
+                }
+                if (_config.BackupsEnabled && !(state?.SavegameBackupResult?.ArchivePaths?.Length >= 1))
+                {
+                    if (sendMessageDirected != null) await sendMessageDirected($"savegame backup failed...");
+                    return false;
+                }
+            }
+            finally
+            {
+                if (noUpdateForThisCall) _context.EnableContextUpdates();
+            }
+
+            if (sendMessageDirected != null) await sendMessageDirected($"world saved!");
+            return true;
         }
 
         public async Task<bool> ShutdownServer(Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsNotStarted = true)
@@ -31,9 +89,10 @@ namespace ArkBot.Helpers
                 return !warnIfServerIsNotStarted;
             }
 
+            //save world 
+            if (!await SaveWorld(sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, noUpdateForThisCall: true)) return false;
+
             if (sendMessageDirected != null) await sendMessageDirected($"shutting down the server...");
-            var result = await CommandHelper.SendRconCommand(_config, "saveworld");
-            await Task.Delay(TimeSpan.FromSeconds(5));
             var result2 = await CommandHelper.SendRconCommand(_config, "doexit");
             if (result2 == null)
             {
@@ -98,11 +157,13 @@ namespace ArkBot.Helpers
 
             var updateMessage = sendMessageDirected != null ? await sendMessageDirected($"updating server...") : null;
             var r = new Regex(@"(?<task>\w+),\s+progress\:\s+(?<progress>[\d\.]+)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+            var sb = new StringBuilder();
             var result = await ProcessHelper.RunCommandLineTool(_config.UpdateServerBatchFilePath, "", outputDataReceived: new Func<string, int>((s) =>
             {
                 //Success! App '376030' already up to date.
                 //Update state (0x11) preallocating, progress: 76.88 (3826221085 / 4976891598)
                 //Update state (0x61) downloading, progress: 5.88 (292616661 / 4976891598)
+                if (s != null) sb.AppendLine(s);
                 if (s != null && updateMessage != null && getMessageDirected != null)
                 {
                     var m = r.Match(s);
@@ -120,14 +181,37 @@ namespace ArkBot.Helpers
             if (result.ExitCode != 0)
             {
                 if (sendMessageDirected != null) await sendMessageDirected($"failed to update server!");
+                Logging.LogException(string.Join(Environment.NewLine, new[] { $@"Server update failed (exitCode: {result.ExitCode})", sb.ToString() }), result.Exception, GetType(), LogLevel.DEBUG);
                 return false;
             }
 
+            Logging.Log(string.Join(Environment.NewLine, new[] { $@"Server update successfull", sb.ToString() }), GetType(), LogLevel.DEBUG);
             if (sendMessageDirected != null) await sendMessageDirected($"update complete!");
 
             if (!await StartServer(sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null)) return false;
 
             return true;
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _context.Updating -= _context_Updating;
+                }
+
+                disposedValue = true;
+            }
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

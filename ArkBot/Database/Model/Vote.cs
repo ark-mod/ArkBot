@@ -24,7 +24,5 @@ namespace ArkBot.Database.Model
         public string Identifier { get; set; }
         public string Reason { get; set; }
         public virtual ICollection<UserVote> Votes { get; set; }
-
-        public abstract ArkBot.Vote.IVoteHandler GetHandler();
     }
 }

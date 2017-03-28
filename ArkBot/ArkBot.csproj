@@ -40,7 +40,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="CoreRCON.NET-4.6, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CoreRCON.NET-4.6.1.0.0-CI00003\lib\net46\CoreRCON.NET-4.6.dll</HintPath>
+      <HintPath>..\packages\CoreRCON.NET-4.6.1.0.0-CI00004\lib\net46\CoreRCON.NET-4.6.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Discord.Net, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
@@ -246,7 +246,7 @@
     <Compile Include="Extensions\DiscordChannelExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
-    <Compile Include="Helpers\ServerHelper.cs" />
+    <Compile Include="Services\ArkServerService.cs" />
     <Compile Include="IArkSaveFileWatcher.cs" />
     <Compile Include="ISavedState.cs" />
     <Compile Include="Migrations\201702280520255_UserPlayed.cs" />
@@ -283,7 +283,7 @@
     <Compile Include="Data\EntityNameWithCount.cs" />
     <Compile Include="Data\Player.cs" />
     <Compile Include="Data\Tribe.cs" />
-    <Compile Include="ExceptionLogging.cs" />
+    <Compile Include="Logging.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\RegexExtensions.cs" />
     <Compile Include="Extensions\SqlCeResultSetExtensions.cs" />
@@ -312,11 +312,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="Services\Data\SavegameBackupResult.cs" />
+    <Compile Include="Services\IArkServerService.cs" />
     <Compile Include="Services\IPlayedTimeWatcher.cs" />
+    <Compile Include="Services\ISavegameBackupService.cs" />
     <Compile Include="Services\IUrlShortenerService.cs" />
     <Compile Include="Services\PlayedTimeWatcher.cs" />
+    <Compile Include="Services\SavegameBackupService.cs" />
     <Compile Include="Services\UrlShortenerService.cs" />
+    <Compile Include="Threading\Signaler.cs" />
     <Compile Include="TimedTask.cs" />
+    <Compile Include="ContextUpdatingEventArgs.cs" />
     <Compile Include="VoteResultForcedEventArgs.cs" />
     <Compile Include="VoteInitiatedEventArgs.cs" />
     <Compile Include="Vote\DestroyWildDinosVoteHandler.cs" />

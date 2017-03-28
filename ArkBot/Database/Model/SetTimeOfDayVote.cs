@@ -16,8 +16,6 @@ namespace ArkBot.Database.Model
     {
         public string TimeOfDay { get; set; }
 
-        public override ArkBot.Vote.IVoteHandler GetHandler() => new ArkBot.Vote.SetTimeOfDayVoteHandler(this);
-
         public override string ToString()
         {
             var remaining = Finished - DateTime.Now;

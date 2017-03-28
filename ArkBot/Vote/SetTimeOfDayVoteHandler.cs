@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Vote
 {
-    public class SetTimeOfDayVoteHandler : IVoteHandler
+    public class SetTimeOfDayVoteHandler : IVoteHandler<SetTimeOfDayVote>
     {
         private SetTimeOfDayVote _vote;
 

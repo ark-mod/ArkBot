@@ -72,14 +72,16 @@ namespace ArkBot.Commands.Experimental
         private IConstants _constants;
         private EfDatabaseContextFactory _databaseContextFactory;
         private ISavedState _savedstate;
+        private IArkServerService _arkServerService;
 
-        public AdminCommand(ILifetimeScope scope, IArkContext context, IConfig config, IConstants constants, EfDatabaseContextFactory databaseContextFactory, ISavedState savedstate)
+        public AdminCommand(ILifetimeScope scope, IArkContext context, IConfig config, IConstants constants, EfDatabaseContextFactory databaseContextFactory, ISavedState savedstate, IArkServerService arkServerService)
         {
             _context = context;
             _config = config;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
             _savedstate = savedstate;
+            _arkServerService = arkServerService;
         }
 
         public void Register(CommandBuilder command)
@@ -145,31 +147,28 @@ namespace ArkBot.Commands.Experimental
                 .For(y => y.True, flag: true)
                 .For(y => y.False, flag: true));
 
-            var server = new ServerHelper(_constants, _config);
             var _rTimeOfDay = new Regex(@"^\s*\d{2,2}\:\d{2,2}(\:\d{2,2})?\s*$", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             var sb = new StringBuilder();
 
             if (args.StartServer)
             {
-                await server.StartServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
+                await _arkServerService.StartServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
             }
             else if (args.ShutdownServer || args.StopServer)
             {
-                await server.ShutdownServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
+                await _arkServerService.ShutdownServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
             }
             else if (args.RestartServer)
             {
-                await server.RestartServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
+                await _arkServerService.RestartServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
             }
             else if (args.UpdateServer)
             {
-                await server.UpdateServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s), (s) => e.Channel.GetMessageDirectedAtText(e.User.Id, s));
+                await _arkServerService.UpdateServer((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s), (s) => e.Channel.GetMessageDirectedAtText(e.User.Id, s));
             }
             else if (args.SaveWorld)
             {
-                var result = await CommandHelper.SendRconCommand(_config, "saveworld");
-                if (result == null) sb.AppendLine("**Failed to save world... :(**");
-                else sb.AppendLine("**World saved!**");
+                await _arkServerService.SaveWorld((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s), 180);
             }
             else if (args.DestroyWildDinos)
             {

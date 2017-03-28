@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Vote
 {
-    public class UnbanVoteHandler : IVoteHandler
+    public class UnbanVoteHandler : IVoteHandler<UnbanVote>
     {
         private Database.Model.UnbanVote _vote;
 

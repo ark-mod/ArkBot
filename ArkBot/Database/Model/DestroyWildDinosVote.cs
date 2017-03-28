@@ -14,8 +14,6 @@ namespace ArkBot.Database.Model
     // IE. modelBuilder.Entity<...>().ToTable("<name>");
     public class DestroyWildDinosVote : Vote
     {
-        public override ArkBot.Vote.IVoteHandler GetHandler() => new ArkBot.Vote.DestroyWildDinosVoteHandler(this);
-
         public override string ToString()
         {
             var remaining = Finished - DateTime.Now;

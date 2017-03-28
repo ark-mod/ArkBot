@@ -24,8 +24,6 @@ namespace ArkBot.Database.Model
         [NotMapped]
         public string FullName => $"{PlayerName} ({CharacterName}){(!string.IsNullOrWhiteSpace(TribeName) ? $" [{TribeName}]" : "")}";
 
-        public override ArkBot.Vote.IVoteHandler GetHandler() => new ArkBot.Vote.BanVoteHandler(this);
-
         public override string ToString()
         {
             var remaining = Finished - DateTime.Now;

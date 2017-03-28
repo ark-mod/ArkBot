@@ -35,5 +35,7 @@
         string RconPassword { get; set; }
         string UpdateServerBatchFilePath { get; set; }
         string StartServerBatchFilePath { get; set; }
+        bool BackupsEnabled { get; set; }
+        string BackupsDirectoryPath { get; set; }
     }
 }

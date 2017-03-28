@@ -173,14 +173,14 @@ namespace ArkBot.Helpers
                 //    return await messenger.ExecuteCommandAsync(command);
                 //}
 
-                using (var rcon = new RCON(IPAddress.Parse(config.ServerIp), (ushort)config.RconPort, config.RconPassword))
+                using (var rcon = new RCON(IPAddress.Parse(config.ServerIp), (ushort)config.RconPort, config.RconPassword, 5000))
                 {
-                    return await rcon.SendCommandAsync(command);
+                    return await rcon.SendCommandAsync(command, TimeSpan.FromSeconds(5));
                 }
             }
             catch(Exception ex)
             {
-                ExceptionLogging.LogUnhandledException(ex);
+                Logging.LogException("Exception attempting to send rcon command", ex, typeof(CommandHelper), LogLevel.DEBUG, ExceptionLevel.Ignored);
             }
 
             return null;

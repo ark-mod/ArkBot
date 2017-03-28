@@ -146,6 +146,14 @@ namespace ArkBot
         [JsonProperty(PropertyName = "startServerBatchFilePath")]
         [Description("Absolute file path of a batch file to run in order to start the server.")]
         public string StartServerBatchFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "backupsEnabled")]
+        [Description("Option to enable savegame backups.")]
+        public bool BackupsEnabled { get; set; }
+
+        [JsonProperty(PropertyName = "backupsDirectoryPath")]
+        [Description("Directory path where savegame backups are stored.")]
+        public string BackupsDirectoryPath { get; set; }
     }
 
     public class ArkMultipliersConfigSection

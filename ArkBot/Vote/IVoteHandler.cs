@@ -6,6 +6,10 @@ using Discord;
 
 namespace ArkBot.Vote
 {
+    public interface IVoteHandler<Vote> : IVoteHandler
+    {
+    }
+
     public interface IVoteHandler
     {
         Task<VoteStateChangeResult> VoteFinished(IConfig config, IConstants constants, IEfDatabaseContext db);

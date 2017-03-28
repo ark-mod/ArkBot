@@ -187,15 +187,15 @@ namespace ArkBot.Commands
                         return;
                     }
 
-                    var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
-                    if (player == null)
-                    {
-                        await e.Channel.SendMessageDirectedAt(e.User.Id, $"we have no record of you playing in the last month which is a requirement for using this command.");
-                        return;
-                    }
-
                     if (!isAdminOrDev)
                     {
+                        var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
+                        if (player == null)
+                        {
+                            await e.Channel.SendMessageDirectedAt(e.User.Id, $"we have no record of you playing in the last month which is a requirement for using this command.");
+                            return;
+                        }
+                    
                         if (player.Level < 50)
                         {
                             await e.Channel.SendMessageDirectedAt(e.User.Id, $"you have to reach level 50 in order to initiate votes.");

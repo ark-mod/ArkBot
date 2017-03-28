@@ -14,15 +14,15 @@ namespace ArkBot.Helpers
         {
             public int ExitCode { get; set; }
             public Exception Exception { get; set; }
-            public string StandardOutput { get; set; }
-            public string StandardError { get; set; }
+            //public string StandardOutput { get; set; }
+            //public string StandardError { get; set; }
         }
 
         public static async Task<ProcessResult> RunCommandLineTool(string executableAbsolutePath, string commandLineArguments, string workingDirectory = null, bool hiddenWindow = true, Func<string, int> outputDataReceived = null, bool keepAlive = false)
         {
             int exitCode = 0;
-            string standardOutput = null;
-            string standardError = null;
+            //string standardOutput = null;
+            //string standardError = null;
             Exception exception = null;
             Process cmd = null;
             try
@@ -85,9 +85,9 @@ namespace ArkBot.Helpers
             return new ProcessResult
             {
                 ExitCode = exitCode,
-                Exception = exception,
-                StandardError = standardError,
-                StandardOutput = standardOutput
+                Exception = exception
+                //,StandardError = standardError,
+                //StandardOutput = standardOutput
             };
         }
     }

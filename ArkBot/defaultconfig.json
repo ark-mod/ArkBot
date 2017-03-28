@@ -27,6 +27,8 @@
   "debug": false,
   "updateServerBatchFilePath": "C:\\steamcmd\\updateArkServer.bat",
   "startServerBatchFilePath": "C:\\steamcmd\\runArkServer.bat",
+  "backupsEnabled": false,
+  "backupsDirectoryPath": "",
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
     "babyMatureSpeedMultiplier": 1.0,

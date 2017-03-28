@@ -1,6 +1,8 @@
-﻿using System;
+﻿extern alias DotNetZip;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +11,65 @@ namespace ArkBot.Helpers
 {
     public static class FileHelper
     {
+        public static bool IsValidDirectoryPath(string path, bool allowRelativePath = true)
+        {
+            if (path == null) return false;
+
+            try
+            {
+                var invalidChars = Path.GetInvalidPathChars();
+                if (path.IndexOfAny(Path.GetInvalidPathChars()) != -1) return false;
+                if (!allowRelativePath && !Path.IsPathRooted(path)) return false;
+
+                var p = Path.GetFullPath(path);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public static void CreateZipArchive(string[] files, string path, string basePath = null)
+        {
+            using (var fileStream = new FileStream(path, FileMode.CreateNew))
+            {
+                using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
+                {
+                    foreach (var file in files)
+                    {
+                        var entry = archive.CreateEntryFromFile(
+                            file,
+                            basePath == null || !file.StartsWith(basePath, StringComparison.OrdinalIgnoreCase)
+                                ? Path.GetFileName(file) :
+                                file.Substring(basePath.Length).TrimStart('\\'), CompressionLevel.Fastest);
+                    }
+                }
+            }
+        }
+
+        public static string[] CreateDotNetZipArchive(Tuple<string, string, string[]>[] files, string path, int? maxSegmentSizeBytes = null, DotNetZip::Ionic.Zlib.CompressionLevel compressionLevel = DotNetZip::Ionic.Zlib.CompressionLevel.BestCompression)
+        {
+            using (var zip = new Ionic.Zip.ZipFile { CompressionLevel = compressionLevel })
+            {
+                var entities = files.SelectMany(x =>
+                    x.Item3.Select(y => new
+                    {
+                        path = y,
+                        directoryPathInArchive = string.IsNullOrWhiteSpace(x.Item1) || !y.StartsWith(x.Item1, StringComparison.OrdinalIgnoreCase)
+                            ? x.Item2 ?? ""
+                            : Path.Combine(x.Item2 ?? "", Path.GetDirectoryName(y.Substring(x.Item1.Length).TrimStart('\\')))
+                    })).ToArray();
+                foreach (var entity in entities) zip.AddFile(entity.path, entity.directoryPathInArchive);
+                if(maxSegmentSizeBytes.HasValue) zip.MaxOutputSegmentSize = maxSegmentSizeBytes.Value;
+                zip.Save(path);
+
+                return Enumerable.Range(0, maxSegmentSizeBytes.HasValue ? zip.NumberOfSegmentsForMostRecentSave : 1)
+                    .Select(x => x == 0 ? path : Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".z" + (x < 10 ? "0" : "") + x)).ToArray();
+            }
+        }
+
         public static async Task<string> ReadAllTextTaskAsync(string filepath)
         {
             if (!File.Exists(filepath)) return null;

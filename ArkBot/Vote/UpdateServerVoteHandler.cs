@@ -12,13 +12,15 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Vote
 {
-    public class UpdateServerVoteHandler : IVoteHandler
+    public class UpdateServerVoteHandler : IVoteHandler<UpdateServerVote>
     {
         private UpdateServerVote _vote;
+        private IArkServerService _arkServerService;
 
-        public UpdateServerVoteHandler(Database.Model.Vote vote)
+        public UpdateServerVoteHandler(Database.Model.Vote vote, IArkServerService arkServerService)
         {
             _vote = vote as UpdateServerVote;
+            _arkServerService = arkServerService;
         }
 
         public static async Task<InitiateVoteResult> Initiate(Channel channel, IArkContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason)
@@ -42,7 +44,7 @@ namespace ArkBot.Vote
             return new InitiateVoteResult
             {
                 MessageInitiator = $"the vote to update the server have been initiated. Announcement will be made.",
-                MessageAnnouncement = $@"**A vote to update the server due to ""{reason}"" have been started. Please cast your vote in the next five minutes!**{Environment.NewLine}To vote use the command: **!vote {identifier} yes**/**no**",
+                MessageAnnouncement = $@"@everyone **A vote to update the server due to ""{reason}"" have been started. Please cast your vote in the next five minutes!**{Environment.NewLine}To vote use the command: **!vote {identifier} yes**/**no**",
                 MessageRcon = $@"A vote to update the server due to ""{reason}"" have been started. Please cast your vote on Discord using !vote {identifier} yes/no in the next five minutes!",
                 Vote = vote
             };
@@ -72,8 +74,11 @@ namespace ArkBot.Vote
                 ReactDelayFor = "Server update",
                 React = _vote.Result == VoteResult.Passed ? new Func<Task>(async () =>
                 {
-                    var server = new ServerHelper(constants, config);
-                    await server.RestartServer(null);
+                    string message = null;
+                    if (!await _arkServerService.UpdateServer((s) => { message = s; return Task.FromResult((Message)null); }, (s) => s.FirstCharToUpper()))
+                    {
+                        Logging.Log($@"Vote to update server failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
+                    }
                 }) : null
             };
         }

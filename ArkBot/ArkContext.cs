@@ -18,6 +18,7 @@ using ArkBot.Extensions;
 using ArkBot.Services;
 using System.Data.Entity;
 using ArkBot.Database.Model;
+using ArkBot.Services.Data;
 
 namespace ArkBot
 {
@@ -29,11 +30,11 @@ namespace ArkBot
         private ISavedState _savedstate;
         private EfDatabaseContextFactory _databaseContextFactory;
         private IPlayedTimeWatcher _playedTimeWatcher;
+        private ISavegameBackupService _savegameBackupService;
         public IProgress<string> Progress { get; private set; }
 
-        public delegate void ContextUpdated(object sender, EventArgs e);
+        public event ContextUpdating Updating;
         public event ContextUpdated Updated;
-
         public event VoteInitiatedEventHandler VoteInitiated;
         public event VoteResultForcedEventHandler VoteResultForced;
 
@@ -53,6 +54,7 @@ namespace ArkBot
 
         private List<DateTime> _previousUpdates = new List<DateTime>();
         private TribeLog _latestTribeLog;
+        private bool _contextUpdatesDisabledOverride = false;
 
         private DateTime _lastUpdate;
         public DateTime LastUpdate
@@ -113,13 +115,15 @@ namespace ArkBot
             IProgress<string> progress,
             ISavedState savedstate,
             EfDatabaseContextFactory databaseContextFactory,
-            IPlayedTimeWatcher playedTimeWatcher)
+            IPlayedTimeWatcher playedTimeWatcher,
+            ISavegameBackupService savegameBackupService)
         {
             _config = config;
             _constants = constants;
             _savedstate = savedstate;
             _databaseContextFactory = databaseContextFactory;
             _playedTimeWatcher = playedTimeWatcher;
+            _savegameBackupService = savegameBackupService;
             Progress = progress;
 
             Creatures = new Creature[] { };
@@ -138,6 +142,8 @@ namespace ArkBot
             Progress.Report("Context initialization started...");
 
             SpeciesAliases = aliases ?? await ArkSpeciesAliases.Load() ?? new ArkSpeciesAliases();
+
+            Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
 
             TribeLogs = new List<TribeLog>();
             var data = await ExtractAndLoadData();
@@ -469,12 +475,32 @@ namespace ArkBot
 
         private async void _watcher_DebugFakeChanged(object sender, ArkSaveFileChangedEventArgs e)
         {
+            Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
             await UpdateAll(e.PathToLoad, e.SaveFilePath, e.ClusterPath);
+            Progress.Report($"Context update complete!");
         }
 
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
         {
-            await UpdateAll();
+            //backup this savegame
+            SavegameBackupResult result = null;
+            if (_config.BackupsEnabled)
+            {
+                Progress.Report($"Backup triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                result = _savegameBackupService.CreateBackup(_config.SaveFilePath, _config.ClusterSavePath);
+                if (result != null && result.ArchivePaths != null) Progress.Report($@"Backup successfull ({(string.Join(", ", result.ArchivePaths.Select(x => $@"""{x}""")))})!");
+                else Progress.Report($"Backup failed...");
+            }
+
+            Updating?.Invoke(this, new ContextUpdatingEventArgs(true, result));
+            if (!_contextUpdatesDisabledOverride)
+            {
+                if (_config.BackupsEnabled) Progress.Report($"Updating context...");
+                else Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                await UpdateAll();
+                Progress.Report($"Context update complete!");
+            }
         }
 
         public void OnVoteInitiated(Database.Model.Vote item)
@@ -488,7 +514,6 @@ namespace ArkBot
 
         private async Task UpdateAll(string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
-            Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             TribeLogs = new List<TribeLog>();
             var data = await ExtractAndLoadData(jsonPathOverride, saveFilePathOverride, clusterPathOverride);
             if (data != null)
@@ -877,6 +902,15 @@ namespace ArkBot
             var hint = elevation <= -480 ? "below world" : elevation <= -450 ? "sea floor" : elevation <= -285 ? "underground" : elevation >= -165 && elevation <= -125 ? "sea level" : elevation >= 550 ? "above world" : elevation >= 525 ? "map ceiling" : null;
 
             return $"{amsl:N0} meters" + (hint != null ? $" (~{hint})" : "");
+        }
+
+        public void DisableContextUpdates()
+        {
+            _contextUpdatesDisabledOverride = true;
+        }
+        public void EnableContextUpdates()
+        {
+            _contextUpdatesDisabledOverride = false;
         }
 
         #region IDisposable Support

@@ -22,6 +22,8 @@ using ArkBot.Services;
 using ArkBot.Database;
 using Discord;
 using System.Data.Entity;
+using ArkBot.Vote;
+using ArkBot.Database.Model;
 
 namespace ArkBot
 {
@@ -31,12 +33,13 @@ namespace ArkBot
 
         static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            if (e.ExceptionObject is Exception) ExceptionLogging.LogUnhandledException(e.ExceptionObject as Exception, true);
+            var exception = e.ExceptionObject as Exception;
+            if (exception != null) Logging.LogException(exception.Message, exception, typeof(Program), LogLevel.FATAL, ExceptionLevel.ApplicationCrash);
         }
 
         static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            ExceptionLogging.LogUnhandledException(e.Exception, true);
+            Logging.LogException(e.Exception.Message, e.Exception, typeof(Program), LogLevel.FATAL, ExceptionLevel.ApplicationCrash);
         }
 
         static void Main(string[] args)
@@ -166,6 +169,12 @@ namespace ArkBot
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerPort))}");
                 sb.AppendLine();
             }
+            if (config.BackupsEnabled && (string.IsNullOrWhiteSpace(config.BackupsDirectoryPath) || !FileHelper.IsValidDirectoryPath(config.BackupsDirectoryPath)))
+            {
+                sb.AppendLine($@"Error: {nameof(config.BackupsDirectoryPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BackupsDirectoryPath))}");
+                sb.AppendLine();
+            }
 
             //todo: for now this section is not really needed unless !imprintcheck is used
             //if (config.ArkMultipliers == null)
@@ -275,6 +284,16 @@ namespace ArkBot
                 .WithParameter(new TypedParameter(typeof(string), constants.DatabaseConnectionString));
             builder.RegisterType<EfDatabaseContextFactory>();
             builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
+            builder.RegisterType<ArkServerService>().As<IArkServerService>().SingleInstance();
+            builder.RegisterType<SavegameBackupService>().As<ISavegameBackupService>().SingleInstance();
+
+            //register vote handlers
+            builder.RegisterType<BanVoteHandler>().As<IVoteHandler<BanVote>>();
+            builder.RegisterType<UnbanVoteHandler>().As<IVoteHandler<UnbanVote>>();
+            builder.RegisterType<RestartServerVoteHandler>().As<IVoteHandler<RestartServerVote>>();
+            builder.RegisterType<UpdateServerVoteHandler>().As<IVoteHandler<UpdateServerVote>>();
+            builder.RegisterType<DestroyWildDinosVoteHandler>().As<IVoteHandler<DestroyWildDinosVote>>();
+            builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
 
             Container = builder.Build();
 
@@ -336,13 +355,13 @@ namespace ArkBot
                             lastAttempt = DateTime.Now;
                             Console.WriteLine("Connecting bot...");
                             await _bot.Start();
-                            //Console.WriteLine("Connected!"); //Notification already from Discord.Net
+                            Console.WriteLine("Connected!");
                             isConnected = true;
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Failed to connect ({ex.Message})! Will retry in a moment...");
-                            ExceptionLogging.LogException(ex, "Failed to start Discord Bot", "Program.MainAsync");
+                            Logging.LogException("Failed to start Discord Bot", ex, typeof(Program), LogLevel.DEBUG, ExceptionLevel.Ignored);
                         }
                     }
 

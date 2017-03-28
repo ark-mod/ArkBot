@@ -1,5 +1,4 @@
-﻿extern alias DotNetZip;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,10 +51,8 @@ namespace ArkBot.Commands.Experimental
         {
             if (!e.Channel.IsPrivate) return;
 
-            var args = CommandHelper.ParseArgs(e, new { logs = false, applicationcrash = false, exception = false, json = false, save = false, database = false, stats = false }, x =>
+            var args = CommandHelper.ParseArgs(e, new { logs = false, json = false, save = false, database = false, stats = false }, x =>
                 x.For(y => y.logs, flag: true)
-                .For(y => y.applicationcrash, flag: true)
-                .For(y => y.exception, flag: true)
                 .For(y => y.json, flag: true)
                 .For(y => y.save, flag: true)
                 .For(y => y.database, flag: true)
@@ -76,13 +73,11 @@ namespace ArkBot.Commands.Experimental
 
                 await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
             }
-            else if (args.logs || args.exception || args.applicationcrash)
+            else if (args.logs)
             {
                 var pattern = "*.log";
-                if (args.applicationcrash) pattern = "applicationcrash_*.log";
-                else if (args.exception) pattern = "exception_*.log";
 
-                var files = Directory.GetFiles(".\\", pattern, SearchOption.TopDirectoryOnly);
+                var files = Directory.GetFiles(".\\logs\\", pattern, SearchOption.TopDirectoryOnly);
                 if (files == null || files.Length <= 0)
                 {
                     await e.Channel.SendMessage("Could not find any logs... :(");
@@ -92,7 +87,7 @@ namespace ArkBot.Commands.Experimental
                 var path = Path.Combine(_config.TempFileOutputDirPath, "logs_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
                 try
                 {
-                    CreateZipArchive(files, path);
+                    FileHelper.CreateZipArchive(files, path);
                     await e.Channel.SendFile(path);
                 }
                 catch
@@ -124,7 +119,7 @@ namespace ArkBot.Commands.Experimental
                 var path = Path.Combine(_config.TempFileOutputDirPath, "json_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
                 try
                 {
-                    CreateMultipleZipArchive(new[] { new Tuple<string, string, string[]>(_config.JsonOutputDirPath, "", files) }, path);
+                    FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>(_config.JsonOutputDirPath, "", files) }, path, 5 * 1024 * 1024);
                     await e.Channel.SendFile(path);
                 }
                 catch
@@ -163,7 +158,7 @@ namespace ArkBot.Commands.Experimental
                 string[] results = null;
                 try
                 {
-                    results = CreateMultipleZipArchive(files, path);
+                    results = FileHelper.CreateDotNetZipArchive(files, path, 5 * 1024 * 1024);
                     foreach (var item in results) await e.Channel.SendFile(item);
                 }
                 catch
@@ -195,7 +190,7 @@ namespace ArkBot.Commands.Experimental
                 string[] results = null;
                 try
                 {
-                    results = CreateMultipleZipArchive(new[] { new Tuple<string, string, string[]>("", "", new[] { file }) }, path);
+                    results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>("", "", new[] { file }) }, path, 5 * 1024 * 1024);
                     foreach (var item in results) await e.Channel.SendFile(item);
                 }
                 catch
@@ -213,45 +208,6 @@ namespace ArkBot.Commands.Experimental
                         }
                     }
                 }
-            }
-        }
-
-        private static void CreateZipArchive(string[] files, string path, string basePath = null)
-        {
-            using (var fileStream = new FileStream(path, FileMode.CreateNew))
-            {
-                using (var archive = new ZipArchive(fileStream, ZipArchiveMode.Create, true))
-                {
-                    foreach (var file in files)
-                    {
-                        var entry = archive.CreateEntryFromFile(
-                            file,
-                            basePath == null || !file.StartsWith(basePath, StringComparison.OrdinalIgnoreCase)
-                                ? Path.GetFileName(file) :
-                                file.Substring(basePath.Length).TrimStart('\\'), CompressionLevel.Fastest);
-                    }
-                }
-            }
-        }
-
-        private static string[] CreateMultipleZipArchive(Tuple<string, string, string[]>[] files, string path)
-        {
-            using (var zip = new Ionic.Zip.ZipFile { CompressionLevel = DotNetZip::Ionic.Zlib.CompressionLevel.BestCompression })
-            {
-                var entities = files.SelectMany(x =>
-                    x.Item3.Select(y => new
-                    {
-                        path = y,
-                        directoryPathInArchive = string.IsNullOrWhiteSpace(x.Item1) || !y.StartsWith(x.Item1, StringComparison.OrdinalIgnoreCase)
-                            ? x.Item2 ?? ""
-                            : Path.Combine(x.Item2 ?? "", Path.GetDirectoryName(y.Substring(x.Item1.Length).TrimStart('\\')))
-                    })).ToArray();
-                foreach (var entity in entities) zip.AddFile(entity.path, entity.directoryPathInArchive);
-                zip.MaxOutputSegmentSize = 5 * 1024 * 1024;
-                zip.Save(path);
-
-                return Enumerable.Range(0, zip.NumberOfSegmentsForMostRecentSave)
-                    .Select(x => x == 0 ? path : Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".z" + (x < 10 ? "0" : "") + x)).ToArray();
             }
         }
     }

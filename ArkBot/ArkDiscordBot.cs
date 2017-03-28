@@ -17,6 +17,10 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using ArkBot.Database.Model;
 using ArkBot.Helpers;
+using Autofac;
+using ArkBot.Vote;
+using log4net;
+using System.Data.Entity.Core.Objects;
 
 namespace ArkBot
 {
@@ -34,8 +38,9 @@ namespace ArkBot
         private DateTime _prevLastUpdate;
         private ConcurrentDictionary<TimedTask, bool> _timedTasks;
         private DateTime _prevTimedBansUpdate;
+        private ILifetimeScope _scope;
 
-        public ArkDiscordBot(IConfig config, IArkContext context, IConstants constants, IBarebonesSteamOpenId openId, EfDatabaseContextFactory databaseContextFactory, IEnumerable<ICommand> commands)
+        public ArkDiscordBot(IConfig config, IArkContext context, IConstants constants, IBarebonesSteamOpenId openId, EfDatabaseContextFactory databaseContextFactory, IEnumerable<ICommand> commands, ILifetimeScope scope)
         {
             _config = config;
             _context = context;
@@ -43,6 +48,7 @@ namespace ArkBot
             _databaseContextFactory = databaseContextFactory;
             _openId = openId;
             _openId.SteamOpenIdCallback += _openId_SteamOpenIdCallback;
+            _scope = scope;
 
             _context.Updated += _context_Updated;
 
@@ -100,8 +106,7 @@ namespace ArkBot
 
         private async void _context_VoteResultForced(object sender, VoteResultForcedEventArgs args)
         {
-            var handler = args.Item.GetHandler();
-            if (handler == null) throw new ApplicationException("Vote handler is null, this should not happen...");
+            if (args == null || args.Item == null) return;
 
             var tasks = _timedTasks.Keys.Where(x => x.Tag is string && ((string)x.Tag).Equals("vote_" + args.Item.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
             foreach (var task in tasks)
@@ -118,10 +123,35 @@ namespace ArkBot
             }
         }
 
+        private IVoteHandler GetVoteHandler(Database.Model.Vote vote)
+        {
+            IVoteHandler handler = null;
+            var type = ObjectContext.GetObjectType(vote.GetType());
+            try
+            {
+                handler = _scope.Resolve(typeof(IVoteHandler<>).MakeGenericType(type), new TypedParameter(typeof(Database.Model.Vote), vote)) as IVoteHandler;
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException($"Failed to resolve IVoteHandler for type '{type.Name}'", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
+                return null;
+            }
+
+            if (handler == null)
+            {
+                Logging.Log($"Failed to resolve IVoteHandler for type '{type.Name}'", GetType(), LogLevel.ERROR);
+                return null;
+            }
+
+            return handler;
+        }
+
         private void _context_VoteInitiated(object sender, VoteInitiatedEventArgs args)
         {
-            var handler = args.Item.GetHandler();
-            if (handler == null) throw new ApplicationException("Vote handler is null, this should not happen...");
+            if (args == null || args.Item == null) return;
+
+            var handler = GetVoteHandler(args.Item);
+            if (handler == null) return;
 
             //reminder, one minute before expiry
             var reminderAt = args.Item.Finished.AddMinutes(-1);
@@ -168,8 +198,8 @@ namespace ArkBot
 
         private async Task VoteFinished(IEfDatabaseContext db, Database.Model.Vote vote, bool noAnnouncement = false, VoteResult? forcedResult = null)
         {
-            var handler = vote.GetHandler();
-            if (handler == null) throw new ApplicationException("Vote handler is null, this should not happen...");
+            var handler = GetVoteHandler(vote);
+            if (handler == null) return;
 
             var votesFor = vote.Votes.Count(x => x.VotedFor);
             var votesAgainst = vote.Votes.Count(x => !x.VotedFor);
@@ -237,7 +267,8 @@ namespace ArkBot
             }
             catch(Exception ex)
             {
-                ExceptionLogging.LogUnhandledException(ex);
+                //todo: better exception handling structure
+                Logging.LogException(ex.Message, ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
             }
             db.SaveChanges();
             
@@ -344,31 +375,40 @@ namespace ArkBot
                             var dbuser = linkedusers.FirstOrDefault(x => (ulong)x.DiscordId == user.Id);
                             if (dbuser == null)
                             {
-                                if (user.HasRole(role)) await user.RemoveRoles(role);
+                                if (user.HasRole(role))
+                                {
+                                    Logging.Log($@"Removing role ({role.Name}) from user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
+                                    await user.RemoveRoles(role);
+                                }
                                 continue;
                             }
 
-                            if (!user.HasRole(role)) await user.AddRoles(role);
+                            if (!user.HasRole(role))
+                            {
+                                Logging.Log($@"Adding role ({role.Name}) from user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
+                                await user.AddRoles(role);
+                            }
 
                             var player = _context.Players?.FirstOrDefault(x => { long steamId = 0; return long.TryParse(x.SteamId, out steamId) ? steamId == dbuser.SteamId : false; });
                             var playerName = player?.Name?.Length > 32 ? player?.Name?.Substring(0, 32) : player?.Name;
-                            if (playerName != null && !string.IsNullOrWhiteSpace(playerName) && (user.Nickname == null || !playerName.Equals(user.Nickname, StringComparison.Ordinal)))
+                            if (!string.IsNullOrWhiteSpace(playerName) && (user.Nickname == null || !playerName.Equals(user.Nickname, StringComparison.Ordinal)))
                             {
                                 //must be less or equal to 32 characters
+                                Logging.Log($@"Changing nickname (from: ""{user.Nickname ?? "null"}"", to: ""{playerName}"") for user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
                                 await user.Edit(nickname: playerName);
                             }
                         }
-                        catch (Discord.Net.HttpException)
+                        catch (Discord.Net.HttpException ex)
                         {
                             //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
+                            Logging.LogException("HttpException while trying to update nicknames/roles (could be due to permissions)", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
                         }
                     }
                 }
             }
             catch(WebException ex)
             {
-                //do nothing
-                ExceptionLogging.LogException(ex, $"Ignored {ex.GetType().Name} in {nameof(ArkDiscordBot)}.{nameof(UpdateNicknamesAndRoles)}");
+                Logging.LogException("Exception while trying to update nicknames/roles", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
             }
         }
 
@@ -477,8 +517,8 @@ namespace ArkBot
             sb.AppendLine();
             _context.Progress.Report(sb.ToString());
 
-            //log to disk
-            if (e.Exception != null) ExceptionLogging.LogException(e.Exception, message: message, source: nameof(ArkDiscordBot) + "_command");
+            //if there is an exception log all information pertaining to it so that we can possibly fix it in the future
+            if (e.Exception != null) Logging.LogException(message, e.Exception, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
         }
 
         private void Commands_CommandExecuted(object sender, CommandEventArgs e)
