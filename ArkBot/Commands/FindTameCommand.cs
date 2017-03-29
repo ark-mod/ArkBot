@@ -136,7 +136,7 @@ namespace ArkBot.Commands
                 }
 
                 await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
-                await CommandHelper.SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.Longitude, (float)x.Latitude)).ToArray(), _config.TempFileOutputDirPath, !args.OldMap ? 10f : 5f, template: !args.OldMap ? MapTemplate.Vectorized : MapTemplate.Sketch);
+                await CommandHelper.SendAnnotatedMap(e.Channel, matches.Select(x => new PointF((float)x.Longitude, (float)x.Latitude)).ToArray(), _config.TempFileOutputDirPath, !args.OldMap ? 20f : 10f, template: !args.OldMap ? MapTemplate.Vectorized : MapTemplate.Sketch);
             }
         }
     }

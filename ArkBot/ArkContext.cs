@@ -19,6 +19,9 @@ using ArkBot.Services;
 using System.Data.Entity;
 using ArkBot.Database.Model;
 using ArkBot.Services.Data;
+using System.Threading;
+using ArkBot.Threading;
+using System.Transactions;
 
 namespace ArkBot
 {
@@ -32,6 +35,7 @@ namespace ArkBot
         private IPlayedTimeWatcher _playedTimeWatcher;
         private ISavegameBackupService _savegameBackupService;
         public IProgress<string> Progress { get; private set; }
+        private SingleRunningTaskCancelPrevious _contextUpdateSync;
 
         public event ContextUpdating Updating;
         public event ContextUpdated Updated;
@@ -125,6 +129,7 @@ namespace ArkBot
             _playedTimeWatcher = playedTimeWatcher;
             _savegameBackupService = savegameBackupService;
             Progress = progress;
+            _contextUpdateSync = new SingleRunningTaskCancelPrevious();
 
             Creatures = new Creature[] { };
             Wild = new Creature[] { };
@@ -146,7 +151,7 @@ namespace ArkBot
             Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
 
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData();
+            var data = await ExtractAndLoadData(CancellationToken.None);
             if (data != null)
             {
                 ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
@@ -159,12 +164,12 @@ namespace ArkBot
                 _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
 
                 //LogWildCreatures(); //skip doing this here in order to only log events that happen while the bot is running
-                LogTamedCreaturesNew();
+                LogTamedCreaturesNew(CancellationToken.None);
 
                 Updated?.Invoke(this, EventArgs.Empty);
             }
 
-            
+
             if (_config.Debug)
             {
                 _watcher = new DebugFakeSaveFileWatcher(_config, TimeSpan.FromMinutes(1));
@@ -222,24 +227,27 @@ namespace ArkBot
             }
         }
 
-        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(CancellationToken ct, string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
+            ct.ThrowIfCancellationRequested();
+
             //extract the save file data to json using ark-tools
             if (!_config.DebugNoExtract)
             {
                 Progress.Report("Extracting ARK gamedata...");
-                if (!await ExtractSaveFileData(saveFilePathOverride, clusterPathOverride)) return null;
+                if (!await ExtractSaveFileData(ct, saveFilePathOverride, clusterPathOverride)) return null;
             }
 
             //load the resulting json into memory
             Progress.Report("Loading json data into memory...");
-            var data = await LoadDataFromJson(jsonPathOverride);
+            var data = await LoadDataFromJson(ct, jsonPathOverride);
 
             return data;
         }
 
-        private async Task<bool> ExtractSaveFileData(string saveFilePathOverride = null, string clusterPathOverride = null)
+        private async Task<bool> ExtractSaveFileData(CancellationToken ct, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
+            ct.ThrowIfCancellationRequested();
             try
             {
                 await DownloadHelper.DownloadLatestReleaseFromGithub(
@@ -253,6 +261,7 @@ namespace ArkBot
             }
             catch { /*ignore exceptions */ }
 
+            ct.ThrowIfCancellationRequested();
             try
             {
                 //this resource contains species stats that we need
@@ -265,6 +274,7 @@ namespace ArkBot
             }
             catch { /*ignore exceptions */ }
 
+            ct.ThrowIfCancellationRequested();
             var _rJson = new Regex(@"\.json$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             var _rCluster = new Regex(@"^\d+$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
@@ -287,10 +297,12 @@ namespace ArkBot
                 new { inpath = clusterPathOverride ?? _config.ClusterSavePath, path = _jsonOutputDirPathCluster, filepathCheck = _rCluster, verb = "cluster", parameters = "" }
             })
             {
+                ct.ThrowIfCancellationRequested();
                 Progress.Report($"- {action.verb}");
 
                 if (!Directory.Exists(action.path)) Directory.CreateDirectory(action.path);
 
+                Process cmd = null;
                 try
                 {
                     foreach (var filepath in Directory.GetFiles(action.path, "*.*", SearchOption.TopDirectoryOnly))
@@ -300,6 +312,7 @@ namespace ArkBot
                     }
 
                     var tcs = new TaskCompletionSource<int>();
+                    ct.Register(() => tcs.TrySetCanceled(ct));
                     var startInfo = new ProcessStartInfo
                     {
                         FileName = "cmd.exe",
@@ -309,16 +322,14 @@ namespace ArkBot
                         CreateNoWindow = true,
                         WindowStyle = ProcessWindowStyle.Hidden
                     };
-                    var cmd = new Process
+                    cmd = new Process
                     {
                         StartInfo = startInfo,
                         EnableRaisingEvents = true
                     };
                     cmd.Exited += (sender, args) =>
                     {
-                        tcs.SetResult(cmd.ExitCode);
-                        cmd.Dispose();
-                        cmd = null;
+                        tcs.TrySetResult(cmd.ExitCode);
                     };
 
                     cmd.Start();
@@ -326,18 +337,26 @@ namespace ArkBot
                     var exitCode = await tcs.Task;
                     success = success && (exitCode == 0);
                 }
+                catch (OperationCanceledException) { throw; }
                 catch
                 {
                     /* ignore all exceptions */
                     success = false;
+                }
+                finally
+                {
+                    if (cmd != null && !cmd.HasExited) cmd.Kill();
+                    cmd?.Dispose();
+                    cmd = null;
                 }
             }
 
             return success;
         }
 
-        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> LoadDataFromJson(string jsonPathOverride = null)
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> LoadDataFromJson(CancellationToken ct, string jsonPathOverride = null)
         {
+            ct.ThrowIfCancellationRequested();
             try
             {
                 var results = new List<Tuple<string, object>>();
@@ -361,6 +380,8 @@ namespace ArkBot
 
                 foreach (var action in actions)
                 {
+                    ct.ThrowIfCancellationRequested();
+
                     foreach (var filepath in Directory.EnumerateFiles(action.path, "*.json", SearchOption.TopDirectoryOnly))
                     {
                         var className = Path.GetFileNameWithoutExtension(filepath);
@@ -441,7 +462,12 @@ namespace ArkBot
 
                 return new Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>(arkSpeciesStatsData, classes, creatures, players, tribes, cluster, wildcreatures);
             }
-            catch { /* ignore all exceptions */ }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                /* ignore all exceptions */
+                Logging.LogException("Failed to load json data", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
+            }
 
             return null;
         }
@@ -477,8 +503,11 @@ namespace ArkBot
         {
             Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
-            await UpdateAll(e.PathToLoad, e.SaveFilePath, e.ClusterPath);
-            Progress.Report($"Context update complete!");
+            //await UpdateAll(e.PathToLoad, e.SaveFilePath, e.ClusterPath);
+            if (await _contextUpdateSync.Execute(async (ct) => await UpdateAll(ct, e.PathToLoad, e.SaveFilePath, e.ClusterPath)))
+                Progress.Report($"Context update complete!");
+            else
+                Progress.Report($"Context update cancelled/failed.");
         }
 
         private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
@@ -498,8 +527,11 @@ namespace ArkBot
             {
                 if (_config.BackupsEnabled) Progress.Report($"Updating context...");
                 else Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                await UpdateAll();
-                Progress.Report($"Context update complete!");
+                //await UpdateAll();
+                if (await _contextUpdateSync.Execute(async (ct) => await UpdateAll(ct)))
+                    Progress.Report($"Context update complete!");
+                else
+                    Progress.Report($"Context update cancelled/failed.");
             }
         }
 
@@ -512,10 +544,10 @@ namespace ArkBot
             VoteResultForced?.Invoke(this, new VoteResultForcedEventArgs { Item = item, Result = forcedResult });
         }
 
-        private async Task UpdateAll(string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
+        private async Task UpdateAll(CancellationToken ct, string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData(jsonPathOverride, saveFilePathOverride, clusterPathOverride);
+            var data = await ExtractAndLoadData(ct, jsonPathOverride, saveFilePathOverride, clusterPathOverride);
             if (data != null)
             {
                 ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
@@ -528,34 +560,49 @@ namespace ArkBot
 
                 LastUpdate = DateTime.Now;
 
-                LogWildCreatures();
-                LogTamedCreaturesNew();
+                LogWildCreatures(ct);
+                LogTamedCreaturesNew(ct);
 
                 Updated?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private void LogWildCreatures()
+        private void LogWildCreatures(CancellationToken ct)
         {
-            using (var context = _databaseContextFactory.Create())
+            ct.ThrowIfCancellationRequested();
+
+            try
             {
-                //add wild creatures to database
-                var wild = Wild?.GroupBy(x => x.SpeciesClass).Select(x => new Database.Model.WildCreatureLogEntry { Key = x.Key, Count = x.Count(), Ids = x.Select(y => y.Id).ToArray() }).ToArray();
-                if (wild == null || wild.Length <= 0) return;
+                //using (var scope = new TransactionScope())
+                //{
+                    using (var context = _databaseContextFactory.Create())
+                    {
+                        //add wild creatures to database
+                        var wild = Wild?.GroupBy(x => x.SpeciesClass).Select(x => new Database.Model.WildCreatureLogEntry { Key = x.Key, Count = x.Count(), Ids = x.Select(y => y.Id).ToArray() }).ToArray();
+                        if (wild == null || wild.Length <= 0) return;
 
-                var removeBefore = DateTime.Now.AddDays(-7);
-                foreach (var item in context.WildCreatureLogs.Where(x => x.When < removeBefore).ToArray())
-                {
-                    context.WildCreatureLogs.Remove(item);
-                }
+                        var removeBefore = DateTime.Now.AddDays(-7);
+                        foreach (var item in context.WildCreatureLogs.Where(x => x.When < removeBefore).ToArray())
+                        {
+                            context.WildCreatureLogs.Remove(item);
+                        }
+                        context.WildCreatureLogs.Add(new Database.Model.WildCreatureLog { When = LastUpdate, Entries = wild });
+                        context.SaveChanges();
+                    }
 
-                context.WildCreatureLogs.Add(new Database.Model.WildCreatureLog { When = LastUpdate, Entries = wild });
-                context.SaveChanges();
+                //    scope.Complete();
+                //}
+            }
+            catch (TransactionAbortedException ex)
+            {
+                Logging.LogException("Transaction aborted", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Unhandled);
             }
         }
 
-        private void LogTamedCreaturesNew()
+        private void LogTamedCreaturesNew(CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
+
             var st = Stopwatch.StartNew();
             using (var conn = new System.Data.SqlServerCe.SqlCeConnection(_constants.DatabaseConnectionString))
             {
@@ -626,6 +673,8 @@ namespace ArkBot
 
                                     do
                                     {
+                                        ct.ThrowIfCancellationRequested();
+
                                         var id = resultSet.SafeGet<long>(nameof(l.Id));
                                         var tame = tamed.FirstOrDefault(x => x.Id == id);
                                         if (tame == null)
@@ -685,6 +734,8 @@ namespace ArkBot
 
                                 foreach (var id in ids)
                                 {
+                                    ct.ThrowIfCancellationRequested();
+
                                     var tame = tamed.FirstOrDefault(x => x.Id == id);
                                     if (tame == null) continue;
 

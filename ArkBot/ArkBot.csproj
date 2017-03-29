@@ -181,6 +181,7 @@
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Razor.3.0.0\lib\net45\System.Web.Razor.dll</HintPath>
       <Private>True</Private>
@@ -320,6 +321,7 @@
     <Compile Include="Services\PlayedTimeWatcher.cs" />
     <Compile Include="Services\SavegameBackupService.cs" />
     <Compile Include="Services\UrlShortenerService.cs" />
+    <Compile Include="Threading\SingleRunningTaskCancelPrevious.cs" />
     <Compile Include="Threading\Signaler.cs" />
     <Compile Include="TimedTask.cs" />
     <Compile Include="ContextUpdatingEventArgs.cs" />
