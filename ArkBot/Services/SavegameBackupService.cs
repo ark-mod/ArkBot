@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ArkBot.Helpers;
 using ArkBot.Services.Data;
+using ArkBot.Extensions;
 
 namespace ArkBot.Services
 {
@@ -16,6 +17,32 @@ namespace ArkBot.Services
         public SavegameBackupService(IConfig config)
         {
             _config = config;
+        }
+
+        public IList<BackupListEntity> GetBackupsList(bool includeContents = false)
+        {
+            var result = new List<BackupListEntity>();
+
+            var backupDir = new DirectoryInfo(_config.BackupsDirectoryPath);
+            var files = backupDir.GetFiles("*.zip", SearchOption.AllDirectories);
+            if (files == null) return result;
+
+            foreach(var file in files)
+            {
+                var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var b = _config.BackupsDirectoryPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
+
+                result.Add(new BackupListEntity
+                {
+                    Path = path,
+                    ByteSize = file.Length,
+                    DateModified = file.LastWriteTime,
+                    Files = includeContents ? FileHelper.GetZipFileContents(file.FullName) : null
+                });
+            }
+
+            return result;
         }
 
         public SavegameBackupResult CreateBackup(string saveFilePath, string clusterSavePath)

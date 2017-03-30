@@ -20,6 +20,7 @@ using Autofac;
 using ArkBot.Database;
 using System.Diagnostics;
 using Discord;
+using ArkBot.Services;
 
 namespace ArkBot.Commands.Experimental
 {
@@ -73,8 +74,17 @@ namespace ArkBot.Commands.Experimental
         private EfDatabaseContextFactory _databaseContextFactory;
         private ISavedState _savedstate;
         private IArkServerService _arkServerService;
+        private ISavegameBackupService _savegameBackupService;
 
-        public AdminCommand(ILifetimeScope scope, IArkContext context, IConfig config, IConstants constants, EfDatabaseContextFactory databaseContextFactory, ISavedState savedstate, IArkServerService arkServerService)
+        public AdminCommand(
+            ILifetimeScope scope, 
+            IArkContext context, 
+            IConfig config, 
+            IConstants constants, 
+            EfDatabaseContextFactory databaseContextFactory, 
+            ISavedState savedstate, 
+            IArkServerService arkServerService,
+            ISavegameBackupService savegameBackupService)
         {
             _context = context;
             _config = config;
@@ -82,6 +92,7 @@ namespace ArkBot.Commands.Experimental
             _databaseContextFactory = databaseContextFactory;
             _savedstate = savedstate;
             _arkServerService = arkServerService;
+            _savegameBackupService = savegameBackupService;
         }
 
         public void Register(CommandBuilder command)
@@ -102,6 +113,7 @@ namespace ArkBot.Commands.Experimental
                 StopServer = false,
                 RestartServer = false,
                 UpdateServer = false,
+                Backups = false,
                 SaveWorld = false,
                 DestroyWildDinos = false,
                 EnableVoting = false,
@@ -132,6 +144,7 @@ namespace ArkBot.Commands.Experimental
                 .For(y => y.StopServer, flag: true)
                 .For(y => y.RestartServer, flag: true)
                 .For(y => y.UpdateServer, flag: true)
+                .For(y => y.Backups, flag: true)
                 .For(y => y.SaveWorld, flag: true)
                 .For(y => y.DestroyWildDinos, flag: true)
                 .For(y => y.EnableVoting, flag: true)
@@ -169,6 +182,18 @@ namespace ArkBot.Commands.Experimental
             else if (args.SaveWorld)
             {
                 await _arkServerService.SaveWorld((s) => e.Channel.SendMessageDirectedAt(e.User.Id, s), 180);
+            }
+            else if (args.Backups)
+            {
+                var result = _savegameBackupService.GetBackupsList();
+                if (result?.Count > 0)
+                {
+                    var data = result.Select(x => new { Path = x.Path, When = (DateTime.Now - x.DateModified).ToStringCustom(), FileSize = x.ByteSize }).ToArray();
+                    sb.Append(FixedWidthTableHelper.ToString(data, x => x
+                        .For(y => y.When, alignment: 1)
+                        .For(y => y.FileSize, header: "File Size", alignment: 1)));
+                }
+                else sb.AppendLine("**Could not find any savegame backups...**");
             }
             else if (args.DestroyWildDinos)
             {

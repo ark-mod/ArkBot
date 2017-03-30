@@ -49,6 +49,22 @@ namespace ArkBot.Helpers
             }
         }
 
+        public static string[] GetZipFileContents(string path)
+        {
+            if (!File.Exists(path)) return null;
+
+            try
+            {
+                using (var zip = Ionic.Zip.ZipFile.Read(path))
+                {
+                    return zip.EntryFileNames.ToArray();
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
         public static string[] CreateDotNetZipArchive(Tuple<string, string, string[]>[] files, string path, int? maxSegmentSizeBytes = null, DotNetZip::Ionic.Zlib.CompressionLevel compressionLevel = DotNetZip::Ionic.Zlib.CompressionLevel.BestCompression)
         {
             using (var zip = new Ionic.Zip.ZipFile { CompressionLevel = compressionLevel })

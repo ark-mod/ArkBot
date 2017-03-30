@@ -109,9 +109,9 @@ namespace ArkBot
         public Cluster Cluster { get; private set; }
         public List<TribeLog> TribeLogs { get; set; }
 
-        public IEnumerable<Creature> CreaturesNoRaft => Creatures?.Where(x => !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
+        public IEnumerable<Creature> CreaturesNoRaft => Creatures?.Where(x => x != null && x.SpeciesClass != null && !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
         public IEnumerable<Creature> CreaturesInclCluster => (Creatures ?? new Creature[] { }).Concat((Cluster?.Creatures ?? new Creature[] { }));
-        public IEnumerable<Creature> CreaturesInclClusterNoRaft => CreaturesInclCluster.Where(x => !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
+        public IEnumerable<Creature> CreaturesInclClusterNoRaft => CreaturesInclCluster.Where(x => x != null && x.SpeciesClass != null && !x.SpeciesClass.Equals("Raft_BP_C", StringComparison.OrdinalIgnoreCase));
 
         public ArkContext(
             IConfig config, 
@@ -455,6 +455,7 @@ namespace ArkBot
                 var cluster = new Cluster { Creatures = clusterlist?.SelectMany(x => x.Creatures).ToArray() };
                 if (cluster.Creatures != null) Array.ForEach(cluster.Creatures, x =>
                 {
+                    if (string.IsNullOrEmpty(x.SpeciesClass)) Logging.Log($@"Cluster creature does not have a species class (id: {x.Id}, owner: {x.OwnerName ?? "<null>"} tribe: {x.Tribe ?? "<null>"}, level: {x.FullLevel ?? -1})", GetType(), LogLevel.DEBUG);
                     x.IsInCluster = true;
                     x.Tamed = true;
                     x.SpeciesName = classes?.FirstOrDefault(z => z.Class.Equals(x.SpeciesClass, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");

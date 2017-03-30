@@ -245,6 +245,7 @@
     <Compile Include="Database\EfDatabaseContextFactory.cs" />
     <Compile Include="Database\Model\PlayedEntry.cs" />
     <Compile Include="Extensions\DiscordChannelExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
     <Compile Include="Services\ArkServerService.cs" />
@@ -313,6 +314,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="Services\Data\BackupListEntity.cs" />
     <Compile Include="Services\Data\SavegameBackupResult.cs" />
     <Compile Include="Services\IArkServerService.cs" />
     <Compile Include="Services\IPlayedTimeWatcher.cs" />
