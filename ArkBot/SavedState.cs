@@ -31,6 +31,9 @@ namespace ArkBot
         [JsonProperty(PropertyName = "votingDisabled")]
         public bool VotingDisabled { get; set; }
 
+        [JsonProperty(PropertyName = "skipExtractNextRestart")]
+        public bool SkipExtractNextRestart { get; set; }
+
         public bool Save()
         {
             try

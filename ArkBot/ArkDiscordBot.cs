@@ -21,6 +21,7 @@ using Autofac;
 using ArkBot.Vote;
 using log4net;
 using System.Data.Entity.Core.Objects;
+using ArkBot.ViewModel;
 
 namespace ArkBot
 {
@@ -530,9 +531,9 @@ namespace ArkBot
             _context.Progress.Report(sb.ToString());
         }
 
-        public async Task Initialize(ArkSpeciesAliases aliases = null)
+        public async Task Initialize(CancellationToken token, bool skipExtract = false, ArkSpeciesAliases aliases = null)
         {
-            await _context.Initialize(aliases);
+            await _context.Initialize(token, skipExtract, aliases);
 
             //handle undecided votes (may happen due to previous bot shutdown before vote finished)
             using (var db = _databaseContextFactory.Create())
@@ -564,7 +565,7 @@ namespace ArkBot
 
         private void Log(object sender, LogMessageEventArgs e)
         {
-            Console.WriteLine(e.Message);
+            Workspace.Instance.Console.AddLog(e.Message);
         }
 
         #region IDisposable Support

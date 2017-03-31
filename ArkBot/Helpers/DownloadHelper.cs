@@ -41,7 +41,7 @@ namespace ArkBot.Helpers
                                 string zpath = null;
                                 if ((zpath = extractFromArchive(entry.FullName)) == null) continue;
 
-                                entry.ExtractToFile(zpath);
+                                entry.ExtractToFile(zpath, true);
                             }
                         }
                     }

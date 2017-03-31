@@ -188,10 +188,17 @@ namespace ArkBot.Commands.Experimental
                 var result = _savegameBackupService.GetBackupsList();
                 if (result?.Count > 0)
                 {
-                    var data = result.Select(x => new { Path = x.Path, When = (DateTime.Now - x.DateModified).ToStringCustom(), FileSize = x.ByteSize }).ToArray();
-                    sb.Append(FixedWidthTableHelper.ToString(data, x => x
-                        .For(y => y.When, alignment: 1)
-                        .For(y => y.FileSize, header: "File Size", alignment: 1)));
+                    var data = result.OrderByDescending(x => x.DateModified).Take(25).Select(x => new
+                    {
+                        Path = x.Path,
+                        Age = (DateTime.Now - x.DateModified).ToStringCustom(),
+                        FileSize = x.ByteSize.ToFileSize()
+                    }).ToArray();
+                    var table = FixedWidthTableHelper.ToString(data, x => x
+                        .For(y => y.Path, header: "Backup")
+                        .For(y => y.Age, alignment: 1)
+                        .For(y => y.FileSize, header: "File Size", alignment: 1));
+                    sb.Append($"```{table}```");
                 }
                 else sb.AppendLine("**Could not find any savegame backups...**");
             }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using ArkBot.Data;
 using System.Collections.Generic;
 using ArkBot.Database.Model;
+using System.Threading;
 
 namespace ArkBot
 {
@@ -27,7 +28,7 @@ namespace ArkBot
         Player[] Players { get; }
         ArkSpeciesAliases SpeciesAliases { get; set; }
         Tribe[] Tribes { get; }
-        Task Initialize(ArkSpeciesAliases aliases = null);
+        Task Initialize(CancellationToken token, bool skipExtract = false, ArkSpeciesAliases aliases = null);
         double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier);
         string GetElevationAsText(decimal z);
         void DebugTriggerOnChange();

@@ -142,7 +142,7 @@ namespace ArkBot
             ArkSpeciesStatsData = new ArkSpeciesStatsData();
         }
 
-        public async Task Initialize(ArkSpeciesAliases aliases = null)
+        public async Task Initialize(CancellationToken token, bool skipExtract = false, ArkSpeciesAliases aliases = null)
         {
             Progress.Report("Context initialization started...");
 
@@ -151,7 +151,7 @@ namespace ArkBot
             Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
 
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData(CancellationToken.None);
+            var data = await ExtractAndLoadData(token, skipExtract);
             if (data != null)
             {
                 ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
@@ -227,12 +227,12 @@ namespace ArkBot
             }
         }
 
-        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(CancellationToken ct, string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
+        private async Task<Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>> ExtractAndLoadData(CancellationToken ct, bool skipExtract = false, string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
             ct.ThrowIfCancellationRequested();
 
             //extract the save file data to json using ark-tools
-            if (!_config.DebugNoExtract)
+            if (!(_config.DebugNoExtract || skipExtract))
             {
                 Progress.Report("Extracting ARK gamedata...");
                 if (!await ExtractSaveFileData(ct, saveFilePathOverride, clusterPathOverride)) return null;
@@ -345,7 +345,7 @@ namespace ArkBot
                 }
                 finally
                 {
-                    if (cmd != null && !cmd.HasExited) cmd.Kill();
+                    if (cmd != null && !cmd.HasExited) cmd.KillTree();
                     cmd?.Dispose();
                     cmd = null;
                 }
@@ -548,7 +548,7 @@ namespace ArkBot
         private async Task UpdateAll(CancellationToken ct, string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData(ct, jsonPathOverride, saveFilePathOverride, clusterPathOverride);
+            var data = await ExtractAndLoadData(ct, false, jsonPathOverride, saveFilePathOverride, clusterPathOverride);
             if (data != null)
             {
                 ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();

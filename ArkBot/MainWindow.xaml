@@ -1,0 +1,103 @@
+﻿<Window x:Class="ArkBot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ArkBot"
+        xmlns:layout="clr-namespace:ArkBot.Layout"
+        xmlns:controls="clr-namespace:ArkBot.Controls"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
+        xmlns:localThemes="http://schemas.xceed.com/wpf/xaml/avalondock/themes"
+        xmlns:s="clr-namespace:System;assembly=mscorlib"
+        xmlns:sw="clr-namespace:System.Windows;assembly=mscorlib"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:prism="http://prismlibrary.com/"
+        mc:Ignorable="d"
+        x:Name="mainWindow"
+        Title="ARK Discord Bot" MinWidth="800" MinHeight="600" Width="800" Height="600" WindowStartupLocation="CenterScreen" Icon="basket_empty.ico">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <prism:InvokeCommandAction Command="{Binding ClosingCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Window.Resources>
+        <!--<local:ActiveDocumentConverter x:Key="ActiveDocumentConverter"/>-->
+        <xcad:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+    <Window.InputBindings>
+        <!--<KeyBinding Command="{Binding Command}" Gesture="CTRL+Q" />-->
+    </Window.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
+            </MenuItem>
+            <MenuItem Header="Options">
+                <MenuItem Header="Skip savegame extraction next restart" IsChecked="{Binding SkipExtractNextRestart, Mode=TwoWay}" IsCheckable="True"/>
+            </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="Console" IsChecked="{Binding Console.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
+            </MenuItem>
+            
+        </Menu>
+        <xcad:DockingManager x:Name="dockManager" Grid.Row="1" AnchorablesSource="{Binding Panes}" GridSplitterWidth="7" GridSplitterHeight="7" AllowMixedOrientation="True">
+            <xcad:DockingManager.Theme>
+                <xcad:MetroTheme/>
+            </xcad:DockingManager.Theme>
+            <xcad:DockingManager.DocumentHeaderTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding IconSource}" Margin="0,0,4,0"/>
+                        <TextBlock Text="{Binding Title}" />
+                    </StackPanel>
+                </DataTemplate>
+            </xcad:DockingManager.DocumentHeaderTemplate>
+            <xcad:DockingManager.LayoutItemTemplateSelector>
+                <layout:PaneTemplateSelector>
+                    <layout:PaneTemplateSelector.ConsoleTemplate>
+                        <DataTemplate>
+                            <controls:Console ConsoleOutput="{Binding Model}"  Margin="3" />
+                        </DataTemplate>
+                    </layout:PaneTemplateSelector.ConsoleTemplate>
+                </layout:PaneTemplateSelector>
+            </xcad:DockingManager.LayoutItemTemplateSelector>
+            <xcad:DockingManager.LayoutItemContainerStyleSelector>
+                <layout:PaneStyleSelector>
+                    <layout:PaneStyleSelector.ConsoleStyle>
+                        <Style TargetType="{x:Type xcad:LayoutItem}">
+                            <Setter Property="Title" Value="{Binding Model.Title}"/>
+                            <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Hidden}}"/>
+                            <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                            <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
+                            <Setter Property="CanClose" Value="False" />
+                            <!--<Setter Property="ToolTip" Value="{Binding Model.FilePath}"/>-->
+                            <!--<Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}"/>-->
+                            <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
+                        </Style>
+                    </layout:PaneStyleSelector.ConsoleStyle>
+                </layout:PaneStyleSelector>
+            </xcad:DockingManager.LayoutItemContainerStyleSelector>
+            <xcad:DockingManager.LayoutUpdateStrategy>
+                <layout:LayoutInitializer/>
+            </xcad:DockingManager.LayoutUpdateStrategy>
+            <xcad:LayoutRoot>
+                <xcad:LayoutPanel Orientation="Horizontal">
+                    <xcad:LayoutAnchorablePaneGroup Orientation="Horizontal" DockMinWidth="200">
+                        <xcad:LayoutAnchorablePane Name="ToolsPane">
+                        </xcad:LayoutAnchorablePane>
+                    </xcad:LayoutAnchorablePaneGroup>
+                    <xcad:LayoutDocumentPaneGroup Orientation="Horizontal" DockWidth="5*" DockMinWidth="500">
+                        <xcad:LayoutDocumentPane>
+                        </xcad:LayoutDocumentPane>
+                    </xcad:LayoutDocumentPaneGroup>
+                </xcad:LayoutPanel>
+            </xcad:LayoutRoot>
+        </xcad:DockingManager>
+    </Grid>
+</Window>

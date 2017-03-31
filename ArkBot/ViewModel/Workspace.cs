@@ -1,56 +1,119 @@
 ﻿using ArkBot.Data;
+using ArkBot.Database;
+using ArkBot.Database.Model;
 using ArkBot.Helpers;
+using ArkBot.OpenID;
+using ArkBot.Services;
+using ArkBot.Vote;
+using ArkBot.WpfCommands;
+using Autofac;
 using Newtonsoft.Json;
-using Nito.AsyncEx;
+using Prism.Commands;
+using RazorEngine.Configuration;
+using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
-using RazorEngine;
-using RazorEngine.Templating;
-using System.Windows.Forms;
-using Autofac;
-using System.Reflection;
-using ArkBot.Commands;
-using ArkBot.OpenID;
-using RazorEngine.Configuration;
-using ArkBot.Services;
-using ArkBot.Database;
-using Discord;
-using System.Data.Entity;
-using ArkBot.Vote;
-using ArkBot.Database.Model;
+using System.Windows;
+using System.Windows.Input;
 
-namespace ArkBot
+namespace ArkBot.ViewModel
 {
-    class Program
+    public class Workspace : ViewModelBase
     {
+        public struct Constants
+        {
+            public const string LayoutFilePath = @".\Layout.config";
+        }
+
+        public static Workspace Instance => _instance ?? (_instance = new Workspace());
+        private static Workspace _instance;
+
+        public IEnumerable<PaneViewModel> Panes => _panes ?? (_panes = new PaneViewModel[] { Console });
+        private PaneViewModel[] _panes;
+
+        public ConsoleViewModel Console => _console ?? (_console = new ConsoleViewModel());
+        private ConsoleViewModel _console;
+
+        public ICommand ExitCommand => _exitCommand ?? (_exitCommand = new RelayCommand(parameter => OnExit(parameter), parameter => CanExit(parameter)));
+        private RelayCommand _exitCommand;
+
+        public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
+
         private static IContainer Container { get; set; }
 
-        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        public bool SkipExtractNextRestart
         {
-            var exception = e.ExceptionObject as Exception;
-            if (exception != null) Logging.LogException(exception.Message, exception, typeof(Program), LogLevel.FATAL, ExceptionLevel.ApplicationCrash);
+            get
+            {
+                return _skipExtractNextRestart;
+            }
+
+            set
+            {
+                if (value == _skipExtractNextRestart) return;
+
+                _skipExtractNextRestart = value;
+                RaisePropertyChanged(nameof(SkipExtractNextRestart));
+            }
+        }
+        private bool _skipExtractNextRestart;
+
+        private SavedState _savedstate = null;
+
+        public Workspace()
+        {
+            //do not create viewmodels or load data here, or avalondock layout deserialization will fail
+            ClosingCommand = new DelegateCommand<System.ComponentModel.CancelEventArgs>(OnClosing);
+            PropertyChanged += Workspace_PropertyChanged;
         }
 
-        static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        private void Workspace_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Logging.LogException(e.Exception.Message, e.Exception, typeof(Program), LogLevel.FATAL, ExceptionLevel.ApplicationCrash);
+            if (e.PropertyName == nameof(SkipExtractNextRestart) && _savedstate != null)
+            {
+                _savedstate.SkipExtractNextRestart = SkipExtractNextRestart;
+                _savedstate.Save();
+            }
         }
 
-        static void Main(string[] args)
+        private void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+            if (_runDiscordBotTask != null)
+            {
+                _runDiscordBotCts?.Cancel();
+                Task.WaitAny(_runDiscordBotTask);
+            }
+        }
 
-            Console.WriteLine("ARK Discord Bot");
-            Console.WriteLine("------------------------------------------------------");
-            Console.WriteLine();
+        private bool CanExit(object parameter)
+        {
+            return true;
+        }
+
+        private void OnExit(object parameter)
+        {
+            Application.Current.MainWindow.Close();
+        }
+
+        static void WriteAndWaitForKey(params string[] msgs)
+        {
+            foreach (var msg in msgs) if (msg != null) System.Console.WriteLine(msg);
+        }
+
+        internal async Task Init()
+        {
+            System.Console.WriteLine("ARK Discord Bot");
+            System.Console.WriteLine("------------------------------------------------------");
+            System.Console.WriteLine();
 
             //load config and check for errors
             var configPath = @"config.json";
@@ -66,7 +129,7 @@ namespace ArkBot
             {
                 config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 exceptionMessage = ex.Message;
             }
@@ -189,13 +252,13 @@ namespace ArkBot
             if (string.IsNullOrWhiteSpace(config.MemberRoleName)) config.DeveloperRoleName = "ark";
 
             //load aliases and check integrity
-            var aliases = ArkSpeciesAliases.Load().GetAwaiter().GetResult();
+            var aliases = await ArkSpeciesAliases.Load();
             if (aliases == null || !aliases.CheckIntegrity)
             {
                 sb.AppendLine($@"Error: ""{ArkSpeciesAliases._filepath}"" is missing, contains invalid json or duplicate aliases.");
-                if(aliases != null)
+                if (aliases != null)
                 {
-                    foreach(var duplicateAlias in aliases.Aliases?.SelectMany(x => x).GroupBy(x => x)
+                    foreach (var duplicateAlias in aliases.Aliases?.SelectMany(x => x).GroupBy(x => x)
                              .Where(g => g.Count() > 1)
                              .Select(g => g.Key))
                     {
@@ -206,7 +269,7 @@ namespace ArkBot
             }
 
             var errors = sb.ToString();
-            if(errors.Length > 0)
+            if (errors.Length > 0)
             {
                 WriteAndWaitForKey(errors);
                 return;
@@ -214,10 +277,10 @@ namespace ArkBot
 
             IProgress<string> progress = new Progress<string>(message =>
             {
-                Console.WriteLine(message);
+                System.Console.WriteLine(message);
             });
 
-            var constants = new Constants();
+            var constants = new ArkBot.Constants();
 
             if (config.Debug)
             {
@@ -230,17 +293,17 @@ namespace ArkBot
                 if (File.Exists(databaseStateFilePath)) File.Copy(databaseStateFilePath, constants.DatabaseFilePath);
             }
 
-            SavedState savedstate = null;
+            _savedstate = null;
             try
             {
                 if (File.Exists(constants.SavedStateFilePath))
                 {
-                    savedstate = JsonConvert.DeserializeObject<SavedState>(File.ReadAllText(constants.SavedStateFilePath));
-                    savedstate._Path = constants.SavedStateFilePath;
+                    _savedstate = JsonConvert.DeserializeObject<SavedState>(File.ReadAllText(constants.SavedStateFilePath));
+                    _savedstate._Path = constants.SavedStateFilePath;
                 }
             }
             catch { /*ignore exceptions */}
-            savedstate = savedstate ?? new SavedState(constants.SavedStateFilePath);
+            _savedstate = _savedstate ?? new SavedState(constants.SavedStateFilePath);
             //var context = new ArkContext(config, constants, progress);
 
             var playedTimeWatcher = new PlayedTimeWatcher(config);
@@ -272,12 +335,12 @@ namespace ArkBot
             builder.RegisterType<ArkDiscordBot>();
             builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
             builder.RegisterInstance(constants).As<IConstants>();
-            builder.RegisterInstance(savedstate).As<ISavedState>();
+            builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(config).As<IConfig>();
             builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
             builder.RegisterType<ArkContext>().As<IArkContext>()
                 .WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
-            builder.RegisterAssemblyTypes(thisAssembly).As<ICommand>().AsSelf().SingleInstance()
+            builder.RegisterAssemblyTypes(thisAssembly).As<ArkBot.Commands.ICommand>().AsSelf().SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
             builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
             builder.RegisterType<EfDatabaseContext>().AsSelf().As<IEfDatabaseContext>()
@@ -300,24 +363,30 @@ namespace ArkBot
             //update database
             System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
 
-            AsyncContext.Run(() => MainAsync());
+
+            //run the discord bot
+            _runDiscordBotCts = new CancellationTokenSource();
+            _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-        static void WriteAndWaitForKey(params string[] msgs)
-        {
-            foreach(var msg in msgs) if(msg != null) Console.WriteLine(msg);
-            Console.WriteLine();
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
-        }
+        private Task _runDiscordBotTask;
+        private CancellationTokenSource _runDiscordBotCts;
 
-        static async Task MainAsync()
+        public async Task RunDiscordBot()
         {
             using (var scope = Container.BeginLifetimeScope())
             {
                 var config = scope.Resolve<IConfig>();
                 var constants = scope.Resolve<IConstants>();
                 var context = scope.Resolve<IArkContext>();
+                var savedstate = scope.Resolve<ISavedState>();
+                var skipExtract = savedstate.SkipExtractNextRestart;
+                if (skipExtract)
+                {
+                    savedstate.SkipExtractNextRestart = false;
+                    savedstate.Save();
+                }
+
 
                 //create database immediately to support direct (non-ef) access in application
                 using (var db = scope.Resolve<IEfDatabaseContext>())
@@ -330,38 +399,40 @@ namespace ArkBot
                 }
 
                 var _bot = scope.Resolve<ArkDiscordBot>();
-                await _bot.Initialize();
+                await _bot.Initialize(_runDiscordBotCts.Token, skipExtract);
                 var isConnected = false;
                 var lastAttempt = DateTime.MinValue;
                 var retryInterval = TimeSpan.FromSeconds(15);
 
                 while (true)
                 {
-                    if (Console.KeyAvailable)
-                    {
-                        var key = Console.ReadKey(true);
-                        if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
-                        else if(isConnected && key.Key == ConsoleKey.N && config.Debug)
-                        {
-                            //if we are debugging, trigger new changed event
-                            context.DebugTriggerOnChange();
-                        }
-                    }
+                    if (_runDiscordBotCts.IsCancellationRequested) break;
+
+                    //if (Console.KeyAvailable)
+                    //{
+                    //    var key = Console.ReadKey(true);
+                    //    if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
+                    //    else if (isConnected && key.Key == ConsoleKey.N && config.Debug)
+                    //    {
+                    //        //if we are debugging, trigger new changed event
+                    //        context.DebugTriggerOnChange();
+                    //    }
+                    //}
 
                     if (!isConnected && (DateTime.Now - lastAttempt) >= retryInterval)
                     {
                         try
                         {
                             lastAttempt = DateTime.Now;
-                            Console.WriteLine("Connecting bot...");
+                            System.Console.WriteLine("Connecting bot...");
                             await _bot.Start();
-                            Console.WriteLine("Connected!");
+                            System.Console.WriteLine("Connected!");
                             isConnected = true;
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Failed to connect ({ex.Message})! Will retry in a moment...");
-                            Logging.LogException("Failed to start Discord Bot", ex, typeof(Program), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                            System.Console.WriteLine($"Failed to connect ({ex.Message})! Will retry in a moment...");
+                            Logging.LogException("Failed to start Discord Bot", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
                         }
                     }
 

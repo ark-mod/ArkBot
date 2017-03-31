@@ -7,6 +7,7 @@ namespace ArkBot
         int LatestTribeLogDay { get; set; }
         TimeSpan LatestTribeLogTime { get; set; }
         bool VotingDisabled { get; set; }
+        bool SkipExtractNextRestart { get; set; }
         bool Save();
     }
 }
