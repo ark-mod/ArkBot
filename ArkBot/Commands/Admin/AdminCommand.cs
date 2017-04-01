@@ -104,7 +104,7 @@ namespace ArkBot.Commands.Experimental
 
         public async Task Run(CommandEventArgs e)
         {
-            if (!e.Channel.IsPrivate) return;
+            //if (!e.Channel.IsPrivate) return;
 
             var args = CommandHelper.ParseArgs(e, new
             {

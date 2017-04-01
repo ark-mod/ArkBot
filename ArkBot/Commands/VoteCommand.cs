@@ -357,7 +357,7 @@ namespace ArkBot.Commands
                     }
                     else
                     {
-                        var firstPlayed = user.Played?.Min(x => x.Date);
+                        var firstPlayed = user.Played?.Count > 0 ? user.Played.Min(x => x.Date) : (DateTime?)null;
 
                         vote.Votes.Add(new UserVote
                         {
