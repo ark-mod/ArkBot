@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Text.RegularExpressions;
 using QueryMaster.GameServer;
 using System.Runtime.Caching;
+using System.Diagnostics;
 
 namespace ArkBot.Commands
 {
@@ -27,11 +28,13 @@ namespace ArkBot.Commands
 
         private IArkContext _context;
         private IConfig _config;
+        private IConstants _constants;
 
-        public StatusCommand(IArkContext context, IConfig config)
+        public StatusCommand(IArkContext context, IConfig config, IConstants constants)
         {
             _context = context;
             _config = config;
+            _constants = constants;
         }
 
         public void Register(CommandBuilder command) { }
@@ -64,12 +67,22 @@ namespace ArkBot.Commands
                 var totalPlayers = _context.Players?.Count();
                 var totalTribes = _context.Tribes?.Count();
 
+                //server uptime
+                DateTime? serverStarted = null;
+                try
+                {
+                    serverStarted = Process.GetProcessesByName(_constants.ArkServerProcessName)?.FirstOrDefault()?.StartTime;
+
+                }
+                catch { /* ignore exceptions */ }
+
                 sb.AppendLine($"**{name}**");
                 sb.AppendLine($"● **Address:** {serverInfo.Address}");
                 if (version != null) sb.AppendLine($"● **Version:** {version}");
                 sb.AppendLine($"● **Online:** {serverInfo.Players}/{serverInfo.MaxPlayers}");
                 sb.AppendLine($"● **Map:** {serverInfo.Map}");
                 if (currentTime != null) sb.AppendLine($"● **In-game time:** {currentTime}");
+                if (serverStarted != null) sb.AppendLine($"Server uptime: {(DateTime.Now - serverStarted.Value).ToStringCustom(true)}");
 
                 sb.AppendLine().AppendLine($"**Server Statistics**");
                 if (tamedDinosCount.HasValue) sb.AppendLine($"● **Tamed dinos:** {tamedDinosCount.Value:N0}/{tamedDinosMax:N0}");

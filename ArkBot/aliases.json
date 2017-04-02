@@ -239,7 +239,13 @@
       "Electro"
     ],
     [
-      "Equus"
+      "Equus",
+      "Equus_Character_BP_C",
+      "Horse"
+    ],
+    [
+      "Unicorn",
+      "Equus_Character_BP_Unicorn_C"
     ],
     [
       "Eurypterid",
@@ -279,10 +285,14 @@
       "Dolphin"
     ],
     [
-      "Ichthyornis"
+      "Ichthyornis",
+      "Ichthyornis_Character_BP_C",
+      "Seagull"
     ],
     [
-      "Iguanodon"
+      "Iguanodon",
+      "Iguanodon_Character_BP_C",
+      "Iguan"
     ],
     [
       "Jerboa",
@@ -322,7 +332,9 @@
       "Diseased Leech"
     ],
     [
-      "Leedsichthys"
+      "Leedsichthys",
+      "Leedsichthys_Character_BP_C",
+      "Leeds"
     ],
     [
       "Liopleurodon"
