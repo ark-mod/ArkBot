@@ -327,6 +327,7 @@
     <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
+    <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Layout\LayoutInitializer.cs" />
     <Compile Include="Layout\PaneStyleSelector.cs" />
     <Compile Include="Layout\PaneTemplateSelector.cs" />

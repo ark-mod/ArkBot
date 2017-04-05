@@ -1,4 +1,5 @@
-﻿using ArkBot.ViewModel;
+﻿using ArkBot.Interop;
+using ArkBot.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,6 +21,8 @@ namespace ArkBot
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             Console.SetOut(new WpfConsoleWriter());
+
+            Kernel32.RegisterApplicationRestart("/restart", (int)RestartRestrictions.None);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

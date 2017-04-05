@@ -41,6 +41,9 @@ namespace ArkBot
         private DateTime _prevTimedBansUpdate;
         private ILifetimeScope _scope;
 
+        private bool _wasRestarted;
+        private List<ulong> _wasRestartedServersNotified = new List<ulong>();
+
         public ArkDiscordBot(IConfig config, IArkContext context, IConstants constants, IBarebonesSteamOpenId openId, EfDatabaseContextFactory databaseContextFactory, IEnumerable<ICommand> commands, ILifetimeScope scope)
         {
             _config = config;
@@ -102,6 +105,12 @@ namespace ArkBot
             {
                 _context.VoteInitiated += _context_VoteInitiated;
                 _context.VoteResultForced += _context_VoteResultForced;
+            }
+
+            var args = Environment.GetCommandLineArgs();
+            if (args != null && args.Contains("/restart", StringComparer.OrdinalIgnoreCase))
+            {
+                _wasRestarted = true;
             }
         }
 
@@ -307,10 +316,17 @@ namespace ArkBot
                         var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
                         var newtopic = $"Updated {lastUpdateString}{nextUpdateString} | Type !help to get started";
 
-                        var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
-                        foreach (var channel in channels)
+                        try
                         {
-                            await channel.Edit(topic: newtopic);
+                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+                            foreach (var channel in channels)
+                            {
+                                await channel.Edit(topic: newtopic);
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            Logging.LogException("Error when attempting to change bot info channel topic", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Ignored);
                         }
                     }
                 }
@@ -331,6 +347,10 @@ namespace ArkBot
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Logging.LogException("Unhandled exception in bot timer method", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
+            }
             finally
             {
                 _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
@@ -339,6 +359,17 @@ namespace ArkBot
 
         private async void _discord_ServerAvailable(object sender, ServerEventArgs e)
         {
+            if (_wasRestarted && e?.Server != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel) && !_wasRestartedServersNotified.Contains(e.Server.Id))
+            {
+                try
+                {
+                    _wasRestartedServersNotified.Add(e.Server.Id);
+                    var channel = e.Server.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase));
+                    if (channel != null) await channel.SendMessage("**I have automatically restarted due to previous unexpected shutdown!**");
+                }
+                catch (Exception ex) { /*ignore exceptions */ }
+            }
+
             await UpdateNicknamesAndRoles(e.Server); 
         }
 

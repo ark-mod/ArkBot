@@ -51,12 +51,13 @@ namespace ArkBot.Commands.Experimental
         {
             if (!e.Channel.IsPrivate) return;
 
-            var args = CommandHelper.ParseArgs(e, new { logs = false, json = false, save = false, database = false, stats = false }, x =>
+            var args = CommandHelper.ParseArgs(e, new { logs = false, json = false, save = false, database = false, stats = false, clear = false }, x =>
                 x.For(y => y.logs, flag: true)
                 .For(y => y.json, flag: true)
                 .For(y => y.save, flag: true)
                 .For(y => y.database, flag: true)
-                .For(y => y.stats, flag: true));
+                .For(y => y.stats, flag: true)
+                .For(y => y.clear, flag: true));
             if (args == null)
             {
                 await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
@@ -84,20 +85,30 @@ namespace ArkBot.Commands.Experimental
                     return;
                 }
 
-                var path = Path.Combine(_config.TempFileOutputDirPath, "logs_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
-                try
+                if (args.clear)
                 {
-                    FileHelper.CreateZipArchive(files, path);
-                    await e.Channel.SendFile(path);
-                }
-                catch
-                {
-                    await e.Channel.SendMessage("Failed to archive log files... :(");
+                    foreach (var file in files) File.Delete(file);
+
+                    await e.Channel.SendMessage("Cleared all log files!");
                     return;
                 }
-                finally
+                else
                 {
-                    if (File.Exists(path)) File.Delete(path);
+                    var path = Path.Combine(_config.TempFileOutputDirPath, "logs_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
+                    try
+                    {
+                        FileHelper.CreateZipArchive(files, path);
+                        await e.Channel.SendFile(path);
+                    }
+                    catch
+                    {
+                        await e.Channel.SendMessage("Failed to archive log files... :(");
+                        return;
+                    }
+                    finally
+                    {
+                        if (File.Exists(path)) File.Delete(path);
+                    }
                 }
             }
             else if (args.json)
