@@ -14,6 +14,9 @@ namespace ArkBot.Data
     public class ArkSpeciesStats
     {
         private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
+        private object _lock = new object();
+        private bool _isupdating = false;
+        private Task _updateTask;
 
         public static ArkSpeciesStats Instance { get { return _instance ?? (_instance = new ArkSpeciesStats()); } }
         private static ArkSpeciesStats _instance;
@@ -26,27 +29,54 @@ namespace ArkBot.Data
 
         public async Task LoadOrUpdate()
         {
-            try
+            Task updateTask = null;
+            lock (_lock)
             {
-                //this resource contains species stats that we need
-                await DownloadHelper.DownloadFile(
-                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/values.json",
-                    _speciesstatsFileName,
-                    true,
-                    TimeSpan.FromDays(1)
-                );
-            }
-            catch { /*ignore exceptions */ }
-
-            //even if download failed try with local file if it exists
-            if (File.Exists(_speciesstatsFileName))
-            {
-                using (var reader = File.OpenText(_speciesstatsFileName))
+                if (_updateTask == null)
                 {
-                    var data = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(await reader.ReadToEndAsync());
-                    if (data != null) Data = data;
-                }
+                    updateTask = _updateTask = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            try
+                            {
+                                //this resource contains species stats that we need
+                                await DownloadHelper.DownloadFile(
+                                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/values.json",
+                                    _speciesstatsFileName,
+                                    true,
+                                    TimeSpan.FromDays(1)
+                                );
+                            }
+                            catch { /*ignore exceptions */ }
+
+
+                            //even if download failed try with local file if it exists
+                            if (File.Exists(_speciesstatsFileName))
+                            {
+                                using (var reader = new StreamReader(_speciesstatsFileName))
+                                {
+                                    var data = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(await reader.ReadToEndAsync());
+                                    if (data != null) Data = data;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logging.LogException($"Error when attempting to read {_speciesstatsFileName}", ex, typeof(ArkSpeciesStats), LogLevel.ERROR, ExceptionLevel.Ignored);
+                        }
+                        finally
+                        {
+                            lock(_lock)
+                            {
+                                _updateTask = null;
+                            }
+                        }
+                    });
+                } else updateTask = _updateTask;
             }
+
+            await updateTask;
         }
     }
 

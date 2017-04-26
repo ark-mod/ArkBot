@@ -133,7 +133,7 @@ namespace ArkBot.Commands
             foreach (var t in groups)
             {
                 sb.AppendLine("**" + (tribe == null && player == null ? $"{rank + 1}. " : "") + $"{(!string.IsNullOrWhiteSpace(t.name) ? t.name : t.key.ToString())} have a total of {t.num:N0} tamed dinos{(t.numCluster > 0 ? $" (+{t.numCluster:N0} in cluster)" : "")}, {t.distinctSpeciesCount} distinct species" + (t.structuresCount.HasValue ? $" and {t.structuresCount:N0} structures" : "") + "**");
-                if (t.species.Length > 0) sb.AppendLine((tribe == null && player == null ? "which includes *" : "") + t.species.Select(x => $"{x.Item2:N0}{(x.Item3 > 0 ? $" (+{x.Item3:N0})" : "")} {x.Item1}").ToArray().Join((n, l) => n == l ? " and " : ", ") + (tribe == null && player == null ? "*" : ""));
+                if (t.species?.Length > 0) sb.AppendLine((tribe == null && player == null ? "which includes *" : "") + t.species.Select(x => $"{x.Item2:N0}{(x.Item3 > 0 ? $" (+{x.Item3:N0})" : "")} {x.Item1}").ToArray().Join((n, l) => n == l ? " and " : ", ") + (tribe == null && player == null ? "*" : ""));
                 if (t.structures != null && t.structures.Length > 0)
                 {
                     sb.AppendLine().AppendLine("**Most Common Structures**");
