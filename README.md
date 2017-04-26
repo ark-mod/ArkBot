@@ -13,6 +13,9 @@ Pre-release built from latest sources (open as zip-archive, binaries under tools
 https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
 ## Configuration in config.json (copy defaultconfig.json template file)
+### There are quite a few fields that are not covered below. Descriptions for all fields can be found in
+https://github.com/tsebring/ArkBot/blob/master/ArkBot/Config.cs
+
 **"saveFilePath": "\<absolute .ark savegame path\>"**
 
 Absolute path to the savegame-file (.ark) to watch for changes and extract data from.

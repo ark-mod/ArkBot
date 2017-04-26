@@ -117,7 +117,7 @@ namespace ArkBot.Commands
                         name = player != null ? x.FirstOrDefault()?.OwnerName : x.FirstOrDefault()?.Tribe,
                         num = x.Count(z => !z.IsInCluster),
                         numCluster = x.Count(z => z.IsInCluster),
-                        species = tribe != null || player != null ? species : StatisticsHelper.FilterUsingStandardDeviation(species, z => z.Item2, (dist, sd) => dist >= sd, true),
+                        species = tribe != null || player != null ? species : species.Length > 1 ? StatisticsHelper.FilterUsingStandardDeviation(species, z => z.Item2, (dist, sd) => dist >= sd, true) : species,
                         distinctSpeciesCount = species.Length,
                         structuresCount = structuresCount,
                         structures = tribe != null || player != null ? StatisticsHelper.FilterUsingStandardDeviation(structures, z => z.Count, (dist, sd) => dist >= 0, true) : null
