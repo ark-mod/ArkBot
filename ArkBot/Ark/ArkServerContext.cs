@@ -28,6 +28,8 @@ namespace ArkBot.Ark
         private static CancellationTokenSource _ctsCurrentUpdate;
         private static ArkServerContext _serverContextCurrentUpdate;
 
+        private IConfig _config;
+
         public IEnumerable<ArkTamedCreature> NoRafts => TamedCreatures?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
 
         public ArkTamedCreature[] TamedCreatures { get; set; }
@@ -113,8 +115,10 @@ namespace ArkBot.Ark
             if (item.Equals(_serverContextCurrentUpdate) && !_ctsCurrentUpdate.IsCancellationRequested) _ctsCurrentUpdate.Cancel();
         }
 
-        public ArkServerContext(ServerConfigSection config, IProgress<string> progress)
+        public ArkServerContext(IConfig fullconfig, ServerConfigSection config, IProgress<string> progress)
         {
+            _config = fullconfig;
+
             Config = config;
             Progress = progress;
 
@@ -136,21 +140,64 @@ namespace ArkBot.Ark
 
         private bool Update(CancellationToken ct)
         {
+            //todo: temp copy all
+            var copy = true;
             var success = false;
+            var tmppaths = new List<string>();
+            var gid = Guid.NewGuid().ToString();
+            var tempFileOutputDirPath = Path.Combine(_config.TempFileOutputDirPath, gid);
+            ArkSavegame save = null;
             var st = Stopwatch.StartNew();
             try
             {
                 Progress.Report($"Server ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
 
-                var save = new ArkSavegame(Config.SaveFilePath);
+                var directoryPath = Path.GetDirectoryName(Config.SaveFilePath);
+                if (copy)
+                {
+                    //todo: if it exists get a new path
+                    if (!Directory.Exists(tempFileOutputDirPath)) Directory.CreateDirectory(tempFileOutputDirPath);
+                }
+
+                if (copy)
+                {
+                    var saveFilePath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(Config.SaveFilePath));
+                    tmppaths.Add(saveFilePath);
+                    File.Copy(Config.SaveFilePath, saveFilePath);
+
+                    save = new ArkSavegame(saveFilePath);
+                } else save = new ArkSavegame(Config.SaveFilePath);
                 save.LoadEverything();
                 ct.ThrowIfCancellationRequested();
 
-                var directoryPath = Path.GetDirectoryName(Config.SaveFilePath);
-                var tribes = Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
+                ArkSavegameToolkitNet.ArkTribe[] tribes = null;
+                if (copy)
+                {
+                    var tribePaths = new List<string>();
+                    foreach (var tp in Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly))
+                    {
+                        var tribePath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(tp));
+                        tribePaths.Add(tp);
+                        tmppaths.Add(tribePath);
+                        File.Copy(tp, tribePath);
+                    }
+                    tribes = tribePaths.Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
+                } else tribes = Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
                 ct.ThrowIfCancellationRequested();
 
-                var profiles = Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly).Select(x => new ArkProfile(x)).ToArray();
+                ArkProfile[] profiles = null;
+                if (copy)
+                {
+                    var profilePaths = new List<string>();
+                    foreach (var pp in Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly))
+                    {
+                        var profilePath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(pp));
+                        profilePaths.Add(pp);
+                        tmppaths.Add(profilePath);
+                        File.Copy(pp, profilePath);
+                    }
+                    profiles = profilePaths.Select(x => new ArkProfile(x)).ToArray();
+                } else profiles = Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly).Select(x => new ArkProfile(x)).ToArray();
                 ct.ThrowIfCancellationRequested();
 
                 var _myCharacterStatusComponent = ArkName.Create("MyCharacterStatusComponent");
@@ -198,6 +245,19 @@ namespace ArkBot.Ark
             {
                 Logging.LogException($"Failed to update server ({Config.Key})", ex, typeof(ArkServerContext), LogLevel.ERROR, ExceptionLevel.Ignored);
                 Progress.Report($"Server ({Config.Key}): Update failed after {st.ElapsedMilliseconds:N0} ms");
+            }
+            finally
+            {
+                save?.Dispose();
+                if (copy)
+                {
+                    try
+                    {
+                        foreach (var path in tmppaths) File.Delete(path);
+                        Directory.Delete(tempFileOutputDirPath);
+                    }
+                    catch { /* ignore exception */ }
+                }
             }
 
             GC.Collect();

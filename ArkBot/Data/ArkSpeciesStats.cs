@@ -15,7 +15,6 @@ namespace ArkBot.Data
     {
         private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
         private object _lock = new object();
-        private bool _isupdating = false;
         private Task _updateTask;
 
         public static ArkSpeciesStats Instance { get { return _instance ?? (_instance = new ArkSpeciesStats()); } }

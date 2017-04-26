@@ -459,7 +459,7 @@ namespace ArkBot.ViewModel
             {
                 foreach (var server in config.Servers)
                 {
-                    var context = new ArkServerContext(server, progress);
+                    var context = new ArkServerContext(config, server, progress);
                     context.QueueManualUpdate();
                     _serverContexts.Add(server.Key, context);
                 }
