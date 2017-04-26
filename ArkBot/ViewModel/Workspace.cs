@@ -1,12 +1,16 @@
-﻿using ArkBot.Data;
+﻿using ArkBot.Ark;
+using ArkBot.Data;
 using ArkBot.Database;
 using ArkBot.Database.Model;
 using ArkBot.Helpers;
 using ArkBot.OpenID;
 using ArkBot.Services;
 using ArkBot.Vote;
+using ArkBot.WebApi;
 using ArkBot.WpfCommands;
 using Autofac;
+using Autofac.Integration.WebApi;
+using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Prism.Commands;
 using RazorEngine.Configuration;
@@ -27,7 +31,7 @@ using System.Windows.Input;
 
 namespace ArkBot.ViewModel
 {
-    public class Workspace : ViewModelBase
+    public class Workspace : ViewModelBase, IDisposable
     {
         public struct Constants
         {
@@ -48,7 +52,14 @@ namespace ArkBot.ViewModel
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
-        private static IContainer Container { get; set; }
+        internal static IContainer Container { get; set; }
+
+        public Dictionary<string, ArkServerContext> ServerContexts { get { return _serverContexts; } }
+        private Dictionary<string, ArkServerContext> _serverContexts = new Dictionary<string, ArkServerContext>(StringComparer.OrdinalIgnoreCase);
+
+        public Dictionary<string, ArkClusterContext> ClusterContexts { get { return _clusterContexts; } }
+        private Dictionary<string, ArkClusterContext> _clusterContexts = new Dictionary<string, ArkClusterContext>(StringComparer.OrdinalIgnoreCase);
+
 
         public bool SkipExtractNextRestart
         {
@@ -68,6 +79,7 @@ namespace ArkBot.ViewModel
         private bool _skipExtractNextRestart;
 
         private SavedState _savedstate = null;
+        private IDisposable _webapi;
 
         public Workspace()
         {
@@ -238,6 +250,75 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BackupsDirectoryPath))}");
                 sb.AppendLine();
             }
+            if (string.IsNullOrWhiteSpace(config.WebApiListenPrefix))
+            {
+                sb.AppendLine($@"Error: {nameof(config.WebApiListenPrefix)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.WebApiListenPrefix))}");
+                sb.AppendLine();
+            }
+
+            var clusterkeys = config.Clusters?.Select(x => x.Key).ToArray();
+            var serverkeys = config.Servers?.Select(x => x.Key).ToArray();
+            if (serverkeys?.Length > 0 && serverkeys.Length != serverkeys.Distinct(StringComparer.OrdinalIgnoreCase).Count())
+            {
+                sb.AppendLine($@"Error: {nameof(config.Servers)} contain non-unique keys.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.Servers))}");
+                sb.AppendLine();
+            }
+            if (clusterkeys?.Length > 0 && clusterkeys.Length != clusterkeys.Distinct(StringComparer.OrdinalIgnoreCase).Count())
+            {
+                sb.AppendLine($@"Error: {nameof(config.Clusters)} contain non-unique keys.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.Clusters))}");
+                sb.AppendLine();
+            }
+            if (config.Servers?.Length > 0)
+            {
+                foreach (var server in config.Servers)
+                {
+                    if (server.Cluster != null && !clusterkeys.Contains(server.Cluster))
+                    {
+                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.Cluster)} reference missing cluster key ""{server.Cluster}"".");
+                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Cluster))}");
+                        sb.AppendLine();
+                    }
+                    if (string.IsNullOrWhiteSpace(server.SaveFilePath) || !File.Exists(server.SaveFilePath))
+                    {
+                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.SaveFilePath)} is not a valid file path for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.SaveFilePath))}");
+                        sb.AppendLine();
+                    }
+                    if (string.IsNullOrWhiteSpace(server.Ip))
+                    {
+                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.Ip)} is not set for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Ip))}");
+                        sb.AppendLine();
+                    }
+                    if (server.Port <= 0)
+                    {
+                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.Port)} is not valid for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Port))}");
+                        sb.AppendLine();
+                    }
+                    //if (server.RconPort <= 0)
+                    //{
+                    //    sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.RconPort)} is not valid for server instance ""{server.Key}"".");
+                    //    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.RconPort))}");
+                    //    sb.AppendLine();
+                    //}
+                }
+            }
+            if (config.Clusters?.Length > 0)
+            {
+                foreach (var cluster in config.Clusters)
+                {
+                    if (string.IsNullOrWhiteSpace(cluster.SavePath) || !Directory.Exists(cluster.SavePath))
+                    {
+                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(cluster.SavePath)} is not a valid directory path for cluster instance ""{cluster.Key}"".");
+                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(cluster, nameof(cluster.SavePath))}");
+                        sb.AppendLine();
+                    }
+                }
+            }
 
             //todo: for now this section is not really needed unless !imprintcheck is used
             //if (config.ArkMultipliers == null)
@@ -252,7 +333,7 @@ namespace ArkBot.ViewModel
             if (string.IsNullOrWhiteSpace(config.MemberRoleName)) config.DeveloperRoleName = "ark";
 
             //load aliases and check integrity
-            var aliases = await ArkSpeciesAliases.Load();
+            var aliases = ArkSpeciesAliases.Instance;
             if (aliases == null || !aliases.CheckIntegrity)
             {
                 sb.AppendLine($@"Error: ""{ArkSpeciesAliases._filepath}"" is missing, contains invalid json or duplicate aliases.");
@@ -357,6 +438,7 @@ namespace ArkBot.ViewModel
             builder.RegisterType<UpdateServerVoteHandler>().As<IVoteHandler<UpdateServerVote>>();
             builder.RegisterType<DestroyWildDinosVoteHandler>().As<IVoteHandler<DestroyWildDinosVote>>();
             builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
             Container = builder.Build();
 
@@ -365,8 +447,39 @@ namespace ArkBot.ViewModel
 
 
             //run the discord bot
-            _runDiscordBotCts = new CancellationTokenSource();
-            _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            if (config.DiscordBotEnabled)
+            {
+                _runDiscordBotCts = new CancellationTokenSource();
+                _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }
+            else Console.AddLog("Discord bot is disabled.");
+
+            //server/cluster contexts
+            if (config.Servers?.Length > 0)
+            {
+                foreach (var server in config.Servers)
+                {
+                    var context = new ArkServerContext(server, progress);
+                    context.QueueManualUpdate();
+                    _serverContexts.Add(server.Key, context);
+                }
+            }
+
+            if (config.Clusters?.Length > 0)
+            {
+                foreach (var cluster in config.Clusters)
+                {
+                    var context = new ArkClusterContext(cluster);
+                    _clusterContexts.Add(cluster.Key, context);
+                }
+            }
+
+            //load the species stats data
+            await ArkSpeciesStats.Instance.LoadOrUpdate();
+
+            //webapi
+            _webapi = WebApp.Start<Startup>(url: config.WebApiListenPrefix);
+            Console.AddLog("WebAPI started");
         }
 
         private Task _runDiscordBotTask;
@@ -442,5 +555,27 @@ namespace ArkBot.ViewModel
                 await _bot.Stop();
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _webapi?.Dispose();
+                    _webapi = null;
+                }
+
+                disposedValue = true;
+            }
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

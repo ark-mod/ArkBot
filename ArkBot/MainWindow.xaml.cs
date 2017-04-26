@@ -51,6 +51,8 @@ namespace ArkBot
         {
             var serializer = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockManager);
             serializer.Serialize(Workspace.Constants.LayoutFilePath);
+
+            Workspace.Instance.Dispose();
         }
     }
 }

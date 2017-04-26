@@ -12,9 +12,13 @@ namespace ArkBot.Data
     {
         public const string _filepath = @"aliases.json";
 
-        public ArkSpeciesAliases()
+        public static ArkSpeciesAliases Instance {  get { return _instance ?? (_instance = new ArkSpeciesAliases()); } }
+        private static ArkSpeciesAliases _instance;
+
+        private ArkSpeciesAliases()
         {
             Aliases = new string[][] { };
+            Load();
         }
 
         public string[][] Aliases { get; set; }
@@ -31,22 +35,20 @@ namespace ArkBot.Data
             return aliases;
         }
 
-        public static async Task<ArkSpeciesAliases> Load(string filepath = _filepath)
+        private void Load()
         {
-            ArkSpeciesAliases arkSpeciesAliases = null;
             try
             {
-                if (File.Exists(filepath))
+                if (File.Exists(_filepath))
                 {
-                    using (var reader = File.OpenText(filepath))
+                    using (var reader = File.OpenText(_filepath))
                     {
-                        arkSpeciesAliases = JsonConvert.DeserializeObject<ArkSpeciesAliases>(await reader.ReadToEndAsync());
+                        var data = JsonConvert.DeserializeAnonymousType(reader.ReadToEnd(), new { Aliases = new string[][] { } });
+                        if (data != null) Aliases = data.Aliases;
                     }
                 }
             }
             catch { /* ignore exceptions */ }
-
-            return arkSpeciesAliases;
         }
 
         public bool CheckIntegrity => !(Aliases == null || Aliases.SelectMany(x => x).Distinct(StringComparer.OrdinalIgnoreCase).Count() != Aliases.SelectMany(x => x).Count());

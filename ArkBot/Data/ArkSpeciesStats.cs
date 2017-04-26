@@ -1,14 +1,60 @@
-﻿using Newtonsoft.Json;
+﻿using ArkBot.Helpers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ArkBot.Data
 {
+   
+
+    public class ArkSpeciesStats
+    {
+        private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
+
+        public static ArkSpeciesStats Instance { get { return _instance ?? (_instance = new ArkSpeciesStats()); } }
+        private static ArkSpeciesStats _instance;
+
+        public ArkSpeciesStatsData Data { get; set; }
+
+        public ArkSpeciesStats()
+        {
+        }
+
+        public async Task LoadOrUpdate()
+        {
+            try
+            {
+                //this resource contains species stats that we need
+                await DownloadHelper.DownloadFile(
+                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/values.json",
+                    _speciesstatsFileName,
+                    true,
+                    TimeSpan.FromDays(1)
+                );
+            }
+            catch { /*ignore exceptions */ }
+
+            //even if download failed try with local file if it exists
+            if (File.Exists(_speciesstatsFileName))
+            {
+                using (var reader = File.OpenText(_speciesstatsFileName))
+                {
+                    var data = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(await reader.ReadToEndAsync());
+                    if (data != null) Data = data;
+                }
+            }
+        }
+    }
+
     public class ArkSpeciesStatsData
     {
+        public static ArkSpeciesStatsData Instance { get { return _instance ?? (_instance = new ArkSpeciesStatsData()); } }
+        private static ArkSpeciesStatsData _instance;
+
         public ArkSpeciesStatsData()
         {
             StatMultipliers = new double[0][];

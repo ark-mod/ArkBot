@@ -13,6 +13,7 @@ using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Database;
 using System.Globalization;
+using ArkBot.Data;
 
 namespace ArkBot.Commands
 {
@@ -76,7 +77,7 @@ namespace ArkBot.Commands
                 if (!string.IsNullOrWhiteSpace(args.Map))
                 {
                     //annotated map of current species spread
-                    var aliases = _context.SpeciesAliases?.GetAliases(args.Map);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliases(args.Map);
                     var speciesNames = aliases ?? new[] { args.Map };
 
                     var matches = _context.Wild?.Where(x => speciesNames != null && x.SpeciesClass != null && speciesNames.Contains(x.SpeciesClass, StringComparer.OrdinalIgnoreCase))
@@ -84,10 +85,10 @@ namespace ArkBot.Commands
                     if (matches == null || matches.Length < 1)
                     {
                         sb.AppendLine($"**No matching wild creatures found!**");
-                        if (aliases == null && _context.Wild != null && _context.SpeciesAliases != null && _context.ArkSpeciesStatsData?.SpeciesStats != null)
+                        if (aliases == null && _context.Wild != null && _context.ArkSpeciesStatsData?.SpeciesStats != null)
                         {
                             var sequence = args.Map.ToLower().ToCharArray();
-                            var similarity = _context.SpeciesAliases.Aliases.Select(x =>
+                            var similarity = ArkSpeciesAliases.Instance.Aliases.Select(x =>
                             {
                                 var s = x.Select(y => new { key = y, s = StatisticsHelper.CompareToCharacterSequence(y, sequence) }).OrderByDescending(y => y.s).FirstOrDefault();
                                 return new { key = s.key, primary = x.FirstOrDefault(), all = x, val = s.s /*s >= 0 ? s : 0*/ };
@@ -134,7 +135,7 @@ namespace ArkBot.Commands
                         var same = logIds != null ? logIds.Intersect(ids).Count() : 0;
                         return new
                         {
-                            Key = _context.SpeciesAliases.GetAliases(x.Key)?.FirstOrDefault() ?? x.Key,
+                            Key = ArkSpeciesAliases.Instance.GetAliases(x.Key)?.FirstOrDefault() ?? x.Key,
                             Now = count,
                             Prev = logIds != null ? logIds.Length : 0,
                             ChangePercent = logIds != null ? logIds.Length > 0 ? Math.Round(((count / (double)logIds.Length) - 1) * 100) : 0d : 0d,

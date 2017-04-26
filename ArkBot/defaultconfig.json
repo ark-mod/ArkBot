@@ -29,9 +29,35 @@
   "startServerBatchFilePath": "C:\\steamcmd\\runArkServer.bat",
   "backupsEnabled": false,
   "backupsDirectoryPath": "",
+  "discordBotEnabled": true,
+  "webApiListenPrefix":  "http://+:<your open port>/",
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
     "babyMatureSpeedMultiplier": 1.0,
-    "cuddleIntervalMultiplier":  1.0
-  }
+    "cuddleIntervalMultiplier": 1.0
+  },
+  "servers": [
+    {
+      "key": "server1",
+      "cluster": "cluster1",
+      "saveFilePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
+      "ip": "127.0.0.1",
+      "port": 27015,
+      "rconPort": 27020
+    },
+    {
+      "key": "server2",
+      "cluster" :  "cluster1",
+      "saveFilePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\SavedArks2\\TheIsland.ark",
+      "ip": "127.0.0.1",
+      "port": 27016,
+      "rconPort": 27021
+    }
+  ],
+  "clusters": [
+    {
+      "key": "cluster1",
+      "savePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\clusters\\cluster1"
+    }
+  ]
 }

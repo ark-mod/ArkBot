@@ -54,8 +54,6 @@ namespace ArkBot
         private string _jsonOutputDirPathPlayers => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirPlayers) : null;
         private string _jsonOutputDirPathCluster => _config?.JsonOutputDirPath != null ? Path.Combine(_config.JsonOutputDirPath, _jsonSubDirCluster) : null;
 
-        private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
-
         private List<DateTime> _previousUpdates = new List<DateTime>();
         private TribeLog _latestTribeLog;
         private bool _contextUpdatesDisabledOverride = false;
@@ -99,7 +97,7 @@ namespace ArkBot
                 return TimeSpan.FromMinutes(Math.Round(relative.TotalMinutes));
             }
         }
-        public ArkSpeciesAliases SpeciesAliases { get; set; }
+
         public ArkSpeciesStatsData ArkSpeciesStatsData { get; set; }
         public Creature[] Creatures { get; private set; }
         public Creature[] Wild { get; private set; }
@@ -138,15 +136,12 @@ namespace ArkBot
             Classes = new CreatureClass[] { };
             Cluster = new Cluster();
             TribeLogs = new List<TribeLog>();
-            SpeciesAliases = new ArkSpeciesAliases();
             ArkSpeciesStatsData = new ArkSpeciesStatsData();
         }
 
-        public async Task Initialize(CancellationToken token, bool skipExtract = false, ArkSpeciesAliases aliases = null)
+        public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
             Progress.Report("Context initialization started...");
-
-            SpeciesAliases = aliases ?? await ArkSpeciesAliases.Load() ?? new ArkSpeciesAliases();
 
             Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
 
@@ -264,13 +259,7 @@ namespace ArkBot
             ct.ThrowIfCancellationRequested();
             try
             {
-                //this resource contains species stats that we need
-                await DownloadHelper.DownloadFile(
-                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/values.json",
-                    _speciesstatsFileName,
-                    true,
-                    TimeSpan.FromDays(1)
-                );
+                await ArkSpeciesStats.Instance.LoadOrUpdate();
             }
             catch { /*ignore exceptions */ }
 
@@ -393,15 +382,7 @@ namespace ArkBot
                         }
                     }
                 }
-
-                ArkSpeciesStatsData arkSpeciesStatsData = null;
-                if (File.Exists(_speciesstatsFileName))
-                {
-                    using (var reader = File.OpenText(_speciesstatsFileName))
-                    {
-                        arkSpeciesStatsData = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(await reader.ReadToEndAsync());
-                    }
-                }
+                
                 var classes = results?.Where(x => x.Item2 is CreatureClass[])?.FirstOrDefault()?.Item2 as CreatureClass[];
                 var creatures = results?.Where(x => x.Item2 is TamedCreature[])
                     .GroupBy(x => x.Item1)
@@ -461,7 +442,7 @@ namespace ArkBot
                     x.SpeciesName = classes?.FirstOrDefault(z => z.Class.Equals(x.SpeciesClass, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");
                 });
 
-                return new Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>(arkSpeciesStatsData, classes, creatures, players, tribes, cluster, wildcreatures);
+                return new Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>(ArkSpeciesStats.Instance.Data, classes, creatures, players, tribes, cluster, wildcreatures);
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
@@ -701,7 +682,7 @@ namespace ArkBot
                                                             && x.TribeId == team.Value
                                                             && (!string.IsNullOrWhiteSpace(name) ? name.Equals(x.Name, StringComparison.Ordinal) : x.Name.Equals(x.SpeciesName, StringComparison.Ordinal))
                                                             && x.Level >= (fullLevel ?? baseLevel)
-                                                            && ((SpeciesAliases.GetAliases(x.SpeciesName)?.Contains(speciesClass)) ?? false)).ToArray() : null;
+                                                            && ((ArkSpeciesAliases.Instance.GetAliases(x.SpeciesName)?.Contains(speciesClass)) ?? false)).ToArray() : null;
 
                                                 //is in cluster
                                                 resultSet.SetBoolean(ordinal(nameof(l.IsInCluster)), isNowInCluster);
@@ -926,10 +907,10 @@ namespace ArkBot
         //    Debug.WriteLine($"{nameof(LogTamedCreatures)} finished in {st.ElapsedMilliseconds:N0} ms");
         //}
 
-        public double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier)
+        public static double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier)
         {
-            var speciesAliases = SpeciesAliases?.GetAliases(speciesNameOrClass) ?? new[] { speciesNameOrClass };
-            return ArkSpeciesStatsData?.GetMaxValue(
+            var speciesAliases = ArkSpeciesAliases.Instance.GetAliases(speciesNameOrClass) ?? new[] { speciesNameOrClass };
+            return ArkSpeciesStats.Instance.Data?.GetMaxValue(
                             speciesAliases, //a list of alternative species names
                             stat,
                             wildLevelStat ?? 0,

@@ -8,6 +8,7 @@ using ArkBot.Helpers;
 using ArkBot.Extensions;
 using static System.FormattableString;
 using System.Drawing;
+using ArkBot.Data;
 
 namespace ArkBot.Commands
 {
@@ -66,7 +67,7 @@ namespace ArkBot.Commands
                 return;
             }
 
-            var aliases = _context.SpeciesAliases?.GetAliases(args.Query);
+            var aliases = ArkSpeciesAliases.Instance.GetAliases(args.Query);
             var speciesNames = aliases ?? new[] { args.Query };
 
             var filtered = _context.Creatures?.Where(x => x.Tamed == true);
@@ -98,13 +99,13 @@ namespace ArkBot.Commands
             if (matches == null || matches.Length < 1)
             {
                 await e.Channel.SendMessage($"**No matching tamed creatures found!** (updated {lastUpdateString}{nextUpdateString})");
-                if (args.Species && aliases == null && _context.Creatures != null && _context.SpeciesAliases != null && _context.ArkSpeciesStatsData?.SpeciesStats != null)
+                if (args.Species && aliases == null && _context.Creatures != null && _context.ArkSpeciesStatsData?.SpeciesStats != null)
                 {
                     //var allspecies = _context.Creatures.Select(x => x.SpeciesName).Distinct(StringComparer.OrdinalIgnoreCase).Where(x => !x.Equals("raft", StringComparison.OrdinalIgnoreCase)).ToArray();
                     var sequence = args.Query.ToLower().ToCharArray();
                     var tamableSpecies = _context.ArkSpeciesStatsData.SpeciesStats.Select(x => x.Name).ToArray();
                     //intersection to remove all non-tamable creatures from the list of suggestions (ex. alphas, bosses)
-                    var similarity = _context.SpeciesAliases.Aliases.Where(x => tamableSpecies.Intersect(x, StringComparer.OrdinalIgnoreCase).Count() > 0).Select(x =>
+                    var similarity = ArkSpeciesAliases.Instance.Aliases.Where(x => tamableSpecies.Intersect(x, StringComparer.OrdinalIgnoreCase).Count() > 0).Select(x =>
                     {
                         var s = x.Select(y => new { key = y, s = StatisticsHelper.CompareToCharacterSequence(y, sequence) }).OrderByDescending(y => y.s).FirstOrDefault();
                         return new { key = s.key, primary = x.FirstOrDefault(), all = x, val = s.s /*s >= 0 ? s : 0*/ };

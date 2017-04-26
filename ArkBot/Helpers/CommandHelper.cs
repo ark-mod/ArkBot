@@ -125,15 +125,20 @@ namespace ArkBot.Helpers
 
         public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(IConfig config)
         {
-            var cache = MemoryCache.Default;
+            return await GetServerStatus(config.ServerIp, (ushort)config.ServerPort);
+        }
 
-            var status = cache[nameof(GetServerStatus)] as Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>;
+        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(string serverIp, ushort serverPort)
+        {
+            var cache = MemoryCache.Default;
+            var cacheKey = $"{nameof(GetServerStatus)}_{serverIp}_{serverPort}";
+            var status = cache[cacheKey] as Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>;
 
             if (status == null)
             {
                 await Task.Factory.StartNew(() =>
                 {
-                    using (var server = QueryMaster.GameServer.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, config.ServerIp, (ushort)config.ServerPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
+                    using (var server = QueryMaster.GameServer.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, serverIp, serverPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
                     {
                         if (server == null) return;
 
@@ -142,7 +147,7 @@ namespace ArkBot.Helpers
                         var playerInfo = server.GetPlayers();
 
                         status = new Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>(serverInfo, serverRules, playerInfo);
-                        cache.Set(nameof(GetServerStatus), status, new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMinutes(1) });
+                        cache.Set(cacheKey, status, new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMinutes(1) });
                     }
                 });
             }

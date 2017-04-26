@@ -44,7 +44,14 @@ namespace ArkBot
         private bool _wasRestarted;
         private List<ulong> _wasRestartedServersNotified = new List<ulong>();
 
-        public ArkDiscordBot(IConfig config, IArkContext context, IConstants constants, IBarebonesSteamOpenId openId, EfDatabaseContextFactory databaseContextFactory, IEnumerable<ICommand> commands, ILifetimeScope scope)
+        public ArkDiscordBot(
+            IConfig config, 
+            IArkContext context, 
+            IConstants constants, 
+            IBarebonesSteamOpenId openId, 
+            EfDatabaseContextFactory databaseContextFactory, 
+            IEnumerable<ICommand> commands, 
+            ILifetimeScope scope)
         {
             _config = config;
             _context = context;
@@ -562,9 +569,9 @@ namespace ArkBot
             _context.Progress.Report(sb.ToString());
         }
 
-        public async Task Initialize(CancellationToken token, bool skipExtract = false, ArkSpeciesAliases aliases = null)
+        public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
-            await _context.Initialize(token, skipExtract, aliases);
+            await _context.Initialize(token, skipExtract);
 
             //handle undecided votes (may happen due to previous bot shutdown before vote finished)
             using (var db = _databaseContextFactory.Create())

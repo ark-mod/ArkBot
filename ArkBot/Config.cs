@@ -12,7 +12,11 @@ namespace ArkBot
     {
         public Config()
         {
+            // Default values
             ArkMultipliers = new ArkMultipliersConfigSection();
+            Servers = new ServerConfigSection[] { };
+            Clusters = new ClusterConfigSection[] { };
+            DiscordBotEnabled = true;
         }
 
         [JsonProperty(PropertyName = "botId")]
@@ -154,6 +158,22 @@ namespace ArkBot
         [JsonProperty(PropertyName = "backupsDirectoryPath")]
         [Description("Directory path where savegame backups are stored.")]
         public string BackupsDirectoryPath { get; set; }
+
+        [JsonProperty(PropertyName = "discordBotEnabled")]
+        [Description("Option to enable/disable the discord bot component.")]
+        public bool DiscordBotEnabled { get; set; }
+
+        [JsonProperty(PropertyName = "webApiListenPrefix")]
+        [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections.")]
+        public string WebApiListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "servers")]
+        [Description("Server instance configurations.")]
+        public ServerConfigSection[] Servers { get; set; }
+
+        [JsonProperty(PropertyName = "clusters")]
+        [Description("Cluster instance configurations.")]
+        public ClusterConfigSection[] Clusters { get; set; }
     }
 
     public class ArkMultipliersConfigSection
@@ -176,5 +196,51 @@ namespace ArkBot
         [JsonProperty(PropertyName = "cuddleIntervalMultiplier")]
         [Description("Multiplier for duration between cuddles.")]
         public double CuddleIntervalMultiplier { get; set; }
+    }
+
+    public class ServerConfigSection
+    {
+        public ServerConfigSection()
+        {
+        }
+
+        [JsonProperty(PropertyName = "key")]
+        [Description("Unique key/name for this server instance.")]
+        public string Key { get; set; }
+
+        [JsonProperty(PropertyName = "cluster")]
+        [Description("Optional key for the cluster instance this server is part of.")]
+        public string Cluster { get; set; }
+
+        [JsonProperty(PropertyName = "saveFilePath")]
+        [Description("Absolute file path of the .ark save file to monitor/extract data from.")]
+        public string SaveFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "ip")]
+        [Description("The IP address used to connect to this server instance.")]
+        public string Ip { get; set; }
+
+        [JsonProperty(PropertyName = "port")]
+        [Description("The port used to connect to this server instance.")]
+        public int Port { get; set; }
+
+        [JsonProperty(PropertyName = "rconPort")]
+        [Description("The port used to connect to this server instance over rcon.")]
+        public int RconPort { get; set; }
+    }
+
+    public class ClusterConfigSection
+    {
+        public ClusterConfigSection()
+        {
+        }
+
+        [JsonProperty(PropertyName = "key")]
+        [Description("Unique key/name for this cluster instance.")]
+        public string Key { get; set; }
+
+        [JsonProperty(PropertyName = "savePath")]
+        [Description("The directory path where cluster save data is stored.")]
+        public string SavePath { get; set; }
     }
 }

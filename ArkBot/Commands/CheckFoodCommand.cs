@@ -58,7 +58,7 @@ namespace ArkBot.Commands
                     return new
                     {
                         creature = x,
-                        maxFood = _context.CalculateMaxStat(Data.ArkSpeciesStatsData.Stat.Food, x.SpeciesClass ?? x.SpeciesName, x.WildLevels?.Food, x.TamedLevels?.Food, x.ImprintingQuality, x.TamedIneffectivenessModifier)
+                        maxFood = ArkContext.CalculateMaxStat(Data.ArkSpeciesStatsData.Stat.Food, x.SpeciesClass ?? x.SpeciesName, x.WildLevels?.Food, x.TamedLevels?.Food, x.ImprintingQuality, x.TamedIneffectivenessModifier)
                     };
                 })
                 .ToArray();

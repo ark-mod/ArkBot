@@ -92,7 +92,7 @@ namespace ArkBot.Commands
 
             var results = kibbles.Select(x =>
             {
-                var aliases = _context.SpeciesAliases.GetAliases(x.Name);
+                var aliases = ArkSpeciesAliases.Instance.GetAliases(x.Name);
                 var egg = aliases == null || aliases.Length == 0 ? null : eggs.FirstOrDefault(y =>
                 {
                     return aliases.Contains(y.Name, StringComparer.OrdinalIgnoreCase);

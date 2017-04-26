@@ -37,5 +37,10 @@
         string StartServerBatchFilePath { get; set; }
         bool BackupsEnabled { get; set; }
         string BackupsDirectoryPath { get; set; }
+        bool DiscordBotEnabled { get; set; }
+        string WebApiListenPrefix { get; set; }
+
+        ServerConfigSection[] Servers { get; set; }
+        ClusterConfigSection[] Clusters { get; set; }
     }
 }

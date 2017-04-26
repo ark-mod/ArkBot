@@ -122,7 +122,7 @@ namespace ArkBot.Commands
                         {
                             foreach (var item in db.TamedCreatureLogEntries.Where(x => ids.Contains(x.Id)).Select(x => new { id = x.Id, species = x.SpeciesClass }).ToArray())
                             {
-                                species.Add(item.id, _context.SpeciesAliases?.GetAliases(item.species)?.FirstOrDefault() ?? item.species);
+                                species.Add(item.id, ArkSpeciesAliases.Instance.GetAliases(item.species)?.FirstOrDefault() ?? item.species);
                             }
                         }
                     }
@@ -183,7 +183,7 @@ namespace ArkBot.Commands
                     sb.AppendLine($"** (updated {lastUpdateString}{nextUpdateString})");
                     foreach (var x in dinos)
                     {
-                        var speciesName = _context.SpeciesAliases.GetAliases(x.SpeciesClass)?.FirstOrDefault() ?? x.SpeciesClass;
+                        var speciesName = ArkSpeciesAliases.Instance.GetAliases(x.SpeciesClass)?.FirstOrDefault() ?? x.SpeciesClass;
                         sb.Append($"● {(!string.IsNullOrWhiteSpace(x.Name) ? $"**{x.Name}**, ***{speciesName}***" : $"**{speciesName}**")} (lvl ***{x.FullLevel ?? x.BaseLevel}***)");
                         if (x.IsConfirmedDead)
                         {

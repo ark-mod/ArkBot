@@ -26,10 +26,8 @@ namespace ArkBot
         Creature[] Wild { get; }
         DateTime LastUpdate { get; }
         Player[] Players { get; }
-        ArkSpeciesAliases SpeciesAliases { get; set; }
         Tribe[] Tribes { get; }
-        Task Initialize(CancellationToken token, bool skipExtract = false, ArkSpeciesAliases aliases = null);
-        double? CalculateMaxStat(ArkSpeciesStatsData.Stat stat, string speciesNameOrClass, int? wildLevelStat, int? tamedLevelStat, decimal? imprintingQuality, decimal? tamedIneffectivenessModifier);
+        Task Initialize(CancellationToken token, bool skipExtract = false);
         string GetElevationAsText(decimal z);
         void DebugTriggerOnChange();
         void OnVoteInitiated(Database.Model.Vote item);
