@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -51,8 +52,8 @@ namespace ArkBot.ViewModel
         public ConsoleViewModel Console => _console ?? (_console = new ConsoleViewModel());
         private ConsoleViewModel _console;
 
-        public ICommand ExitCommand => _exitCommand ?? (_exitCommand = new RelayCommand(parameter => OnExit(parameter), parameter => CanExit(parameter)));
-        private RelayCommand _exitCommand;
+        public ICommand SteamCmdTestCommand => _steamCmdTestCommand ?? (_steamCmdTestCommand = new RelayCommand(parameter => OnSteamCmdTest(parameter), parameter => CanSteamCmdTest(parameter)));
+        private RelayCommand _steamCmdTestCommand;
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
@@ -77,6 +78,9 @@ namespace ArkBot.ViewModel
 
         private SavedState _savedstate = null;
         private IDisposable _webapi;
+
+        private ArkContextManager _contextManager;
+        private IConfig _config;
 
         public Workspace()
         {
@@ -113,6 +117,91 @@ namespace ArkBot.ViewModel
             Application.Current.MainWindow.Close();
         }
 
+        private bool CanSteamCmdTest(object parameter)
+        {
+            return true;
+        }
+
+        private async void OnSteamCmdTest(object parameter)
+        {
+            if (MessageBox.Show("Are you sure you want to run a SteamCmd test?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None) != MessageBoxResult.Yes) return;
+
+            var showMsg = new Action<string>((msg) => MessageBox.Show(msg, "SteamCmd test", MessageBoxButton.OK, MessageBoxImage.None));
+            var serverContext = _contextManager.GetServer(_config.ServerKey);
+            if (serverContext == null)
+            {
+                showMsg("Failed to get server instance.");
+                return;
+            }
+
+            var n = 0;
+            string tmpInstallDir = null;
+            var tmpPath = Path.GetTempFileName();
+            do
+            {
+                if (n >= 100)
+                {
+                    showMsg("Failed to create a temp directory.");
+                    return;
+                }
+                tmpInstallDir = Path.Combine(_config.TempFileOutputDirPath, Guid.NewGuid().ToString());
+                n++;
+            } while (Directory.Exists(tmpInstallDir));
+
+            try
+            {
+                Directory.CreateDirectory(tmpInstallDir);
+
+                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{tmpInstallDir}\"{Environment.NewLine}app_update 376030");
+
+                var tcs = new TaskCompletionSource<int>();
+                var si = new ProcessStartInfo
+                {
+                    FileName = serverContext.Config.SteamCmdExecutablePath,
+                    Arguments = $@"+runscript {tmpPath}",
+                    WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
+                    Verb = "runas",
+                    UseShellExecute = false //,
+                                            //RedirectStandardOutput = true,
+                                            //WindowStyle = ProcessWindowStyle.Hidden,
+                                            //CreateNoWindow = true
+                };
+                var process = new Process
+                {
+                    StartInfo = si,
+                    EnableRaisingEvents = true
+                };
+
+                process.Exited += (sender, args) => tcs.TrySetResult(process.ExitCode);
+                if (!process.Start())
+                {
+                    showMsg("Process failed to start");
+                    return;
+                }
+
+                var result = await tcs.Task;
+                showMsg($"Process exited with code {result}");
+            }
+            catch(Exception ex)
+            {
+                showMsg($"Exception: {ex.ToString()}");
+            }
+            finally
+            {
+                if (tmpInstallDir.StartsWith(_config.TempFileOutputDirPath))
+                {
+                    foreach (var file in Directory.GetFiles(tmpInstallDir))
+                    {
+                        File.Delete(file);
+                    }
+                    foreach (var dir in Directory.GetDirectories(tmpInstallDir))
+                    {
+                        Directory.Delete(dir, true);
+                    }
+                }
+            }
+        }
+
         static void WriteAndWaitForKey(params string[] msgs)
         {
             foreach (var msg in msgs) if (msg != null) System.Console.WriteLine(msg);
@@ -134,17 +223,23 @@ namespace ArkBot.ViewModel
                 return;
             }
 
-            Config config = null;
+            if (!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
+            {
+                WriteAndWaitForKey($@"This application must be run as administrator in order to function properly.");
+                return;
+            }
+
+            _config = null;
             string exceptionMessage = null;
             try
             {
-                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+                _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
             }
             catch (Exception ex)
             {
                 exceptionMessage = ex.Message;
             }
-            if (config == null)
+            if (_config == null)
             {
                 WriteAndWaitForKey(
                     $@"The required file config.json is empty or contains errors. Please copy defaultconfig.json, set the correct values for your environment and restart the application.",
@@ -153,154 +248,154 @@ namespace ArkBot.ViewModel
             }
 
             var sb = new StringBuilder();
-            if (string.IsNullOrWhiteSpace(config.BotId) || !new Regex(@"^[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Singleline).IsMatch(config.BotId))
+            if (string.IsNullOrWhiteSpace(_config.BotId) || !new Regex(@"^[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Singleline).IsMatch(_config.BotId))
             {
-                sb.AppendLine($@"Error: {nameof(config.BotId)} is not a valid id.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotId))}");
+                sb.AppendLine($@"Error: {nameof(_config.BotId)} is not a valid id.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotId))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.BotName))
+            if (string.IsNullOrWhiteSpace(_config.BotName))
             {
-                sb.AppendLine($@"Error: {nameof(config.BotName)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotName))}");
+                sb.AppendLine($@"Error: {nameof(_config.BotName)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotName))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.BotNamespace) || !Uri.IsWellFormedUriString(config.BotNamespace, UriKind.Absolute))
+            if (string.IsNullOrWhiteSpace(_config.BotNamespace) || !Uri.IsWellFormedUriString(_config.BotNamespace, UriKind.Absolute))
             {
-                sb.AppendLine($@"Error: {nameof(config.BotNamespace)} is not set or not a valid url.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotNamespace))}");
+                sb.AppendLine($@"Error: {nameof(_config.BotNamespace)} is not set or not a valid url.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotNamespace))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.SaveFilePath) || !File.Exists(config.SaveFilePath))
+            if (string.IsNullOrWhiteSpace(_config.SaveFilePath) || !File.Exists(_config.SaveFilePath))
             {
-                sb.AppendLine($@"Error: {nameof(config.SaveFilePath)} is not a valid file path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SaveFilePath))}");
+                sb.AppendLine($@"Error: {nameof(_config.SaveFilePath)} is not a valid file path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SaveFilePath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.ClusterSavePath) || !Directory.Exists(config.ClusterSavePath))
+            if (string.IsNullOrWhiteSpace(_config.ClusterSavePath) || !Directory.Exists(_config.ClusterSavePath))
             {
-                sb.AppendLine($@"Error: {nameof(config.ClusterSavePath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ClusterSavePath))}");
+                sb.AppendLine($@"Error: {nameof(_config.ClusterSavePath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ClusterSavePath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.ArktoolsExecutablePath) || !File.Exists(config.ArktoolsExecutablePath))
+            if (string.IsNullOrWhiteSpace(_config.ArktoolsExecutablePath) || !File.Exists(_config.ArktoolsExecutablePath))
             {
-                sb.AppendLine($@"Error: {nameof(config.ArktoolsExecutablePath)} is not a valid file path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ArktoolsExecutablePath))}");
+                sb.AppendLine($@"Error: {nameof(_config.ArktoolsExecutablePath)} is not a valid file path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ArktoolsExecutablePath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.JsonOutputDirPath) || !Directory.Exists(config.JsonOutputDirPath))
+            if (string.IsNullOrWhiteSpace(_config.JsonOutputDirPath) || !Directory.Exists(_config.JsonOutputDirPath))
             {
-                sb.AppendLine($@"Error: {nameof(config.JsonOutputDirPath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.JsonOutputDirPath))}");
+                sb.AppendLine($@"Error: {nameof(_config.JsonOutputDirPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.JsonOutputDirPath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.TempFileOutputDirPath) || !Directory.Exists(config.TempFileOutputDirPath))
+            if (string.IsNullOrWhiteSpace(_config.TempFileOutputDirPath) || !Directory.Exists(_config.TempFileOutputDirPath))
             {
-                sb.AppendLine($@"Error: {nameof(config.TempFileOutputDirPath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.TempFileOutputDirPath))}");
+                sb.AppendLine($@"Error: {nameof(_config.TempFileOutputDirPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.TempFileOutputDirPath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.BotToken))
+            if (string.IsNullOrWhiteSpace(_config.BotToken))
             {
-                sb.AppendLine($@"Error: {nameof(config.BotToken)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BotToken))}");
+                sb.AppendLine($@"Error: {nameof(_config.BotToken)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotToken))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.SteamOpenIdRedirectUri))
+            if (string.IsNullOrWhiteSpace(_config.SteamOpenIdRedirectUri))
             {
-                sb.AppendLine($@"Error: {nameof(config.SteamOpenIdRedirectUri)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamOpenIdRedirectUri))}");
+                sb.AppendLine($@"Error: {nameof(_config.SteamOpenIdRedirectUri)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamOpenIdRedirectUri))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.SteamOpenIdRelyingServiceListenPrefix))
+            if (string.IsNullOrWhiteSpace(_config.SteamOpenIdRelyingServiceListenPrefix))
             {
-                sb.AppendLine($@"Error: {nameof(config.SteamOpenIdRelyingServiceListenPrefix)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamOpenIdRelyingServiceListenPrefix))}");
+                sb.AppendLine($@"Error: {nameof(_config.SteamOpenIdRelyingServiceListenPrefix)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamOpenIdRelyingServiceListenPrefix))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.GoogleApiKey))
+            if (string.IsNullOrWhiteSpace(_config.GoogleApiKey))
             {
-                sb.AppendLine($@"Error: {nameof(config.GoogleApiKey)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.GoogleApiKey))}");
+                sb.AppendLine($@"Error: {nameof(_config.GoogleApiKey)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.GoogleApiKey))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.SteamApiKey))
+            if (string.IsNullOrWhiteSpace(_config.SteamApiKey))
             {
-                sb.AppendLine($@"Error: {nameof(config.SteamApiKey)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.SteamApiKey))}");
+                sb.AppendLine($@"Error: {nameof(_config.SteamApiKey)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamApiKey))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.ServerIp))
+            if (string.IsNullOrWhiteSpace(_config.ServerIp))
             {
-                sb.AppendLine($@"Error: {nameof(config.ServerIp)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerIp))}");
+                sb.AppendLine($@"Error: {nameof(_config.ServerIp)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ServerIp))}");
                 sb.AppendLine();
             }
-            if (config.ServerPort <= 0)
+            if (_config.ServerPort <= 0)
             {
-                sb.AppendLine($@"Error: {nameof(config.ServerPort)} is not valid.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerPort))}");
+                sb.AppendLine($@"Error: {nameof(_config.ServerPort)} is not valid.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ServerPort))}");
                 sb.AppendLine();
             }
-            if (config.BackupsEnabled && (string.IsNullOrWhiteSpace(config.BackupsDirectoryPath) || !FileHelper.IsValidDirectoryPath(config.BackupsDirectoryPath)))
+            if (_config.BackupsEnabled && (string.IsNullOrWhiteSpace(_config.BackupsDirectoryPath) || !FileHelper.IsValidDirectoryPath(_config.BackupsDirectoryPath)))
             {
-                sb.AppendLine($@"Error: {nameof(config.BackupsDirectoryPath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.BackupsDirectoryPath))}");
+                sb.AppendLine($@"Error: {nameof(_config.BackupsDirectoryPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BackupsDirectoryPath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(config.WebApiListenPrefix))
+            if (string.IsNullOrWhiteSpace(_config.WebApiListenPrefix))
             {
-                sb.AppendLine($@"Error: {nameof(config.WebApiListenPrefix)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.WebApiListenPrefix))}");
+                sb.AppendLine($@"Error: {nameof(_config.WebApiListenPrefix)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebApiListenPrefix))}");
                 sb.AppendLine();
             }
 
-            var clusterkeys = config.Clusters?.Select(x => x.Key).ToArray();
-            var serverkeys = config.Servers?.Select(x => x.Key).ToArray();
+            var clusterkeys = _config.Clusters?.Select(x => x.Key).ToArray();
+            var serverkeys = _config.Servers?.Select(x => x.Key).ToArray();
             if (serverkeys?.Length > 0 && serverkeys.Length != serverkeys.Distinct(StringComparer.OrdinalIgnoreCase).Count())
             {
-                sb.AppendLine($@"Error: {nameof(config.Servers)} contain non-unique keys.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.Servers))}");
+                sb.AppendLine($@"Error: {nameof(_config.Servers)} contain non-unique keys.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.Servers))}");
                 sb.AppendLine();
             }
             if (clusterkeys?.Length > 0 && clusterkeys.Length != clusterkeys.Distinct(StringComparer.OrdinalIgnoreCase).Count())
             {
-                sb.AppendLine($@"Error: {nameof(config.Clusters)} contain non-unique keys.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.Clusters))}");
+                sb.AppendLine($@"Error: {nameof(_config.Clusters)} contain non-unique keys.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.Clusters))}");
                 sb.AppendLine();
             }
-            if (serverkeys?.Length > 0 && (string.IsNullOrEmpty(config.ServerKey) || !serverkeys.Contains(config.ServerKey, StringComparer.OrdinalIgnoreCase)))
+            if (serverkeys?.Length > 0 && (string.IsNullOrEmpty(_config.ServerKey) || !serverkeys.Contains(_config.ServerKey, StringComparer.OrdinalIgnoreCase)))
             {
-                sb.AppendLine($@"Error: {nameof(config.ServerKey)} must be set to a value server key if server instances are configured.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerKey))}");
+                sb.AppendLine($@"Error: {nameof(_config.ServerKey)} must be set to a value server key if server instances are configured.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ServerKey))}");
                 sb.AppendLine();
             }
-            if (config.Servers?.Length > 0)
+            if (_config.Servers?.Length > 0)
             {
-                foreach (var server in config.Servers)
+                foreach (var server in _config.Servers)
                 {
                     if (server.Cluster != null && !clusterkeys.Contains(server.Cluster))
                     {
-                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.Cluster)} reference missing cluster key ""{server.Cluster}"".");
+                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(server.Cluster)} reference missing cluster key ""{server.Cluster}"".");
                         sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Cluster))}");
                         sb.AppendLine();
                     }
                     if (string.IsNullOrWhiteSpace(server.SaveFilePath) || !File.Exists(server.SaveFilePath))
                     {
-                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.SaveFilePath)} is not a valid file path for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(server.SaveFilePath)} is not a valid file path for server instance ""{server.Key}"".");
                         sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.SaveFilePath))}");
                         sb.AppendLine();
                     }
                     if (string.IsNullOrWhiteSpace(server.Ip))
                     {
-                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.Ip)} is not set for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(server.Ip)} is not set for server instance ""{server.Key}"".");
                         sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Ip))}");
                         sb.AppendLine();
                     }
                     if (server.Port <= 0)
                     {
-                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(server.Port)} is not valid for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(server.Port)} is not valid for server instance ""{server.Key}"".");
                         sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Port))}");
                         sb.AppendLine();
                     }
@@ -312,13 +407,13 @@ namespace ArkBot.ViewModel
                     //}
                 }
             }
-            if (config.Clusters?.Length > 0)
+            if (_config.Clusters?.Length > 0)
             {
-                foreach (var cluster in config.Clusters)
+                foreach (var cluster in _config.Clusters)
                 {
                     if (string.IsNullOrWhiteSpace(cluster.SavePath) || !Directory.Exists(cluster.SavePath))
                     {
-                        sb.AppendLine($@"Error: {nameof(config.Servers)}.{nameof(cluster.SavePath)} is not a valid directory path for cluster instance ""{cluster.Key}"".");
+                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(cluster.SavePath)} is not a valid directory path for cluster instance ""{cluster.Key}"".");
                         sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(cluster, nameof(cluster.SavePath))}");
                         sb.AppendLine();
                     }
@@ -333,9 +428,9 @@ namespace ArkBot.ViewModel
             //    sb.AppendLine();
             //}
 
-            if (string.IsNullOrWhiteSpace(config.AdminRoleName)) config.AdminRoleName = "admin";
-            if (string.IsNullOrWhiteSpace(config.DeveloperRoleName)) config.DeveloperRoleName = "developer";
-            if (string.IsNullOrWhiteSpace(config.MemberRoleName)) config.DeveloperRoleName = "ark";
+            if (string.IsNullOrWhiteSpace(_config.AdminRoleName)) _config.AdminRoleName = "admin";
+            if (string.IsNullOrWhiteSpace(_config.DeveloperRoleName)) _config.DeveloperRoleName = "developer";
+            if (string.IsNullOrWhiteSpace(_config.MemberRoleName)) _config.DeveloperRoleName = "ark";
 
             //load aliases and check integrity
             var aliases = ArkSpeciesAliases.Instance;
@@ -392,12 +487,12 @@ namespace ArkBot.ViewModel
             _savedstate = _savedstate ?? new SavedState(constants.SavedStateFilePath);
             //var context = new ArkContext(config, constants, progress);
 
-            var playedTimeWatcher = new PlayedTimeWatcher(config);
+            var playedTimeWatcher = new PlayedTimeWatcher(_config);
 
             var options = new SteamOpenIdOptions
             {
-                ListenPrefixes = new[] { config.SteamOpenIdRelyingServiceListenPrefix },
-                RedirectUri = config.SteamOpenIdRedirectUri,
+                ListenPrefixes = new[] { _config.SteamOpenIdRelyingServiceListenPrefix },
+                RedirectUri = _config.SteamOpenIdRedirectUri,
             };
             var openId = new BarebonesSteamOpenId(options,
                 new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
@@ -411,7 +506,7 @@ namespace ArkBot.ViewModel
                     using (var service = RazorEngineService.Create(razorConfig))
                     {
                         var html = await FileHelper.ReadAllTextTaskAsync(constants.OpenidresponsetemplatePath);
-                        return service.RunCompile(html, constants.OpenidresponsetemplatePath, null, new { Success = success, botName = config.BotName, botUrl = config.BotUrl });
+                        return service.RunCompile(html, constants.OpenidresponsetemplatePath, null, new { Success = success, botName = _config.BotName, botUrl = _config.BotUrl });
                     }
                 }));
 
@@ -419,8 +514,8 @@ namespace ArkBot.ViewModel
             {
                 x.LogLevel = LogSeverity.Warning;
                 x.LogHandler += (s, e) => Console.AddLog(e.Message);
-                x.AppName = config.BotName;
-                x.AppUrl = !string.IsNullOrWhiteSpace(config.BotUrl) ? config.BotUrl : null;
+                x.AppName = _config.BotName;
+                x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
             });
 
             //setup dependency injection
@@ -432,7 +527,7 @@ namespace ArkBot.ViewModel
             builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(_savedstate).As<ISavedState>();
-            builder.RegisterInstance(config).As<IConfig>();
+            builder.RegisterInstance(_config as Config).As<IConfig>();
             builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
             builder.RegisterType<ArkContext>().As<IArkContext>()
                 .WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
@@ -464,24 +559,24 @@ namespace ArkBot.ViewModel
             //update database
             System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
 
-            var contextManager = Container.Resolve<ArkContextManager>();
+            _contextManager = Container.Resolve<ArkContextManager>();
             //server/cluster contexts
-            if (config.Clusters?.Length > 0)
+            if (_config.Clusters?.Length > 0)
             {
-                foreach (var cluster in config.Clusters)
+                foreach (var cluster in _config.Clusters)
                 {
                     var context = new ArkClusterContext(cluster);
-                    contextManager.AddCluster(context);
+                    _contextManager.AddCluster(context);
                 }
             }
 
-            if (config.Servers?.Length > 0)
+            if (_config.Servers?.Length > 0)
             {
                 var backupService = Container.Resolve<ISavegameBackupService>();
-                foreach (var server in config.Servers)
+                foreach (var server in _config.Servers)
                 {
                     var context = new ArkServerContext(server);
-                    contextManager.AddServer(context);
+                    _contextManager.AddServer(context);
                 }
 
                 // Initialize managers so that they are ready to handle events such as ArkContextManager.InitializationCompleted-event.
@@ -489,14 +584,14 @@ namespace ArkBot.ViewModel
                 var votingManager = Container.Resolve<VotingManager>();
 
                 // Trigger manual updates for all servers (initialization)
-                foreach(var context in contextManager.Servers)
+                foreach(var context in _contextManager.Servers)
                 {
-                    contextManager.QueueUpdateServerManual(context);
+                    _contextManager.QueueUpdateServerManual(context);
                 }
             }
 
             //run the discord bot
-            if (config.DiscordBotEnabled)
+            if (_config.DiscordBotEnabled)
             {
                 _runDiscordBotCts = new CancellationTokenSource();
                 _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -507,7 +602,7 @@ namespace ArkBot.ViewModel
             await ArkSpeciesStats.Instance.LoadOrUpdate();
 
             //webapi
-            _webapi = WebApp.Start<Startup>(url: config.WebApiListenPrefix);
+            _webapi = WebApp.Start<Startup>(url: _config.WebApiListenPrefix);
             Console.AddLog("WebAPI started");
         }
 
