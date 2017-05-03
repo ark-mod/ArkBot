@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using CoreRCON;
 using CoreRCON.Parsers.Standard;
 using System.Net;
+using ArkBot.Ark;
 
 namespace ArkBot.Helpers
 {
@@ -122,78 +123,7 @@ namespace ArkBot.Helpers
 
             return false;
         }
-
-        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(IConfig config)
-        {
-            return await GetServerStatus(config.ServerIp, (ushort)config.ServerPort);
-        }
-
-        public static async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus(string serverIp, ushort serverPort)
-        {
-            var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerStatus)}_{serverIp}_{serverPort}";
-            var status = cache[cacheKey] as Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>;
-
-            if (status == null)
-            {
-                await Task.Factory.StartNew(() =>
-                {
-                    using (var server = QueryMaster.GameServer.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, serverIp, serverPort, throwExceptions: false, retries: 1, sendTimeout: 4000, receiveTimeout: 4000))
-                    {
-                        if (server == null) return;
-
-                        var serverInfo = server.GetInfo();
-                        var serverRules = server.GetRules();
-                        var playerInfo = server.GetPlayers();
-
-                        status = new Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>(serverInfo, serverRules, playerInfo);
-                        cache.Set(cacheKey, status, new CacheItemPolicy { AbsoluteExpiration = DateTime.Now.AddMinutes(1) });
-                    }
-                });
-            }
-
-            return status;
-        }
-
-        /// <summary>
-        /// Sends an admin command via rcon
-        /// </summary>
-        /// <returns>Result from server on success, null if failed.</returns>
-        public static async Task<string> SendRconCommand(IConfig config, string command)
-        {
-            try
-            {
-                //// create an instance of the socket. In this case i've used the .Net 4.5 object defined in the project
-                //INetworkSocket socket = new RconSocket();
-
-                //// create the RconMessenger instance and inject the socket
-                //RconMessenger messenger = new RconMessenger(socket);
-
-                //// initiate the connection with the remote server
-                //bool isConnected = await messenger.ConnectAsync(config.ServerIp, config.RconPort);
-
-                //// try to authenticate with your supersecretpassword (... obviously this is my hackerproof key, you shoul use yours)
-                //bool authenticated = await messenger.AuthenticateAsync(config.RconPassword);
-                //if (authenticated)
-                //{
-                //    // if we fall here, we're good to go! from this point on the connection is authenticated and you can send commands 
-                //    // to the server
-                //    return await messenger.ExecuteCommandAsync(command);
-                //}
-
-                using (var rcon = new RCON(IPAddress.Parse(config.ServerIp), (ushort)config.RconPort, config.RconPassword, 5000))
-                {
-                    return await rcon.SendCommandAsync(command, TimeSpan.FromSeconds(5));
-                }
-            }
-            catch(Exception ex)
-            {
-                Logging.LogException("Exception attempting to send rcon command", ex, typeof(CommandHelper), LogLevel.DEBUG, ExceptionLevel.Ignored);
-            }
-
-            return null;
-        }
-
+        
         //todo: this method does not really belong here and should be moved elsewhere
         public static async Task<Data.Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, IArkContext _context)
         {
@@ -207,6 +137,29 @@ namespace ArkBot.Helpers
                 }
 
                 var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
+                if (player == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");
+                    return null;
+                }
+
+                return player;
+            }
+        }
+
+        //todo: this method does not really belong here and should be moved elsewhere
+        public static async Task<ArkSavegameToolkitNet.Domain.ArkPlayer> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, ArkServerContext serverContext)
+        {
+            using (var db = databaseContextFactory.Create())
+            {
+                var user = db.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
+                if (user == null)
+                {
+                    await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam account using **!linksteam**.");
+                    return null;
+                }
+
+                var player = serverContext.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
                 if (player == null)
                 {
                     await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");

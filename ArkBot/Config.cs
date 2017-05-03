@@ -75,25 +75,25 @@ namespace ArkBot
         [Description("Steam API key used for fetching user information.")]
         public string SteamApiKey { get; set; }
 
-        [JsonProperty(PropertyName = "debugNoExtract")]
-        [Description("Skips ark-tool extraction and uses already extracted files in json output directory path.")]
-        public bool DebugNoExtract { get; set; }
+        //[JsonProperty(PropertyName = "debugNoExtract")]
+        //[Description("Skips ark-tool extraction and uses already extracted files in json output directory path.")]
+        //public bool DebugNoExtract { get; set; }
 
-        [JsonProperty(PropertyName = "debug")]
-        [Description("Run tool with debug option set (includes experimental features etc.)")]
-        public bool Debug { get; set; }
+        //[JsonProperty(PropertyName = "debug")]
+        //[Description("Run tool with debug option set (includes experimental features etc.)")]
+        //public bool Debug { get; set; }
 
-        [JsonProperty(PropertyName = "debugSaveFilePath")]
-        [Description("Debug template path for saveFilePath.")]
-        public string DebugSaveFilePath { get; set; }
+        //[JsonProperty(PropertyName = "debugSaveFilePath")]
+        //[Description("Debug template path for saveFilePath.")]
+        //public string DebugSaveFilePath { get; set; }
 
-        [JsonProperty(PropertyName = "debugClusterSavePath")]
-        [Description("Debug template path for clusterSavePath.")]
-        public string DebugClusterSavePath { get; set; }
+        //[JsonProperty(PropertyName = "debugClusterSavePath")]
+        //[Description("Debug template path for clusterSavePath.")]
+        //public string DebugClusterSavePath { get; set; }
 
-        [JsonProperty(PropertyName = "debugJsonOutputDirPath")]
-        [Description("Debug template path for jsonOutputDirPath.")]
-        public string DebugJsonOutputDirPath { get; set; }
+        //[JsonProperty(PropertyName = "debugJsonOutputDirPath")]
+        //[Description("Debug template path for jsonOutputDirPath.")]
+        //public string DebugJsonOutputDirPath { get; set; }
 
         [JsonProperty(PropertyName = "arkMultipliers")]
         [Description("Server specific multipliers.")]
@@ -115,6 +115,10 @@ namespace ArkBot
         [Description("The name of the member role in Discord.")]
         public string MemberRoleName { get; set; }
 
+        [JsonProperty(PropertyName = "serverKey")]
+        [Description("Temporary: The server key from server instances for which the Discord Bot is configured. This is a temporary configuration needed while migrating from single server to multi server support.")]
+        public string ServerKey { get; set; }
+
         [JsonProperty(PropertyName = "serverIp")]
         [Description("The IP address used to connect to the ARK server.")]
         public string ServerIp { get; set; }
@@ -122,10 +126,6 @@ namespace ArkBot
         [JsonProperty(PropertyName = "serverPort")]
         [Description("The port used to connect to the ARK server.")]
         public int ServerPort { get; set; }
-
-        [JsonProperty(PropertyName = "rconPort")]
-        [Description("The port used to connect to the ARK server over rcon.")]
-        public int RconPort { get; set; }
 
         [JsonProperty(PropertyName = "enabledChannels")]
         [Description("A list of channels where the bot will listen to and answer commands.")]
@@ -138,18 +138,6 @@ namespace ArkBot
         [JsonProperty(PropertyName = "announcementChannel")]
         [Description("Channel where announcements are made (votes etc.)")]
         public string AnnouncementChannel { get; set; }
-
-        [JsonProperty(PropertyName = "rconPassword")]
-        [Description("The password used to connect to the server via rcon.")]
-        public string RconPassword { get; set; }
-
-        [JsonProperty(PropertyName = "updateServerBatchFilePath")]
-        [Description("Absolute file path of a batch file to run in order to update the server.")]
-        public string UpdateServerBatchFilePath { get; set; }
-
-        [JsonProperty(PropertyName = "startServerBatchFilePath")]
-        [Description("Absolute file path of a batch file to run in order to start the server.")]
-        public string StartServerBatchFilePath { get; set; }
 
         [JsonProperty(PropertyName = "backupsEnabled")]
         [Description("Option to enable savegame backups.")]
@@ -227,6 +215,35 @@ namespace ArkBot
         [JsonProperty(PropertyName = "rconPort")]
         [Description("The port used to connect to this server instance over rcon.")]
         public int RconPort { get; set; }
+
+        [JsonProperty(PropertyName = "rconPassword")]
+        [Description("The password used to connect to this server instance via rcon.")]
+        public string RconPassword { get; set; }
+
+        //[JsonProperty(PropertyName = "updateBatchFilePath")]
+        //[Description("Absolute file path of a batch file to run in order to update the server.")]
+        //public string UpdateBatchFilePath { get; set; }
+
+        //[JsonProperty(PropertyName = "startBatchFilePath")]
+        //[Description("Absolute file path of a batch file to run in order to start the server.")]
+        //public string StartBatchFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "serverExecutablePath")]
+        [Description("Absolute file path of the server instance executable.")]
+        public string ServerExecutablePath { get; set; }
+
+        [JsonProperty(PropertyName = "serverExecutableArguments")]
+        [Description("Command line arguments used when starting the server instance.")]
+        public string ServerExecutableArguments { get; set; }
+
+        [JsonProperty(PropertyName = "steamCmdExecutablePath")]
+        [Description("Absolute file path of the steamcmd executable.")]
+        public string SteamCmdExecutablePath { get; set; }
+
+        [JsonProperty(PropertyName = "serverInstallDirPath")]
+        [Description("The directory path to force steamcmd updates to.")]
+        public string ServerInstallDirPath { get; set; }
+
     }
 
     public class ClusterConfigSection

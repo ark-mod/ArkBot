@@ -15,11 +15,14 @@ using System.Reflection;
 using ArkBot.Database;
 using ArkBot.Database.Model;
 using System.ComponentModel;
-using ArkBot.Vote;
+using ArkBot.Ark;
+using Discord;
+using ArkBot.Voting.Handlers;
+using ArkBot.Voting;
 
 namespace ArkBot.Commands
 {
-    public class VoteCommand : IEnabledCheckCommand
+    public class VoteCommand : ICommand // : IEnabledCheckCommand
     {
         public string Name => "vote";
         public string[] Aliases => new[] { "votes", "voting" };
@@ -30,35 +33,37 @@ namespace ArkBot.Commands
             ": List all votes that are underway",
             "**alpha yes**: Vote ***yes*** in the vote identified by ***alpha***",
             "**echo no reason \"This vote is not in accordance with the rules\"**: Vote ***no*** in the vote identified by ***echo*** and give a reason that can be viewed in the logs",
-            "**ban24h <name> reason <text>**: Start a vote to ban a user for 24h. Reason is logged and you are responsible for acting in accordance with the server rules.",
-            "**ban <name> reason <text>**: Start a vote to ban a user. Reason is logged and you are responsible for acting in accordance with the server rules.",
-            "**unban <name> reason <text>**: Start a vote to unban a user. Reason is logged and you are responsible for acting in accordance with the server rules.",
-            "**destroywilddinos reason <text>**: Start a vote to execute a wild dino wipe. Reason is logged and you are responsible for acting in accordance with the server rules.",
-            "**settimeofday <hh:mm:ss> reason <text>**: Start a vote to change the time of day. Reason is logged and you are responsible for acting in accordance with the server rules.",
-            "**restartserver reason <text>**: Start a vote to restart the server. Reason is logged and you are responsible for acting in accordance with the server rules.",
-            "**updateserver reason <text>**: Start a vote to update the server. Reason is logged and you are responsible for acting in accordance with the server rules."
+            "**<serverkey> ban24h <name> reason <text>**: Start a vote to ban a user for 24h. Reason is logged and you are responsible for acting in accordance with the server rules.",
+            "**<serverkey> ban <name> reason <text>**: Start a vote to ban a user. Reason is logged and you are responsible for acting in accordance with the server rules.",
+            "**<serverkey> unban <name> reason <text>**: Start a vote to unban a user. Reason is logged and you are responsible for acting in accordance with the server rules.",
+            "**<serverkey> destroywilddinos reason <text>**: Start a vote to execute a wild dino wipe. Reason is logged and you are responsible for acting in accordance with the server rules.",
+            "**<serverkey> settimeofday <hh:mm:ss> reason <text>**: Start a vote to change the time of day. Reason is logged and you are responsible for acting in accordance with the server rules.",
+            "**<serverkey> restartserver reason <text>**: Start a vote to restart the server. Reason is logged and you are responsible for acting in accordance with the server rules.",
+            "**<serverkey> updateserver reason <text>**: Start a vote to update the server. Reason is logged and you are responsible for acting in accordance with the server rules."
         };
 
         public bool DebugOnly => false;
         public bool HideFromCommandList => false;
 
-        public bool EnabledCheck()
-        {
-            return !string.IsNullOrWhiteSpace(_config.RconPassword) && _config.RconPort > 0;
-        }
+        //public bool EnabledCheck()
+        //{
+        //    return !string.IsNullOrWhiteSpace(_config.RconPassword) && _config.RconPort > 0;
+        //}
 
         private IArkContext _context;
         private IConfig _config;
         private EfDatabaseContextFactory _databaseContextFactory;
-        private Discord.DiscordClient _discord;
+        private DiscordClient _discord;
         private ISavedState _savedstate;
+        private ArkContextManager _contextManager;
 
-        public VoteCommand(IArkContext context, IConfig config, EfDatabaseContextFactory databaseContextFactory, ISavedState savedstate)
+        public VoteCommand(IArkContext context, IConfig config, EfDatabaseContextFactory databaseContextFactory, ISavedState savedstate, ArkContextManager contextManager)
         {
             _context = context;
             _config = config;
             _databaseContextFactory = databaseContextFactory;
             _savedstate = savedstate;
+            _contextManager = contextManager;
         }
 
         public void Register(CommandBuilder command)
@@ -66,7 +71,7 @@ namespace ArkBot.Commands
             command.Parameter("optional", ParameterType.Multiple);
         }
 
-        public void Init(Discord.DiscordClient client)
+        public void Init(DiscordClient client)
         {
             _discord = client;
         }
@@ -83,7 +88,7 @@ namespace ArkBot.Commands
 
         public async Task Run(CommandEventArgs e)
         {
-            if(_savedstate.VotingDisabled)
+            if (_savedstate.VotingDisabled)
             {
                 await e.Channel.SendMessageDirectedAt(e.User.Id, $"the voting system is currently disabled.");
                 return;
@@ -93,12 +98,13 @@ namespace ArkBot.Commands
             //!votes
             //!vote alpha yes
             //!vote alpha no
-            var args = CommandHelper.ParseArgs(e, new { Ban = "", Ban24h = "", Unban = "", SetTimeOfDay = "", DestroyWildDinos = false, UpdateServer = false, RestartServer = false, Reason = "", Yes = false, No = false, Veto = false, History = false,
+            var args = CommandHelper.ParseArgs(e, new { ServerKey = "", Ban = "", Ban24h = "", Unban = "", SetTimeOfDay = "", DestroyWildDinos = false, UpdateServer = false, RestartServer = false, Reason = "", Yes = false, No = false, Veto = false, History = false,
                 Alfa = false, Bravo = false, Charlie = false, Delta = false, Echo = false, Foxtrot = false, Golf = false, Hotel = false, India = false,
                 Juliett = false, Kilo = false, Lima = false, Mike = false, November = false, Oscar = false, Papa = false, Quebec = false, Romeo = false,
                 Sierra = false, Tango = false, Uniform = false, Victor = false, Whiskey = false, Xray = false, Yankee = false, Zulu = false
             }, x =>
-                x.For(y => y.Ban, untilNextToken: true)
+                x.For(y => y.ServerKey, noPrefix: true)
+                .For(y => y.Ban, untilNextToken: true)
                 .For(y => y.Unban, untilNextToken: true)
                 .For(y => y.Ban24h, untilNextToken: true)
                 .For(y => y.Reason, untilNextToken: true)
@@ -159,6 +165,18 @@ namespace ArkBot.Commands
             //this should match any type of vote
             if (!string.IsNullOrWhiteSpace(args.Ban) || !string.IsNullOrWhiteSpace(args.Ban24h) || !string.IsNullOrWhiteSpace(args.Unban) || !string.IsNullOrWhiteSpace(args.SetTimeOfDay) || args.DestroyWildDinos || args.UpdateServer || args.RestartServer)
             {
+                var serverContext = args?.ServerKey != null ? _contextManager.GetServer(args.ServerKey) : null;
+                if (serverContext == null)
+                {
+                    await e.Channel.SendMessageDirectedAt(e.User.Id, $"**Votes need to be prefixed with a server instance key.**");
+                    return;
+                }
+                if (!serverContext.IsInitialized)
+                {
+                    await e.Channel.SendMessage($"The server data is loading but is not ready yet...");
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(args.Reason))
                 {
                     await e.Channel.SendMessageDirectedAt(e.User.Id, $"specifying a reason is mandatory when starting a vote.");
@@ -189,14 +207,14 @@ namespace ArkBot.Commands
 
                     if (!isAdminOrDev)
                     {
-                        var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
+                        var player = serverContext.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
                         if (player == null)
                         {
                             await e.Channel.SendMessageDirectedAt(e.User.Id, $"we have no record of you playing in the last month which is a requirement for using this command.");
                             return;
                         }
                     
-                        if (player.Level < 50)
+                        if (player.CharacterLevel < 50)
                         {
                             await e.Channel.SendMessageDirectedAt(e.User.Id, $"you have to reach level 50 in order to initiate votes.");
                             return;
@@ -223,31 +241,31 @@ namespace ArkBot.Commands
                     //handling of specific types
                     if (!string.IsNullOrWhiteSpace(args.Ban))
                     {
-                        result = await BanVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason, args.Ban, 365 * 24 * 50);
+                        result = await BanVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason, args.Ban, 365 * 24 * 50);
                     }
                     else if (!string.IsNullOrWhiteSpace(args.Ban24h))
                     {
-                        result = await BanVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason, args.Ban24h, 24);
+                        result = await BanVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason, args.Ban24h, 24);
                     }
                     else if (!string.IsNullOrWhiteSpace(args.Unban))
                     {
-                        result = await UnbanVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason, args.Unban);
+                        result = await UnbanVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason, args.Unban);
                     }
                     else if(!string.IsNullOrWhiteSpace(args.SetTimeOfDay))
                     {
-                        result = await SetTimeOfDayVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason, args.SetTimeOfDay);
+                        result = await SetTimeOfDayVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason, args.SetTimeOfDay);
                     }
                     else if (args.DestroyWildDinos)
                     {
-                        result = await DestroyWildDinosVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason);
+                        result = await DestroyWildDinosVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason);
                     }
                     else if (args.UpdateServer)
                     {
-                        result = await UpdateServerVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason);
+                        result = await UpdateServerVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason);
                     }
                     else if (args.RestartServer)
                     {
-                        result = await RestartServerVoteHandler.Initiate(e.Channel, _context, _config, db, e.User.Id, identifier, now, args.Reason);
+                        result = await RestartServerVoteHandler.Initiate(e.Channel, serverContext, _config, db, e.User.Id, identifier, now, args.Reason);
                     }
                     else
                     {
@@ -275,7 +293,7 @@ namespace ArkBot.Commands
 
                     try
                     {
-                        if (!string.IsNullOrWhiteSpace(result.MessageRcon)) await CommandHelper.SendRconCommand(_config, $"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
+                        if (!string.IsNullOrWhiteSpace(result.MessageRcon)) await serverContext.Steam.SendRconCommand($"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
 
                         if (!string.IsNullOrWhiteSpace(result.MessageAnnouncement) && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
                         {
@@ -288,13 +306,19 @@ namespace ArkBot.Commands
                     }
                     catch { /*ignore all exceptions */ }
 
-                    _context.OnVoteInitiated(result.Vote);
+                    serverContext.OnVoteInitiated(result.Vote);
 
                     return;
                 }
             }
             else if (identifiers && (args.Yes || args.No || args.Veto))
             {
+                if (!_context.IsInitialized)
+                {
+                    await e.Channel.SendMessage($"The server data is loading but is not ready yet...");
+                    return;
+                }
+
                 //does the identifier match an ongoing vote?
 
                 //have the user already voted?
@@ -334,6 +358,7 @@ namespace ArkBot.Commands
                         return;
                     }
 
+                    //todo: players are only considered for one server
                     var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
                     if (player == null)
                     {
@@ -377,8 +402,12 @@ namespace ArkBot.Commands
 
                     if (args.Veto)
                     {
-                        _context.OnVoteResultForced(vote, VoteResult.Vetoed);
-                        message = $"you have vetoed this vote.";
+                        var serverContext = _contextManager.GetServer(vote.ServerKey);
+                        if (serverContext != null)
+                        {
+                            serverContext.OnVoteResultForced(vote, VoteResult.Vetoed);
+                            message = $"you have vetoed this vote.";
+                        } else message = $"could not veto vote because there was no server key.";
                     }
 
                     await e.Channel.SendMessageDirectedAt(e.User.Id, message);

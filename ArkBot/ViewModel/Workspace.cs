@@ -2,14 +2,18 @@
 using ArkBot.Data;
 using ArkBot.Database;
 using ArkBot.Database.Model;
+using ArkBot.Discord;
 using ArkBot.Helpers;
 using ArkBot.OpenID;
+using ArkBot.ScheduledTasks;
 using ArkBot.Services;
-using ArkBot.Vote;
+using ArkBot.Voting;
+using ArkBot.Voting.Handlers;
 using ArkBot.WebApi;
 using ArkBot.WpfCommands;
 using Autofac;
 using Autofac.Integration.WebApi;
+using Discord;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Prism.Commands;
@@ -53,13 +57,6 @@ namespace ArkBot.ViewModel
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
         internal static IContainer Container { get; set; }
-
-        public Dictionary<string, ArkServerContext> ServerContexts { get { return _serverContexts; } }
-        private Dictionary<string, ArkServerContext> _serverContexts = new Dictionary<string, ArkServerContext>(StringComparer.OrdinalIgnoreCase);
-
-        public Dictionary<string, ArkClusterContext> ClusterContexts { get { return _clusterContexts; } }
-        private Dictionary<string, ArkClusterContext> _clusterContexts = new Dictionary<string, ArkClusterContext>(StringComparer.OrdinalIgnoreCase);
-
 
         public bool SkipExtractNextRestart
         {
@@ -127,11 +124,13 @@ namespace ArkBot.ViewModel
             System.Console.WriteLine("------------------------------------------------------");
             System.Console.WriteLine();
 
+            log4net.Config.XmlConfigurator.Configure();
+
             //load config and check for errors
             var configPath = @"config.json";
             if (!File.Exists(configPath))
             {
-                WriteAndWaitForKey($@"The required file config.json is missing form application directory. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
+                WriteAndWaitForKey($@"The required file config.json is missing from application directory. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
                 return;
             }
 
@@ -271,6 +270,12 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.Clusters))}");
                 sb.AppendLine();
             }
+            if (serverkeys?.Length > 0 && (string.IsNullOrEmpty(config.ServerKey) || !serverkeys.Contains(config.ServerKey, StringComparer.OrdinalIgnoreCase)))
+            {
+                sb.AppendLine($@"Error: {nameof(config.ServerKey)} must be set to a value server key if server instances are configured.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(config, nameof(config.ServerKey))}");
+                sb.AppendLine();
+            }
             if (config.Servers?.Length > 0)
             {
                 foreach (var server in config.Servers)
@@ -358,21 +363,21 @@ namespace ArkBot.ViewModel
 
             IProgress<string> progress = new Progress<string>(message =>
             {
-                System.Console.WriteLine(message);
+                Console.AddLog(message);
             });
 
             var constants = new ArkBot.Constants();
 
-            if (config.Debug)
-            {
-                //we reset the state so that every run will be the same
-                if (File.Exists(constants.DatabaseFilePath)) File.Delete(constants.DatabaseFilePath);
-                if (File.Exists(constants.SavedStateFilePath)) File.Delete(constants.SavedStateFilePath);
+            //if (config.Debug)
+            //{
+            //    //we reset the state so that every run will be the same
+            //    if (File.Exists(constants.DatabaseFilePath)) File.Delete(constants.DatabaseFilePath);
+            //    if (File.Exists(constants.SavedStateFilePath)) File.Delete(constants.SavedStateFilePath);
 
-                //optionally use a saved database state
-                var databaseStateFilePath = Path.Combine(config.JsonOutputDirPath, "Database.state");
-                if (File.Exists(databaseStateFilePath)) File.Copy(databaseStateFilePath, constants.DatabaseFilePath);
-            }
+            //    //optionally use a saved database state
+            //    var databaseStateFilePath = Path.Combine(config.JsonOutputDirPath, "Database.state");
+            //    if (File.Exists(databaseStateFilePath)) File.Copy(databaseStateFilePath, constants.DatabaseFilePath);
+            //}
 
             _savedstate = null;
             try
@@ -410,9 +415,19 @@ namespace ArkBot.ViewModel
                     }
                 }));
 
+            var discord = new DiscordClient(x =>
+            {
+                x.LogLevel = LogSeverity.Warning;
+                x.LogHandler += (s, e) => Console.AddLog(e.Message);
+                x.AppName = config.BotName;
+                x.AppUrl = !string.IsNullOrWhiteSpace(config.BotUrl) ? config.BotUrl : null;
+            });
+
             //setup dependency injection
             var thisAssembly = Assembly.GetExecutingAssembly();
             var builder = new ContainerBuilder();
+
+            builder.RegisterInstance(discord).AsSelf();
             builder.RegisterType<ArkDiscordBot>();
             builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
             builder.RegisterInstance(constants).As<IConstants>();
@@ -439,12 +454,46 @@ namespace ArkBot.ViewModel
             builder.RegisterType<DestroyWildDinosVoteHandler>().As<IVoteHandler<DestroyWildDinosVote>>();
             builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            builder.RegisterType<ArkContextManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
+            builder.RegisterType<VotingManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
+            builder.RegisterType<DiscordManager>().AsSelf().SingleInstance();
+            builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance(); 
 
             Container = builder.Build();
 
             //update database
             System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
 
+            var contextManager = Container.Resolve<ArkContextManager>();
+            //server/cluster contexts
+            if (config.Clusters?.Length > 0)
+            {
+                foreach (var cluster in config.Clusters)
+                {
+                    var context = new ArkClusterContext(cluster);
+                    contextManager.AddCluster(context);
+                }
+            }
+
+            if (config.Servers?.Length > 0)
+            {
+                var backupService = Container.Resolve<ISavegameBackupService>();
+                foreach (var server in config.Servers)
+                {
+                    var context = new ArkServerContext(server);
+                    contextManager.AddServer(context);
+                }
+
+                // Initialize managers so that they are ready to handle events such as ArkContextManager.InitializationCompleted-event.
+                var scheduledTasksManager = Container.Resolve<ScheduledTasksManager>();
+                var votingManager = Container.Resolve<VotingManager>();
+
+                // Trigger manual updates for all servers (initialization)
+                foreach(var context in contextManager.Servers)
+                {
+                    contextManager.QueueUpdateServerManual(context);
+                }
+            }
 
             //run the discord bot
             if (config.DiscordBotEnabled)
@@ -453,26 +502,6 @@ namespace ArkBot.ViewModel
                 _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
             else Console.AddLog("Discord bot is disabled.");
-
-            //server/cluster contexts
-            if (config.Servers?.Length > 0)
-            {
-                foreach (var server in config.Servers)
-                {
-                    var context = new ArkServerContext(config, server, progress);
-                    context.QueueManualUpdate();
-                    _serverContexts.Add(server.Key, context);
-                }
-            }
-
-            if (config.Clusters?.Length > 0)
-            {
-                foreach (var cluster in config.Clusters)
-                {
-                    var context = new ArkClusterContext(cluster);
-                    _clusterContexts.Add(cluster.Key, context);
-                }
-            }
 
             //load the species stats data
             await ArkSpeciesStats.Instance.LoadOrUpdate();

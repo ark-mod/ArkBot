@@ -1,9 +1,11 @@
-﻿using ArkBot.Database;
+﻿using ArkBot.Ark;
+using ArkBot.Database;
 using ArkBot.Extensions;
 using ArkBot.Helpers;
 using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
 using ArkSavegameToolkitNet.Domain;
+using Discord;
 using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
@@ -19,33 +21,36 @@ namespace ArkBot.WebApi.Controllers
     {
         private IConfig _config;
         private EfDatabaseContextFactory _databaseContextFactory;
+        private ArkContextManager _contextManager;
 
-        public ServersController(IConfig config, EfDatabaseContextFactory databaseContextFactory)
+        public ServersController(IConfig config, EfDatabaseContextFactory databaseContextFactory,  ArkContextManager contextManager)
         {
             _config = config;
             _databaseContextFactory = databaseContextFactory;
+            _contextManager = contextManager;
         }
 
         public async Task<ServersViewModel> Get()
         {
             var result = new ServersViewModel();
-            foreach (var context in Workspace.Instance.ServerContexts.Values)
+            foreach (var context in _contextManager.Servers)
             {
-                var status = await CommandHelper.GetServerStatus(context.Config.Ip, (ushort)context.Config.Port);
+                var serverContext = _contextManager.GetServer(context.Config.Key);
+                var status = serverContext.Steam.GetServerStatusCached();
                 if (status == null || status.Item1 == null || status.Item2 == null)
                 {
                     //Server status is currently unavailable
                 }
                 else
                 {
-                    var serverInfo = status.Item1;
-                    var serverRules = status.Item2;
-                    var playerInfo = status.Item3;
+                    var info = status.Item1;
+                    var rules = status.Item2;
+                    var playerinfos = status.Item3;
 
-                    var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(serverInfo.Name);
-                    var name = m.Success ? m.Groups["name"].Value : serverInfo.Name;
+                    var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name);
+                    var name = m.Success ? m.Groups["name"].Value : info.Name;
                     var version = m.Success ? m.Groups["version"] : null;
-                    var currentTime = serverRules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
+                    var currentTime = rules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
                     var tamedDinosCount = context.TamedCreatures?.Count();
                     //var uploadedDinosCount = _context.Cluster?.Creatures?.Count();
                     var wildDinosCount = context.WildCreatures?.Count();
@@ -73,11 +78,11 @@ namespace ArkBot.WebApi.Controllers
                     {
                         Key = context.Config.Key,
                         Name = name,
-                        Address = serverInfo.Address,
+                        Address = info.Address,
                         Version = version.ToString(),
-                        OnlinePlayerCount = serverInfo.Players,
-                        OnlinePlayerMax = serverInfo.MaxPlayers,
-                        MapName = serverInfo.Map,
+                        OnlinePlayerCount = info.Players,
+                        OnlinePlayerMax = info.MaxPlayers,
+                        MapName = info.Map,
                         InGameTime = currentTime,
                         TamedCreatureCount = tamedDinosCount ?? 0,
                         WildCreatureCount = wildDinosCount ?? 0,
@@ -88,17 +93,17 @@ namespace ArkBot.WebApi.Controllers
                         NextUpdate = nextUpdateString
                     };
 
-                    var players = playerInfo?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
+                    var players = playerinfos?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
                     using (var db = _databaseContextFactory.Create())
                     {
-                        Dictionary<string, Tuple<ArkPlayer, Database.Model.User, Discord.User, long?, TimeSpan, ArkTribe>> d = null;
+                        Dictionary<string, Tuple<ArkPlayer, Database.Model.User, User, long?, TimeSpan, ArkTribe>> d = null;
                         if (context.Players != null)
                         {
                             var playerNames = players.Select(x => x.Name).ToArray();
                             d = context.Players.Where(x => playerNames.Contains(x.Name, StringComparer.Ordinal)).Select(x =>
                             {
                                 long steamId;
-                                return new Tuple<ArkPlayer, Database.Model.User, Discord.User, long?, TimeSpan, ArkTribe>(
+                                return new Tuple<ArkPlayer, Database.Model.User, User, long?, TimeSpan, ArkTribe>(
                                     x,
                                     null,
                                     null,
@@ -115,7 +120,7 @@ namespace ArkBot.WebApi.Controllers
 
                                 ids.Add(item.Item1.Id);
 
-                                var discordUser = (Discord.User)null; //e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
+                                var discordUser = (User)null; //e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
                                 var playedLastSevenDays = TimeSpan.MinValue; //TimeSpan.FromSeconds(user?.Played?.OrderByDescending(x => x.Date).Take(7).Sum(x => x.TimeInSeconds) ?? 0);
 
                                 d[item.Item1.Name] = Tuple.Create(item.Item1, user, discordUser, item.Item4, playedLastSevenDays, item.Item1.TribeId.HasValue ? context.Tribes?.FirstOrDefault(x => x.Id == item.Item1.TribeId.Value) : null);
@@ -167,12 +172,12 @@ namespace ArkBot.WebApi.Controllers
                 }
             }
 
-            foreach (var context in Workspace.Instance.ClusterContexts.Values)
+            foreach (var context in _contextManager.Clusters)
             {
                 var cc = new ClusterViewModel
                 {
                     Key = context.Config.Key,
-                    ServerKeys = Workspace.Instance.ServerContexts.Values
+                    ServerKeys = _contextManager.Servers
                         .Where(x => x.Config.Cluster.Equals(context.Config.Key, StringComparison.OrdinalIgnoreCase))
                         .Select(x => x.Config.Key).ToArray()
                 };

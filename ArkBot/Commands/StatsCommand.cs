@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Database;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -43,10 +44,16 @@ namespace ArkBot.Commands
             command.Parameter("optional", ParameterType.Multiple);
         }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
+            if (!_context.IsInitialized)
+            {
+                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
+                return;
+            }
+
             var take = 10;
             var args = CommandHelper.ParseArgs(e, new { Tribe = "", Player = "", Skip = 0 }, x => 
                 x.For(y => y.Tribe, untilNextToken: true)

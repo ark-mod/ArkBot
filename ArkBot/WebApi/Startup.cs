@@ -1,6 +1,7 @@
 ﻿using ArkBot.ViewModel;
 using Autofac.Core;
 using Autofac.Integration.WebApi;
+using Microsoft.Owin.Cors;
 using Owin;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace ArkBot.WebApi
 
             appBuilder.UseAutofacMiddleware(Workspace.Container);
             appBuilder.UseAutofacWebApi(config);
+            appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseWebApi(config);
         }
     }

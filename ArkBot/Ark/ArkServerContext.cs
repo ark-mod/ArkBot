@@ -1,4 +1,8 @@
-﻿using ArkBot.Threading;
+﻿using ArkBot.Database.Model;
+using ArkBot.Services;
+using ArkBot.Services.Data;
+using ArkBot.Steam;
+using ArkBot.Threading;
 using ArkSavegameToolkitNet;
 using ArkSavegameToolkitNet.Domain;
 using ArkSavegameToolkitNet.Structs;
@@ -15,20 +19,20 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Ark
 {
-    public class ArkServerContext
+    public class ArkServerContext : IDisposable
     {
         public ServerConfigSection Config { get; set; }
-        public IProgress<string> Progress { get; private set; }
 
-        private IArkSaveFileWatcher _saveFileWatcher;
+        internal IArkSaveFileWatcher _saveFileWatcher;
+        internal ArkContextManager _contextManager;
 
-        private static ConcurrentQueueUnique<ArkServerContext> _backingUpdateQueue;
-        private static BlockingCollection<ArkServerContext> _updateQueue;
-        private static Task _updateManager;
-        private static CancellationTokenSource _ctsCurrentUpdate;
-        private static ArkServerContext _serverContextCurrentUpdate;
+        //public event UpdateTriggeredEventHandler UpdateQueued;
+        public event UpdateCompletedEventHandler UpdateCompleted;
+        public event BackupCompletedEventHandler BackupCompleted;
+        public event VoteInitiatedEventHandler VoteInitiated;
+        public event VoteResultForcedEventHandler VoteResultForced;
 
-        private IConfig _config;
+        public bool IsInitialized { get; set; }
 
         public IEnumerable<ArkTamedCreature> NoRafts => TamedCreatures?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
 
@@ -38,6 +42,8 @@ namespace ArkBot.Ark
         public ArkPlayer[] Players { get; set; }
         public ArkItem[] Items { get; set; }
         public ArkStructure[] Structures { get; set; }
+
+        public SteamManager Steam { get; private set; }
 
         private List<DateTime> _previousUpdates = new List<DateTime>();
 
@@ -81,76 +87,45 @@ namespace ArkBot.Ark
             }
         }
 
-        static ArkServerContext()
+        public ArkServerContext(ServerConfigSection config)
         {
-            _backingUpdateQueue = new ConcurrentQueueUnique<ArkServerContext>();
-            _backingUpdateQueue.ItemAdded += _backingUpdateQueue_ItemAdded;
-            _updateQueue = new BlockingCollection<ArkServerContext>();
-            _updateManager = Task.Factory.StartNew(_updateManagerRun, TaskCreationOptions.LongRunning);
+            Config = config;
+            _saveFileWatcher = new ArkSaveFileWatcher(this);
+            Steam = new SteamManager(config);
         }
 
-        private static void _updateManagerRun()
+        internal bool _serverUpdate(bool manualUpdate, IConfig fullconfig, ISavegameBackupService savegameBackupService, IProgress<string> progress, CancellationToken ct)
         {
-            while (!_updateQueue.IsCompleted)
+            //backup this savegame
+            if (!manualUpdate)
             {
-                ArkServerContext context = null;
+                SavegameBackupResult result = null;
                 try
                 {
-                    context = _updateQueue.Take();
+                    if (fullconfig.BackupsEnabled)
+                    {
+                        result = savegameBackupService.CreateBackup(Config, _contextManager?.GetCluster(Config.Cluster)?.Config);
+                        if (result != null && result.ArchivePaths != null) progress.Report($@"Server ({Config.Key}): Backup successfull ({(string.Join(", ", result.ArchivePaths.Select(x => $@"""{x}""")))})!");
+                        else progress.Report($"Server ({Config.Key}): Backup failed...");
+                    }
                 }
-                catch (InvalidOperationException) { }
-
-                if (context != null)
-                {
-                    _ctsCurrentUpdate = new CancellationTokenSource();
-                    _serverContextCurrentUpdate = context;
-                    context.Update(_ctsCurrentUpdate.Token);
-                }
+                catch (Exception ex) { Logging.LogException($"Server ({Config.Key}): Backup failed", ex, typeof(ArkServerContext), LogLevel.ERROR, ExceptionLevel.Ignored); }
+                BackupCompleted?.Invoke(this, fullconfig.BackupsEnabled, result);
             }
-        }
 
-        private static void _backingUpdateQueue_ItemAdded(object sender, ArkServerContext item)
-        {
-            // cancel previous update of same server context if a new update request was queued
-            if (item.Equals(_serverContextCurrentUpdate) && !_ctsCurrentUpdate.IsCancellationRequested) _ctsCurrentUpdate.Cancel();
-        }
 
-        public ArkServerContext(IConfig fullconfig, ServerConfigSection config, IProgress<string> progress)
-        {
-            _config = fullconfig;
-
-            Config = config;
-            Progress = progress;
-
-            _saveFileWatcher = new ArkSaveFileWatcher(Config.SaveFilePath);
-            _saveFileWatcher.Changed += _saveFileWatcher_Changed;
-        }
-
-        private void _saveFileWatcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
-        {
-            Progress.Report($"Server ({Config.Key}): Update queued by watcher ({DateTime.Now:HH:mm:ss.ffff})");
-            _updateQueue.Add(this);
-        }
-
-        public void QueueManualUpdate()
-        {
-            Progress.Report($"Server ({Config.Key}): Update queued manually ({DateTime.Now:HH:mm:ss.ffff})");
-            _updateQueue.Add(this);
-        }
-
-        private bool Update(CancellationToken ct)
-        {
             //todo: temp copy all
             var copy = true;
             var success = false;
+            var cancelled = false;
             var tmppaths = new List<string>();
             var gid = Guid.NewGuid().ToString();
-            var tempFileOutputDirPath = Path.Combine(_config.TempFileOutputDirPath, gid);
+            var tempFileOutputDirPath = Path.Combine(fullconfig.TempFileOutputDirPath, gid);
             ArkSavegame save = null;
             var st = Stopwatch.StartNew();
             try
             {
-                Progress.Report($"Server ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
+                progress.Report($"Server ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
 
                 var directoryPath = Path.GetDirectoryName(Config.SaveFilePath);
                 if (copy)
@@ -166,7 +141,8 @@ namespace ArkBot.Ark
                     File.Copy(Config.SaveFilePath, saveFilePath);
 
                     save = new ArkSavegame(saveFilePath);
-                } else save = new ArkSavegame(Config.SaveFilePath);
+                }
+                else save = new ArkSavegame(Config.SaveFilePath);
                 save.LoadEverything();
                 ct.ThrowIfCancellationRequested();
 
@@ -182,7 +158,8 @@ namespace ArkBot.Ark
                         File.Copy(tp, tribePath);
                     }
                     tribes = tribePaths.Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
-                } else tribes = Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
+                }
+                else tribes = Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
                 ct.ThrowIfCancellationRequested();
 
                 ArkProfile[] profiles = null;
@@ -197,19 +174,22 @@ namespace ArkBot.Ark
                         File.Copy(pp, profilePath);
                     }
                     profiles = profilePaths.Select(x => new ArkProfile(x)).ToArray();
-                } else profiles = Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly).Select(x => new ArkProfile(x)).ToArray();
+                }
+                else profiles = Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly).Select(x => new ArkProfile(x)).ToArray();
                 ct.ThrowIfCancellationRequested();
 
                 var _myCharacterStatusComponent = ArkName.Create("MyCharacterStatusComponent");
                 var statusComponents = save.Objects.Where(x => x.IsDinoStatusComponent).ToDictionary(x => x.Index, x => x);
                 var tamed = save.Objects.Where(x => x.IsTamedCreature).Select(x =>
                 {
-                    var status = statusComponents[x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId];
+                    GameObject status = null;
+                    statusComponents.TryGetValue(x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId, out status);
                     return x.AsTamedCreature(status, null, save.SaveState);
                 }).ToArray();
                 var wild = save.Objects.Where(x => x.IsWildCreature).Select(x =>
                 {
-                    var status = statusComponents[x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId];
+                    GameObject status = null;
+                    statusComponents.TryGetValue(x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId, out status);
                     return x.AsWildCreature(status, null, save.SaveState);
                 }).ToArray();
 
@@ -230,21 +210,24 @@ namespace ArkBot.Ark
                 WildCreatures = wild;
                 Players = players;
                 Tribes = tribes.Select(x => x.Tribe.AsTribe()).ToArray();
-                Items = save.Objects.Where(x => x.IsItem).Select(x => x.AsItem()).ToArray();
+                Items = save.Objects.Where(x => x.IsItem).Select(x => x.AsItem(save.SaveState)).ToArray();
                 Structures = save.Objects.Where(x => x.IsStructure).Select(x => x.AsStructure(save.SaveState)).ToArray();
 
-                Progress.Report($"Server ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
+                progress.Report($"Server ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
+                IsInitialized = true;
+                
                 LastUpdate = DateTime.Now;
                 success = true;
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
-                Progress.Report($"Server ({Config.Key}): Update was cancelled after {st.ElapsedMilliseconds:N0} ms");
+                progress.Report($"Server ({Config.Key}): Update was cancelled after {st.ElapsedMilliseconds:N0} ms");
+                cancelled = true;
             }
             catch (Exception ex)
             {
                 Logging.LogException($"Failed to update server ({Config.Key})", ex, typeof(ArkServerContext), LogLevel.ERROR, ExceptionLevel.Ignored);
-                Progress.Report($"Server ({Config.Key}): Update failed after {st.ElapsedMilliseconds:N0} ms");
+                progress.Report($"Server ({Config.Key}): Update failed after {st.ElapsedMilliseconds:N0} ms");
             }
             finally
             {
@@ -258,11 +241,42 @@ namespace ArkBot.Ark
                     }
                     catch { /* ignore exception */ }
                 }
+
+                UpdateCompleted?.Invoke(this, success, cancelled);
             }
 
             GC.Collect();
 
             return success;
         }
+
+        public void OnVoteInitiated(Database.Model.Vote item)
+        {
+            VoteInitiated?.Invoke(this, new VoteInitiatedEventArgs { Item = item });
+        }
+        public void OnVoteResultForced(Database.Model.Vote item, VoteResult forcedResult)
+        {
+            VoteResultForced?.Invoke(this, new VoteResultForcedEventArgs { Item = item, Result = forcedResult });
+        }
+
+        #region IDisposable Support
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposedValue) return;
+
+            if (disposing)
+            {
+                _saveFileWatcher?.Dispose();
+                _saveFileWatcher = null;
+
+                Steam?.Dispose();
+                Steam = null;
+            }
+
+            disposedValue = true;
+        }
+        public void Dispose() { Dispose(true); }
+        private bool disposedValue = false;
+        #endregion
     }
 }

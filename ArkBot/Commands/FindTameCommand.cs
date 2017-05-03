@@ -9,6 +9,7 @@ using ArkBot.Extensions;
 using static System.FormattableString;
 using System.Drawing;
 using ArkBot.Data;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -45,10 +46,16 @@ namespace ArkBot.Commands
                 .Parameter("optional", ParameterType.Multiple);
         }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
+            if (!_context.IsInitialized)
+            {
+                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
+                return;
+            }
+
             var take = 10;
 
             var args = CommandHelper.ParseArgs(e, new { Query = "", Exact = false, Species = false, Tribe = "", Owner = "", Skip = 0, OldMap = false }, x =>

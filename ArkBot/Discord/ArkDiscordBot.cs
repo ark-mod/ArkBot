@@ -18,12 +18,14 @@ using System.Collections.Concurrent;
 using ArkBot.Database.Model;
 using ArkBot.Helpers;
 using Autofac;
-using ArkBot.Vote;
 using log4net;
 using System.Data.Entity.Core.Objects;
 using ArkBot.ViewModel;
+using ArkBot.Ark;
+using ArkBot.Voting;
+using Discord.Net;
 
-namespace ArkBot
+namespace ArkBot.Discord
 {
     public class ArkDiscordBot : IDisposable
     {
@@ -33,26 +35,26 @@ namespace ArkBot
         private IConstants _constants;
         private IBarebonesSteamOpenId _openId;
         private EfDatabaseContextFactory _databaseContextFactory;
-        private Timer _timer;
-
-        private TimeSpan? _prevNextUpdate;
-        private DateTime _prevLastUpdate;
-        private ConcurrentDictionary<TimedTask, bool> _timedTasks;
-        private DateTime _prevTimedBansUpdate;
         private ILifetimeScope _scope;
+        private ArkContextManager _contextManager;
+        private VotingManager _votingManager;
 
         private bool _wasRestarted;
         private List<ulong> _wasRestartedServersNotified = new List<ulong>();
 
         public ArkDiscordBot(
+            DiscordClient discord,
             IConfig config, 
             IArkContext context, 
             IConstants constants, 
             IBarebonesSteamOpenId openId, 
             EfDatabaseContextFactory databaseContextFactory, 
             IEnumerable<ICommand> commands, 
-            ILifetimeScope scope)
+            ILifetimeScope scope,
+            ArkContextManager contextManager,
+            VotingManager votingManager)
         {
+            _discord = discord;
             _config = config;
             _context = context;
             _constants = constants;
@@ -60,16 +62,10 @@ namespace ArkBot
             _openId = openId;
             _openId.SteamOpenIdCallback += _openId_SteamOpenIdCallback;
             _scope = scope;
+            _contextManager = contextManager;
+            _votingManager = votingManager;
 
             _context.Updated += _context_Updated;
-
-            _discord = new DiscordClient(x =>
-           {
-               x.LogLevel = _config.Debug ? LogSeverity.Info : LogSeverity.Warning;
-               x.LogHandler += Log;
-               x.AppName = _config.BotName;
-               x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
-           });
 
             _discord.UsingCommands(x =>
             {
@@ -84,7 +80,7 @@ namespace ArkBot
             cservice.CommandErrored += Commands_CommandErrored;
             foreach(var command in commands)
             {
-                if (command.DebugOnly && !_config.Debug) continue;
+                //if (command.DebugOnly && !_config.Debug) continue;
 
                 var cbuilder = cservice.CreateCommand(command.Name);
                 if (command.Aliases != null && command.Aliases.Length > 0) cbuilder.Alias(command.Aliases);
@@ -106,13 +102,7 @@ namespace ArkBot
                 cbuilder.Do(command.Run);
             }
 
-            _timedTasks = new ConcurrentDictionary<TimedTask, bool>();
-            _timer = new Timer(_timer_Callback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
 
-            {
-                _context.VoteInitiated += _context_VoteInitiated;
-                _context.VoteResultForced += _context_VoteResultForced;
-            }
 
             var args = Environment.GetCommandLineArgs();
             if (args != null && args.Contains("/restart", StringComparer.OrdinalIgnoreCase))
@@ -121,248 +111,7 @@ namespace ArkBot
             }
         }
 
-        private async void _context_VoteResultForced(object sender, VoteResultForcedEventArgs args)
-        {
-            if (args == null || args.Item == null) return;
-
-            var tasks = _timedTasks.Keys.Where(x => x.Tag is string && ((string)x.Tag).Equals("vote_" + args.Item.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
-            foreach (var task in tasks)
-            {
-                bool tmp;
-                _timedTasks.TryRemove(task, out tmp);
-            }
-
-            using (var db = _databaseContextFactory.Create())
-            {
-                var vote = db.Votes.FirstOrDefault(x => x.Id == args.Item.Id);
-
-                await VoteFinished(db, vote, forcedResult: args.Result);
-            }
-        }
-
-        private IVoteHandler GetVoteHandler(Database.Model.Vote vote)
-        {
-            IVoteHandler handler = null;
-            var type = ObjectContext.GetObjectType(vote.GetType());
-            try
-            {
-                handler = _scope.Resolve(typeof(IVoteHandler<>).MakeGenericType(type), new TypedParameter(typeof(Database.Model.Vote), vote)) as IVoteHandler;
-            }
-            catch (Exception ex)
-            {
-                Logging.LogException($"Failed to resolve IVoteHandler for type '{type.Name}'", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
-                return null;
-            }
-
-            if (handler == null)
-            {
-                Logging.Log($"Failed to resolve IVoteHandler for type '{type.Name}'", GetType(), LogLevel.ERROR);
-                return null;
-            }
-
-            return handler;
-        }
-
-        private void _context_VoteInitiated(object sender, VoteInitiatedEventArgs args)
-        {
-            if (args == null || args.Item == null) return;
-
-            var handler = GetVoteHandler(args.Item);
-            if (handler == null) return;
-
-            //reminder, one minute before expiry
-            var reminderAt = args.Item.Finished.AddMinutes(-1);
-            if (DateTime.Now < reminderAt)
-            {
-                _timedTasks.TryAdd(new TimedTask
-                {
-                    When = reminderAt,
-                    Tag = "vote_" + args.Item.Id,
-                    Callback = new Func<Task>(async () =>
-                    {
-                        var result = handler.VoteIsAboutToExpire();
-                        if (result == null) return;
-
-                        if (result.MessageRcon != null) await CommandHelper.SendRconCommand(_config, $"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
-                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
-                        {
-                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
-                            foreach (var channel in channels)
-                            {
-                                await channel.SendMessage(result.MessageAnnouncement);
-                            }
-                        }
-                    })
-                }, true);
-            }
-
-            //on elapsed
-            _timedTasks.TryAdd(new TimedTask
-            {
-                When = args.Item.Finished,
-                Tag = "vote_" + args.Item.Id,
-                Callback = new Func<Task>(async () =>
-                {
-                    using (var db = _databaseContextFactory.Create())
-                    {
-                        var vote = db.Votes.FirstOrDefault(x => x.Id == args.Item.Id);
-
-                        await VoteFinished(db, vote);
-                    }
-                })
-            }, true);
-        }
-
-        private async Task VoteFinished(IEfDatabaseContext db, Database.Model.Vote vote, bool noAnnouncement = false, VoteResult? forcedResult = null)
-        {
-            var handler = GetVoteHandler(vote);
-            if (handler == null) return;
-
-            var votesFor = vote.Votes.Count(x => x.VotedFor);
-            var votesAgainst = vote.Votes.Count(x => !x.VotedFor);
-            vote.Result = forcedResult ?? (vote.Votes.Count >= (_config.Debug ? 1 : 3) && votesFor > votesAgainst ? VoteResult.Passed : VoteResult.Failed);
-
-            Vote.VoteStateChangeResult result = null;
-            try
-            {
-                result = await handler.VoteFinished(_config, _constants, db);
-                try
-                {
-                    if (!noAnnouncement && result != null)
-                    {
-                        if (result.MessageRcon != null) await CommandHelper.SendRconCommand(_config, $"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
-                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
-                        {
-                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
-                            foreach (var channel in channels)
-                            {
-                                await channel.SendMessage(result.MessageAnnouncement);
-                            }
-                        }
-                    }
-                }
-                catch { /* ignore all exceptions */ }
-
-                if (result != null && result.React != null)
-                {
-                    if (result.ReactDelayInMinutes <= 0) await result.React();
-                    else
-                    {
-                        await CommandHelper.SendRconCommand(_config, $"serverchat Countdown started: {result.ReactDelayFor} in {result.ReactDelayInMinutes} minutes...");
-                        if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
-                        {
-                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
-                            foreach (var channel in channels)
-                            {
-                                await channel.SendMessage($"**Countdown started: {result.ReactDelayFor} in {result.ReactDelayInMinutes} minutes...**");
-                            }
-                        }
-
-                        foreach (var min in Enumerable.Range(1, result.ReactDelayInMinutes))
-                        {
-                            _timedTasks.TryAdd(new TimedTask
-                            {
-                                When = DateTime.Now.AddMinutes(min),
-                                Callback = new Func<Task>(async () =>
-                                {
-                                    var countdown = result.ReactDelayInMinutes - min;
-                                    await CommandHelper.SendRconCommand(_config, $"serverchat {result.ReactDelayFor} in {countdown} minutes...");
-                                    if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
-                                    {
-                                        var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
-                                        foreach (var channel in channels)
-                                        {
-                                            await channel.SendMessage($"**{result.ReactDelayFor} in {countdown} minutes...**");
-                                        }
-                                    }
-                                    if (countdown <= 0) await result.React();
-                                })
-                            }, true);
-                        }
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                //todo: better exception handling structure
-                Logging.LogException(ex.Message, ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
-            }
-            db.SaveChanges();
-            
-        }
-
-        /// <summary>
-        /// Main proceedure
-        /// </summary>
-        private async void _timer_Callback(object state)
-        {
-            try
-            {
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
-
-                var tasks = _timedTasks.Keys.Where(x => x.When <= DateTime.Now).ToArray();
-                foreach(var task in tasks)
-                {
-                    bool tmp;
-                    _timedTasks.TryRemove(task, out tmp);
-
-                    await task.Callback();
-                }
-
-                if (_config.InfoTopicChannel != null)
-                {
-                    var lastUpdate = _context.LastUpdate;
-                    var nextUpdate = _context.ApproxTimeUntilNextUpdate;
-                    if ((lastUpdate != _prevLastUpdate || nextUpdate != _prevNextUpdate))
-                    {
-                        _prevLastUpdate = lastUpdate;
-                        _prevNextUpdate = nextUpdate;
-
-                        var nextUpdateTmp = nextUpdate?.ToStringCustom();
-                        var nextUpdateString = (nextUpdate.HasValue ? (!string.IsNullOrWhiteSpace(nextUpdateTmp) ? $", Next Update in ~{nextUpdateTmp}" : ", waiting for new update ...") : "");
-                        var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
-                        var newtopic = $"Updated {lastUpdateString}{nextUpdateString} | Type !help to get started";
-
-                        try
-                        {
-                            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
-                            foreach (var channel in channels)
-                            {
-                                await channel.Edit(topic: newtopic);
-                            }
-                        }
-                        catch(Exception ex)
-                        {
-                            Logging.LogException("Error when attempting to change bot info channel topic", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Ignored);
-                        }
-                    }
-                }
-
-                if (DateTime.Now- _prevTimedBansUpdate > TimeSpan.FromMinutes(5))
-                {
-                    _prevTimedBansUpdate = DateTime.Now;
-
-                    using (var db = _databaseContextFactory.Create())
-                    {
-                        var elapsedBans = db.Votes.OfType<BanVote>().Where(x => x.Result == VoteResult.Passed && x.BannedUntil.HasValue && x.BannedUntil <= DateTime.Now).ToArray();
-                        foreach(var ban in elapsedBans)
-                        {
-                                if (await CommandHelper.SendRconCommand(_config, $"unbanplayer {ban.SteamId}") != null) ban.BannedUntil = null;
-                        }
-
-                        db.SaveChanges();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logging.LogException("Unhandled exception in bot timer method", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
-            }
-            finally
-            {
-                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-            }
-        }
+        
 
         private async void _discord_ServerAvailable(object sender, ServerEventArgs e)
         {
@@ -437,7 +186,7 @@ namespace ArkBot
                                 await user.Edit(nickname: playerName);
                             }
                         }
-                        catch (Discord.Net.HttpException ex)
+                        catch (HttpException ex)
                         {
                             //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
                             Logging.LogException("HttpException while trying to update nicknames/roles (could be due to permissions)", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
@@ -506,7 +255,7 @@ namespace ArkBot
 
                         }
                     }
-                    catch (Discord.Net.HttpException)
+                    catch (HttpException)
                     {
                         //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
                     }
@@ -566,29 +315,12 @@ namespace ArkBot
 
             var sb = new StringBuilder();
             sb.AppendLine($@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command successful!");
-            _context.Progress.Report(sb.ToString());
+            Logging.Log(sb.ToString(), GetType(), LogLevel.INFO);
         }
 
         public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
             await _context.Initialize(token, skipExtract);
-
-            //handle undecided votes (may happen due to previous bot shutdown before vote finished)
-            using (var db = _databaseContextFactory.Create())
-            {
-                var votes = db.Votes.Where(x => x.Result == VoteResult.Undecided);
-                foreach (var vote in votes)
-                {
-                    if (DateTime.Now >= vote.Finished)
-                    {
-                        await VoteFinished(db, vote, true);
-                    }
-                    else
-                    {
-                        _context_VoteInitiated(null, new VoteInitiatedEventArgs { Item = vote });
-                    }
-                }
-            }
         }
 
         public async Task Start(ArkSpeciesAliases aliases = null)
@@ -599,11 +331,6 @@ namespace ArkBot
         public async Task Stop()
         {
             await _discord.Disconnect();
-        }
-
-        private void Log(object sender, LogMessageEventArgs e)
-        {
-            Workspace.Instance.Console.AddLog(e.Message);
         }
 
         #region IDisposable Support

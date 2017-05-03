@@ -14,6 +14,7 @@ using System.Runtime.Caching;
 using ArkBot.Database;
 using ArkBot.OpenID;
 using ArkBot.Services;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -43,7 +44,7 @@ namespace ArkBot.Commands
 
         public void Register(CommandBuilder command) { }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
@@ -71,7 +72,7 @@ namespace ArkBot.Commands
 
             if (e.Channel.IsPrivate) return;
 
-            if (msg.State == Discord.MessageState.Normal || msg.State == Discord.MessageState.Queued)
+            if (msg.State == MessageState.Normal || msg.State == MessageState.Queued)
                 await e.Channel.SendMessage($"<@{e.User.Id}>, I have sent you a private message with instructions on how to proceed with linking your Discord user with Steam! If you do not receive this message, please try sending the **!linksteam** command to me in a private conversation!");
             else
                 await e.Channel.SendMessage($"<@{e.User.Id}>, it seems that I am unable to start a private conversation with you! :( Please try sending the **!linksteam** command to me in a private conversation instead!");

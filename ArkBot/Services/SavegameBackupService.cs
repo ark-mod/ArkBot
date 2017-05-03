@@ -19,18 +19,19 @@ namespace ArkBot.Services
             _config = config;
         }
 
-        public IList<BackupListEntity> GetBackupsList(bool includeContents = false)
+        public IList<BackupListEntity> GetBackupsList(string serverKey = null, bool includeContents = false)
         {
             var result = new List<BackupListEntity>();
 
-            var backupDir = new DirectoryInfo(_config.BackupsDirectoryPath);
+            var backupDirPath = serverKey == null ? _config.BackupsDirectoryPath : Path.Combine(_config.BackupsDirectoryPath, serverKey);
+            var backupDir = new DirectoryInfo(backupDirPath);
             var files = backupDir.GetFiles("*.zip", SearchOption.AllDirectories);
             if (files == null) return result;
 
             foreach(var file in files)
             {
                 var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                var b = _config.BackupsDirectoryPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var b = backupDirPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                 var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
 
                 result.Add(new BackupListEntity
@@ -45,29 +46,31 @@ namespace ArkBot.Services
             return result;
         }
 
-        public SavegameBackupResult CreateBackup(string saveFilePath, string clusterSavePath)
+        public SavegameBackupResult CreateBackup(ServerConfigSection server, ClusterConfigSection cluster)
         {
-            if (!File.Exists(saveFilePath))
+            if (!File.Exists(server.SaveFilePath))
             {
-                Logging.Log($@"Savegame backup was requested but there are no files to backup (saveFilePath: ""{saveFilePath}"", clusterSavePath: ""{clusterSavePath}"")", GetType(), LogLevel.DEBUG);
+                Logging.Log($@"Savegame backup was requested but there are no files to backup (saveFilePath: ""{server.SaveFilePath}"", clusterSavePath: ""{cluster?.SavePath ?? "-"}"")", GetType(), LogLevel.DEBUG);
                 return null;
             }
 
-            var dir = Path.GetDirectoryName(saveFilePath);
+            var dir = Path.GetDirectoryName(server.SaveFilePath);
             string[] arkprofiles = null;
             string[] arktribes = null;
             string[] clusters = null;
             var files = new[]
             {
-                    new Tuple<string, string, string[]>("", "", new [] { saveFilePath }),
+                    new Tuple<string, string, string[]>("", "", new [] { server.SaveFilePath }),
                     Directory.Exists(dir) ? new Tuple<string, string, string[]>("", "", arkprofiles = Directory.GetFiles(dir, "*.arkprofile", SearchOption.TopDirectoryOnly)) : null,
                     Directory.Exists(dir) ? new Tuple<string, string, string[]>("", "", arktribes = Directory.GetFiles(dir, "*.arktribe", SearchOption.TopDirectoryOnly)) : null,
-                    new Tuple<string, string, string[]>(clusterSavePath, "cluster", clusters = Directory.GetFiles(clusterSavePath, "*", SearchOption.AllDirectories))
+                    cluster != null ? new Tuple<string, string, string[]>(cluster.SavePath, "cluster", clusters = Directory.GetFiles(cluster.SavePath, "*", SearchOption.AllDirectories)) : null
                 }.Where(x => x != null && x.Item2 != null).ToArray();
 
-            if (!Directory.Exists(_config.BackupsDirectoryPath)) Directory.CreateDirectory(_config.BackupsDirectoryPath);
+            var backupDir = Path.Combine(_config.BackupsDirectoryPath, server.Key, DateTime.Now.ToString("yyyy-MM"));
 
-            var path = Path.Combine(_config.BackupsDirectoryPath, "save_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
+            if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
+
+            var path = Path.Combine(backupDir, "save_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
             string[] results = null;
             try
             {

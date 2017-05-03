@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using System.Diagnostics;
+using Discord;
+using ArkBot.Ark;
 
 namespace ArkBot.Commands
 {
@@ -29,36 +31,43 @@ namespace ArkBot.Commands
         private IArkContext _context;
         private IConfig _config;
         private IConstants _constants;
+        private ArkContextManager _contextManager;
 
-        public StatusCommand(IArkContext context, IConfig config, IConstants constants)
+        public StatusCommand(IArkContext context, IConfig config, IConstants constants, ArkContextManager contextManager)
         {
             _context = context;
             _config = config;
             _constants = constants;
+            _contextManager = contextManager;
         }
 
         public void Register(CommandBuilder command) { }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
-            var status = await CommandHelper.GetServerStatus(_config);
+            if (!_context.IsInitialized)
+            {
+                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
+                return;
+            }
+
+            var serverContext = _contextManager.GetServer(_config.ServerKey);
+            var info = serverContext.Steam.GetServerInfoCached();
+            var rules = serverContext.Steam.GetServerRulesCached();
 
             var sb = new StringBuilder();
-            if (status == null || status.Item1 == null || status.Item2 == null)
+            if (info == null || rules == null)
             {
                 sb.AppendLine($"**Server status is currently unavailable!**");
             }
             else
             {
-                var serverInfo = status.Item1;
-                var serverRules = status.Item2;
-
-                var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(serverInfo.Name);
-                var name = m.Success ? m.Groups["name"].Value : serverInfo.Name;
+                var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name);
+                var name = m.Success ? m.Groups["name"].Value : info.Name;
                 var version = m.Success ? m.Groups["version"] : null;
-                var currentTime = serverRules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
+                var currentTime = rules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
                 var tamedDinosCount = _context.Creatures?.Count();
                 var uploadedDinosCount = _context.Cluster?.Creatures?.Count();
                 var wildDinosCount = _context.Wild?.Count();
@@ -77,10 +86,10 @@ namespace ArkBot.Commands
                 catch { /* ignore exceptions */ }
 
                 sb.AppendLine($"**{name}**");
-                sb.AppendLine($"● **Address:** {serverInfo.Address}");
+                sb.AppendLine($"● **Address:** {info.Address}");
                 if (version != null) sb.AppendLine($"● **Version:** {version}");
-                sb.AppendLine($"● **Online:** {serverInfo.Players}/{serverInfo.MaxPlayers}");
-                sb.AppendLine($"● **Map:** {serverInfo.Map}");
+                sb.AppendLine($"● **Online:** {info.Players}/{info.MaxPlayers}");
+                sb.AppendLine($"● **Map:** {info.Map}");
                 if (currentTime != null) sb.AppendLine($"● **In-game time:** {currentTime}");
                 if (serverStarted != null) sb.AppendLine($"Server uptime: {(DateTime.Now - serverStarted.Value).ToStringCustom(true)}");
 

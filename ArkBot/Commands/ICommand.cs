@@ -15,7 +15,7 @@ namespace ArkBot.Commands
         string Description { get; }
         string SyntaxHelp { get; }
         string[] UsageExamples { get; }
-        bool DebugOnly { get; }
+        //bool DebugOnly { get; }
         bool HideFromCommandList { get; }
 
         Task Run(CommandEventArgs e);

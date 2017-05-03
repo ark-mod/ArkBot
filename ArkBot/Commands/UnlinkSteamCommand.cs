@@ -13,6 +13,7 @@ using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Database;
 using Discord;
+using Discord.Net;
 
 namespace ArkBot.Commands
 {
@@ -73,7 +74,7 @@ namespace ArkBot.Commands
 
                                 if (duser.HasRole(role)) await duser.RemoveRoles(role);
                             }
-                            catch(Discord.Net.HttpException)
+                            catch(HttpException)
                             {
                                 //could be due to the order of roles on the server. bot role with "manage roles" permission must be higher up than the role it is trying to set
                             }

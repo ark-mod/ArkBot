@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArkBot.Ark;
+using System;
 
 namespace ArkBot
 {
@@ -7,5 +8,5 @@ namespace ArkBot
         event ArkSaveFileChangedEventHandler Changed;
     }
 
-    public delegate void ArkSaveFileChangedEventHandler(object sender, ArkSaveFileChangedEventArgs e);
+    public delegate void ArkSaveFileChangedEventHandler(ArkServerContext context, ArkSaveFileChangedEventArgs e);
 }

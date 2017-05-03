@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Database;
+using Discord;
+using ArkBot.Ark;
 
 namespace ArkBot.Commands
 {
@@ -29,12 +31,14 @@ namespace ArkBot.Commands
         private EfDatabaseContextFactory _databaseContextFactory;
         private IArkContext _context;
         private IConfig _config;
+        private ArkContextManager _contextManager;
 
-        public PlayerListCommand(EfDatabaseContextFactory databaseContextFactory, IArkContext context, IConfig config)
+        public PlayerListCommand(EfDatabaseContextFactory databaseContextFactory, IArkContext context, IConfig config, ArkContextManager contextManager)
         {
             _databaseContextFactory = databaseContextFactory;
             _context = context;
             _config = config;
+            _contextManager = contextManager;
         }
 
         public void Register(CommandBuilder command)
@@ -42,25 +46,31 @@ namespace ArkBot.Commands
             command.Parameter("optional", ParameterType.Multiple);
         }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
+            if (!_context.IsInitialized)
+            {
+                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
+                return;
+            }
+
             //var args = CommandHelper.ParseArgs(e, new { Extended = false }, x =>
             //    x.For(y => y.Extended, flag: true));
             var playersx = e.Message.Text.StartsWith("!playersx", StringComparison.OrdinalIgnoreCase);
 
-            var status = await CommandHelper.GetServerStatus(_config);
+            var serverContext = _contextManager.GetServer(_config.ServerKey);
+            var serverInfo = serverContext.Steam.GetServerInfoCached();
+            var playerInfo = serverContext.Steam.GetServerPlayersCached();
 
             var sb = new StringBuilder();
-            if (status == null || status.Item1 == null || status.Item3 == null)
+            if (serverInfo == null || playerInfo == null)
             {
                 sb.AppendLine($"**Player list is currently unavailable!**");
             }
             else
             {
-                var serverInfo = status.Item1;
-                var playerInfo = status.Item3;
                 var players = playerInfo?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
 
                 var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(serverInfo.Name);
@@ -76,7 +86,7 @@ namespace ArkBot.Commands
                         var d = _context.Players.Where(x => playerNames.Contains(x.PlayerName, StringComparer.Ordinal)).Select(x =>
                         {
                             long steamId;
-                            return new Tuple<Data.Player, Database.Model.User, Discord.User, long?, TimeSpan>(
+                            return new Tuple<Data.Player, Database.Model.User, User, long?, TimeSpan>(
                                 x,
                                 null,
                                 null,
@@ -96,7 +106,7 @@ namespace ArkBot.Commands
                             var discordUser = e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
                             var playedLastSevenDays = TimeSpan.FromSeconds(user?.Played?.OrderByDescending(x => x.Date).Take(7).Sum(x => x.TimeInSeconds) ?? 0);
 
-                            d[item.Item1.PlayerName] = new Tuple<Data.Player, Database.Model.User, Discord.User, long?, TimeSpan>(item.Item1, user, discordUser, item.Item4, playedLastSevenDays);
+                            d[item.Item1.PlayerName] = new Tuple<Data.Player, Database.Model.User, User, long?, TimeSpan>(item.Item1, user, discordUser, item.Item4, playedLastSevenDays);
                         }
 
                         var remaining = d.Values.Where(x => !ids.Contains(x.Item1.Id)).Where(x => x.Item4 != null).Select(x => x.Item4.Value).ToArray();
@@ -109,7 +119,7 @@ namespace ArkBot.Commands
                             if (item == null) continue;
 
                             var playedLastSevenDays = TimeSpan.FromSeconds(user?.items?.Sum(x => x.TimeInSeconds) ?? 0);
-                            d[item.Item1.PlayerName] = new Tuple<Data.Player, Database.Model.User, Discord.User, long?, TimeSpan>(item.Item1, item.Item2, item.Item3, item.Item4, playedLastSevenDays);
+                            d[item.Item1.PlayerName] = new Tuple<Data.Player, Database.Model.User, User, long?, TimeSpan>(item.Item1, item.Item2, item.Item3, item.Item4, playedLastSevenDays);
                         }
 
                         //var playerslist = players.Select(x => {

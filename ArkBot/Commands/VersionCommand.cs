@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using System.Reflection;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -28,7 +29,7 @@ namespace ArkBot.Commands
 
         public void Register(CommandBuilder command) { }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {

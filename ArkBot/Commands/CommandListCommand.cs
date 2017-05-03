@@ -8,6 +8,7 @@ using ArkBot.Helpers;
 using ArkBot.Extensions;
 using static System.FormattableString;
 using System.Drawing;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -25,7 +26,7 @@ namespace ArkBot.Commands
         public IEnumerable<ICommand> Commands { get; set; }
 
         private IConfig _config;
-        private Discord.DiscordClient _discord;
+        private DiscordClient _discord;
 
         public CommandListCommand(IConfig config)
         {
@@ -37,7 +38,7 @@ namespace ArkBot.Commands
             command.Parameter("name", ParameterType.Optional);
         }
 
-        public void Init(Discord.DiscordClient client)
+        public void Init(DiscordClient client)
         {
             _discord = client;
         }
@@ -56,7 +57,8 @@ namespace ArkBot.Commands
 
                 foreach (var command in Commands.OrderBy(x => x.Name))
                 {
-                    if (command.HideFromCommandList || (command.DebugOnly && !_config.Debug)) continue;
+                    //if (command.HideFromCommandList || (command.DebugOnly && !_config.Debug)) continue;
+                    if (command.HideFromCommandList) continue;
 
                     var ecc = command as IEnabledCheckCommand;
                     if (ecc != null && !ecc.EnabledCheck())
@@ -73,8 +75,10 @@ namespace ArkBot.Commands
             }
             else
             {
-                var command = Commands.FirstOrDefault(x => !x.HideFromCommandList 
-                    && (!x.DebugOnly || _config.Debug)
+                //var command = Commands.FirstOrDefault(x => !x.HideFromCommandList 
+                //    && (!x.DebugOnly || _config.Debug)
+                //    && x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                var command = Commands.FirstOrDefault(x => !x.HideFromCommandList
                     && x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
                 if (command == null)
                 {

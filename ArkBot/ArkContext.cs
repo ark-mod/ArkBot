@@ -22,6 +22,8 @@ using ArkBot.Services.Data;
 using System.Threading;
 using ArkBot.Threading;
 using System.Transactions;
+using ArkBot.ViewModel;
+using ArkBot.Ark;
 
 namespace ArkBot
 {
@@ -34,13 +36,15 @@ namespace ArkBot
         private EfDatabaseContextFactory _databaseContextFactory;
         private IPlayedTimeWatcher _playedTimeWatcher;
         private ISavegameBackupService _savegameBackupService;
+        private ArkContextManager _contextManager;
+
         public IProgress<string> Progress { get; private set; }
         private SingleRunningTaskCancelPrevious _contextUpdateSync;
 
         public event ContextUpdating Updating;
         public event ContextUpdated Updated;
-        public event VoteInitiatedEventHandler VoteInitiated;
-        public event VoteResultForcedEventHandler VoteResultForced;
+        //public event VoteInitiatedEventHandler VoteInitiated;
+        //public event VoteResultForcedEventHandler VoteResultForced;
 
         private const string _jsonSubDirTamed = "tamed";
         private const string _jsonSubDirWild = "wild";
@@ -57,6 +61,8 @@ namespace ArkBot
         private List<DateTime> _previousUpdates = new List<DateTime>();
         private TribeLog _latestTribeLog;
         private bool _contextUpdatesDisabledOverride = false;
+
+        public bool IsInitialized { get; set; }
 
         private DateTime _lastUpdate;
         public DateTime LastUpdate
@@ -118,7 +124,8 @@ namespace ArkBot
             ISavedState savedstate,
             EfDatabaseContextFactory databaseContextFactory,
             IPlayedTimeWatcher playedTimeWatcher,
-            ISavegameBackupService savegameBackupService)
+            ISavegameBackupService savegameBackupService,
+            ArkContextManager contextManager)
         {
             _config = config;
             _constants = constants;
@@ -126,6 +133,7 @@ namespace ArkBot
             _databaseContextFactory = databaseContextFactory;
             _playedTimeWatcher = playedTimeWatcher;
             _savegameBackupService = savegameBackupService;
+            _contextManager = contextManager;
             Progress = progress;
             _contextUpdateSync = new SingleRunningTaskCancelPrevious();
 
@@ -143,38 +151,37 @@ namespace ArkBot
         {
             Progress.Report("Context initialization started...");
 
-            Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
+            //Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
 
             TribeLogs = new List<TribeLog>();
-            var data = await ExtractAndLoadData(token, skipExtract);
-            if (data != null)
-            {
-                ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
-                Classes = data.Item2 ?? new CreatureClass[] { };
-                Creatures = data.Item3 ?? new Creature[] { };
-                Players = data.Item4 ?? new Player[] { };
-                Tribes = data.Item5 ?? new Tribe[] { };
-                Cluster = data.Item6 ?? new Cluster();
-                Wild = data.Item7 ?? new Creature[] { };
-                _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
+            //var data = await ExtractAndLoadData(token, skipExtract);
+            //if (data != null)
+            //{
+            //    ArkSpeciesStatsData = data.Item1 ?? new ArkSpeciesStatsData();
+            //    Classes = data.Item2 ?? new CreatureClass[] { };
+            //    Creatures = data.Item3 ?? new Creature[] { };
+            //    Players = data.Item4 ?? new Player[] { };
+            //    Tribes = data.Item5 ?? new Tribe[] { };
+            //    Cluster = data.Item6 ?? new Cluster();
+            //    Wild = data.Item7 ?? new Creature[] { };
+            //    _lastUpdate = DateTime.Now; //set backing field in order to not trigger property logic, which would have added the "initialization" time to the last updated collection
 
-                //LogWildCreatures(); //skip doing this here in order to only log events that happen while the bot is running
-                LogTamedCreaturesNew(CancellationToken.None);
+            //    //LogWildCreatures(); //skip doing this here in order to only log events that happen while the bot is running
+            //    LogTamedCreaturesNew(CancellationToken.None);
 
-                Updated?.Invoke(this, EventArgs.Empty);
-            }
+            //    Updated?.Invoke(this, EventArgs.Empty);
+            //}
 
 
-            if (_config.Debug)
-            {
-                _watcher = new DebugFakeSaveFileWatcher(_config, TimeSpan.FromMinutes(1));
-                _watcher.Changed += _watcher_DebugFakeChanged;
-            }
-            else if (!_config.DebugNoExtract)
-            {
-                _watcher = new ArkSaveFileWatcher(_config.SaveFilePath);
-                _watcher.Changed += _watcher_Changed;
-            }
+            //if (_config.Debug)
+            //{
+            //    _watcher = new DebugFakeSaveFileWatcher(_config, TimeSpan.FromMinutes(1));
+            //    _watcher.Changed += _watcher_DebugFakeChanged;
+            //}
+            //else if (!_config.DebugNoExtract)
+            //{
+                _contextManager.UpdateCompleted += ContextManager_UpdateCompleted;
+            //}
 
             _playedTimeWatcher.PlayedTimeUpdate += _playedTimeWatcher_PlayedTimeUpdate;
             _playedTimeWatcher.Start();
@@ -182,12 +189,25 @@ namespace ArkBot
             Progress.Report("Initialization done!" + Environment.NewLine);
         }
 
-        public void DebugTriggerOnChange()
+        private async void ContextManager_UpdateCompleted(Ark.ArkServerContext sender, bool successful, bool cancelled)
         {
-            if (!(_watcher is DebugFakeSaveFileWatcher)) return;
-
-            (_watcher as DebugFakeSaveFileWatcher).OnChanged();
+            if (cancelled == false && sender.Config.Key.Equals(_config.ServerKey) && !_contextUpdatesDisabledOverride)
+            {
+                Progress.Report($"Context: Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                //await UpdateAll();
+                if (await _contextUpdateSync.Execute(async (ct) => await UpdateAll(ct)))
+                    Progress.Report($"Context: Update complete!");
+                else
+                    Progress.Report($"Context: Update cancelled/failed.");
+            }
         }
+
+        //public void DebugTriggerOnChange()
+        //{
+        //    if (!(_watcher is DebugFakeSaveFileWatcher)) return;
+
+        //    (_watcher as DebugFakeSaveFileWatcher).OnChanged();
+        //}
 
         private void _playedTimeWatcher_PlayedTimeUpdate(object sender, PlayedTimeWatcher.PlayedTimeEventArgs e)
         {
@@ -227,7 +247,8 @@ namespace ArkBot
             ct.ThrowIfCancellationRequested();
 
             //extract the save file data to json using ark-tools
-            if (!(_config.DebugNoExtract || skipExtract))
+            //if (!(_config.DebugNoExtract || skipExtract))
+            if (!skipExtract)
             {
                 Progress.Report("Extracting ARK gamedata...");
                 if (!await ExtractSaveFileData(ct, saveFilePathOverride, clusterPathOverride)) return null;
@@ -481,50 +502,16 @@ namespace ArkBot
             if (latestLog != null && (_latestTribeLog == null || (latestLog.Day > _latestTribeLog.Day || (latestLog.Day == _latestTribeLog.Day && latestLog.Time >= _latestTribeLog.Time)))) _latestTribeLog = latestLog;
         }
 
-        private async void _watcher_DebugFakeChanged(object sender, ArkSaveFileChangedEventArgs e)
-        {
-            Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
-            //await UpdateAll(e.PathToLoad, e.SaveFilePath, e.ClusterPath);
-            if (await _contextUpdateSync.Execute(async (ct) => await UpdateAll(ct, e.PathToLoad, e.SaveFilePath, e.ClusterPath)))
-                Progress.Report($"Context update complete!");
-            else
-                Progress.Report($"Context update cancelled/failed.");
-        }
-
-        private async void _watcher_Changed(object sender, ArkSaveFileChangedEventArgs e)
-        {
-            //backup this savegame
-            SavegameBackupResult result = null;
-            if (_config.BackupsEnabled)
-            {
-                Progress.Report($"Backup triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                result = _savegameBackupService.CreateBackup(_config.SaveFilePath, _config.ClusterSavePath);
-                if (result != null && result.ArchivePaths != null) Progress.Report($@"Backup successfull ({(string.Join(", ", result.ArchivePaths.Select(x => $@"""{x}""")))})!");
-                else Progress.Report($"Backup failed...");
-            }
-
-            Updating?.Invoke(this, new ContextUpdatingEventArgs(true, result));
-            if (!_contextUpdatesDisabledOverride)
-            {
-                if (_config.BackupsEnabled) Progress.Report($"Updating context...");
-                else Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                //await UpdateAll();
-                if (await _contextUpdateSync.Execute(async (ct) => await UpdateAll(ct)))
-                    Progress.Report($"Context update complete!");
-                else
-                    Progress.Report($"Context update cancelled/failed.");
-            }
-        }
-
-        public void OnVoteInitiated(Database.Model.Vote item)
-        {
-            VoteInitiated?.Invoke(this, new VoteInitiatedEventArgs { Item = item });
-        }
-        public void OnVoteResultForced(Database.Model.Vote item, VoteResult forcedResult)
-        {
-            VoteResultForced?.Invoke(this, new VoteResultForcedEventArgs { Item = item, Result = forcedResult });
-        }
+        //private async void _watcher_DebugFakeChanged(object sender, ArkSaveFileChangedEventArgs e)
+        //{
+        //    Progress.Report($"Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        //    Updating?.Invoke(this, new ContextUpdatingEventArgs(false));
+        //    //await UpdateAll(e.PathToLoad, e.SaveFilePath, e.ClusterPath);
+        //    if (await _contextUpdateSync.Execute(async (ct) => await UpdateAll(ct, e.PathToLoad, e.SaveFilePath, e.ClusterPath)))
+        //        Progress.Report($"Context update complete!");
+        //    else
+        //        Progress.Report($"Context update cancelled/failed.");
+        //}
 
         private async Task UpdateAll(CancellationToken ct, string jsonPathOverride = null, string saveFilePathOverride = null, string clusterPathOverride = null)
         {
@@ -540,209 +527,210 @@ namespace ArkBot
                 Cluster = data.Item6 ?? new Cluster();
                 Wild = data.Item7 ?? new Creature[] { };
 
+                IsInitialized = true;
                 LastUpdate = DateTime.Now;
 
-                LogWildCreatures(ct);
-                LogTamedCreaturesNew(ct);
+                //LogWildCreatures(ct);
+                //LogTamedCreaturesNew(ct);
 
                 Updated?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private void LogWildCreatures(CancellationToken ct)
-        {
-            ct.ThrowIfCancellationRequested();
+        //private void LogWildCreatures(CancellationToken ct)
+        //{
+        //    ct.ThrowIfCancellationRequested();
 
-            try
-            {
-                //using (var scope = new TransactionScope())
-                //{
-                    using (var context = _databaseContextFactory.Create())
-                    {
-                        //add wild creatures to database
-                        var wild = Wild?.GroupBy(x => x.SpeciesClass).Select(x => new Database.Model.WildCreatureLogEntry { Key = x.Key, Count = x.Count(), Ids = x.Select(y => y.Id).ToArray() }).ToArray();
-                        if (wild == null || wild.Length <= 0) return;
+        //    try
+        //    {
+        //        //using (var scope = new TransactionScope())
+        //        //{
+        //            using (var context = _databaseContextFactory.Create())
+        //            {
+        //                //add wild creatures to database
+        //                var wild = Wild?.GroupBy(x => x.SpeciesClass).Select(x => new Database.Model.WildCreatureLogEntry { Key = x.Key, Count = x.Count(), Ids = x.Select(y => y.Id).ToArray() }).ToArray();
+        //                if (wild == null || wild.Length <= 0) return;
 
-                        var removeBefore = DateTime.Now.AddDays(-7);
-                        foreach (var item in context.WildCreatureLogs.Where(x => x.When < removeBefore).ToArray())
-                        {
-                            context.WildCreatureLogs.Remove(item);
-                        }
-                        context.WildCreatureLogs.Add(new Database.Model.WildCreatureLog { When = LastUpdate, Entries = wild });
-                        context.SaveChanges();
-                    }
+        //                var removeBefore = DateTime.Now.AddDays(-7);
+        //                foreach (var item in context.WildCreatureLogs.Where(x => x.When < removeBefore).ToArray())
+        //                {
+        //                    context.WildCreatureLogs.Remove(item);
+        //                }
+        //                context.WildCreatureLogs.Add(new Database.Model.WildCreatureLog { When = LastUpdate, Entries = wild });
+        //                context.SaveChanges();
+        //            }
 
-                //    scope.Complete();
-                //}
-            }
-            catch (TransactionAbortedException ex)
-            {
-                Logging.LogException("Transaction aborted", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Unhandled);
-            }
-        }
+        //        //    scope.Complete();
+        //        //}
+        //    }
+        //    catch (TransactionAbortedException ex)
+        //    {
+        //        Logging.LogException("Transaction aborted", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Unhandled);
+        //    }
+        //}
 
-        private void LogTamedCreaturesNew(CancellationToken ct)
-        {
-            ct.ThrowIfCancellationRequested();
+        //private void LogTamedCreaturesNew(CancellationToken ct)
+        //{
+        //    ct.ThrowIfCancellationRequested();
 
-            var st = Stopwatch.StartNew();
-            using (var conn = new System.Data.SqlServerCe.SqlCeConnection(_constants.DatabaseConnectionString))
-            {
-                conn.Open();
+        //    var st = Stopwatch.StartNew();
+        //    using (var conn = new System.Data.SqlServerCe.SqlCeConnection(_constants.DatabaseConnectionString))
+        //    {
+        //        conn.Open();
 
-                using (var trans = conn.BeginTransaction())
-                {
-                    try
-                    {
-                        var l = new Database.Model.TamedCreatureLogEntry();
+        //        using (var trans = conn.BeginTransaction())
+        //        {
+        //            try
+        //            {
+        //                var l = new Database.Model.TamedCreatureLogEntry();
 
-                        //add tamed creatures to database
-                        var tamed = CreaturesNoRaft?.OrderBy(x => x.TamedTime).GroupBy(x => x.Id).Select(x => x.FirstOrDefault()).ToArray();
-                        if (tamed == null || tamed.Length == 0) return;
+        //                //add tamed creatures to database
+        //                var tamed = CreaturesNoRaft?.OrderBy(x => x.TamedTime).GroupBy(x => x.Id).Select(x => x.FirstOrDefault()).ToArray();
+        //                if (tamed == null || tamed.Length == 0) return;
 
-                        using (var command = conn.CreateCommand())
-                        {
-                            command.CommandText = "SELECT * FROM TamedCreatureLogEntries";
-                            command.CommandType = System.Data.CommandType.Text;
+        //                using (var command = conn.CreateCommand())
+        //                {
+        //                    command.CommandText = "SELECT * FROM TamedCreatureLogEntries";
+        //                    command.CommandType = System.Data.CommandType.Text;
 
-                            using (var resultSet = command.ExecuteResultSet(System.Data.SqlServerCe.ResultSetOptions.Scrollable | System.Data.SqlServerCe.ResultSetOptions.Updatable))
-                            {
-                                var ordinal = new Func<string, int>(x => resultSet.GetOrdinal(x));
+        //                    using (var resultSet = command.ExecuteResultSet(System.Data.SqlServerCe.ResultSetOptions.Scrollable | System.Data.SqlServerCe.ResultSetOptions.Updatable))
+        //                    {
+        //                        var ordinal = new Func<string, int>(x => resultSet.GetOrdinal(x));
 
-                                var getValues = new Func<Creature, object[]>(tame =>
-                                {
-                                    var maxFood = CalculateMaxStat(ArkSpeciesStatsData.Stat.Food, tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Food, tame.TamedLevels?.Food, tame.ImprintingQuality, tame.TamedIneffectivenessModifier);
-                                    var maxHealth = CalculateMaxStat(ArkSpeciesStatsData.Stat.Health, tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Health, tame.TamedLevels?.Health, tame.ImprintingQuality, tame.TamedIneffectivenessModifier);
-                                    var currentFood = tame.CurrentFood.HasValue ? (double)tame.CurrentFood.Value : maxFood; //todo: does no value actually mean max or is it the opposite (no food)
-                                    var currentHealth = tame.CurrentHealth.HasValue ? (double)tame.CurrentHealth.Value : maxHealth; //todo: does no value actually mean max or is it the opposite (no health)
-                                    var approxFoodPercentage = maxFood.HasValue && currentFood.HasValue && maxFood.Value > 0 ? (currentFood.Value / maxFood.Value).Clamp(min: 0, max: 1) : (double?)null;
-                                    var approxHealthPercentage = maxHealth.HasValue && currentHealth.HasValue && maxFood.Value > 0 ? (currentHealth.Value / maxHealth.Value).Clamp(min: 0, max: 1) : (double?)null;
-                                    return new[] {
-                                        new { ordinal = ordinal(nameof(l.Id)), value = (object)tame.Id },
-                                        new { ordinal = ordinal(nameof(l.LastSeen)), value = (object)LastUpdate },
-                                        new { ordinal = ordinal(nameof(l.Latitude)), value = (object)tame.Latitude },
-                                        new { ordinal = ordinal(nameof(l.Longitude)), value = (object)tame.Longitude },
-                                        new { ordinal = ordinal(nameof(l.X)), value = (object)tame.X },
-                                        new { ordinal = ordinal(nameof(l.Y)), value = (object)tame.Y },
-                                        new { ordinal = ordinal(nameof(l.Z)), value = (object)tame.Z },
-                                        new { ordinal = ordinal(nameof(l.Name)), value = (object)tame.Name },
-                                        new { ordinal = ordinal(nameof(l.Team)), value = (object)tame.Team },
-                                        new { ordinal = ordinal(nameof(l.PlayerId)), value = (object)tame.PlayerId },
-                                        new { ordinal = ordinal(nameof(l.Tribe)), value = (object)tame.Tribe },
-                                        new { ordinal = ordinal(nameof(l.OwnerName)), value = (object)tame.OwnerName },
-                                        new { ordinal = ordinal(nameof(l.Tamer)), value = (object)tame.Tamer },
-                                        new { ordinal = ordinal(nameof(l.Female)), value = (object)tame.Female },
-                                        new { ordinal = ordinal(nameof(l.BaseLevel)), value = (object)tame.BaseLevel },
-                                        new { ordinal = ordinal(nameof(l.FullLevel)), value = (object)tame.FullLevel },
-                                        new { ordinal = ordinal(nameof(l.Experience)), value = (object)tame.Experience },
-                                        new { ordinal = ordinal(nameof(l.ApproxFoodPercentage)), value = (object)approxFoodPercentage },
-                                        new { ordinal = ordinal(nameof(l.ApproxHealthPercentage)), value = (object)approxHealthPercentage },
-                                        new { ordinal = ordinal(nameof(l.ImprintingQuality)), value = (object)tame.ImprintingQuality },
-                                        new { ordinal = ordinal(nameof(l.TamedAtTime)), value = (object)tame.TamedAtTime },
-                                        new { ordinal = ordinal(nameof(l.TamedTime)), value = (object)tame.TamedTime },
-                                        new { ordinal = ordinal(nameof(l.RelatedLogEntries)), value = (object)null },
-                                        new { ordinal = ordinal(nameof(l.SpeciesClass)), value = (object)tame.SpeciesClass },
-                                        new { ordinal = ordinal(nameof(l.IsConfirmedDead)), value = (object)false },
-                                        new { ordinal = ordinal(nameof(l.IsInCluster)), value = (object)false },
-                                        new { ordinal = ordinal(nameof(l.IsUnavailable)), value = (object)false }
-                                        }.OrderBy(x => x.ordinal).Select(x => x.value).ToArray();
-                                });
+        //                        var getValues = new Func<Creature, object[]>(tame =>
+        //                        {
+        //                            var maxFood = CalculateMaxStat(ArkSpeciesStatsData.Stat.Food, tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Food, tame.TamedLevels?.Food, tame.ImprintingQuality, tame.TamedIneffectivenessModifier);
+        //                            var maxHealth = CalculateMaxStat(ArkSpeciesStatsData.Stat.Health, tame.SpeciesClass ?? tame.SpeciesName, tame.WildLevels?.Health, tame.TamedLevels?.Health, tame.ImprintingQuality, tame.TamedIneffectivenessModifier);
+        //                            var currentFood = tame.CurrentFood.HasValue ? (double)tame.CurrentFood.Value : maxFood; //todo: does no value actually mean max or is it the opposite (no food)
+        //                            var currentHealth = tame.CurrentHealth.HasValue ? (double)tame.CurrentHealth.Value : maxHealth; //todo: does no value actually mean max or is it the opposite (no health)
+        //                            var approxFoodPercentage = maxFood.HasValue && currentFood.HasValue && maxFood.Value > 0 ? (currentFood.Value / maxFood.Value).Clamp(min: 0, max: 1) : (double?)null;
+        //                            var approxHealthPercentage = maxHealth.HasValue && currentHealth.HasValue && maxFood.Value > 0 ? (currentHealth.Value / maxHealth.Value).Clamp(min: 0, max: 1) : (double?)null;
+        //                            return new[] {
+        //                                new { ordinal = ordinal(nameof(l.Id)), value = (object)tame.Id },
+        //                                new { ordinal = ordinal(nameof(l.LastSeen)), value = (object)LastUpdate },
+        //                                new { ordinal = ordinal(nameof(l.Latitude)), value = (object)tame.Latitude },
+        //                                new { ordinal = ordinal(nameof(l.Longitude)), value = (object)tame.Longitude },
+        //                                new { ordinal = ordinal(nameof(l.X)), value = (object)tame.X },
+        //                                new { ordinal = ordinal(nameof(l.Y)), value = (object)tame.Y },
+        //                                new { ordinal = ordinal(nameof(l.Z)), value = (object)tame.Z },
+        //                                new { ordinal = ordinal(nameof(l.Name)), value = (object)tame.Name },
+        //                                new { ordinal = ordinal(nameof(l.Team)), value = (object)tame.Team },
+        //                                new { ordinal = ordinal(nameof(l.PlayerId)), value = (object)tame.PlayerId },
+        //                                new { ordinal = ordinal(nameof(l.Tribe)), value = (object)tame.Tribe },
+        //                                new { ordinal = ordinal(nameof(l.OwnerName)), value = (object)tame.OwnerName },
+        //                                new { ordinal = ordinal(nameof(l.Tamer)), value = (object)tame.Tamer },
+        //                                new { ordinal = ordinal(nameof(l.Female)), value = (object)tame.Female },
+        //                                new { ordinal = ordinal(nameof(l.BaseLevel)), value = (object)tame.BaseLevel },
+        //                                new { ordinal = ordinal(nameof(l.FullLevel)), value = (object)tame.FullLevel },
+        //                                new { ordinal = ordinal(nameof(l.Experience)), value = (object)tame.Experience },
+        //                                new { ordinal = ordinal(nameof(l.ApproxFoodPercentage)), value = (object)approxFoodPercentage },
+        //                                new { ordinal = ordinal(nameof(l.ApproxHealthPercentage)), value = (object)approxHealthPercentage },
+        //                                new { ordinal = ordinal(nameof(l.ImprintingQuality)), value = (object)tame.ImprintingQuality },
+        //                                new { ordinal = ordinal(nameof(l.TamedAtTime)), value = (object)tame.TamedAtTime },
+        //                                new { ordinal = ordinal(nameof(l.TamedTime)), value = (object)tame.TamedTime },
+        //                                new { ordinal = ordinal(nameof(l.RelatedLogEntries)), value = (object)null },
+        //                                new { ordinal = ordinal(nameof(l.SpeciesClass)), value = (object)tame.SpeciesClass },
+        //                                new { ordinal = ordinal(nameof(l.IsConfirmedDead)), value = (object)false },
+        //                                new { ordinal = ordinal(nameof(l.IsInCluster)), value = (object)false },
+        //                                new { ordinal = ordinal(nameof(l.IsUnavailable)), value = (object)false }
+        //                                }.OrderBy(x => x.ordinal).Select(x => x.value).ToArray();
+        //                        });
 
-                                var ids = tamed.Select(x => x.Id).ToList();
-                                if (resultSet.HasRows)
-                                {
-                                    resultSet.ReadFirst();
+        //                        var ids = tamed.Select(x => x.Id).ToList();
+        //                        if (resultSet.HasRows)
+        //                        {
+        //                            resultSet.ReadFirst();
 
-                                    do
-                                    {
-                                        ct.ThrowIfCancellationRequested();
+        //                            do
+        //                            {
+        //                                ct.ThrowIfCancellationRequested();
 
-                                        var id = resultSet.SafeGet<long>(nameof(l.Id));
-                                        var tame = tamed.FirstOrDefault(x => x.Id == id);
-                                        if (tame == null)
-                                        {
-                                            var isUnavailable = resultSet.SafeGet<bool>(nameof(l.IsUnavailable));
-                                            var isInCluster = resultSet.SafeGet<bool>(nameof(l.IsInCluster));
-                                            var isNowInCluster = Cluster?.Creatures.Any(x => x.Id == id) ?? false;
-                                            if (isUnavailable == false || (isInCluster == false && isNowInCluster == true))
-                                            {
-                                                //this tame is now dead, missing or uploaded we should update the state
-                                                var name = resultSet.SafeGet<string>(nameof(l.Name));
-                                                var team = resultSet.SafeGet<int?>(nameof(l.Team));
-                                                var speciesClass = resultSet.SafeGet<string>(nameof(l.SpeciesClass));
-                                                var fullLevel = resultSet.SafeGet<int?>(nameof(l.FullLevel));
-                                                var baseLevel = resultSet.SafeGet<int>(nameof(l.BaseLevel));
-                                                var isConfirmedDead = resultSet.SafeGet<bool>(nameof(l.IsConfirmedDead));
+        //                                var id = resultSet.SafeGet<long>(nameof(l.Id));
+        //                                var tame = tamed.FirstOrDefault(x => x.Id == id);
+        //                                if (tame == null)
+        //                                {
+        //                                    var isUnavailable = resultSet.SafeGet<bool>(nameof(l.IsUnavailable));
+        //                                    var isInCluster = resultSet.SafeGet<bool>(nameof(l.IsInCluster));
+        //                                    var isNowInCluster = Cluster?.Creatures.Any(x => x.Id == id) ?? false;
+        //                                    if (isUnavailable == false || (isInCluster == false && isNowInCluster == true))
+        //                                    {
+        //                                        //this tame is now dead, missing or uploaded we should update the state
+        //                                        var name = resultSet.SafeGet<string>(nameof(l.Name));
+        //                                        var team = resultSet.SafeGet<int?>(nameof(l.Team));
+        //                                        var speciesClass = resultSet.SafeGet<string>(nameof(l.SpeciesClass));
+        //                                        var fullLevel = resultSet.SafeGet<int?>(nameof(l.FullLevel));
+        //                                        var baseLevel = resultSet.SafeGet<int>(nameof(l.BaseLevel));
+        //                                        var isConfirmedDead = resultSet.SafeGet<bool>(nameof(l.IsConfirmedDead));
 
-                                                //get any kill logs that could relate to this creature.
-                                                //since tribe logs do not include the id of the creature, we have to make an informed guess
-                                                var relatedLogs = team.HasValue && speciesClass != null ? TribeLogs?.OfType<TameWasKilledTribeLog>()
-                                                    .Where(x =>
-                                                            (x.Day > _savedstate.LatestTribeLogDay || (x.Day == _savedstate.LatestTribeLogDay && x.Time >= _savedstate.LatestTribeLogTime))
-                                                            && x.TribeId == team.Value
-                                                            && (!string.IsNullOrWhiteSpace(name) ? name.Equals(x.Name, StringComparison.Ordinal) : x.Name.Equals(x.SpeciesName, StringComparison.Ordinal))
-                                                            && x.Level >= (fullLevel ?? baseLevel)
-                                                            && ((ArkSpeciesAliases.Instance.GetAliases(x.SpeciesName)?.Contains(speciesClass)) ?? false)).ToArray() : null;
+        //                                        //get any kill logs that could relate to this creature.
+        //                                        //since tribe logs do not include the id of the creature, we have to make an informed guess
+        //                                        var relatedLogs = team.HasValue && speciesClass != null ? TribeLogs?.OfType<TameWasKilledTribeLog>()
+        //                                            .Where(x =>
+        //                                                    (x.Day > _savedstate.LatestTribeLogDay || (x.Day == _savedstate.LatestTribeLogDay && x.Time >= _savedstate.LatestTribeLogTime))
+        //                                                    && x.TribeId == team.Value
+        //                                                    && (!string.IsNullOrWhiteSpace(name) ? name.Equals(x.Name, StringComparison.Ordinal) : x.Name.Equals(x.SpeciesName, StringComparison.Ordinal))
+        //                                                    && x.Level >= (fullLevel ?? baseLevel)
+        //                                                    && ((ArkSpeciesAliases.Instance.GetAliases(x.SpeciesName)?.Contains(speciesClass)) ?? false)).ToArray() : null;
 
-                                                //is in cluster
-                                                resultSet.SetBoolean(ordinal(nameof(l.IsInCluster)), isNowInCluster);
+        //                                        //is in cluster
+        //                                        resultSet.SetBoolean(ordinal(nameof(l.IsInCluster)), isNowInCluster);
 
-                                                //is confirmed dead
-                                                isConfirmedDead = (isNowInCluster == false && (relatedLogs != null && relatedLogs.Length > 0));
-                                                resultSet.SetBoolean(ordinal(nameof(l.IsConfirmedDead)), isConfirmedDead);
+        //                                        //is confirmed dead
+        //                                        isConfirmedDead = (isNowInCluster == false && (relatedLogs != null && relatedLogs.Length > 0));
+        //                                        resultSet.SetBoolean(ordinal(nameof(l.IsConfirmedDead)), isConfirmedDead);
 
-                                                //is unavailable
-                                                resultSet.SetBoolean(ordinal(nameof(l.IsUnavailable)), true);
+        //                                        //is unavailable
+        //                                        resultSet.SetBoolean(ordinal(nameof(l.IsUnavailable)), true);
 
-                                                //related logs
-                                                if (isConfirmedDead)
-                                                {
-                                                    //this could end up picking the wrong log, or the same log for two creatures, but we lack the information to make a better guess
-                                                    var mostProbableRelatedLog = relatedLogs.OrderBy(x => x.Level - (fullLevel ?? baseLevel)).FirstOrDefault()?.Raw;
-                                                    resultSet.SetString(ordinal(nameof(l.RelatedLogEntries)), mostProbableRelatedLog);
-                                                }
+        //                                        //related logs
+        //                                        if (isConfirmedDead)
+        //                                        {
+        //                                            //this could end up picking the wrong log, or the same log for two creatures, but we lack the information to make a better guess
+        //                                            var mostProbableRelatedLog = relatedLogs.OrderBy(x => x.Level - (fullLevel ?? baseLevel)).FirstOrDefault()?.Raw;
+        //                                            resultSet.SetString(ordinal(nameof(l.RelatedLogEntries)), mostProbableRelatedLog);
+        //                                        }
 
-                                                resultSet.Update();
-                                            }
+        //                                        resultSet.Update();
+        //                                    }
 
-                                            continue;
-                                        }
+        //                                    continue;
+        //                                }
 
-                                        ids.Remove(id);
-                                        resultSet.SetValues(getValues(tame).Select(x => x == null ? DBNull.Value : x).ToArray());
-                                        resultSet.Update();
-                                    } while (resultSet.Read());
-                                }
+        //                                ids.Remove(id);
+        //                                resultSet.SetValues(getValues(tame).Select(x => x == null ? DBNull.Value : x).ToArray());
+        //                                resultSet.Update();
+        //                            } while (resultSet.Read());
+        //                        }
 
-                                foreach (var id in ids)
-                                {
-                                    ct.ThrowIfCancellationRequested();
+        //                        foreach (var id in ids)
+        //                        {
+        //                            ct.ThrowIfCancellationRequested();
 
-                                    var tame = tamed.FirstOrDefault(x => x.Id == id);
-                                    if (tame == null) continue;
+        //                            var tame = tamed.FirstOrDefault(x => x.Id == id);
+        //                            if (tame == null) continue;
 
-                                    var record = resultSet.CreateRecord();
-                                    record.SetValues(getValues(tame).Select(x => x == null ? DBNull.Value : x).ToArray());
+        //                            var record = resultSet.CreateRecord();
+        //                            record.SetValues(getValues(tame).Select(x => x == null ? DBNull.Value : x).ToArray());
 
-                                    resultSet.Insert(record, System.Data.SqlServerCe.DbInsertOptions.PositionOnInsertedRow);
-                                }
-                            }
-                        }
+        //                            resultSet.Insert(record, System.Data.SqlServerCe.DbInsertOptions.PositionOnInsertedRow);
+        //                        }
+        //                    }
+        //                }
 
-                        trans.Commit();
-                    }
-                    catch
-                    {
-                        trans.Rollback();
-                    }
-                    finally
-                    {
-                        conn.Close();
-                    }
-                }
-            }
-            Debug.WriteLine($"{nameof(LogTamedCreaturesNew)} finished in {st.ElapsedMilliseconds:N0} ms");
-        }
+        //                trans.Commit();
+        //            }
+        //            catch
+        //            {
+        //                trans.Rollback();
+        //            }
+        //            finally
+        //            {
+        //                conn.Close();
+        //            }
+        //        }
+        //    }
+        //    Debug.WriteLine($"{nameof(LogTamedCreaturesNew)} finished in {st.ElapsedMilliseconds:N0} ms");
+        //}
 
         //sqlcompact have crap performance, no support for clustered indexes, attaching entities takes a milion years
         //this code is the fastest way to achieve this using ef (note the query to get all entities from database rather than specific ids)

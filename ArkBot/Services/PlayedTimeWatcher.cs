@@ -50,7 +50,7 @@ namespace ArkBot.Services
                     _config.ServerIp, 
                     (ushort)_config.ServerPort, 
                     throwExceptions: false, 
-                    retries: 5, 
+                    retries: 2, 
                     sendTimeout: 4000, 
                     receiveTimeout: 4000))
                 {

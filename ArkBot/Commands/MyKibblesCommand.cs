@@ -13,6 +13,7 @@ using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Data;
 using ArkBot.Database;
+using Discord;
 
 namespace ArkBot.Commands
 {
@@ -40,10 +41,16 @@ namespace ArkBot.Commands
 
         public void Register(CommandBuilder command) { }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
+            if (!_context.IsInitialized)
+            {
+                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
+                return;
+            }
+
             var myEggs = e.Message.Text.EndsWith("myeggs", StringComparison.OrdinalIgnoreCase);
 
             var player = await CommandHelper.GetCurrentPlayerOrSendErrorMessage(e, _databaseContextFactory, _context);

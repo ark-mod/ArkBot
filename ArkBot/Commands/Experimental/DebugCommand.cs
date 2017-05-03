@@ -18,6 +18,7 @@ using System.IO.Compression;
 using ArkBot.ViewModel;
 using ArkBot.Ark;
 using Newtonsoft.Json;
+using Discord;
 
 namespace ArkBot.Commands.Experimental
 {
@@ -34,11 +35,13 @@ namespace ArkBot.Commands.Experimental
 
         private IConfig _config;
         private IConstants _constants;
+        private ArkContextManager _contextManager;
 
-        public DebugCommand(IConfig config, IConstants constants)
+        public DebugCommand(IConfig config, IConstants constants, ArkContextManager contextManager)
         {
             _config = config;
             _constants = constants;
+            _contextManager = contextManager;
         }
 
         public void Register(CommandBuilder command)
@@ -48,20 +51,19 @@ namespace ArkBot.Commands.Experimental
                 .Hide();
         }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {
             if (!e.Channel.IsPrivate) return;
 
-            var args = CommandHelper.ParseArgs(e, new { logs = false, json = false, save = false, database = false, stats = false, clear = false, keys = false, key = "", data = "" }, x =>
+            var args = CommandHelper.ParseArgs(e, new { logs = false, json = false, save = false, database = false, stats = false, clear = false, key = "", data = "" }, x =>
                 x.For(y => y.logs, flag: true)
                 .For(y => y.json, flag: true)
                 .For(y => y.save, flag: true)
                 .For(y => y.database, flag: true)
                 .For(y => y.stats, flag: true)
                 .For(y => y.clear, flag: true)
-                .For(y => y.keys, flag: true)
                 .For(y => y.key, untilNextToken: true)
                 .For(y => y.data, untilNextToken: true));
             if (args == null)
@@ -117,23 +119,6 @@ namespace ArkBot.Commands.Experimental
                     }
                 }
             }
-            else if (args.keys)
-            {
-                if (_config.Servers != null)
-                {
-                    var sb = new StringBuilder();
-                    sb.AppendLine("**Server instance keys**");
-
-                    foreach (var server in _config.Servers) sb.AppendLine($"● **{server.Key}** (cluster **{server.Cluster}**): {server.Ip}:{server.Port}");
-
-                    await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
-                }
-                else
-                {
-                    await e.Channel.SendMessage("There are no server instances configured.");
-                    return;
-                }
-            }
             else if (args.json)
             {
                 if (_config.DisableDeveloperFetchSaveData)
@@ -144,11 +129,12 @@ namespace ArkBot.Commands.Experimental
 
                 var files = new List<string>();
                 var tempfiles = new List<string>();
+                var basepath = _config.JsonOutputDirPath;
                 if (!string.IsNullOrEmpty(args.key))
                 {
                     //todo: no cluster data support
-                    ArkServerContext server = null;
-                    if (!(Workspace.Instance.ServerContexts?.TryGetValue(args.key, out server) == true) || server == null)
+                    var server = _contextManager.GetServer(args.key);
+                    if (server == null)
                     {
                         await e.Channel.SendMessage("The key did not exist.");
                         return;
@@ -179,6 +165,12 @@ namespace ArkBot.Commands.Experimental
                             case "tribes":
                                 obj = server.Tribes;
                                 break;
+                            case "items":
+                                obj = server.Items;
+                                break;
+                            case "structures":
+                                obj = server.Structures;
+                                break;
                         }
 
                         if (obj != null)
@@ -190,6 +182,8 @@ namespace ArkBot.Commands.Experimental
                             File.WriteAllText(jsonPath, json);
                         }
                     }
+
+                    basepath = _config.TempFileOutputDirPath;
                 }
                 else
                 {
@@ -207,7 +201,7 @@ namespace ArkBot.Commands.Experimental
                 string[] results = null;
                 try
                 {
-                    results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>(_config.JsonOutputDirPath, "", files.ToArray()) }, path, 5 * 1024 * 1024);
+                    results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>(basepath, "", files.ToArray()) }, path, 5 * 1024 * 1024);
                     tempfiles.AddRange(results);
                     foreach (var item in results) await e.Channel.SendFile(item);
                 }

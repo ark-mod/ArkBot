@@ -17,6 +17,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 using System.IO;
 using System.IO.Compression;
 using Autofac;
+using Discord;
 
 namespace ArkBot.Commands.Experimental
 {
@@ -59,7 +60,7 @@ namespace ArkBot.Commands.Experimental
             command.Parameter("optional", ParameterType.Multiple);
         }
 
-        public void Init(Discord.DiscordClient client) { }
+        public void Init(DiscordClient client) { }
 
         public async Task Run(CommandEventArgs e)
         {

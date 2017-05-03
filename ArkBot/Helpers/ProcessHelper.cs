@@ -18,7 +18,7 @@ namespace ArkBot.Helpers
             //public string StandardError { get; set; }
         }
 
-        public static async Task<ProcessResult> RunCommandLineTool(string executableAbsolutePath, string commandLineArguments, string workingDirectory = null, bool hiddenWindow = true, Func<string, int> outputDataReceived = null, bool keepAlive = false)
+        public static async Task<ProcessResult> RunCommandLineTool(string executableAbsolutePath, string commandLineArguments, string workingDirectory = null, bool hiddenWindow = true, Func<string, int> outputDataReceived = null, bool keepOpen = false)
         {
             int exitCode = 0;
             //string standardOutput = null;
@@ -27,12 +27,15 @@ namespace ArkBot.Helpers
             Process cmd = null;
             try
             {
+                // /C     Run Command and then terminate
+                // /K     Run Command and then return to the CMD prompt.
+
                 var tcs = new TaskCompletionSource<int>();
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
                     Verb = "runas",
-                    Arguments = $@"/C ""{executableAbsolutePath}"" {commandLineArguments}",
+                    Arguments = $@"{(keepOpen ? "\\K" : "\\C")} ""{executableAbsolutePath}"" {commandLineArguments}",
                     WorkingDirectory = workingDirectory ?? Directory.GetParent(executableAbsolutePath).FullName,
                     CreateNoWindow = hiddenWindow,
                     UseShellExecute = false,
@@ -47,7 +50,7 @@ namespace ArkBot.Helpers
                 };
                 cmd.Exited += (sender, args) =>
                 {
-                    if (cmd.ExitCode != 0 || !keepAlive) tcs.SetResult(cmd.ExitCode);
+                    if (cmd.ExitCode != 0) tcs.SetResult(cmd.ExitCode);
                 };
 
                 if (outputDataReceived != null)
@@ -89,6 +92,18 @@ namespace ArkBot.Helpers
                 //,StandardError = standardError,
                 //StandardOutput = standardOutput
             };
+        }
+        
+        public static bool IsProcessStarted(int processId)
+        {
+            try
+            {
+                return Process.GetProcessById(processId) != null;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
         }
     }
 }

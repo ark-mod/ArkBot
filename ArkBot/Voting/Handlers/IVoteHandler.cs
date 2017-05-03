@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using ArkBot.Database;
 using ArkBot.Database.Model;
 using Discord;
+using ArkBot.Ark;
 
-namespace ArkBot.Vote
+namespace ArkBot.Voting.Handlers
 {
     public interface IVoteHandler<Vote> : IVoteHandler
     {
@@ -12,7 +13,7 @@ namespace ArkBot.Vote
 
     public interface IVoteHandler
     {
-        Task<VoteStateChangeResult> VoteFinished(IConfig config, IConstants constants, IEfDatabaseContext db);
+        Task<VoteStateChangeResult> VoteFinished(ArkServerContext serverContext, IConfig config, IConstants constants, IEfDatabaseContext db);
         VoteStateChangeResult VoteIsAboutToExpire();
     }
 }

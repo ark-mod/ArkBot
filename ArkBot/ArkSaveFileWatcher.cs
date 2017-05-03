@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArkBot.Ark;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,7 @@ namespace ArkBot
     {
         private FileSystemWatcher _watcher;
         private string _saveFilePath;
+        private ArkServerContext _serverContext;
 
         private string SaveFilePath
         {
@@ -32,13 +34,15 @@ namespace ArkBot
         private DateTime? LastChanged { get; set; }
         public event ArkSaveFileChangedEventHandler Changed;
 
-        public ArkSaveFileWatcher(string saveFilePath)
+        public ArkSaveFileWatcher(ArkServerContext serverContext)
         {
+            _serverContext = serverContext;
+
             _watcher = new FileSystemWatcher();
             _watcher.Changed += _watcher_Changed;
             _watcher.Created += _watcher_Changed;
 
-            SaveFilePath = saveFilePath;
+            SaveFilePath = serverContext.Config.SaveFilePath;
         }
 
         private void updateWatcher()
@@ -68,44 +72,24 @@ namespace ArkBot
         private void OnChanged()
         {
             LastChanged = DateTime.Now;
-            Changed?.Invoke(this, new ArkSaveFileChangedEventArgs { PathToLoad = SaveFilePath });
+            Changed?.Invoke(_serverContext, new ArkSaveFileChangedEventArgs { PathToLoad = SaveFilePath });
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (disposedValue) return;
+
+            if (disposing)
             {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                    _watcher?.Dispose();
-                    _watcher = null;
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
+                _watcher?.Dispose();
+                _watcher = null;
             }
-        }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~ArkSaveFileWatcher() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
+            disposedValue = true;
         }
+        public void Dispose() { Dispose(true); }
+        private bool disposedValue = false;
         #endregion
     }
 }
