@@ -125,6 +125,8 @@ namespace ArkBot.ViewModel
         private async void OnSteamCmdTest(object parameter)
         {
             if (MessageBox.Show("Are you sure you want to run a SteamCmd test?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None) != MessageBoxResult.Yes) return;
+            var hidden = MessageBox.Show("As hidden window?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
+            var nowindow = MessageBox.Show("Create no window?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
 
             var showMsg = new Action<string>((msg) => MessageBox.Show(msg, "SteamCmd test", MessageBoxButton.OK, MessageBoxImage.None));
             var serverContext = _contextManager.GetServer(_config.ServerKey);
@@ -152,7 +154,7 @@ namespace ArkBot.ViewModel
             {
                 Directory.CreateDirectory(tmpInstallDir);
 
-                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{tmpInstallDir}\"{Environment.NewLine}app_update 376030");
+                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{tmpInstallDir}\"{Environment.NewLine}app_update 376030{Environment.NewLine}quit");
 
                 var tcs = new TaskCompletionSource<int>();
                 var si = new ProcessStartInfo
@@ -161,15 +163,20 @@ namespace ArkBot.ViewModel
                     Arguments = $@"+runscript {tmpPath}",
                     WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
                     Verb = "runas",
-                    UseShellExecute = false //,
-                                            //RedirectStandardOutput = true,
-                                            //WindowStyle = ProcessWindowStyle.Hidden,
-                                            //CreateNoWindow = true
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    WindowStyle = hidden == MessageBoxResult.Yes ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
+                    CreateNoWindow = nowindow == MessageBoxResult.Yes ? true : false
                 };
                 var process = new Process
                 {
                     StartInfo = si,
                     EnableRaisingEvents = true
+                };
+                process.OutputDataReceived += (s, e) =>
+                {
+                    if (e?.Data == null) return;
+                    Console.AddLog(e.Data);
                 };
 
                 process.Exited += (sender, args) => tcs.TrySetResult(process.ExitCode);
@@ -177,6 +184,16 @@ namespace ArkBot.ViewModel
                 {
                     showMsg("Process failed to start");
                     return;
+                }
+                process.BeginOutputReadLine();
+
+                if (nowindow == MessageBoxResult.Yes || hidden == MessageBoxResult.Yes)
+                {
+                    var closeTask = Task.Run(() =>
+                    {
+                        MessageBox.Show("Stop the test?", "SteamCmd test", MessageBoxButton.OK, MessageBoxImage.None);
+                        process.Kill();
+                    }).ConfigureAwait(false);
                 }
 
                 var result = await tcs.Task;
@@ -198,6 +215,7 @@ namespace ArkBot.ViewModel
                     {
                         Directory.Delete(dir, true);
                     }
+                    Directory.Delete(tmpInstallDir);
                 }
             }
         }
