@@ -9,8 +9,8 @@
   "enabledChannels": [ "bot-commands" ],
   "infoTopicChannel": "bot-commands",
   "announcementChannel":  "bot-notifications",
-  "saveFilePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
-  "clusterSavePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\clusters\\cluster1",
+  "saveFilePath": "C:\\ARK Servers\\server1\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
+  "clusterSavePath": "C:\\ARK Servers\\cluster1",
   "arktoolsExecutablePath": "Tools\\ark-tools\\ark-tools.exe",
   "jsonOutputDirPath": "C:\\ark-tool-data",
   "tempFileOutputDirPath": "C:\\ark-tool-data",
@@ -24,7 +24,7 @@
   "memberRoleName": "ark",
   "disableDeveloperFetchSaveData" :  false,
   "backupsEnabled": false,
-  "backupsDirectoryPath": "",
+  "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
   "discordBotEnabled": true,
   "webApiListenPrefix":  "http://+:<your open port>/",
   "arkMultipliers": {
@@ -36,34 +36,34 @@
     {
       "key": "server1",
       "cluster": "cluster1",
-      "saveFilePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
+      "saveFilePath": "C:\\ARK Servers\\server1\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
       "ip": "127.0.0.1",
       "port": 27015,
       "rconPort": 27020,
-      "rconPassword": "password",
-      "serverExecutablePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
-      "serverExecutableArguments":  "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=70 -culture=en -nosteamclient -clusterid=cluster1 -serverkey=server1",
-      "steamCmdExecutablePath": "C:\\steamcmd\\steamcmd.exe",
-      "steamCmdInstallDirPath": "C:\\ARK Servers\\server1"
+      "rconPassword":  "password",
+      "serverExecutablePath": "C:\\ARK Servers\\server1\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
+      "serverExecutableArguments":  "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
+      "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
+      "serverInstallDirPath": "C:\\ARK Servers\\server1"
     },
     {
       "key": "server2",
       "cluster" :  "cluster1",
-      "saveFilePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\SavedArks2\\TheIsland.ark",
+      "saveFilePath": "C:\\ARK Servers\\server2\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
       "ip": "127.0.0.1",
       "port": 27016,
       "rconPort": 27021,
-      "rconPassword": "password",
-      "serverExecutablePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
-      "serverExecutableArguments":  "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=70 -culture=en -nosteamclient -clusterid=cluster1 -serverkey=server2",
-      "steamCmdExecutablePath": "C:\\steamcmd\\steamcmd.exe",
+      "rconPassword":  "password",
+      "serverExecutablePath": "C:\\ARK Servers\\server2\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
+      "serverExecutableArguments":  "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
+      "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server2"
     }
   ],
   "clusters": [
     {
       "key": "cluster1",
-      "savePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\ARK\\ShooterGame\\Saved\\clusters\\cluster1"
+      "savePath": "C:\\ARK Servers\\cluster1"
     }
   ]
 }
