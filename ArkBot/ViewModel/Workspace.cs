@@ -127,6 +127,8 @@ namespace ArkBot.ViewModel
             if (MessageBox.Show("Are you sure you want to run a SteamCmd test?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None) != MessageBoxResult.Yes) return;
             var hidden = MessageBox.Show("As hidden window?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
             var nowindow = MessageBox.Show("Create no window?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
+            var outputdata = MessageBox.Show("Redirect output?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
+            var exitwhendone = MessageBox.Show("Exit steamcmd when script finishes?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
 
             var showMsg = new Action<string>((msg) => MessageBox.Show(msg, "SteamCmd test", MessageBoxButton.OK, MessageBoxImage.None));
             var serverContext = _contextManager.GetServer(_config.ServerKey);
@@ -154,7 +156,8 @@ namespace ArkBot.ViewModel
             {
                 Directory.CreateDirectory(tmpInstallDir);
 
-                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{tmpInstallDir}\"{Environment.NewLine}app_update 376030{Environment.NewLine}quit");
+                var exit = exitwhendone == MessageBoxResult.Yes ? $"{Environment.NewLine}quit" : "";
+                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{tmpInstallDir}\"{Environment.NewLine}app_update 376030{exit}");
 
                 var tcs = new TaskCompletionSource<int>();
                 var si = new ProcessStartInfo
@@ -164,7 +167,7 @@ namespace ArkBot.ViewModel
                     WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
                     Verb = "runas",
                     UseShellExecute = false,
-                    RedirectStandardOutput = true,
+                    RedirectStandardOutput = outputdata == MessageBoxResult.Yes ? true : false,
                     WindowStyle = hidden == MessageBoxResult.Yes ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
                     CreateNoWindow = nowindow == MessageBoxResult.Yes ? true : false
                 };
@@ -173,11 +176,14 @@ namespace ArkBot.ViewModel
                     StartInfo = si,
                     EnableRaisingEvents = true
                 };
-                process.OutputDataReceived += (s, e) =>
+                if (outputdata == MessageBoxResult.Yes)
                 {
-                    if (e?.Data == null) return;
-                    Console.AddLog(e.Data);
-                };
+                    process.OutputDataReceived += (s, e) =>
+                    {
+                        if (e?.Data == null) return;
+                        Console.AddLog(e.Data);
+                    };
+                }
 
                 process.Exited += (sender, args) => tcs.TrySetResult(process.ExitCode);
                 if (!process.Start())
@@ -185,7 +191,7 @@ namespace ArkBot.ViewModel
                     showMsg("Process failed to start");
                     return;
                 }
-                process.BeginOutputReadLine();
+                if(outputdata == MessageBoxResult.Yes) process.BeginOutputReadLine();
 
                 if (nowindow == MessageBoxResult.Yes || hidden == MessageBoxResult.Yes)
                 {
@@ -205,18 +211,22 @@ namespace ArkBot.ViewModel
             }
             finally
             {
-                if (tmpInstallDir.StartsWith(_config.TempFileOutputDirPath))
+                try
                 {
-                    foreach (var file in Directory.GetFiles(tmpInstallDir))
+                    if (tmpInstallDir.StartsWith(_config.TempFileOutputDirPath))
                     {
-                        File.Delete(file);
+                        foreach (var file in Directory.GetFiles(tmpInstallDir))
+                        {
+                            File.Delete(file);
+                        }
+                        foreach (var dir in Directory.GetDirectories(tmpInstallDir))
+                        {
+                            Directory.Delete(dir, true);
+                        }
+                        Directory.Delete(tmpInstallDir);
                     }
-                    foreach (var dir in Directory.GetDirectories(tmpInstallDir))
-                    {
-                        Directory.Delete(dir, true);
-                    }
-                    Directory.Delete(tmpInstallDir);
                 }
+                catch (Exception) { }
             }
         }
 
