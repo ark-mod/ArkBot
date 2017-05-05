@@ -1,7 +1,10 @@
 ﻿using ArkBot.ViewModel;
 using Autofac.Core;
 using Autofac.Integration.WebApi;
+using Microsoft.Owin;
 using Microsoft.Owin.Cors;
+using Microsoft.Owin.FileSystems;
+using Microsoft.Owin.StaticFiles;
 using Owin;
 using System;
 using System.Collections.Generic;
@@ -34,6 +37,11 @@ namespace ArkBot.WebApi
             appBuilder.UseAutofacWebApi(config);
             appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseWebApi(config);
+            appBuilder.UseFileServer(new FileServerOptions
+            {
+                FileSystem = new PhysicalFileSystem(@"WebApi\Static\"),
+                RequestPath = new PathString("/gui")
+            });
         }
     }
 

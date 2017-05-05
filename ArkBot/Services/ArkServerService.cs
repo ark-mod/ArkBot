@@ -288,6 +288,10 @@ namespace ArkBot.Helpers
 
             Timer timer = null;
             Process process = null;
+            FileStream powershellOutputStream = null;
+            StreamReader powershellOutputStreamReader = null;
+            string tmpFilePathToSteamCmdScript = null;
+            string tmpFilePathToPowershellOutput = null;
             int result = -1;
             var sb = new StringBuilder();
             try
@@ -298,19 +302,33 @@ namespace ArkBot.Helpers
                 string lastOutput = null;
                 var lastUpdate = DateTime.Now;
                 var r = new Regex(@"(?<task>\w+),\s+progress\:\s+(?<progress>[\d\.]+)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
-                var tmpPath = Path.GetTempFileName();
-                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{serverContext.Config.ServerInstallDirPath}\"{Environment.NewLine}app_update 376030{Environment.NewLine}quit");
+                tmpFilePathToSteamCmdScript = Path.GetTempFileName();
+                File.WriteAllText(tmpFilePathToSteamCmdScript, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{serverContext.Config.ServerInstallDirPath}\"{Environment.NewLine}app_update 376030{Environment.NewLine}quit");
                 var si = new ProcessStartInfo
                 {
                     FileName = serverContext.Config.SteamCmdExecutablePath,
-                    Arguments = $@"+runscript {tmpPath}",
+                    Arguments = $@"+runscript {tmpFilePathToSteamCmdScript}",
                     WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
-                    Verb = "runas",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true
                 };
+
+                if (serverContext.Config.UsePowershellOutputRedirect)
+                {
+                    var debugNoExit = false;
+                    tmpFilePathToPowershellOutput = Path.GetTempFileName();
+                    si = new ProcessStartInfo
+                    {
+                        FileName = _config.PowershellFilePath,
+                        Arguments = $@"{(debugNoExit ? "-NoExit " : "")}& '{Path.GetFullPath(serverContext.Config.SteamCmdExecutablePath)}' +runscript {tmpFilePathToSteamCmdScript} | tee {tmpFilePathToPowershellOutput}",
+                        WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
+                        Verb = "runas",
+                        UseShellExecute = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                }
                 var ss = new AutoResetEvent(false);
                 var tcs = new TaskCompletionSource<int>();
                 process = new Process
@@ -318,29 +336,64 @@ namespace ArkBot.Helpers
                     StartInfo = si,
                     EnableRaisingEvents = true
                 };
-                process.OutputDataReceived += (s, e) =>
+                if (!serverContext.Config.UsePowershellOutputRedirect)
                 {
-                    //Success! App '376030' already up to date.
-                    //Update state (0x11) preallocating, progress: 76.88 (3826221085 / 4976891598)
-                    //Update state (0x61) downloading, progress: 5.88 (292616661 / 4976891598)
-                    lastUpdate = DateTime.Now;
-                    if (e?.Data != null) sb.AppendLine(e.Data);
-                    if (e?.Data != null)
+                    process.OutputDataReceived += (s, e) =>
                     {
-                        if (e.Data.StartsWith("Success! App '376030' already up to date.")) wasAlreadyUpToDate = true;
-                        if (e.Data.StartsWith("Success! App '376030' fully installed.")) wasUpdated = true;
-                        if (e.Data.StartsWith("Error! App '376030'")) error = true; //Error! App '376030' state is 0x202 after update job.
-                        lastOutput = e.Data;
-                        Debug.WriteLine(e.Data);
-                    }
-                };
+                        //Success! App '376030' already up to date.
+                        //Update state (0x11) preallocating, progress: 76.88 (3826221085 / 4976891598)
+                        //Update state (0x61) downloading, progress: 5.88 (292616661 / 4976891598)
+                        lastUpdate = DateTime.Now;
+                        if (e?.Data != null)
+                        {
+                            sb.AppendLine(e.Data);
+                            if (e.Data.StartsWith("Success! App '376030' already up to date.")) wasAlreadyUpToDate = true;
+                            if (e.Data.StartsWith("Success! App '376030' fully installed.")) wasUpdated = true;
+                            if (e.Data.StartsWith("Error! App '376030'")) error = true; //Error! App '376030' state is 0x202 after update job.
+                            lastOutput = e.Data;
+                        }
+                    };
+                }
+                else
+                {
+                    var offset = 0L;
+                    powershellOutputStream = new FileStream(tmpFilePathToPowershellOutput, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    powershellOutputStreamReader = new StreamReader(powershellOutputStream);
+                    var task = Task.Run(async () =>
+                    {
+                        while (true)
+                        {
+                            if (tcs.Task.IsCompleted) return;
+
+                            powershellOutputStream.Seek(offset, SeekOrigin.Begin);
+                            if (!powershellOutputStreamReader.EndOfStream)
+                            {
+                                do
+                                {
+                                    var line = powershellOutputStreamReader.ReadLine();
+
+                                    if (line == null) continue;
+
+                                    sb.AppendLine(line);
+                                    if (line.StartsWith("Success! App '376030' already up to date.")) wasAlreadyUpToDate = true;
+                                    if (line.StartsWith("Success! App '376030' fully installed.")) wasUpdated = true;
+                                    if (line.StartsWith("Error! App '376030'")) error = true; //Error! App '376030' state is 0x202 after update job.
+                                    lastOutput = line;
+                                } while (!powershellOutputStreamReader.EndOfStream);
+
+                                offset = powershellOutputStream.Position;
+                            }
+                            else await Task.Delay(100);
+                        }
+                    });
+                }
                 process.Exited += (sender, args) => tcs.TrySetResult(process.ExitCode);
                 if (!process.Start())
                 {
                     if (sendMessageDirected != null) await sendMessageDirected($"failed to update the server (check the configuration).");
                     return false;
                 }
-                process.BeginOutputReadLine();
+                if (!serverContext.Config.UsePowershellOutputRedirect) process.BeginOutputReadLine();
                 timer = new Timer((s) =>
                 {
                     if ((DateTime.Now - lastUpdate).TotalSeconds >= timeoutSeconds) tcs.TrySetCanceled();
@@ -397,17 +450,19 @@ namespace ArkBot.Helpers
             }
             finally
             {
+                powershellOutputStream?.Dispose();
+                powershellOutputStream = null;
+                powershellOutputStreamReader?.Dispose();
+                powershellOutputStreamReader = null;
                 timer?.Dispose();
                 timer = null;
+
+                try
+                {
+                    if (tmpFilePathToPowershellOutput != null) File.Delete(tmpFilePathToPowershellOutput);
+                }
+                catch { }
             }
-
-
-            //Logging.Log(string.Join(Environment.NewLine, new[] { $@"Server update successfull", sb.ToString() }), GetType(), LogLevel.DEBUG);
-            //if (sendMessageDirected != null) await sendMessageDirected($"update complete!");
-
-            //if (!await StartServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null)) return false;
-
-            //return true;
         }
 
         private uint[] GetProcessIdsForServerKey(string serverKey)

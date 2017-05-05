@@ -26,7 +26,8 @@
   "backupsEnabled": false,
   "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
   "discordBotEnabled": true,
-  "webApiListenPrefix":  "http://+:<your open port>/",
+  "webApiListenPrefix": "http://+:<your open port>/",
+  "powershellFilePath":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
     "babyMatureSpeedMultiplier": 1.0,
@@ -44,7 +45,8 @@
       "serverExecutablePath": "C:\\ARK Servers\\server1\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
       "serverExecutableArguments":  "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
-      "serverInstallDirPath": "C:\\ARK Servers\\server1"
+      "serverInstallDirPath": "C:\\ARK Servers\\server1",
+      "usePowershellOutputRedirect":  false
     },
     {
       "key": "server2",
@@ -57,7 +59,8 @@
       "serverExecutablePath": "C:\\ARK Servers\\server2\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
       "serverExecutableArguments":  "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
-      "serverInstallDirPath": "C:\\ARK Servers\\server2"
+      "serverInstallDirPath": "C:\\ARK Servers\\server2",
+      "usePowershellOutputRedirect":  false
     }
   ],
   "clusters": [

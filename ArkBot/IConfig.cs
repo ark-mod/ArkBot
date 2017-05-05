@@ -36,6 +36,7 @@
         string BackupsDirectoryPath { get; set; }
         bool DiscordBotEnabled { get; set; }
         string WebApiListenPrefix { get; set; }
+        string PowershellFilePath { get; set; }
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }

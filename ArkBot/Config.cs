@@ -155,6 +155,10 @@ namespace ArkBot
         [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections.")]
         public string WebApiListenPrefix { get; set; }
 
+        [JsonProperty(PropertyName = "powershellFilePath")]
+        [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect).")]
+        public string PowershellFilePath { get; set; }
+
         [JsonProperty(PropertyName = "servers")]
         [Description("Server instance configurations.")]
         public ServerConfigSection[] Servers { get; set; }
@@ -244,6 +248,9 @@ namespace ArkBot
         [Description("The directory path to force steamcmd updates to.")]
         public string ServerInstallDirPath { get; set; }
 
+        [JsonProperty(PropertyName = "usePowershellOutputRedirect")]
+        [Description("Use alternative powershell/file based output redirect for update progress notifications.")]
+        public bool UsePowershellOutputRedirect { get; set; }
     }
 
     public class ClusterConfigSection
