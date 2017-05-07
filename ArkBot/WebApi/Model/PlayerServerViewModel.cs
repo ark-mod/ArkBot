@@ -13,7 +13,7 @@ namespace ArkBot.WebApi.Model
             Creatures = new List<TamedCreatureViewModel>();
         }
 
-        public string ServerKey { get; set; }
+        public string SteamId { get; set; }
         public string CharacterName { get; set; }
         public string Gender { get; set; }
         public string TribeName { get; set; }
@@ -22,6 +22,7 @@ namespace ArkBot.WebApi.Model
         public int EngramPoints { get; set; }
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
+        public DateTime SavedAt { get; set; }
         public IList<TamedCreatureViewModel> Creatures { get; set; }
     }
 }

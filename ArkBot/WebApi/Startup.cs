@@ -35,6 +35,7 @@ namespace ArkBot.WebApi
 
             appBuilder.UseAutofacMiddleware(Workspace.Container);
             appBuilder.UseAutofacWebApi(config);
+            appBuilder.UseCompressionModule();
             appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseWebApi(config);
             appBuilder.UseFileServer(new FileServerOptions

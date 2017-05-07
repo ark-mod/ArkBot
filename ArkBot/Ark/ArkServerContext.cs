@@ -203,7 +203,7 @@ namespace ArkBot.Ark
                     var mydata = x.GetPropertyValue<StructPropertyList>(_myData);
                     var playerId = mydata.GetPropertyValue<ulong>(_playerDataID);
                     var player = playerdict[playerId]?.FirstOrDefault();
-                    return x.Profile.AsPlayer(player, save.SaveState);
+                    return x.Profile.AsPlayer(player, x.SaveTime, save.SaveState);
                 }).ToArray();
 
                 TamedCreatures = tamed;
