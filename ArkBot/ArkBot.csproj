@@ -219,7 +219,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="QueryMaster, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\QueryMaster.2.0.0-CI00006\lib\net461\QueryMaster.dll</HintPath>
+      <HintPath>..\packages\QueryMaster.2.0.0-CI00007\lib\net461\QueryMaster.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="RazorEngine, Version=3.9.3.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">

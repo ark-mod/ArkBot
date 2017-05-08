@@ -23,54 +23,8 @@ namespace ArkBot.Steam
         {
             _config = config;
             ReconnectSource();
-            ReconnectRcon();
+            _reconnectRcon();
         }
-
-
-        ///// <summary>
-        ///// Sends an admin command via rcon
-        ///// </summary>
-        ///// <returns>Result from server on success, null if failed.</returns>
-        //public async Task<string> SendRconCommand(string command)
-        //{
-        //    return await Task.Run(() =>
-        //    {
-        //        var n = 0;
-        //        while (true)
-        //        {
-        //            Exception lastException = null;
-        //            try
-        //            {
-        //                if (_rconServer?.Rcon != null)
-        //                {
-        //                    var result = _rconServer.Rcon.SendCommand(command);
-        //                    return result;
-        //                }
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                lastException = ex;
-        //            }
-
-        //            if (n >= 1)
-        //            {
-        //                Logging.LogException("Exception attempting to send rcon command", lastException, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
-        //                return null;
-        //            }
-
-        //            try
-        //            {
-        //                ReconnectRcon();
-        //            }
-        //            catch(Exception ex)
-        //            {
-        //                Logging.LogException("Exception attempting to reconnect rcon", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
-        //            }
-
-        //            n++;
-        //        }
-        //    });
-        //}
 
         /// <summary>
         /// Sends an admin command via rcon
@@ -92,6 +46,8 @@ namespace ArkBot.Steam
             }
             catch (Exception ex)
             {
+                _rconServer?.Dispose();
+                _rconServer = null;
                 Logging.LogException("Exception attempting to send rcon command", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
                 return null;
             }
@@ -104,39 +60,49 @@ namespace ArkBot.Steam
                 _sourceServer?.Dispose();
                 _sourceServer = null;
 
-                _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.Port, false, 2000, 5000, 1, false);
+                _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.Port, false, 2000, 5000, 1, true);
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
                 _sourceServer?.Dispose();
                 _sourceServer = null;
 
                 Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.Port})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
             }
-
-            
         }
 
         private async Task ReconnectRcon()
         {
             await Task.Run(() =>
             {
-                try
-                {
-                    _rconServer?.Dispose();
-                    _rconServer = null;
-
-                    _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, false);
-                    _rconServer?.GetControl(_config.RconPassword);
-                }
-                catch (SocketException ex)
-                {
-                    _rconServer?.Dispose();
-                    _rconServer = null;
-
-                    Logging.LogException($"Failed to connect to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
-                }
+                _reconnectRcon();
             });
+        }
+
+        private void _reconnectRcon()
+        {
+            try
+            {
+                _rconServer?.Dispose();
+                _rconServer = null;
+
+                _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
+                _rconServer?.GetControl(_config.RconPassword);
+            }
+            catch (SocketException ex)
+            {
+                _rconServer?.Dispose();
+                _rconServer = null;
+
+                Logging.LogException($"Failed to connect to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+            }
+            catch (Exception ex)
+            {
+                _rconServer?.Dispose();
+                _rconServer = null;
+
+                Logging.LogException($"Error when connecting to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+            }
         }
 
         public async Task<long> Ping()
