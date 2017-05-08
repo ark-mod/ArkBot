@@ -36,6 +36,7 @@ namespace ArkBot.Ark
 
         public IEnumerable<ArkTamedCreature> NoRafts => TamedCreatures?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
 
+        public SaveState SaveState { get; set; }
         public ArkTamedCreature[] TamedCreatures { get; set; }
         public ArkWildCreature[] WildCreatures { get; set; }
         public ArkSavegameToolkitNet.Domain.ArkTribe[] Tribes { get; set; }
@@ -206,6 +207,7 @@ namespace ArkBot.Ark
                     return x.Profile.AsPlayer(player, x.SaveTime, save.SaveState);
                 }).ToArray();
 
+                SaveState = save.SaveState;
                 TamedCreatures = tamed;
                 WildCreatures = wild;
                 Players = players;

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ArkBot.WebApi.Model
 {
-    public class ClusterViewModel
+    public class ClusterStatusViewModel
     {
-        public ClusterViewModel()
+        public ClusterStatusViewModel()
         {
             ServerKeys = new string[] { };
         }

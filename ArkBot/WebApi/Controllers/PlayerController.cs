@@ -36,6 +36,7 @@ namespace ArkBot.WebApi.Controllers
                 var vm = BuildViewModelForPlayer(context, player);
 
                 result.Servers.Add(context.Config.Key, vm);
+                result.MapNames.Add(context.Config.Key, context.SaveState?.MapName);
             }
 
             return result;
@@ -51,6 +52,8 @@ namespace ArkBot.WebApi.Controllers
                 Level = player.CharacterLevel,
                 Latitude = player.Location?.Latitude,
                 Longitude = player.Location?.Longitude,
+                TopoMapX = player.Location?.TopoMapX,
+                TopoMapY = player.Location?.TopoMapY,
                 EngramPoints = player.TotalEngramPoints,
                 TribeId = player.TribeId,
                 TribeName = player.TribeId.HasValue ? context.Tribes.FirstOrDefault(x => x.Id == player.TribeId.Value)?.Name : null,
@@ -94,6 +97,8 @@ namespace ArkBot.WebApi.Controllers
                         FoodStatus = foodStatus,
                         Latitude = item.c.Location?.Latitude,
                         Longitude = item.c.Location?.Longitude,
+                        TopoMapX = item.c.Location?.TopoMapX,
+                        TopoMapY = item.c.Location?.TopoMapY,
                         NextMating = item.c.NextAllowedMatingTimeApprox,
                         OwnerType = item.o
                     };

@@ -45,6 +45,7 @@ namespace ArkBot.WebApi.Controllers
                 }
 
                 result.Servers.Add(context.Config.Key, players);
+                result.MapNames.Add(context.Config.Key, context.SaveState?.MapName);
             }
             
             return result;

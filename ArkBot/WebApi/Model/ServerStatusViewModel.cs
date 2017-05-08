@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ArkBot.WebApi.Model
 {
-    public class ServerViewModel
+    public class ServerStatusViewModel
     {
-        public ServerViewModel()
+        public ServerStatusViewModel()
         {
             OnlinePlayers = new List<OnlinePlayerViewModel>();
         }

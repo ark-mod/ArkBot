@@ -64,7 +64,10 @@ import { HttpService } from './http.service';
     </div>
   </section>
   <section *ngIf="player" class="w3-container">
-    <h2 class="w3-text-blue">Creatures <span class="w3-tag w3-large w3-blue">{{filteredCreatures.length}}</span></h2>
+    <div class="w3-cell-row">
+      <div class="w3-cell"><h2 class="w3-text-blue w3-left">Creatures <span class="w3-tag w3-large w3-blue">{{filteredCreatures.length}}</span></h2></div>
+      <div class="w3-cell w3-cell-middle"><button class="w3-button w3-blue w3-right" (click)="openMap($event)">Show Map</button></div>
+    </div>
     <div class="inner-addon right-addon">
       <i *ngIf="creaturesFilter != null && creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
       <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom" placeholder="Filter" />
@@ -112,6 +115,15 @@ import { HttpService } from './http.service';
       </table>
     </div>
   </section>
+  <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
+   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
+    <header class="w3-container w3-white"> 
+     <span (click)="showMap = false" class="w3-button w3-white w3-xlarge w3-display-topright">&times;</span>
+     <h2>Map</h2>
+    </header>
+    <arkmap [mapName]="player?.MapNames[serverKey]" [points]="points"></arkmap>
+   </div>
+  </div>
 `
 })
 export class AppComponent implements OnInit {
@@ -119,6 +131,7 @@ export class AppComponent implements OnInit {
   player: Player;
   filteredCreatures: any[];
   creaturesFilter: string;
+  points: any[];
 
   constructor(
     private httpService: HttpService) { }
@@ -207,14 +220,38 @@ export class AppComponent implements OnInit {
         creature.Species.toLowerCase().indexOf(filter) >= 0 
         || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0));
     }
+
+    let points = [];
+    for(let creature of this.filteredCreatures) {
+      let point = {} as any;
+      point.x = creature.TopoMapX;
+      point.y = creature.TopoMapY;
+      points.push(point);
+    }
+    this.points = points;
   }
 
   run(): void {
+    if(this.steamId == null || this.steamId == "") {
+      this.player = null;
+      this.filteredCreatures = null;
+      return;
+    }
     this.getServers();
     this.getPlayer();
+  }
+
+  openMap(event: any): void {
+    this.showMap = true;
+    event.stopPropagation();
+  }
+
+  closeMap(event: any): void {
+    this.showMap = false;
   }
 
   keysGetter = Object.keys;
   steamId: string;
   loaded: bool = false;
+  showMap: bool = false;
 }

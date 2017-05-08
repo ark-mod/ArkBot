@@ -22,6 +22,8 @@ namespace ArkBot.WebApi.Model
         public int EngramPoints { get; set; }
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
+        public float? TopoMapX { get; set; }
+        public float? TopoMapY { get; set; }
         public DateTime SavedAt { get; set; }
         public IList<TamedCreatureViewModel> Creatures { get; set; }
     }

@@ -30,9 +30,9 @@ namespace ArkBot.WebApi.Controllers
             _contextManager = contextManager;
         }
 
-        public async Task<ServersViewModel> Get()
+        public async Task<ServerStatusAllViewModel> Get()
         {
-            var result = new ServersViewModel();
+            var result = new ServerStatusAllViewModel();
             foreach (var context in _contextManager.Servers)
             {
                 var serverContext = _contextManager.GetServer(context.Config.Key);
@@ -74,7 +74,7 @@ namespace ArkBot.WebApi.Controllers
                     var lastUpdate = context.LastUpdate;
                     var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
 
-                    var sr = new ServerViewModel
+                    var sr = new ServerStatusViewModel
                     {
                         Key = context.Config.Key,
                         Name = name,
@@ -174,7 +174,7 @@ namespace ArkBot.WebApi.Controllers
 
             foreach (var context in _contextManager.Clusters)
             {
-                var cc = new ClusterViewModel
+                var cc = new ClusterStatusViewModel
                 {
                     Key = context.Config.Key,
                     ServerKeys = _contextManager.Servers

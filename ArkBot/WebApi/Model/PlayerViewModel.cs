@@ -11,8 +11,10 @@ namespace ArkBot.WebApi.Model
         public PlayerViewModel()
         {
             Servers = new Dictionary<string, PlayerServerViewModel>();
+            MapNames = new Dictionary<string, string>();
         }
 
         public IDictionary<string, PlayerServerViewModel> Servers { get; set; }
+        public IDictionary<string, string> MapNames { get; set; }
     }
 }

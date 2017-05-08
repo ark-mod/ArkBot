@@ -4,8 +4,10 @@ import { HttpModule }    from '@angular/http';
 import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
+import { ArkMapComponent } from './arkmap.component';
 import { HttpService } from './http.service';
 import { SanitizeStylePipe } from './sanitize-style.pipe';
+import { ClickOutsideDirective } from './clickOutside.directive';
 
 @NgModule({
   imports: [
@@ -15,7 +17,9 @@ import { SanitizeStylePipe } from './sanitize-style.pipe';
   ],
   declarations: [
     AppComponent,
-    SanitizeStylePipe
+    ArkMapComponent,
+    SanitizeStylePipe,
+    ClickOutsideDirective
   ],
   providers: [ HttpService, { provide: LOCALE_ID, useValue: "en-US" } ],
   bootstrap: [ AppComponent ]

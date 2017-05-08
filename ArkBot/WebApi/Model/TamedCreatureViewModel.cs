@@ -24,6 +24,8 @@ namespace ArkBot.WebApi.Model
         public float? FoodStatus { get; set; }
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
+        public float? TopoMapX { get; set; }
+        public float? TopoMapY { get; set; }
         public DateTime? NextMating { get; set; }
         public string OwnerType { get; set; }
     }
