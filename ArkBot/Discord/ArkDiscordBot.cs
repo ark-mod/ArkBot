@@ -179,7 +179,10 @@ namespace ArkBot.Discord
 
                             var player = _context.Players?.FirstOrDefault(x => { long steamId = 0; return long.TryParse(x.SteamId, out steamId) ? steamId == dbuser.SteamId : false; });
                             var playerName = player?.Name?.Length > 32 ? player?.Name?.Substring(0, 32) : player?.Name;
-                            if (!string.IsNullOrWhiteSpace(playerName) && (user.Nickname == null || !playerName.Equals(user.Nickname, StringComparison.Ordinal)))
+                            if (!string.IsNullOrWhiteSpace(playerName) 
+                                && !user.ServerPermissions.Administrator
+                                && !playerName.Equals(user.Name, StringComparison.Ordinal) 
+                                && (user.Nickname == null || !playerName.Equals(user.Nickname, StringComparison.Ordinal)))
                             {
                                 //must be less or equal to 32 characters
                                 Logging.Log($@"Changing nickname (from: ""{user.Nickname ?? "null"}"", to: ""{playerName}"") for user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
