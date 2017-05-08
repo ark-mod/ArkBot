@@ -40,7 +40,11 @@ namespace ArkBot.WebApi
             appBuilder.UseWebApi(config);
             appBuilder.UseFileServer(new FileServerOptions
             {
+#if DEBUG
+                FileSystem = new PhysicalFileSystem(@"..\..\WebApi\Static\"),
+#else
                 FileSystem = new PhysicalFileSystem(@"WebApi\Static\"),
+#endif
                 RequestPath = new PathString("/gui")
             });
         }

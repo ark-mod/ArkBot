@@ -5,6 +5,6 @@
   </ItemGroup>
 
   <Target Name="BeforeBuild">
-    <Copy SourceFiles="@(WebApiStaticFiles)" DestinationFiles="@(WebApiStaticFiles->'$(OutputPath)\WebApi\Static\%(RecursiveDir)%(Filename)%(Extension)')" ContinueOnError="true" SkipUnchangedFiles="true" Condition="$(CopyWebApiStaticFiles)"/>
+    <Copy SourceFiles="@(WebApiStaticFiles)" DestinationFiles="@(WebApiStaticFiles->'$(OutputPath)\WebApi\Static\%(RecursiveDir)%(Filename)%(Extension)')" ContinueOnError="true" SkipUnchangedFiles="false" Condition="$(CopyWebApiStaticFiles)"/>
   </Target>
 </Project>
