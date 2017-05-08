@@ -24,7 +24,8 @@
       "MegaWyvern_Character_BP_Fire_C"
     ],
     [
-      "Alpha Megalodon"
+      "Alpha Megalodon",
+      "MegaMegalodon_Character_BP_C"
     ],
     [
       "Alpha Mosasaurus",
@@ -152,7 +153,9 @@
       "Compy_Character_BP_C"
     ],
     [
-      "Daeodon"
+      "Daeodon",
+      "Daeodon_Character_BP_C",
+      "Hell Pig"
     ],
     [
       "Deathworm",
@@ -258,7 +261,10 @@
       "Galli"
     ],
     [
-      "Giant Bee"
+      "Giant Bee",
+      "Bee_Queen_Character_BP_C",
+      "Bee Queen",
+      "Bee"
     ],
     [
       "Giganotosaurus",
@@ -317,7 +323,9 @@
       "Jumping Crocodile"
     ],
     [
-      "Kentrosaurus"
+      "Kentrosaurus",
+      "Kentro_Character_BP_C",
+      "Kentro"
     ],
     [
       "Lamprey"
@@ -337,7 +345,9 @@
       "Leeds"
     ],
     [
-      "Liopleurodon"
+      "Liopleurodon",
+      "Liopleurodon_Character_BP_C",
+      "Lio"
     ],
     [
       "Lymantria",
@@ -622,7 +632,8 @@
     ],
     [
       "Thylacoleo",
-      "Thylacoleo_Character_BP_C"
+      "Thylacoleo_Character_BP_C",
+      "Thyla"
     ],
     [
       "Titanoboa",
