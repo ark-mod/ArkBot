@@ -2,10 +2,15 @@
 
 ![Discord Bot Commands](https://cloud.githubusercontent.com/assets/408350/25876839/0a91380c-3520-11e7-9172-3a7707cd4c56.png)
 
-### NOTE: This application is in the very early stages of development.
+## NOTE
+
+### This application is in the very early stages of development.
+
 There are bugs, unfinished/missing features, unoptimized/crappy code, lack of testing and documentation.
 
-**What it is**
+
+## Introduction
+
 The application monitors and extracts data from any number of configured local ARK servers and exposes this data through a Discord Bot and Web API.
 
 It aims to provide important functions to players: dino listings, food-status, statistics; and server admins: rcon-commands, server managing etc. It does not enable cheating or making available data that have a considerable impact on how the game is played.
@@ -25,7 +30,7 @@ https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
 ## Configuration in config.json (copy defaultconfig.json template file)
 
-### NOTE: There are quite a few fields that are not covered below and some information may not even be up-to-date. Generally sticking to the defaultconfig.json setup with minimal changes according to your environment is the safe bet.
+### There are quite a few fields that are not covered below and some information may not even be up-to-date. Generally sticking to the defaultconfig.json setup with minimal changes according to your environment is the safe bet.
 
 **All config settings have descriptions that can be found in:**
 https://github.com/tsebring/ArkBot/blob/master/ArkBot/Config.cs.
