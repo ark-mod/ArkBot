@@ -1,6 +1,9 @@
 ﻿using ArkBot.ViewModel;
+using Autofac;
 using Autofac.Core;
+using Autofac.Integration.SignalR;
 using Autofac.Integration.WebApi;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Microsoft.Owin.Cors;
 using Microsoft.Owin.FileSystems;
@@ -33,11 +36,15 @@ namespace ArkBot.WebApi
             config.DependencyResolver = new AutofacWebApiDependencyResolver(Workspace.Container);
             config.Formatters.Add(new BrowserJsonFormatter());
 
+            var hubConfig = new HubConfiguration { EnableDetailedErrors = true };
+            hubConfig.Resolver = Workspace.Container.Resolve<IDependencyResolver>();
+
             appBuilder.UseAutofacMiddleware(Workspace.Container);
             appBuilder.UseAutofacWebApi(config);
             appBuilder.UseCompressionModule();
             appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseWebApi(config);
+            appBuilder.MapSignalR(hubConfig);
             appBuilder.UseFileServer(new FileServerOptions
             {
 #if DEBUG

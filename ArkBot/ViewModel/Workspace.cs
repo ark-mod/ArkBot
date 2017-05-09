@@ -4,6 +4,7 @@ using ArkBot.Database;
 using ArkBot.Database.Model;
 using ArkBot.Discord;
 using ArkBot.Helpers;
+using ArkBot.Notifications;
 using ArkBot.OpenID;
 using ArkBot.ScheduledTasks;
 using ArkBot.Services;
@@ -12,8 +13,11 @@ using ArkBot.Voting.Handlers;
 using ArkBot.WebApi;
 using ArkBot.WpfCommands;
 using Autofac;
+using Autofac.Integration.SignalR;
 using Autofac.Integration.WebApi;
 using Discord;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Prism.Commands;
@@ -57,6 +61,8 @@ namespace ArkBot.ViewModel
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
+        public ObservableCollection<MenuItemViewModel> ManuallyUpdateServers { get; set; }
+
         internal static IContainer Container { get; set; }
 
         public bool SkipExtractNextRestart
@@ -85,6 +91,7 @@ namespace ArkBot.ViewModel
         public Workspace()
         {
             //do not create viewmodels or load data here, or avalondock layout deserialization will fail
+            ManuallyUpdateServers = new ObservableCollection<MenuItemViewModel>();
             ClosingCommand = new DelegateCommand<System.ComponentModel.CancelEventArgs>(OnClosing);
             PropertyChanged += Workspace_PropertyChanged;
         }
@@ -96,6 +103,13 @@ namespace ArkBot.ViewModel
                 _savedstate.SkipExtractNextRestart = SkipExtractNextRestart;
                 _savedstate.Save();
             }
+        }
+
+        private void OnManuallyTriggerServerUpdate(string serverKey)
+        {
+            var context = _contextManager.GetServer(serverKey);
+            if (context == null) MessageBox.Show($"Could not find server instance '{serverKey}'", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _contextManager.QueueUpdateServerManual(context);
         }
 
         private void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -577,10 +591,18 @@ namespace ArkBot.ViewModel
             builder.RegisterType<DestroyWildDinosVoteHandler>().As<IVoteHandler<DestroyWildDinosVote>>();
             builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            builder.RegisterHubs(Assembly.GetExecutingAssembly());
             builder.RegisterType<ArkContextManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<VotingManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<DiscordManager>().AsSelf().SingleInstance();
-            builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance(); 
+            builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance();
+            builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
+
+            builder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>().SingleInstance();
+
+            //kernel.Bind(typeof(IHubConnectionContext<dynamic>)).ToMethod(context =>
+            //        resolver.Resolve<IConnectionManager>().GetHubContext<StockTickerHub>().Clients
+            //         ).WhenInjectedInto<IStockTicker>();
 
             Container = builder.Build();
 
@@ -610,10 +632,17 @@ namespace ArkBot.ViewModel
                 // Initialize managers so that they are ready to handle events such as ArkContextManager.InitializationCompleted-event.
                 var scheduledTasksManager = Container.Resolve<ScheduledTasksManager>();
                 var votingManager = Container.Resolve<VotingManager>();
+                var notificationMangager = Container.Resolve<NotificationManager>();
 
                 // Trigger manual updates for all servers (initialization)
-                foreach(var context in _contextManager.Servers)
+                foreach (var context in _contextManager.Servers)
                 {
+                    ManuallyUpdateServers.Add(new MenuItemViewModel
+                    {
+                        Header = context.Config.Key,
+                        Command = new DelegateCommand<string>(OnManuallyTriggerServerUpdate),
+                        CommandParameter = context.Config.Key
+                    });
                     _contextManager.QueueUpdateServerManual(context);
                 }
             }
