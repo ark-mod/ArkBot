@@ -22,36 +22,38 @@
 </section>
 <section *ngIf="player" class="w3-container">
   <h2 class="w3-text-blue">Player</h2>
-  <table class="w3-table-all w3-card-4">
-    <thead>
-      <tr class="w3-blue">
-        <th>Character Name</th>
-        <th>Gender</th>
-        <th>Tribe Name</th>
-        <th>Steam Id</th>
-        <th>Tribe Id</th>
-        <th>Level</th>
-        <th>Engram Points</th>
-        <th>Lat</th>
-        <th>Lng</th>
-        <th>Saved At</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{player?.Servers[serverKey]?.CharacterName}}</td>
-        <td>{{player?.Servers[serverKey]?.Gender}}</td>
-        <td>{{player?.Servers[serverKey]?.TribeName}}</td>
-        <td>{{player?.Servers[serverKey]?.SteamId}}</td>
-        <td>{{player?.Servers[serverKey]?.TribeId}}</td>
-        <td>{{player?.Servers[serverKey]?.Level}}</td>
-        <td>{{player?.Servers[serverKey]?.EngramPoints | number}}</td>
-        <td>{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>
-        <td>{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>
-        <td>{{toDate(player?.Servers[serverKey]?.SavedAt)}}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all">
+      <thead>
+        <tr class="w3-blue">
+          <th>Character Name</th>
+          <th>Gender</th>
+          <th>Tribe Name</th>
+          <th>Steam Id</th>
+          <th>Tribe Id</th>
+          <th>Level</th>
+          <th>Engram Points</th>
+          <th>Lat</th>
+          <th>Lng</th>
+          <th>Saved At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{player?.Servers[serverKey]?.CharacterName}}</td>
+          <td>{{player?.Servers[serverKey]?.Gender}}</td>
+          <td>{{player?.Servers[serverKey]?.TribeName}}</td>
+          <td>{{player?.Servers[serverKey]?.SteamId}}</td>
+          <td>{{player?.Servers[serverKey]?.TribeId}}</td>
+          <td>{{player?.Servers[serverKey]?.Level}}</td>
+          <td>{{player?.Servers[serverKey]?.EngramPoints | number}}</td>
+          <td>{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>
+          <td>{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>
+          <td>{{toDate(player?.Servers[serverKey]?.SavedAt)}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 <section *ngIf="player" class="w3-container">
   <div class="w3-cell-row">
