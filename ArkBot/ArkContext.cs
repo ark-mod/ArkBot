@@ -452,16 +452,24 @@ namespace ArkBot
                     return x.Item2 as Player;
                 }).ToArray();
 
+                var withoutSpeciesClassName = new List<Creature>();
+
                 //todo: not sure how playerid is set
                 var clusterlist = results?.Where(x => x.Item2 is Cluster)?.Select(x => x.Item2 as Cluster).ToArray();
                 var cluster = new Cluster { Creatures = clusterlist?.SelectMany(x => x.Creatures).ToArray() };
                 if (cluster.Creatures != null) Array.ForEach(cluster.Creatures, x =>
                 {
-                    if (string.IsNullOrEmpty(x.SpeciesClass)) Logging.Log($@"Cluster creature does not have a species class (id: {x.Id}, owner: {x.OwnerName ?? "<null>"} tribe: {x.Tribe ?? "<null>"}, level: {x.FullLevel ?? -1})", GetType(), LogLevel.DEBUG);
+                    if (string.IsNullOrEmpty(x.SpeciesClass)) withoutSpeciesClassName.Add(x);
                     x.IsInCluster = true;
                     x.Tamed = true;
                     x.SpeciesName = classes?.FirstOrDefault(z => z.Class.Equals(x.SpeciesClass, StringComparison.OrdinalIgnoreCase))?.Name?.Replace("_Character_BP_C", "");
                 });
+
+                if (withoutSpeciesClassName.Count > 0)
+                {
+                    var str = string.Join(", ", withoutSpeciesClassName.Select(x => $"{{ id: {x.Id}{(x.OwnerName != null ? $", owner: {x.OwnerName}" : "")}{(x.Tribe != null ? $", tribe: {x.Tribe}" : "")}{(x.FullLevel != null ? $", level: {x.FullLevel}" : "")} }})"));
+                    Logging.Log($@"Some creatures in cluster have no species [ {str} ]", GetType(), LogLevel.DEBUG);
+                }
 
                 return new Tuple<ArkSpeciesStatsData, CreatureClass[], Creature[], Player[], Tribe[], Cluster, WildCreature[]>(ArkSpeciesStats.Instance.Data, classes, creatures, players, tribes, cluster, wildcreatures);
             }

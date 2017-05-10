@@ -89,12 +89,10 @@ namespace ArkBot.Steam
                 _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
                 _rconServer?.GetControl(_config.RconPassword);
             }
-            catch (SocketException ex)
+            catch (SocketException)
             {
                 _rconServer?.Dispose();
                 _rconServer = null;
-
-                Logging.LogException($"Failed to connect to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
             }
             catch (Exception ex)
             {
