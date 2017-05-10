@@ -30,7 +30,7 @@ https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
 ## Configuration in config.json (copy defaultconfig.json template file)
 
-### There are quite a few fields that are not covered below and some information may not even be up-to-date. Generally sticking to the defaultconfig.json setup with minimal changes according to your environment is the safe bet.
+### There are many fields that are not covered below and some information may not be up-to-date. Sticking to the defaultconfig.json setup with minimal changes according to your environment is the safest bet. Open a GitHub issue or contact me on Discord (Tobias#5051) if there are any problem. 
 
 **All config settings have descriptions that can be found in:**
 https://github.com/tsebring/ArkBot/blob/master/ArkBot/Config.cs.
@@ -41,7 +41,7 @@ Keys are unique identifiers used to identify each server and cluster. They must 
 
 Keys are in some cases used to indicate a relation between two or more configuration elements: i.e. each server link to a cluster by referencing a particular cluster key.
 
-Many Discord Bot commands and Web API features make use of these unique keys. Occasionally it is part of the user interaction as is the case with the !food <server key> or !admin <server key> ... commands.
+Many Discord Bot commands and Web API features make use of these unique keys. Occasionally it is part of the user interaction as is the case with the !food `<server key>` or !admin `<server key>` ... commands.
 
 When utilizing server management features, including start-, stop-, restart- and update-server commands, the server key is used to identify a particular running process. The server key configured for a particular instance must be appended to the ShooterGameServer.exe parameter list as "-serverkey=yourserverinstancekey". An example of this is found in the defaultconfig.json file. Do not forget to append this parameter even when manually starting a server.
 
@@ -99,3 +99,26 @@ The absolute path of a savegame-file (.ark) to watch for changes and extract dat
 **savePath**
 
 The absolute path of the directory where cluster-files are stored. Cluster-files are extracted as part of the server update process triggered by savegame-file (.ark) to watchers.
+
+
+## Web API
+
+RESTful API for accessing exported ARK Server save data via HTTP in JSON- or XML-format. A SignalR hub push server update notifications to connected clients in real-time.
+
+### Endpoints (base path is configured in `webApiListenPrefix`)
+
+/api/map/`mapName`: ARK topographic maps for (TheIsland, TheCenter and ScorchedEarth_P) sourced from ARK Survival Evolved Wiki (http://ark.gamepedia.com).
+
+/api/player/`steamId`: Player data for player identified by `steamId` from each configured server instance.
+
+/api/servers: Server status information including active players and statistics for each configured server instance.
+
+/signalr/ (hub name `ServerUpdateHub`): Server update notifications using SignalR.
+
+## Web-app (under development)
+
+A web application built on top of the Web API and implemented in Angular (https://angular.io/). 
+
+Features character- and creature information with food-status, mating cooldowns, baby age and cuddle timers.
+
+Url: `webApiListenPrefix`/gui/index.html
