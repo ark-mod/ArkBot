@@ -1,4 +1,6 @@
-import { Component, Input, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, ViewChild, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'arkmap',
@@ -11,9 +13,9 @@ export class ArkMapComponent implements OnChanges {
 
     width: number;
     height: number;
-    img: Image;
+    img: HTMLImageElement;
 
-    imageLoaded(img: Image): void {
+    imageLoaded(img: HTMLImageElement): void {
       this.img = img;
       this.width = img.naturalWidth;
       this.height = img.naturalHeight;
@@ -43,7 +45,7 @@ export class ArkMapComponent implements OnChanges {
       
       var img = new Image()
       img.onload = () => this.imageLoaded(img);
-      img.src = "/api/map/" + this.mapName
+      img.src = `${environment.apiBaseUrl}/map/${this.mapName}`
       if (img.complete) {
         img.onload = null
         this.imageLoaded(img);

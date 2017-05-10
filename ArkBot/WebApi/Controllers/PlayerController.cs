@@ -93,6 +93,7 @@ namespace ArkBot.WebApi.Controllers
                         Gender = item.c.Gender.ToString(),
                         BaseLevel = item.c.BaseLevel,
                         Level = item.c.Level,
+                        BabyAge = item.c.IsBaby ? item.c.BabyAge : null,
                         Imprint = item.c.DinoImprintingQuality,
                         FoodStatus = foodStatus,
                         Latitude = item.c.Location?.Latitude,
@@ -100,6 +101,7 @@ namespace ArkBot.WebApi.Controllers
                         TopoMapX = item.c.Location?.TopoMapX,
                         TopoMapY = item.c.Location?.TopoMapY,
                         NextMating = item.c.NextAllowedMatingTimeApprox,
+                        BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
                         OwnerType = item.o
                     };
                     vm.Creatures.Add(vmc);

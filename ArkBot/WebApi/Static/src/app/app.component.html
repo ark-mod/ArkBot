@@ -1,0 +1,131 @@
+<simple-notifications [options]="notificationOptions"></simple-notifications>
+<div class="w3-container w3-green">
+  <div class="w3-cell"><h1>/api/player/</h1></div>
+  <div class="w3-cell"><input [ngModel]="steamId" (ngModelChange)="steamId = $event; run();" class="w3-input w3-green w3-border-0 w3-xlarge" placeholder="<Steam ID>" /></div>
+</div>
+<section *ngIf="loaded == false" class="w3-container">
+  <div class="w3-panel w3-light-grey">
+    <h3 class="w3-text-grey">Loading...</h3>
+  </div> 
+</section>
+<section *ngIf="loaded == true &amp;&amp; player == null" class="w3-container">
+  <div class="w3-panel w3-red">
+    <h3>Error!</h3>
+    <p>No data could be loaded for the given steam id.</p>
+  </div> 
+</section>
+<section *ngIf="player" class="w3-container">
+  <h2 class="w3-text-blue">Servers</h2>
+  <div *ngIf="player?.Servers" class="w3-bar w3-light-grey w3-card-4">
+    <button *ngFor="let server of keysGetter(player?.Servers)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'w3-blue': active(server), 'w3-text-white': active(server)}" [style.width.%]="serverWidth()" (click)="activate(server)">{{server}}</button>
+  </div>
+</section>
+<section *ngIf="player" class="w3-container">
+  <h2 class="w3-text-blue">Player</h2>
+  <table class="w3-table-all w3-card-4">
+    <thead>
+      <tr class="w3-blue">
+        <th>Character Name</th>
+        <th>Gender</th>
+        <th>Tribe Name</th>
+        <th>Steam Id</th>
+        <th>Tribe Id</th>
+        <th>Level</th>
+        <th>Engram Points</th>
+        <th>Lat</th>
+        <th>Lng</th>
+        <th>Saved At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{player?.Servers[serverKey]?.CharacterName}}</td>
+        <td>{{player?.Servers[serverKey]?.Gender}}</td>
+        <td>{{player?.Servers[serverKey]?.TribeName}}</td>
+        <td>{{player?.Servers[serverKey]?.SteamId}}</td>
+        <td>{{player?.Servers[serverKey]?.TribeId}}</td>
+        <td>{{player?.Servers[serverKey]?.Level}}</td>
+        <td>{{player?.Servers[serverKey]?.EngramPoints | number}}</td>
+        <td>{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>
+        <td>{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>
+        <td>{{toDate(player?.Servers[serverKey]?.SavedAt)}}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+<section *ngIf="player" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><h2 class="w3-text-blue w3-left">Creatures <span class="w3-tag w3-large w3-blue">{{filteredCreatures.length}}</span></h2></div>
+    <div class="w3-cell w3-cell-middle"><button class="w3-button w3-blue w3-right" (click)="openMap($event)">Show Map</button></div>
+  </div>
+  <div class="inner-addon right-addon">
+    <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
+    <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom" placeholder="Filter" />
+  </div>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all">
+      <thead>
+        <tr class="w3-blue">
+          <th>Name</th>
+          <!--<th>ClassName</th>-->
+          <th>Species</th>
+          <!--<th>Aliases</th>-->
+          <th>Gender</th>
+          <th>Base Level</th>
+          <th>Level</th>
+          <th>Imprint</th>
+          <th>Food</th>
+          <th>Lat</th>
+          <th>Lng</th>
+          <th>Status</th>
+          <th>Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let creature of filteredCreatures">
+          <td>{{creature.Name}}</td>
+          <!--<td>{{creature.ClassName}}</td>-->
+          <td>{{creature.Species}}</td>
+          <!--<td>{{creature.Aliases}}</td>-->
+          <td>{{creature.Gender}}</td>
+          <td>{{creature.BaseLevel}}</td>
+          <td><span *ngIf="creature.BaseLevel != creature.Level">{{creature.Level}}</span></td>
+          <td>{{creature.Imprint | percent:'1.0-0'}}</td>
+          <td>
+            <div *ngIf="creature.FoodStatus != null" class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.FoodStatus | percent:'1.0-0'}}</div>
+              <div class="w3-green w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
+            </div>
+          </td>
+          <td>{{creature.Latitude | number:'1.1-1'}}</td>
+          <td>{{creature.Longitude | number:'1.1-1'}}</td>
+          <td>
+            <span *ngIf="haveMatingCooldown(creature.NextMating)">Next mating {{toRelativeDate(creature.NextMating)}}</span>
+            <div *ngIf="creature.BabyAge != null">
+              <div>
+                <div class="w3-cell w3-cell-middle">Baby</div>
+                <div class="w3-cell w3-cell-middle">
+                  <div class="app-green-light w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
+                    <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
+                    <div class="w3-green w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
+                  </div>
+                </div>
+                <div class="w3-cell">cuddle {{toRelativeDate(creature.BabyNextCuddle)}}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{creature.OwnerType}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
+  <header class="w3-container w3-white"> 
+    <span (click)="showMap = false" class="w3-button w3-white w3-xlarge w3-display-topright">&times;</span>
+    <h2>Map</h2>
+  </header>
+  <arkmap [mapName]="player?.MapNames[serverKey]" [points]="points"></arkmap>
+  </div>
+</div>

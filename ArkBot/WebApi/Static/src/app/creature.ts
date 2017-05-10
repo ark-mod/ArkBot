@@ -12,6 +12,8 @@ export class Creature {
     public Latitude: number,
     public Longitude: number,
     public NextMating: string,
-    public OwnerType: string) {
+    public OwnerType: string,
+    public TopoMapX: number,
+    public TopoMapY: number) {
     }
 }

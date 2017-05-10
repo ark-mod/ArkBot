@@ -20,6 +20,7 @@ namespace ArkBot.WebApi.Model
         public string Gender { get; set; }
         public int BaseLevel { get; set; }
         public int Level { get; set; }
+        public float? BabyAge { get; set; }
         public float? Imprint { get; set; }
         public float? FoodStatus { get; set; }
         public float? Latitude { get; set; }
@@ -27,6 +28,7 @@ namespace ArkBot.WebApi.Model
         public float? TopoMapX { get; set; }
         public float? TopoMapY { get; set; }
         public DateTime? NextMating { get; set; }
+        public DateTime? BabyNextCuddle { get; set; }
         public string OwnerType { get; set; }
     }
 }

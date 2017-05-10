@@ -1,0 +1,18 @@
+/* You can add global styles to this file, and also import other style files */
+.inner-addon { 
+    position: relative; 
+}
+
+/* style icon */
+.inner-addon .material-icons {
+    position: absolute;
+    padding: 10px;
+}
+
+/* align icon */
+.left-addon .material-icons  { left:  0px;}
+.right-addon .material-icons { right: 0px;}
+
+/* add padding  */
+.left-addon input  { padding-left:  30px; }
+.right-addon input { padding-right: 30px; }
