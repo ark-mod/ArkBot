@@ -371,6 +371,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ArkSaveFileWatcherTimer.cs" />
     <Compile Include="Commands\ServersCommand.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />

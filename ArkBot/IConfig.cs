@@ -37,6 +37,7 @@
         bool DiscordBotEnabled { get; set; }
         string WebApiListenPrefix { get; set; }
         string PowershellFilePath { get; set; }
+        bool UseCompatibilityChangeWatcher { get; set; }
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }

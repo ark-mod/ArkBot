@@ -7,6 +7,7 @@ using ArkSavegameToolkitNet;
 using ArkSavegameToolkitNet.Domain;
 using ArkSavegameToolkitNet.Structs;
 using ArkSavegameToolkitNet.Types;
+using Autofac;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace ArkBot.Ark
 
         internal IArkSaveFileWatcher _saveFileWatcher;
         internal ArkContextManager _contextManager;
+        private ILifetimeScope _scope;
 
         //public event UpdateTriggeredEventHandler UpdateQueued;
         public event UpdateCompletedEventHandler UpdateCompleted;
@@ -88,10 +90,11 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkServerContext(ServerConfigSection config)
+        public ArkServerContext(ServerConfigSection config, ILifetimeScope scope)
         {
             Config = config;
-            _saveFileWatcher = new ArkSaveFileWatcher(this);
+            _scope = scope;
+            _saveFileWatcher = _scope.Resolve<IArkSaveFileWatcher>(new TypedParameter(typeof(ArkServerContext), this));
             Steam = new SteamManager(config);
         }
 

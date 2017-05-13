@@ -159,6 +159,10 @@ namespace ArkBot
         [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect).")]
         public string PowershellFilePath { get; set; }
 
+        [JsonProperty(PropertyName = "useCompatibilityChangeWatcher")]
+        [Description("Use timer based .ark save file watcher rather than the default (based on FileSystemWatcher).")]
+        public bool UseCompatibilityChangeWatcher { get; set; }
+
         [JsonProperty(PropertyName = "servers")]
         [Description("Server instance configurations.")]
         public ServerConfigSection[] Servers { get; set; }

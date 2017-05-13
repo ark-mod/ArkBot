@@ -564,6 +564,9 @@ namespace ArkBot.ViewModel
             var thisAssembly = Assembly.GetExecutingAssembly();
             var builder = new ContainerBuilder();
 
+            builder.RegisterType<ArkServerContext>().AsSelf();
+            if (_config.UseCompatibilityChangeWatcher) builder.RegisterType<ArkSaveFileWatcherTimer>().As<IArkSaveFileWatcher>();
+            else builder.RegisterType<ArkSaveFileWatcher>().As<IArkSaveFileWatcher>();
             builder.RegisterInstance(discord).AsSelf();
             builder.RegisterType<ArkDiscordBot>();
             builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
@@ -625,7 +628,7 @@ namespace ArkBot.ViewModel
                 var backupService = Container.Resolve<ISavegameBackupService>();
                 foreach (var server in _config.Servers)
                 {
-                    var context = new ArkServerContext(server);
+                    var context = Container.Resolve<ArkServerContext>(new TypedParameter(typeof(ServerConfigSection), server));
                     _contextManager.AddServer(context);
                 }
 

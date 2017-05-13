@@ -27,7 +27,8 @@
   "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
   "discordBotEnabled": true,
   "webApiListenPrefix": "http://+:<your open port>/",
-  "powershellFilePath":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "useCompatibilityChangeWatcher":  false,
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
     "babyMatureSpeedMultiplier": 1.0,
