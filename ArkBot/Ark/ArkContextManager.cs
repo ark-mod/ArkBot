@@ -16,7 +16,7 @@ namespace ArkBot.Ark
 {
     public delegate void InitializationCompletedEventHandler();
     //public delegate void UpdateTriggeredEventHandler(ArkServerContext sender);
-    public delegate void UpdateCompletedEventHandler(ArkServerContext sender, bool successful, bool cancelled);
+    public delegate void UpdateCompletedEventHandler(IArkUpdateableContext sender, bool successful, bool cancelled);
     public delegate void BackupCompletedEventHandler(ArkServerContext sender, bool backupsEnabled, SavegameBackupResult result);
     public delegate void VoteInitiatedEventHandler(ArkServerContext sender, VoteInitiatedEventArgs e);
     public delegate void VoteResultForcedEventHandler(ArkServerContext sender, VoteResultForcedEventArgs e);
@@ -37,9 +37,9 @@ namespace ArkBot.Ark
         public event VoteInitiatedEventHandler VoteInitiated;
         public event VoteResultForcedEventHandler VoteResultForced;
 
-        private BlockingCollection<Tuple<ArkServerContext, bool>> _updateQueue;
+        private BlockingCollection<Tuple<IArkUpdateableContext, bool>> _updateQueue;
         private CancellationTokenSource _currentCts;
-        private ArkServerContext _currentContext;
+        private IArkUpdateableContext _currentContext;
 
         private CancellationTokenSource _cts;
         private Task _proc;
@@ -54,7 +54,7 @@ namespace ArkBot.Ark
             _progress = progress;
             _savegameBackupService = savegameBackupService;
 
-            _updateQueue = new BlockingCollection<Tuple<ArkServerContext, bool>>();
+            _updateQueue = new BlockingCollection<Tuple<IArkUpdateableContext, bool>>();
             _cts = new CancellationTokenSource();
             _proc = Task.Run(() => _updateManagerRun(_cts.Token));
         }
@@ -65,7 +65,7 @@ namespace ArkBot.Ark
             {
                 while (!_updateQueue.IsCompleted)
                 {
-                    Tuple<ArkServerContext, bool> queueItem = null;
+                    Tuple<IArkUpdateableContext, bool> queueItem = null;
                     try
                     {
                         queueItem = _updateQueue.Take();
@@ -76,7 +76,7 @@ namespace ArkBot.Ark
                     {
                         _currentCts = new CancellationTokenSource();
                         _currentContext = queueItem.Item1;
-                        queueItem.Item1._serverUpdate(queueItem.Item2, _config, _savegameBackupService, _progress, _currentCts.Token);
+                        queueItem.Item1.Update(queueItem.Item2, _config, _savegameBackupService, _progress, _currentCts.Token);
                     }
                 }
             }
@@ -86,39 +86,63 @@ namespace ArkBot.Ark
         private void _saveFileWatcher_Changed(ArkServerContext serverContext, ArkSaveFileChangedEventArgs e)
         {
             QueueServerUpdate(serverContext);
+
+            var clusterContext = GetCluster(serverContext.Config.Cluster);
+            if (clusterContext == null) return;
+            QueueClusterUpdate(clusterContext);
         }
 
         public void QueueUpdateServerManual(ArkServerContext serverContext)
         {
-            
-            if (_updateQueue.Any(x => x.Item1 == serverContext))
+            QueueUpdateManual(serverContext, "Server", serverContext.Config.Key);
+        }
+
+        public void QueueUpdateClusterManual(ArkClusterContext clusterContext)
+        {
+            QueueUpdateManual(clusterContext, "Cluster", clusterContext.Config.Key);
+        }
+
+        private void QueueUpdateManual(IArkUpdateableContext context, string type, string key)
+        {
+
+            if (_updateQueue.Any(x => x.Item1 == context))
             {
                 return;
             }
 
-            if (_currentContext == serverContext)
+            if (_currentContext == context)
             {
                 _currentCts?.Cancel();
             }
 
-            _progress.Report($"Server ({serverContext.Config.Key}): Update queued manually ({DateTime.Now:HH:mm:ss.ffff})");
-            _updateQueue.Add(Tuple.Create(serverContext, true));
+            _progress.Report($"{type}({key}): Update queued manually ({DateTime.Now:HH:mm:ss.ffff})");
+            _updateQueue.Add(new Tuple<IArkUpdateableContext, bool>(context, true));
         }
 
         public void QueueServerUpdate(ArkServerContext serverContext)
         {
-            if (_updateQueue.Any(x => x.Item1 == serverContext))
+            QueueUpdate(serverContext, "Server", serverContext.Config.Key);
+        }
+
+        public void QueueClusterUpdate(ArkClusterContext clusterContext)
+        {
+            QueueUpdate(clusterContext, "Cluster", clusterContext.Config.Key);
+        }
+
+        private void QueueUpdate(IArkUpdateableContext context, string type, string key)
+        {
+            if (_updateQueue.Any(x => x.Item1 == context))
             {
                 return;
             }
 
-            if (_currentContext == serverContext)
+            if (_currentContext == context)
             {
                 _currentCts?.Cancel();
             }
 
-            _progress.Report($"Server ({serverContext.Config.Key}): Update queued by watcher ({DateTime.Now:HH:mm:ss.ffff})");
-            _updateQueue.Add(Tuple.Create(serverContext, false));
+            _progress.Report($"{type} ({key}): Update queued by watcher ({DateTime.Now:HH:mm:ss.ffff})");
+            _updateQueue.Add(new Tuple<IArkUpdateableContext, bool>(context, false));
         }
 
         public void AddServer(ArkServerContext context)
@@ -143,10 +167,10 @@ namespace ArkBot.Ark
             VoteInitiated?.Invoke(sender, e);
         }
 
-        private void Context_UpdateCompleted(ArkServerContext sender, bool successful, bool cancelled)
+        private void Context_UpdateCompleted(IArkUpdateableContext sender, bool successful, bool cancelled)
         {
             // When all server contexts have completed one update successfully trigger the InitializationCompleted-event.
-            if (!IsFullyInitialized && Servers.All(x => x.IsInitialized))
+            if (!IsFullyInitialized && Servers.All(x => x.IsInitialized) && Clusters.All(x => x.IsInitialized))
             {
                 IsFullyInitialized = true;
                 InitializationCompleted?.Invoke();
@@ -167,6 +191,7 @@ namespace ArkBot.Ark
 
         public void AddCluster(ArkClusterContext context)
         {
+            context.UpdateCompleted += Context_UpdateCompleted;
             _clusterContexts.Add(context.Config.Key, context);
         }
 

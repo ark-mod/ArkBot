@@ -13,18 +13,19 @@ namespace ArkBot.WebApi.Model
             Creatures = new List<TamedCreatureViewModel>();
         }
 
+        public string ClusterKey { get; set; }
         public string SteamId { get; set; }
         public string CharacterName { get; set; }
         public string Gender { get; set; }
         public string TribeName { get; set; }
         public int? TribeId { get; set; }
-        public int Level { get; set; }
-        public int EngramPoints { get; set; }
+        public int? Level { get; set; }
+        public int? EngramPoints { get; set; }
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }
         public float? TopoMapX { get; set; }
         public float? TopoMapY { get; set; }
         public DateTime SavedAt { get; set; }
-        public IList<TamedCreatureViewModel> Creatures { get; set; }
+        public List<TamedCreatureViewModel> Creatures { get; set; }
     }
 }

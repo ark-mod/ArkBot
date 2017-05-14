@@ -29,13 +29,14 @@ namespace ArkBot.Notifications
         }
 
         /// <summary>
-        /// On server updates broadcast SignalR clients with serverUpdateNotification-message
+        /// On updates broadcast SignalR clients with serverUpdateNotification-/clusterUpdateNotification-message
         /// </summary>
-        private void _contextManager_UpdateCompleted(ArkServerContext sender, bool successful, bool cancelled)
+        private void _contextManager_UpdateCompleted(IArkUpdateableContext sender, bool successful, bool cancelled)
         {
             if (!successful) return;
 
-            _hubContext.Clients.All.serverUpdateNotification(sender.Config.Key);
+            if (sender is ArkServerContext) _hubContext.Clients.All.serverUpdateNotification((sender as ArkServerContext).Config.Key);
+            if (sender is ArkClusterContext) _hubContext.Clients.All.clusterUpdateNotification((sender as ArkClusterContext).Config.Key);
         }
     }
 }

@@ -12,6 +12,7 @@ export class HttpService {
 
   private headers = new Headers({'Content-Type': 'application/json'});
   private serversUrl = '/servers';
+  private serverUrl = '/server';
   private playerUrl = '/player';
 
   constructor(private http: Http) { }
@@ -20,6 +21,13 @@ export class HttpService {
     return this.http.get(`${environment.apiBaseUrl}${this.serversUrl}`)
                .toPromise()
                .then(response => response.json() as Servers)
+               .catch(this.handleError);
+  }
+
+  getServer(serverKey: string): Promise<any> {
+    return this.http.get(`${environment.apiBaseUrl}${this.serverUrl}/${serverKey}`)
+               .toPromise()
+               .then(response => response.json() as any)
                .catch(this.handleError);
   }
 

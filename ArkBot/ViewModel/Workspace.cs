@@ -62,6 +62,7 @@ namespace ArkBot.ViewModel
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
         public ObservableCollection<MenuItemViewModel> ManuallyUpdateServers { get; set; }
+        public ObservableCollection<MenuItemViewModel> ManuallyUpdateClusters { get; set; }
 
         internal static IContainer Container { get; set; }
 
@@ -92,6 +93,7 @@ namespace ArkBot.ViewModel
         {
             //do not create viewmodels or load data here, or avalondock layout deserialization will fail
             ManuallyUpdateServers = new ObservableCollection<MenuItemViewModel>();
+            ManuallyUpdateClusters = new ObservableCollection<MenuItemViewModel>();
             ClosingCommand = new DelegateCommand<System.ComponentModel.CancelEventArgs>(OnClosing);
             PropertyChanged += Workspace_PropertyChanged;
         }
@@ -110,6 +112,13 @@ namespace ArkBot.ViewModel
             var context = _contextManager.GetServer(serverKey);
             if (context == null) MessageBox.Show($"Could not find server instance '{serverKey}'", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             _contextManager.QueueUpdateServerManual(context);
+        }
+
+        private void OnManuallyTriggerClusterUpdate(string clusterKey)
+        {
+            var context = _contextManager.GetCluster(clusterKey);
+            if (context == null) MessageBox.Show($"Could not find cluster instance '{clusterKey}'", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _contextManager.QueueUpdateClusterManual(context);
         }
 
         private void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -629,6 +638,7 @@ namespace ArkBot.ViewModel
                 foreach (var server in _config.Servers)
                 {
                     var context = Container.Resolve<ArkServerContext>(new TypedParameter(typeof(ServerConfigSection), server));
+                    var initTask = context.Initialize(); //fire and forget
                     _contextManager.AddServer(context);
                 }
 
@@ -647,6 +657,18 @@ namespace ArkBot.ViewModel
                         CommandParameter = context.Config.Key
                     });
                     _contextManager.QueueUpdateServerManual(context);
+                }
+
+                // Trigger manual updates for all clusters (initialization)
+                foreach (var context in _contextManager.Clusters)
+                {
+                    ManuallyUpdateClusters.Add(new MenuItemViewModel
+                    {
+                        Header = context.Config.Key,
+                        Command = new DelegateCommand<string>(OnManuallyTriggerClusterUpdate),
+                        CommandParameter = context.Config.Key
+                    });
+                    _contextManager.QueueUpdateClusterManual(context);
                 }
             }
 

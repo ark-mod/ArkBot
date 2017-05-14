@@ -189,9 +189,10 @@ namespace ArkBot
             Progress.Report("Initialization done!" + Environment.NewLine);
         }
 
-        private async void ContextManager_UpdateCompleted(Ark.ArkServerContext sender, bool successful, bool cancelled)
+        private async void ContextManager_UpdateCompleted(Ark.IArkUpdateableContext sender, bool successful, bool cancelled)
         {
-            if (cancelled == false && sender.Config.Key.Equals(_config.ServerKey) && !_contextUpdatesDisabledOverride)
+            var serverContext = sender as Ark.ArkServerContext;
+            if (cancelled == false && serverContext != null && serverContext.Config.Key.Equals(_config.ServerKey) && !_contextUpdatesDisabledOverride)
             {
                 Progress.Report($"Context: Update triggered by watcher at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 //await UpdateAll();

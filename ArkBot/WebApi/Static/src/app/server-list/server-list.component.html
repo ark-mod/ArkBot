@@ -1,0 +1,96 @@
+<section *ngIf="dataService.Servers" class="w3-container">
+  <h2 class="theme-text-d1">Servers</h2>
+  <div *ngFor="let server of dataService.Servers.Servers; let last = last;" class="w3-card-4 w3-responsive" style="margin-bottom: 2em; display: inline-block; vertical-align: top;" [style.margin-right.em]="last ? 0 : 2">
+    <table class="w3-table-all w3-small border-theme" style="width: auto;">
+        <tr>
+          <th class="theme-d1" colspan="2" style="font-size: 1.5em;"><a [routerLink]="'/server/' + server.Key">{{server.Name}}</a></th>
+        </tr>
+        <tr>
+          <th class="theme-d1">Address</th>
+          <td>{{server.Address}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Version</th>
+          <td>{{server.Version}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Map</th>
+          <td>{{server.MapName}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">In-Game Time</th>
+          <td>{{server.InGameTime}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Tamed Creatures</th>
+          <td>{{server.TamedCreatureCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Wild Creatures</th>
+          <td>{{server.WildCreatureCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Structures</th>
+          <td>{{server.StructureCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Players</th>
+          <td>{{server.PlayerCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Tribes</th>
+          <td>{{server.TribeCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Last Update</th>
+          <td>{{server.LastUpdate}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Next Update</th>
+          <td>{{server.NextUpdate}}</td>
+        </tr>
+        <tr style="border-bottom: none;">
+          <th colspan="2" class="theme-d1">Online Players ({{server.OnlinePlayerCount}} / {{server.OnlinePlayerMax}})</th>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding: 0px">
+            <table class="w3-table w3-striped w3-bordered border-theme">
+                <tr class="theme-d1">
+                    <th>Steam Name</th>
+                    <th>Character Name</th>
+                    <th>Tribe Name</th>
+                    <th>Discord Tag</th>
+                    <th>Time Online</th>
+                </tr>
+                <tr *ngFor="let player of server.OnlinePlayers">
+                  <td>{{player.SteamName}}</td>
+                  <td>{{player.CharacterName}}</td>
+                  <td>{{player.TribeName}}</td>
+                  <td>{{player.DiscordName}}</td>
+                  <td>{{player.TimeOnline}}</td>
+                </tr>
+            </table>
+          </td>
+        </tr>
+    </table>
+  </div>
+</section>
+
+<!--
+  public string Key { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Version { get; set; }
+        public int OnlinePlayerCount { get; set; }
+        public int OnlinePlayerMax { get; set; }
+        public string MapName { get; set; }
+        public string InGameTime { get; set; }
+        public int TamedCreatureCount { get; set; }
+        public int WildCreatureCount { get; set; }
+        public int StructureCount { get; set; }
+        public int PlayerCount { get; set; }
+        public int TribeCount { get; set; }
+        public string LastUpdate { get; set; }
+        public string NextUpdate { get; set; }
+        public IList<OnlinePlayerViewModel> OnlinePlayers { get; set; }
+          -->

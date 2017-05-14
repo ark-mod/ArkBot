@@ -372,6 +372,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="ArkSaveFileWatcherTimer.cs" />
+    <Compile Include="Ark\IArkUpdateableContext.cs" />
     <Compile Include="Commands\ServersCommand.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
@@ -535,14 +536,20 @@
     <Compile Include="Voting\VotingManager.cs" />
     <Compile Include="WebApi\Controllers\MapController.cs" />
     <Compile Include="WebApi\Controllers\BulkController.cs" />
+    <Compile Include="WebApi\Controllers\ServerController.cs" />
     <Compile Include="WebApi\Controllers\TribeController.cs" />
     <Compile Include="WebApi\Controllers\ServersController.cs" />
     <Compile Include="WebApi\Controllers\PlayerController.cs" />
     <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
     <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
     <Compile Include="WebApi\Model\OnlinePlayerViewModel.cs" />
+    <Compile Include="WebApi\Model\PlayerClusterViewModely.cs" />
+    <Compile Include="WebApi\Model\CloudCreatureViewModel.cs" />
+    <Compile Include="WebApi\Model\TribeReferenceViewModel.cs" />
+    <Compile Include="WebApi\Model\PlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerServerViewModel.cs" />
     <Compile Include="WebApi\Model\BulkViewModel.cs" />
+    <Compile Include="WebApi\Model\ServerViewModel.cs" />
     <Compile Include="WebApi\Model\TribeViewModel.cs" />
     <Compile Include="WebApi\Model\ServerStatusViewModel.cs" />
     <Compile Include="WebApi\Model\ServerStatusAllViewModel.cs" />

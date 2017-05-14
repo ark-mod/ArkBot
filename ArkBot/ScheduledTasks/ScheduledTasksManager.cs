@@ -19,8 +19,6 @@ namespace ArkBot.ScheduledTasks
     {
         private Timer _timer;
         private ConcurrentDictionary<TimedTask, bool> _timedTasks;
-        private TimeSpan? _prevNextUpdate;
-        private DateTime _prevLastUpdate;
         private DateTime _prevTimedBansUpdate;
         private DateTime _prevTopicUpdate;
         private DateTime _prevServerStatusUpdate;
@@ -115,34 +113,34 @@ namespace ArkBot.ScheduledTasks
 
                 if (_config.InfoTopicChannel != null)
                 {
-                    if (DateTime.Now - _prevTopicUpdate > TimeSpan.FromSeconds(10))
+                    if (DateTime.Now - _prevTopicUpdate > TimeSpan.FromSeconds(60))
                     {
                         _prevTopicUpdate = DateTime.Now;
                         var topicUpdateTask = Task.Run(async () =>
                         {
+                            var sb = new StringBuilder();
+                            sb.AppendLine(@"Type !help to get started | ");
+
+                            var n = 0;
                             foreach (var serverContext in _contextManager.Servers)
                             {
                                 var lastUpdate = serverContext.LastUpdate;
                                 var nextUpdate = serverContext.ApproxTimeUntilNextUpdate;
-                                if ((lastUpdate != _prevLastUpdate || nextUpdate != _prevNextUpdate))
-                                {
-                                    _prevLastUpdate = lastUpdate;
-                                    _prevNextUpdate = nextUpdate;
+                                
+                                var nextUpdateTmp = nextUpdate?.ToStringCustom();
+                                var nextUpdateString = (nextUpdate.HasValue ? (!string.IsNullOrWhiteSpace(nextUpdateTmp) ? $", Next Update in ~{nextUpdateTmp}" : ", waiting for new update ...") : "");
+                                var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
+                                sb.Append($@"{serverContext.Config.Key}: Updated {lastUpdateString}{nextUpdateString}");
+                                if (++n < _contextManager.Servers.Length) sb.AppendLine(" | ");
+                            }
 
-                                    var nextUpdateTmp = nextUpdate?.ToStringCustom();
-                                    var nextUpdateString = (nextUpdate.HasValue ? (!string.IsNullOrWhiteSpace(nextUpdateTmp) ? $", Next Update in ~{nextUpdateTmp}" : ", waiting for new update ...") : "");
-                                    var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
-                                    var newtopic = $"Updated {lastUpdateString}{nextUpdateString} | Type !help to get started";
-
-                                    try
-                                    {
-                                        await _discordManager.EditChannelByNameOnAllServers(_config.InfoTopicChannel, topic: newtopic);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Logging.LogException("Error when attempting to change bot info channel topic", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Ignored);
-                                    }
-                                }
+                            try
+                            {
+                                await _discordManager.EditChannelByNameOnAllServers(_config.InfoTopicChannel, topic: sb.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                Logging.LogException("Error when attempting to change bot info channel topic", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Ignored);
                             }
                         });
                     }

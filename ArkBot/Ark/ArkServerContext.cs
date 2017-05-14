@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Ark
 {
-    public class ArkServerContext : IDisposable
+    public class ArkServerContext : IArkUpdateableContext,  IDisposable
     {
         public ServerConfigSection Config { get; set; }
 
@@ -98,7 +98,12 @@ namespace ArkBot.Ark
             Steam = new SteamManager(config);
         }
 
-        internal bool _serverUpdate(bool manualUpdate, IConfig fullconfig, ISavegameBackupService savegameBackupService, IProgress<string> progress, CancellationToken ct)
+        public async Task Initialize()
+        {
+            await Steam.Initialize();
+        }
+
+        public bool Update(bool manualUpdate, IConfig fullconfig, ISavegameBackupService savegameBackupService, IProgress<string> progress, CancellationToken ct)
         {
             //backup this savegame
             if (!manualUpdate)
@@ -214,7 +219,7 @@ namespace ArkBot.Ark
                 TamedCreatures = tamed;
                 WildCreatures = wild;
                 Players = players;
-                Tribes = tribes.Select(x => x.Tribe.AsTribe()).ToArray();
+                Tribes = tribes.Select(x => x.Tribe.AsTribe(x.SaveTime)).ToArray();
                 Items = save.Objects.Where(x => x.IsItem).Select(x => x.AsItem(save.SaveState)).ToArray();
                 Structures = save.Objects.Where(x => x.IsStructure).Select(x => x.AsStructure(save.SaveState)).ToArray();
 

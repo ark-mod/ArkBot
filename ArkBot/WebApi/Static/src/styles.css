@@ -1,4 +1,43 @@
+.light .theme-l1 {color:#000 !important; background-color:#fff !important}
+.light .theme-l2 {color:#000 !important; background-color:#f1f1f1 !important}
+.light .theme-d1 {color:#fff !important; background-color:#2196F3 !important}
+.light .theme-c1 {color:#fff !important; background-color:#4CAF50 !important}
+
+.light .theme-text-l1-light {color:darkgray !important}
+.light .theme-text-d1 {color:#2196F3 !important}
+.light .theme-text-c1 {color:#4CAF50 !important}
+
+.light .border-theme {border-color:#ddd !important}
+
+
+body.dark { background-color: #000 !important }
+.dark .theme-l1 {color:#fff !important; background-color:#000 !important}
+.dark .theme-l2 {color:#fff !important; background-color:#111 !important}
+.dark .theme-d1 {color:#fff !important; background-color:#114F7F !important}
+.dark .theme-c1 {color:#fff !important; background-color:#183819 !important}
+
+.dark .theme-text-l1-light {color:darkgray !important}
+.dark .theme-text-d1 {color:#114F7F !important}
+.dark .theme-text-c1 {color:#183819 !important}
+
+.dark .border-theme {border-color:#114F7F !important}
+
+.dark .w3-bordered tr,.dark .w3-table-all tr{border-bottom:1px solid #333}
+.dark .w3-striped tbody tr:nth-child(even){background-color:#1f1f1f; color: #fff}
+.dark .w3-table-all tr:nth-child(odd){background-color:#000; color: #fff}
+.dark .w3-table-all tr:nth-child(even){background-color:#1f1f1f; color: #fff}
+
+.dark .w3-card-4 {box-shadow:none;}
+
+.dark .breadcrumb ul li a { color: #114F7F !important}
+/*.w3-card,.w3-card-2{box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)}
+.w3-card-4,.w3-hover-shadow:hover{box-shadow:0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19)}*/
+
 /* You can add global styles to this file, and also import other style files */
+.app-green-light,.app-hover-green-light:hover{background-color:#CEEDCE!important}
+
+body { margin-bottom: 2em;}
+
 .inner-addon { 
     position: relative; 
 }
@@ -16,3 +55,34 @@
 /* add padding  */
 .left-addon input  { padding-left:  30px; }
 .right-addon input { padding-right: 30px; }
+
+.navigation a:not(.w3-green) {
+    background-color:#CEEDCE!important
+}
+
+/* Style the list */
+.breadcrumb ul {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* Display list items side by side */
+.breadcrumb ul li {
+    display: inline;
+    color: darkgray;
+}
+
+/* Add a slash symbol (/) before/behind each list item */
+.breadcrumb ul li+li:before {
+    padding: 8px;
+    color: silver;
+    content: "/\00a0";
+}
+
+/* Add a color to all links inside the list */
+.breadcrumb ul li a {
+    text-decoration: none;
+    cursor: pointer;
+    color: #2196f3;
+}
