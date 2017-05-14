@@ -117,13 +117,13 @@
     </table>
   </div>
 </section>
-<section *ngIf="player" class="w3-container">
+<section *ngIf="haveCluster()" class="w3-container">
   <h2 class="theme-text-d1">Clusters</h2>
   <div *ngIf="player?.Clusters" class="w3-bar theme-l2 w3-card-4">
     <button *ngFor="let cluster of keysGetter(player?.Clusters)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCluster(cluster)}" [style.width.%]="clusterWidth()" (click)="activateCluster(cluster)">{{cluster}}</button>
   </div>
 </section>
-<section *ngIf="player" class="w3-container">
+<section *ngIf="haveCluster()" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredClusterCreatures.length}}</span></h2></div>
   </div>

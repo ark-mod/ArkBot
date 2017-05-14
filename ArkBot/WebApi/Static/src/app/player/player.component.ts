@@ -43,7 +43,9 @@ export class PlayerComponent implements OnInit {
         .getPlayer(this.steamId)
         .then(player => {
           this.serverKey = Object.keys(player.Servers)[0];
-          this.clusterKey = Object.keys(player.Clusters)[0];
+
+          var clusterKeys = Object.keys(player.Clusters);
+          this.clusterKey = clusterKeys.length > 0 ? clusterKeys[0] : null;
           this.player = player;
 
           this.sort();
@@ -141,6 +143,8 @@ export class PlayerComponent implements OnInit {
   }
 
   sortCluster(): void {
+    if(this.clusterKey == null) return;
+
     this.player.Clusters[this.clusterKey].Creatures.sort((c1, c2) => {
         if(c1.Level > c2.Level) {
           return -1;
@@ -153,6 +157,11 @@ export class PlayerComponent implements OnInit {
   }
 
   filterCluster(): void {
+    if(this.clusterKey == null) {
+      this.filteredClusterCreatures = null;
+      return;
+    }
+
     if (this.creaturesClusterFilter == null || this.creaturesClusterFilter.length == 0) this.filteredClusterCreatures = this.player.Clusters[this.clusterKey].Creatures;
     else {
       let filter = this.creaturesClusterFilter.toLowerCase();
@@ -182,5 +191,9 @@ export class PlayerComponent implements OnInit {
 
   updateServer(serverKey: string): void {
     this.getPlayer();
+  }
+
+  haveCluster(): boolean {
+    return this.player != null && Object.keys(this.player.Clusters).length > 0;
   }
 }
