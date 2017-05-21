@@ -45,10 +45,14 @@ export class ArkMapComponent implements OnChanges {
       
       var img = new Image()
       img.onload = () => this.imageLoaded(img);
-      img.src = `${environment.apiBaseUrl}/map/${this.mapName}`
+      img.src = `${this.getApiBaseUrl()}/map/${this.mapName}`
       if (img.complete) {
         img.onload = null
         this.imageLoaded(img);
       }
+    }
+
+    getApiBaseUrl(): string {
+      return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
     }
 }
