@@ -115,7 +115,7 @@ namespace ArkBot.Ark
                 _currentCts?.Cancel();
             }
 
-            _progress.Report($"{type}({key}): Update queued manually ({DateTime.Now:HH:mm:ss.ffff})");
+            _progress.Report($"{type} ({key}): Update queued manually ({DateTime.Now:HH:mm:ss.ffff})");
             _updateQueue.Add(new Tuple<IArkUpdateableContext, bool>(context, true));
         }
 

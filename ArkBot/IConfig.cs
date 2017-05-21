@@ -36,6 +36,7 @@
         string BackupsDirectoryPath { get; set; }
         bool DiscordBotEnabled { get; set; }
         string WebApiListenPrefix { get; set; }
+        string WebAppListenPrefix { get; set; }
         string PowershellFilePath { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
 

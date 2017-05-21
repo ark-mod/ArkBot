@@ -155,6 +155,10 @@ namespace ArkBot
         [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections.")]
         public string WebApiListenPrefix { get; set; }
 
+        [JsonProperty(PropertyName = "webAppListenPrefix")]
+        [Description("Http listen prefix for Web App (requires a port that is open to external connections.")]
+        public string WebAppListenPrefix { get; set; }
+
         [JsonProperty(PropertyName = "powershellFilePath")]
         [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect).")]
         public string PowershellFilePath { get; set; }

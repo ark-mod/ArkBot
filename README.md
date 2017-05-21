@@ -30,7 +30,7 @@ https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
 ## Configuration in config.json (copy defaultconfig.json template file)
 
-### There are many fields that are not covered below and some information may not be up-to-date. Sticking to the defaultconfig.json setup with minimal changes according to your environment is the safest bet. Open a GitHub issue or contact me on Discord (Tobias#5051) if there are any problem. 
+### There are many fields that are not covered below and some information may not be up-to-date. Sticking to the defaultconfig.json setup with minimal changes according to your environment is the safest bet. Open a GitHub issue or contact me on Discord (Tobias#5051) if there are any problems. 
 
 **All config settings have descriptions that can be found in:**
 https://github.com/tsebring/ArkBot/blob/master/ArkBot/Config.cs.
@@ -111,6 +111,10 @@ RESTful API for accessing exported ARK Server save data via HTTP in JSON- or XML
 
 /api/player/`steamId`: Player data for player identified by `steamId` from each configured server instance.
 
+/api/server/`serverKey`: Player and tribe listing from each configured server instance.
+
+/api/adminserver/`serverKey`: Player and tribe listingwith additional creature and structure counts from each configured server instance.
+
 /api/servers: Server status information including active players and statistics for each configured server instance.
 
 /signalr/ (hub name `ServerUpdateHub`): Server update notifications using SignalR.
@@ -119,6 +123,6 @@ RESTful API for accessing exported ARK Server save data via HTTP in JSON- or XML
 
 A web application built on top of the Web API and implemented in Angular (https://angular.io/). 
 
-Features character- and creature information with food-status, mating cooldowns, baby age and cuddle timers.
+Features server status, online player listing, per server player-/tribe listings, individual player profile with character- and creature information with food-status, mating cooldowns, baby age and cuddle timers.
 
-Url: `webApiListenPrefix`/gui/index.html
+Url: `webAppListenPrefix`/servers

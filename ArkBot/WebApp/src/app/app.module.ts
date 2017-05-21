@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { PlayerComponent } from './player/player.component';
 import { ServerComponent } from './server/server.component';
 import { ServerListComponent } from './server-list/server-list.component';
+import { AdminServerComponent } from './admin-server/admin-server.component';
 
 import { ArkMapComponent } from './arkmap.component';
 import { HttpService } from './http.service';
@@ -31,6 +32,11 @@ const appRoutes: Routes = [
     data: { title: 'Server' }
   },
   {
+    path: 'admin/:id', 
+    component: AdminServerComponent,
+    data: { title: 'Admin Server' }
+  },
+  {
     path: 'servers',
     component: ServerListComponent,
     data: { title: 'Server List' }
@@ -49,7 +55,8 @@ const appRoutes: Routes = [
     SanitizeStylePipe,
     ClickOutsideDirective,
     PlayerComponent,
-    ServerComponent
+    ServerComponent,
+    AdminServerComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),

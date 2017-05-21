@@ -85,6 +85,7 @@ namespace ArkBot.ViewModel
 
         private SavedState _savedstate = null;
         private IDisposable _webapi;
+        private IDisposable _webapp;
 
         private ArkContextManager _contextManager;
         private IConfig _config;
@@ -401,6 +402,12 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebApiListenPrefix))}");
                 sb.AppendLine();
             }
+            if (string.IsNullOrWhiteSpace(_config.WebAppListenPrefix))
+            {
+                sb.AppendLine($@"Error: {nameof(_config.WebAppListenPrefix)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebAppListenPrefix))}");
+                sb.AppendLine();
+            }
 
             var clusterkeys = _config.Clusters?.Select(x => x.Key).ToArray();
             var serverkeys = _config.Servers?.Select(x => x.Key).ToArray();
@@ -684,8 +691,12 @@ namespace ArkBot.ViewModel
             await ArkSpeciesStats.Instance.LoadOrUpdate();
 
             //webapi
-            _webapi = WebApp.Start<Startup>(url: _config.WebApiListenPrefix);
-            Console.AddLog("WebAPI started");
+            _webapi = Microsoft.Owin.Hosting.WebApp.Start<WebApiStartup>(url: _config.WebApiListenPrefix);
+            Console.AddLog("Web API started");
+
+            //webapi
+            _webapp = Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppStartup>(url: _config.WebAppListenPrefix);
+            Console.AddLog("Web App started");
         }
 
         private Task _runDiscordBotTask;
@@ -773,6 +784,9 @@ namespace ArkBot.ViewModel
                 {
                     _webapi?.Dispose();
                     _webapi = null;
+
+                    _webapp?.Dispose();
+                    _webapp = null;
                 }
 
                 disposedValue = true;

@@ -17,10 +17,11 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.IO;
 
 namespace ArkBot.WebApi
 {
-    public class Startup
+    public class WebApiStartup
     {
         // This code configures Web API. The Startup class is specified as a type
         // parameter in the WebApp.Start method.
@@ -45,11 +46,11 @@ namespace ArkBot.WebApi
             appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseWebApi(config);
             appBuilder.MapSignalR(hubConfig);
-            appBuilder.UseFileServer(new FileServerOptions
-            {
-                FileSystem = new PhysicalFileSystem(@"WebApi\Static\"),
-                RequestPath = new PathString("/gui")
-            });
+            //appBuilder.UseFileServer(new FileServerOptions
+            //{
+            //    FileSystem = new PhysicalFileSystem(@"WebApi\Static\"),
+            //    RequestPath = new PathString("/app"),
+            //});
         }
     }
 

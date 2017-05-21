@@ -16,20 +16,26 @@
       <thead>
         <tr class="theme-d1">
           <th>Steam Id</th>
-          <th>Steam Name</th>
+          <th>Character Id</th>
+          <!--<th>Steam Name</th>-->
           <th>Character Name</th>
           <th>Tribe Name</th>
           <th>Tribe Id</th>
+          <th>Structures</th>
+          <th>Creatures</th>
           <th>Last Active</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let player of server.Players">
-          <td><a [routerLink]="'/player/' + player.SteamId">{{player.SteamId}}</a></td>
-          <td>{{player.SteamName}}</td>
-          <td>{{player.CharacterName}}</td>
+          <td>{{player.SteamId}}</td>
+          <td>{{player.Id}}</td>
+          <!--<td>{{player.SteamName}}</td>-->
+          <td><a [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a></td>
           <td>{{player.TribeName}}</td>
           <td>{{player.TribeId}}</td>
+          <td>{{player.StructureCount}}</td>
+          <td>{{player.CreatureCount}}</td>
           <td>{{toRelativeDate(player.LastActiveTime)}}</td>
         </tr>
       </tbody>
@@ -44,7 +50,9 @@
         <tr class="theme-d1">
           <th>Id</th>
           <th>Name</th>
-          <th>Member Steam Ids</th>
+          <th>Members</th>
+          <th>Structures</th>
+          <th>Creatures</th>
           <th>Last Active</th>
         </tr>
       </thead>
@@ -53,6 +61,8 @@
           <td>{{tribe.Id}}</td>
           <td>{{tribe.Name}}</td>
           <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><span *ngIf="!last">, </span></span></td>
+          <td>{{tribe.StructureCount}}</td>
+          <td>{{tribe.CreatureCount}}</td>
           <td>{{toRelativeDate(tribe.LastActiveTime)}}</td>
         </tr>
       </tbody>

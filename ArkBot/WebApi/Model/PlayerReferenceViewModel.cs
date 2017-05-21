@@ -8,6 +8,7 @@ namespace ArkBot.WebApi.Model
 {
     public class PlayerReferenceViewModel
     {
+        public ulong Id { get; set; }
         public string SteamId { get; set; }
         public string SteamName { get; set; }
         public string CharacterName { get; set; }

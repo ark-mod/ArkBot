@@ -151,13 +151,30 @@ namespace ArkBot.Steam
 
             if ((DateTime.Now - _lastServerInfo) > TimeSpan.FromMinutes(1))
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
-                    info = _sourceServer.GetInfo();
-                    if (info != null)
+                    try
                     {
-                        _lastServerInfo = DateTime.Now;
-                        cache.Set(cacheKey, info, new CacheItemPolicy {  }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                        if (_sourceServer == null) await ReconnectSource();
+                        if (_sourceServer == null)
+                        {
+                            Logging.Log("Exception attempting to get server info (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
+                            return;
+                        }
+
+                        info = _sourceServer.GetInfo();
+                        if (info != null)
+                        {
+                            _lastServerInfo = DateTime.Now;
+                            cache.Set(cacheKey, info, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _sourceServer?.Dispose();
+                        _sourceServer = null;
+                        Logging.LogException("Exception attempting to get server info", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                        return;
                     }
                 });
             }
@@ -173,13 +190,30 @@ namespace ArkBot.Steam
 
             if ((DateTime.Now - _lastServerRules) > TimeSpan.FromMinutes(1))
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
-                    rules = _sourceServer.GetRules();
-                    if (rules != null)
+                    try
                     {
-                        _lastServerRules = DateTime.Now;
-                        cache.Set(cacheKey, rules, new CacheItemPolicy {  }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                        if (_sourceServer == null) await ReconnectSource();
+                        if (_sourceServer == null)
+                        {
+                            Logging.Log("Exception attempting to get server rules (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
+                            return;
+                        }
+
+                        rules = _sourceServer.GetRules();
+                        if (rules != null)
+                        {
+                            _lastServerRules = DateTime.Now;
+                            cache.Set(cacheKey, rules, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _sourceServer?.Dispose();
+                        _sourceServer = null;
+                        Logging.LogException("Exception attempting to get server rules", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                        return;
                     }
                 });
             }
@@ -195,13 +229,30 @@ namespace ArkBot.Steam
 
             if ((DateTime.Now - _lastServerPlayers) > TimeSpan.FromMinutes(1))
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
-                    players = _sourceServer.GetPlayers();
-                    if (players != null)
+                    try
                     {
-                        _lastServerPlayers = DateTime.Now;
-                        cache.Set(cacheKey, players, new CacheItemPolicy {  }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                        if (_sourceServer == null) await ReconnectSource();
+                        if (_sourceServer == null)
+                        {
+                            Logging.Log("Exception attempting to get server players (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
+                            return;
+                        }
+
+                        players = _sourceServer.GetPlayers();
+                        if (players != null)
+                        {
+                            _lastServerPlayers = DateTime.Now;
+                            cache.Set(cacheKey, players, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _sourceServer?.Dispose();
+                        _sourceServer = null;
+                        Logging.LogException("Exception attempting to get server players", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                        return;
                     }
                 });
             }

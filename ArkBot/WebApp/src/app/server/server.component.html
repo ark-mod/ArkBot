@@ -1,0 +1,61 @@
+<section *ngIf="loaded == false" class="w3-container">
+  <div class="w3-panel w3-light-grey">
+    <h3 class="w3-text-grey">Loading...</h3>
+  </div> 
+</section>
+<section *ngIf="loaded == true &amp;&amp; server == null" class="w3-container">
+  <div class="w3-panel w3-red">
+    <h3>Error!</h3>
+    <p>No data could be loaded for the given server key.</p>
+  </div> 
+</section>
+<section *ngIf="server" class="w3-container">
+  <h2 class="theme-text-d1">Players</h2>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <!--<th>Steam Id</th>-->
+          <!--<th>Steam Name</th>-->
+          <th>Character Name</th>
+          <th>Tribe Name</th>
+          <!--<th>Tribe Id</th>-->
+          <th>Last Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let player of filteredPlayers">
+          <!--<td><a [routerLink]="'/player/' + player.SteamId">{{player.SteamId}}</a></td>-->
+          <!--<td>{{player.SteamName}}</td>-->
+          <td><a [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a></td>
+          <td>{{player.TribeName}}</td>
+          <!--<td>{{player.TribeId}}</td>-->
+          <td>{{toRelativeDate(player.LastActiveTime)}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section *ngIf="server" class="w3-container">
+  <h2 class="theme-text-d1">Tribes</h2>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Id</th>
+          <th>Name</th>
+          <th>Members</th>
+          <th>Last Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tribe of filteredTribes">
+          <td>{{tribe.Id}}</td>
+          <td>{{tribe.Name}}</td>
+          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><span *ngIf="!last">, </span></span></td>
+          <td>{{toRelativeDate(tribe.LastActiveTime)}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

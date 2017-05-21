@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { NotificationsService } from 'angular2-notifications';
 import * as moment from 'moment'
@@ -14,7 +14,8 @@ import { HttpService } from '../http.service';
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.css']
 })
-export class PlayerComponent implements OnInit {
+export class PlayerComponent implements OnInit, OnDestroy {
+  serverUpdatedSubscription: any;
   player: Player;
   filteredCreatures: Creature[];
   creaturesFilter: string;
@@ -35,7 +36,6 @@ export class PlayerComponent implements OnInit {
     private dataService: DataService,
     private messageService: MessageService,
     private notificationsService: NotificationsService) {
-      messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
     }
 
     getPlayer(): void {
@@ -65,7 +65,13 @@ export class PlayerComponent implements OnInit {
   ngOnInit(): void {
     this.steamId = this.route.snapshot.params['id'];
 
+    this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
+
     this.getPlayer();
+  }
+
+  ngOnDestroy() {
+    this.serverUpdatedSubscription.unsubscribe();
   }
 
   haveMatingCooldown(nextMating: string): boolean {
@@ -191,9 +197,22 @@ export class PlayerComponent implements OnInit {
 
   updateServer(serverKey: string): void {
     this.getPlayer();
+    this.showServerUpdateNotification(serverKey);
   }
 
   haveCluster(): boolean {
     return this.player != null && Object.keys(this.player.Clusters).length > 0;
+  }
+
+  showServerUpdateNotification(serverKey: string): void {
+    this.notificationsService.success(
+      'Server Update',
+      `${serverKey} was updated; Reloading data...`,
+      {
+          showProgressBar: true,
+          pauseOnHover: true,
+          clickToClose: true
+      }
+    );
   }
 }
