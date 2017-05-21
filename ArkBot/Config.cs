@@ -152,19 +152,19 @@ namespace ArkBot
         public bool DiscordBotEnabled { get; set; }
 
         [JsonProperty(PropertyName = "webApiListenPrefix")]
-        [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections.")]
+        [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections) [The prebuilt web-app included in this release is by default configured to call the web api on 127.0.0.1:60001. If you want to use another port for the web api you will need to reflect this change in environment.prod.ts and rebuild the web-app dist manually.]")]
         public string WebApiListenPrefix { get; set; }
 
         [JsonProperty(PropertyName = "webAppListenPrefix")]
-        [Description("Http listen prefix for Web App (requires a port that is open to external connections.")]
+        [Description("Http listen prefix for Web App (requires a port that is open to external connections)")]
         public string WebAppListenPrefix { get; set; }
 
         [JsonProperty(PropertyName = "powershellFilePath")]
-        [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect).")]
+        [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect)")]
         public string PowershellFilePath { get; set; }
 
         [JsonProperty(PropertyName = "useCompatibilityChangeWatcher")]
-        [Description("Use timer based .ark save file watcher rather than the default (based on FileSystemWatcher).")]
+        [Description("Use timer based .ark save file watcher rather than the default (based on FileSystemWatcher)")]
         public bool UseCompatibilityChangeWatcher { get; set; }
 
         [JsonProperty(PropertyName = "servers")]

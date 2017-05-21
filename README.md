@@ -105,6 +105,8 @@ The absolute path of the directory where cluster-files are stored. Cluster-files
 
 RESTful API for accessing exported ARK Server save data via HTTP in JSON- or XML-format. A SignalR hub push server update notifications to connected clients in real-time.
 
+The prebuilt web-app included in this release is by default configured to call the web api on 127.0.0.1:60001. If you want to use another port for the web api you will need to reflect this change in environment.prod.ts and rebuild the web-app dist manually.
+
 ### Endpoints (base path is configured in `webApiListenPrefix`)
 
 /api/map/`mapName`: ARK topographic maps for (TheIsland, TheCenter and ScorchedEarth_P) sourced from ARK Survival Evolved Wiki (http://ark.gamepedia.com).

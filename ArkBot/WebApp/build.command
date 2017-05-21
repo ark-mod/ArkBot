@@ -1,1 +1,1 @@
-ng build --prod --bh ./
+ng build --prod --bh /
