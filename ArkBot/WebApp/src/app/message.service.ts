@@ -17,7 +17,7 @@ export class MessageService {
     constructor(private zone:NgZone) {
         this.serverUpdated$ = new EventEmitter();
 
-        this.connection = $.hubConnection(environment.signalrBaseUrl);
+        this.connection = $.hubConnection(this.getSignalRBaseUrl());
         this.proxy = this.connection.createHubProxy('ServerUpdateHub');
         
         this.proxy.on('serverUpdateNotification', (serverKey: string) => { 
@@ -29,5 +29,9 @@ export class MessageService {
         this.connection.start()
         .done(() => console.log('Now connected, connection ID=' + this.connection.id))
         .fail(() => console.log('Could not connect'));
+    }
+
+    getSignalRBaseUrl(): string {
+        return environment.signalrBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
     }
 }

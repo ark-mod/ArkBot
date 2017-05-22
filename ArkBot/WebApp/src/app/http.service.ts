@@ -47,8 +47,8 @@ export class HttpService {
   }
 
   getApiBaseUrl(): string {
-      return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
-    }
+    return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
+  }
 
   private handleError(error: any): Promise<any> {
     return Promise.reject(error.message || error);

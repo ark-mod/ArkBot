@@ -5,6 +5,6 @@
 
 export const environment = {
   production: false,
-  apiBaseUrl: "http://localhost:8500/api",
-  signalrBaseUrl: "http://localhost:8500/signalr"
+  apiBaseUrl: "<protocol>//<hostname>:60001/api",
+  signalrBaseUrl: "<protocol>//<hostname>:60001/signalr"
 };

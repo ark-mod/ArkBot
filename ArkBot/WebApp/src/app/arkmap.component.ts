@@ -1,6 +1,7 @@
-import { Component, Input, ViewChild, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
+import { Component, Input, ViewChild, OnChanges, SimpleChanges, ElementRef, HostListener } from '@angular/core';
 
 import { environment } from '../environments/environment';
+import * as d3 from "d3";
 
 @Component({
   selector: 'arkmap',
@@ -10,21 +11,49 @@ export class ArkMapComponent implements OnChanges {
     @Input() mapName: string;
     @Input() points: any[];
     @ViewChild('myCanvas') canvasRef: ElementRef;
+    /*@HostListener('window:resize')
+    onResize(): void {
+      this.resize();
+    }*/
 
     width: number;
     height: number;
     img: HTMLImageElement;
+    zoom: any;
+
+    constructor() {
+      this.width = 1024;
+      this.height = 1024;
+      this.zoom = d3.zoom().scaleExtent([1, 10]);
+    }
 
     imageLoaded(img: HTMLImageElement): void {
       this.img = img;
       this.width = img.naturalWidth;
       this.height = img.naturalHeight;
-      window.setTimeout(() => this.redraw(), 100);
+
+      //d3.select(this.canvasRef.nativeElement).call(this.zoom.on("zoom", () => this.zoomed()));
+
+      window.setTimeout(() => {this.resize(); this.redraw(); }, 100);
+    }
+
+    resize(): void {
+      //this.zoom.translateExtent([[0, 0], [this.width, this.height]]);
+    }
+
+    zoomed(): void {
+      var transform = d3.zoomTransform(this.canvasRef.nativeElement);
+      let ctx: CanvasRenderingContext2D = this.canvasRef.nativeElement.getContext('2d');
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, this.width, this.height);
+      ctx.translate(transform.x, transform.y);
+      ctx.scale(transform.k, transform.k);
+      this.redraw();
     }
 
     redraw(): void {
       let ctx: CanvasRenderingContext2D = this.canvasRef.nativeElement.getContext('2d');
-
+      
       ctx.drawImage(this.img, 0, 0);
 
       if(this.points == null) return;
