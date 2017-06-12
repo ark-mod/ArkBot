@@ -81,7 +81,7 @@ namespace ArkBot.Ark
                 }
                 else cloudInventories = Directory.GetFiles(Config.SavePath, "*", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkCloudInventory(x)).ToArray();
 
-                CloudInventories = cloudInventories.Where(x => x.InventoryData != null).Select(x => x.InventoryData.AsCloudInventory(x.SteamId)).ToArray();
+                CloudInventories = cloudInventories.Where(x => x.InventoryData != null).Select(x => x.InventoryData.AsCloudInventory(x.SteamId, SaveState.FromSaveTime(x.SaveTime), x.InventoryDinoData)).ToArray();
 
                 progress.Report($"Cluster ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
                 IsInitialized = true;

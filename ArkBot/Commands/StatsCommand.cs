@@ -13,6 +13,7 @@ using QueryMaster.GameServer;
 using System.Runtime.Caching;
 using ArkBot.Database;
 using Discord;
+using ArkBot.Ark;
 
 namespace ArkBot.Commands
 {
@@ -21,22 +22,22 @@ namespace ArkBot.Commands
         public string Name => "stats";
         public string[] Aliases => new[] { "statistics", "top" };
         public string Description => "Get tribe/player statistics";
-        public string SyntaxHelp => "[***tribe <name>***] [***player <name>***] [***skip <number>***]";
+        public string SyntaxHelp => "<***server key***> [***tribe <name>***] [***player <name>***] [***skip <number>***]";
         public string[] UsageExamples => new[]
         {
-            ": Statistics for the top 10 tribes by tamed dino count",
-            "**tribe epic**: Statistics for the ***tribe 'epic'***",
-            "**player nils**: Statistics for the ***player 'nils'***"
+            "**<server key>**: Statistics for the top 10 tribes by tamed dino count",
+            "**<server key>** **tribe epic**: Statistics for the ***tribe 'epic'***",
+            "**<server key>** **player nils**: Statistics for the ***player 'nils'***"
         };
 
         public bool DebugOnly => false;
         public bool HideFromCommandList => false;
 
-        private IArkContext _context;
+        private ArkContextManager _contextManager;
 
-        public StatsCommand(IArkContext context)
+        public StatsCommand(ArkContextManager contextManager)
         {
-            _context = context;
+            _contextManager = contextManager;
         }
 
         public void Register(CommandBuilder command)
@@ -48,18 +49,13 @@ namespace ArkBot.Commands
 
         public async Task Run(CommandEventArgs e)
         {
-            if (!_context.IsInitialized)
-            {
-                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
-                return;
-            }
-
             var take = 10;
-            var args = CommandHelper.ParseArgs(e, new { Tribe = "", Player = "", Skip = 0 }, x => 
-                x.For(y => y.Tribe, untilNextToken: true)
+            var args = CommandHelper.ParseArgs(e, new { ServerKey = "", Tribe = "", Player = "", Skip = 0 }, x =>
+                x.For(y => y.ServerKey, noPrefix: true, isRequired: true)
+                .For(y => y.Tribe, untilNextToken: true)
                 .For(y => y.Player, untilNextToken: true)
                 .For(y => y.Skip, defaultValue: 0));
-            if (args == null || args.Skip < 0)
+            if (args == null || args.Skip < 0 || string.IsNullOrEmpty(args.ServerKey))
             {
                 await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
                     $"**My logic circuits cannot process this command! I am just a bot after all... :(**",
@@ -67,31 +63,44 @@ namespace ArkBot.Commands
                 return;
             }
 
+            var serverContext = _contextManager.GetServer(args.ServerKey);
+            if (serverContext == null)
+            {
+                await e.Channel.SendMessage($"**Specified server instance key is not valid.**");
+                return;
+            }
+
+            if (!serverContext.IsInitialized)
+            {
+                await e.Channel.SendMessage($"**The data is loading but is not ready yet...**");
+                return;
+            }
+
             var sb = new StringBuilder();
-            var filtered = _context.CreaturesInclCluster.Where(x => x.Tamed == true);
+            var filtered = serverContext.InclCloudNoRafts;
 
             var tribe = args.Tribe;
             var player = args.Player;
 
             if (tribe != null)
             {
-                if (_context.Tribes.Count(x => x.Name != null && x.Name.Equals(tribe, StringComparison.OrdinalIgnoreCase)) > 1)
+                if (serverContext.Tribes.Count(x => x.Name != null && x.Name.Equals(tribe, StringComparison.OrdinalIgnoreCase)) > 1)
                 {
                     await e.Channel.SendMessage($"**There is more than one tribe with the specified name! :(**");
                     return;
                 }
 
-                filtered = filtered.Where(x => x.Tribe != null && x.Tribe.Equals(tribe, StringComparison.OrdinalIgnoreCase));
+                filtered = filtered.Where(x => x.TribeName != null && x.TribeName.Equals(tribe, StringComparison.OrdinalIgnoreCase));
             }
             else if (player != null)
             {
-                if (_context.Players.Count(x => x.Name != null && x.Name.Equals(player, StringComparison.OrdinalIgnoreCase)) > 1)
+                if (serverContext.Players.Count(x => x.Name != null && x.Name.Equals(player, StringComparison.OrdinalIgnoreCase)) > 1)
                 {
                     await e.Channel.SendMessage($"**There is more than one player with the specified name! :(**");
                     return;
                 }
 
-                var tribes = _context.Tribes.Where(x => x.Members.Contains(player, StringComparer.OrdinalIgnoreCase)).ToArray();
+                var tribes = serverContext.Tribes.Where(x => x.MemberNames.Contains(player, StringComparer.OrdinalIgnoreCase)).ToArray();
                 if (tribes.Length == 1)
                 {
                     //this is what the user expect when they issue the command
@@ -101,35 +110,35 @@ namespace ArkBot.Commands
 
                     player = null;
                     tribe = tribes.First().Name;
-                    filtered = filtered.Where(x => x.Tribe != null && x.Tribe.Equals(tribe, StringComparison.OrdinalIgnoreCase));
+                    filtered = filtered.Where(x => x.TribeName != null && x.TribeName.Equals(tribe, StringComparison.OrdinalIgnoreCase));
                 }
                 else
                 {
-                    filtered = filtered.Where(x => x.OwnerName != null && x.OwnerName.Equals(player, StringComparison.OrdinalIgnoreCase));
+                    filtered = filtered.Where(x => x.OwningPlayerName != null && x.OwningPlayerName.Equals(player, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
-            var groups = filtered.GroupBy(x => player != null ? x.PlayerId : x.Team)
-                .Select(x =>
+            var groups = filtered.GroupBy(x => player != null ? x.OwningPlayerId : x.TargetingTeam)
+                .OrderByDescending(x => x.Count(z => !(z is ArkSavegameToolkitNet.Domain.ArkCloudInventoryDino))).Skip(tribe == null && player == null ? args.Skip : 0).Take(take).Select(x =>
                 {
-                    var species = x.GroupBy(y => y.SpeciesName)
-                            .Select(y => new Tuple<string, int, int>(y.Key, y.Count(z => !z.IsInCluster), y.Count(z => z.IsInCluster))).OrderByDescending(y => y.Item2).ToArray();
+                    var species = x.GroupBy(y => y.ClassName)
+                            .Select(y => new Tuple<string, int, int>(Data.ArkSpeciesAliases.Instance.GetAliases(y.Key)?.FirstOrDefault() ?? y.Key, y.Count(z => !(z is ArkSavegameToolkitNet.Domain.ArkCloudInventoryDino)), y.Count(z => z is ArkSavegameToolkitNet.Domain.ArkCloudInventoryDino))).OrderByDescending(y => y.Item2).ToArray();
                     var structures = player != null ?
                         null /*_context.Players?.Where(y => y.Id == x.Key).SelectMany(y => y.Structures).Sum(y => y.Count)*/
-                        : _context.Tribes?.Where(y => y.Id == x.Key).SelectMany(y => y.Structures).ToArray();
-                    var structuresCount = structures?.Sum(y => y.Count);
+                        : serverContext.Structures?.Where(y => y.TargetingTeam == x.Key).GroupBy(y => y.ClassName).Select(y => new { className = y.Key, count = y.Count() }).ToArray();
+                    var structuresCount = structures?.Sum(y => y.count);
                     return new
                     {
                         key = x.Key,
-                        name = player != null ? x.FirstOrDefault()?.OwnerName : x.FirstOrDefault()?.Tribe,
-                        num = x.Count(z => !z.IsInCluster),
-                        numCluster = x.Count(z => z.IsInCluster),
+                        name = player != null ? x.FirstOrDefault()?.OwningPlayerName : x.FirstOrDefault()?.TribeName,
+                        num = x.Count(z => !(z is ArkSavegameToolkitNet.Domain.ArkCloudInventoryDino)),
+                        numCluster = x.Count(z => z is ArkSavegameToolkitNet.Domain.ArkCloudInventoryDino),
                         species = tribe != null || player != null ? species : species.Length > 1 ? StatisticsHelper.FilterUsingStandardDeviation(species, z => z.Item2, (dist, sd) => dist >= sd, true) : species,
                         distinctSpeciesCount = species.Length,
                         structuresCount = structuresCount,
-                        structures = tribe != null || player != null ? StatisticsHelper.FilterUsingStandardDeviation(structures, z => z.Count, (dist, sd) => dist >= 0, true) : null
+                        structures = tribe != null || player != null ? StatisticsHelper.FilterUsingStandardDeviation(structures, z => z.count, (dist, sd) => dist >= 0, true) : null
                     };
-                }).OrderByDescending(x => x.num).Skip(tribe == null && player == null ? args.Skip : 0).Take(take).ToArray();
+                }).ToArray();
 
             if (tribe == null && player == null)
             {
@@ -144,7 +153,7 @@ namespace ArkBot.Commands
                 if (t.structures != null && t.structures.Length > 0)
                 {
                     sb.AppendLine().AppendLine("**Most Common Structures**");
-                    sb.AppendLine(t.structures.Select(x => $"{x.Count:N0} {x.Name}").ToArray().Join((n, l) => n == l ? " and " : ", "));
+                    sb.AppendLine(t.structures.Select(x => $"{x.count:N0} {x.className}").ToArray().Join((n, l) => n == l ? " and " : ", "));
                 }
                 if (tribe != null)
                 {
@@ -159,45 +168,48 @@ namespace ArkBot.Commands
                         "Black Pearl", "Element"
                     };
 
-                    var resources = _context.Tribes.Where(x => x.Id != t.key).GroupBy(x => x.Id).Select(x => new { Id = x.Key, Name = x.FirstOrDefault()?.Name, Items = x.SelectMany(y => y.Items).GroupBy(y => y.Name).Select(y => new { Name = y.Key, Count = y.Sum(z => z.Count) }).ToArray() }).ToArray();
+                    //todo: items are tough to associate with a particular player or tribe with the new extracted data
+                    //var resources = serverContext.Tribes.Where(x => x.Id != t.key).GroupBy(x => x.Id).Select(x => new { Id = x.Key, Name = x.FirstOrDefault()?.Name, Items = x.SelectMany(y => y.Items).GroupBy(y => y.Name).Select(y => new { Name = y.Key, Count = y.Sum(z => z.Count) }).ToArray() }).ToArray();
                     var prevRank = 0;
-                    var items = _context.Tribes.Where(x => x.Id == t.key)
-                        .SelectMany(x => x.Items)
-                        .Where(x => includedResources.Contains(x.Name, StringComparer.OrdinalIgnoreCase))
-                        .Select(x => {
-                            var opponents = resources.Select(y => new
-                            {
-                                Id = y.Id,
-                                Name = y.Name,
-                                Count = y.Items.Where(z => z.Name.Equals(x.Name, StringComparison.Ordinal)).Sum(z => z.Count)
-                            }).OrderByDescending(y => y.Count).ToArray();
-                            return new
-                            {
-                                Name = x.Name,
-                                Rank = opponents.Count(y => y.Count > x.Count)
-                            };
-                        }).OrderBy(x => x.Rank).TakeWhile((x, i) => { var y = i < 100 && (i < 25 || (prevRank == x.Rank)); prevRank = x.Rank; return y; }).GroupBy(x => x.Rank).ToArray();
+                    //var items = serverContext.Items?.Where(x => x.Id == t.key)
+                    //    .SelectMany(x => x.Items)
+                    //    .Where(x => includedResources.Contains(x.Name, StringComparer.OrdinalIgnoreCase))
+                    //    .Select(x => {
+                    //        var opponents = resources.Select(y => new
+                    //        {
+                    //            Id = y.Id,
+                    //            Name = y.Name,
+                    //            Count = y.Items.Where(z => z.Name.Equals(x.Name, StringComparison.Ordinal)).Sum(z => z.Count)
+                    //        }).OrderByDescending(y => y.Count).ToArray();
+                    //        return new
+                    //        {
+                    //            Name = x.Name,
+                    //            Rank = opponents.Count(y => y.Count > x.Count)
+                    //        };
+                    //    }).OrderBy(x => x.Rank).TakeWhile((x, i) => { var y = i < 100 && (i < 25 || (prevRank == x.Rank)); prevRank = x.Rank; return y; }).GroupBy(x => x.Rank).ToArray();
 
-                    if (items != null && items.Length > 0)
-                    {
-                        sb.AppendLine().AppendLine("**Top Resources / server ranking**");
-                        foreach(var g in items) sb.AppendLine($"**#{(g.Key + 1):N0}** " + g.Select(x => x.Name).ToArray().Join((n, l) => n == l ? " and " : ", "));
-                    }
+                    //if (items != null && items.Length > 0)
+                    //{
+                    //    sb.AppendLine().AppendLine("**Top Resources / server ranking**");
+                    //    foreach(var g in items) sb.AppendLine($"**#{(g.Key + 1):N0}** " + g.Select(x => x.Name).ToArray().Join((n, l) => n == l ? " and " : ", "));
+                    //}
 
                     //top dinos
-                    var dinos = _context.CreaturesInclClusterNoRaft.Where(x => x.Team == t.key).GroupBy(x => x.SpeciesClass).Select(x => {
+                    var dinos = serverContext.InclCloudNoRafts.Where(x => x.TargetingTeam == t.key).GroupBy(x => x.ClassName).Select(x => {
                         var baseLevel = x.Max(y => y.BaseLevel);
-                        var level = x.Max(y => y.FullLevel ?? y.BaseLevel);
-                        var opponents = _context.CreaturesInclClusterNoRaft.Where(y => y.SpeciesClass.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
-                                .GroupBy(y => y.Team);
+                        var level = x.Max(y => y.BaseLevel + y.ExtraCharacterLevel);
+                        var opponents = serverContext.InclCloudNoRafts.Where(y => y.ClassName.Equals(x.Key, StringComparison.OrdinalIgnoreCase))
+                                .GroupBy(y => y.TargetingTeam);
+                        var name = x.FirstOrDefault()?.ClassName;
+                        name = Data.ArkSpeciesAliases.Instance.GetAliases(name)?.FirstOrDefault() ?? name;
                         return new
                         {
                             Class = x.Key,
-                            Name = x.FirstOrDefault()?.SpeciesName,
+                            Name = name,
                             BaseLevel = baseLevel,
                             Level = level,
                             BaseLevelRank = opponents.Select(y => y.Max(z => z.BaseLevel)).Count(y => y > baseLevel),
-                            LevelRank = opponents.Select(y => y.Max(z => z.FullLevel ?? z.BaseLevel)).Count(y => y > level)
+                            LevelRank = opponents.Select(y => y.Max(z => z.BaseLevel + z.ExtraCharacterLevel)).Count(y => y > level)
                         };
                     }).ToArray();
 

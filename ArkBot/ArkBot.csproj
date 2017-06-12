@@ -430,6 +430,7 @@
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
+    <Compile Include="Helpers\ArkDataHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
     <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Layout\LayoutInitializer.cs" />

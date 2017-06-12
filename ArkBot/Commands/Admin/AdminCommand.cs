@@ -75,7 +75,6 @@ namespace ArkBot.Commands.Experimental
         //    return !string.IsNullOrWhiteSpace(_config.RconPassword) && _config.RconPort > 0;
         //}
 
-        private IArkContext _context;
         private IConfig _config;
         private IConstants _constants;
         private EfDatabaseContextFactory _databaseContextFactory;
@@ -86,8 +85,7 @@ namespace ArkBot.Commands.Experimental
         private ScheduledTasksManager _scheduledTasksManager;
 
         public AdminCommand(
-            ILifetimeScope scope, 
-            IArkContext context, 
+            ILifetimeScope scope,
             IConfig config, 
             IConstants constants, 
             EfDatabaseContextFactory databaseContextFactory, 
@@ -97,7 +95,6 @@ namespace ArkBot.Commands.Experimental
             ArkContextManager contextManager,
             ScheduledTasksManager scheduledTasksManager)
         {
-            _context = context;
             _config = config;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;

@@ -44,20 +44,17 @@ namespace ArkBot.Commands
         public void Init(DiscordClient client) { }
 
         private IConfig _config;
-        private IArkContext _context;
         private IConstants _constants;
         private EfDatabaseContextFactory _databaseContextFactory;
         private ArkContextManager _contextManager;
 
         public CheckFoodCommand(
             IConfig config, 
-            IArkContext context, 
             IConstants constants, 
             EfDatabaseContextFactory databaseContextFactory,
             ArkContextManager contextManager)
         {
             _config = config;
-            _context = context;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
             _contextManager = contextManager;
@@ -85,14 +82,14 @@ namespace ArkBot.Commands
             if (player == null) return;
 
 
-            var playercreatures = serverContext.NoRafts.Where(x => (ulong)x.TargetingTeam == player.Id || (x.OwningPlayerId.HasValue && (ulong)x.OwningPlayerId == player.Id)).ToArray();
+            var playercreatures = serverContext.NoRafts.Where(x => x.TargetingTeam == player.Id || (x.OwningPlayerId.HasValue && x.OwningPlayerId == player.Id)).ToArray();
             var tribecreatures = player.TribeId.HasValue ? serverContext.NoRafts.Where(x => x.TargetingTeam == player.TribeId.Value && !playercreatures.Any(y => y.Id == x.Id)).ToArray() : new ArkTamedCreature[] { };
 
             var mydinos = playercreatures.Select(x => new { c = x, o = "player" }).Concat(tribecreatures.Select(x => new { c = x, o = "tribe" })).Select(item =>
             {
                 var currentFood = item.c.CurrentStatusValues?.Length > 4 ? item.c.CurrentStatusValues[4] : null;
                 var maxFood = item.c.BaseStats?.Length > 4 && item.c.TamedStats?.Length > 4 ?
-                    ArkContext.CalculateMaxStat(
+                    ArkDataHelper.CalculateMaxStat(
                         ArkSpeciesStatsData.Stat.Food,
                         item.c.ClassName,
                         item.c.BaseStats[4],
@@ -118,7 +115,7 @@ namespace ArkBot.Commands
             //        return new
             //        {
             //            creature = x,
-            //            maxFood = ArkContext.CalculateMaxStat(Data.ArkSpeciesStatsData.Stat.Food, x.SpeciesClass ?? x.SpeciesName, x.WildLevels?.Food, x.TamedLevels?.Food, x.ImprintingQuality, x.TamedIneffectivenessModifier)
+            //            maxFood = ArkDataHelper.CalculateMaxStat(Data.ArkSpeciesStatsData.Stat.Food, x.SpeciesClass ?? x.SpeciesName, x.WildLevels?.Food, x.TamedLevels?.Food, x.ImprintingQuality, x.TamedIneffectivenessModifier)
             //        };
             //    })
             //    .ToArray();

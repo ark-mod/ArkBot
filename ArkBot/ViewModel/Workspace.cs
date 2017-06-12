@@ -590,8 +590,6 @@ namespace ArkBot.ViewModel
             builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(_config as Config).As<IConfig>();
             builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
-            builder.RegisterType<ArkContext>().As<IArkContext>()
-                .WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
             builder.RegisterAssemblyTypes(thisAssembly).As<ArkBot.Commands.ICommand>().AsSelf().SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
             builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
@@ -708,7 +706,6 @@ namespace ArkBot.ViewModel
             {
                 var config = scope.Resolve<IConfig>();
                 var constants = scope.Resolve<IConstants>();
-                var context = scope.Resolve<IArkContext>();
                 var savedstate = scope.Resolve<ISavedState>();
                 var skipExtract = savedstate.SkipExtractNextRestart;
                 if (skipExtract)
@@ -725,7 +722,6 @@ namespace ArkBot.ViewModel
                     if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
                     db.Database.Initialize(false);
-                    //context.Database.Create();
                 }
 
                 var _bot = scope.Resolve<ArkDiscordBot>();
@@ -737,17 +733,6 @@ namespace ArkBot.ViewModel
                 while (true)
                 {
                     if (_runDiscordBotCts.IsCancellationRequested) break;
-
-                    //if (Console.KeyAvailable)
-                    //{
-                    //    var key = Console.ReadKey(true);
-                    //    if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
-                    //    else if (isConnected && key.Key == ConsoleKey.N && config.Debug)
-                    //    {
-                    //        //if we are debugging, trigger new changed event
-                    //        context.DebugTriggerOnChange();
-                    //    }
-                    //}
 
                     if (!isConnected && (DateTime.Now - lastAttempt) >= retryInterval)
                     {

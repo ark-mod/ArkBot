@@ -23,20 +23,18 @@ namespace ArkBot.Helpers
     {
         private IConstants _constants;
         private IConfig _config;
-        private IArkContext _context;
         private Signaller<Tuple<ArkServerContext, bool, SavegameBackupResult>> _signaller;
         private ArkContextManager _contextManager;
 
         private const int _saveWorldDefaultTimeoutSeconds = 180;
         private const int _updateDefaultTimeoutSeconds = 300;
 
-        public ArkServerService(IConstants constants, IConfig config, IArkContext context, ArkContextManager contextManager)
+        public ArkServerService(IConstants constants, IConfig config, ArkContextManager contextManager)
         {
             _signaller = new Signaller<Tuple<ArkServerContext, bool, SavegameBackupResult>>();
 
             _constants = constants;
             _config = config;
-            _context = context;
             _contextManager = contextManager;
 
             contextManager.BackupCompleted += ContextManager_BackupCompleted;
@@ -63,7 +61,7 @@ namespace ArkBot.Helpers
             if (sendMessageDirected != null) await sendMessageDirected($"saving world (may take a while)...");
             try
             {
-                if (noUpdateForThisCall) _context.DisableContextUpdates();
+                //if (noUpdateForThisCall) _context.DisableContextUpdates();
                 if (await serverContext.Steam.SendRconCommand("saveworld") == null)
                 {
                     //failed to connect/exception/etc.
@@ -97,7 +95,7 @@ namespace ArkBot.Helpers
             }
             finally
             {
-                if (noUpdateForThisCall) _context.EnableContextUpdates();
+                //if (noUpdateForThisCall) _context.EnableContextUpdates();
             }
 
             if (sendMessageDirected != null) await sendMessageDirected($"world saved!");

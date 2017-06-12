@@ -1,5 +1,6 @@
 ﻿using ArkBot.Ark;
 using ArkBot.Data;
+using ArkBot.Helpers;
 using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
 using ArkSavegameToolkitNet.Domain;
@@ -58,7 +59,7 @@ namespace ArkBot.WebApi.Controllers
             return result;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, ulong[] playerIds)
+        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, int[] playerIds)
         {
             if (playerIds == null || playerIds.Length == 0) return null;
 
@@ -107,12 +108,12 @@ namespace ArkBot.WebApi.Controllers
             return vm;
         }
 
-        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, ulong playerId)
+        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, int playerId)
         {
             var result = new List<TamedCreatureViewModel>();
             if (context.TamedCreatures != null)
             {
-                var playercreatures = context.NoRafts.Where(x => (ulong)x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && (ulong)x.OwningPlayerId == playerId)).ToArray();
+                var playercreatures = context.NoRafts.Where(x => x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && x.OwningPlayerId == playerId)).ToArray();
                 var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains((int)playerId));
                 var tribecreatures = tribe != null ? context.NoRafts.Where(x => x.TargetingTeam == tribe.Id && !playercreatures.Any(y => y.Id == x.Id)).ToArray() : new ArkTamedCreature[] { };
                 foreach (var item in playercreatures.Select(x => new { c = x, o = "player" }).Concat(tribecreatures.Select(x => new { c = x, o = "tribe" })))
@@ -120,7 +121,7 @@ namespace ArkBot.WebApi.Controllers
 
                     var currentFood = item.c.CurrentStatusValues?.Length > 4 ? item.c.CurrentStatusValues[4] : null;
                     var maxFood = item.c.BaseStats?.Length > 4 && item.c.TamedStats?.Length > 4 ?
-                        ArkContext.CalculateMaxStat(
+                        ArkDataHelper.CalculateMaxStat(
                             ArkSpeciesStatsData.Stat.Food,
                             item.c.ClassName,
                             item.c.BaseStats[4],

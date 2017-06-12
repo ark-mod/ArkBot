@@ -123,29 +123,6 @@ namespace ArkBot.Helpers
 
             return false;
         }
-        
-        //todo: this method does not really belong here and should be moved elsewhere
-        public static async Task<Data.Player> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, IArkContext _context)
-        {
-            using (var db = databaseContextFactory.Create())
-            {
-                var user = db.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
-                if (user == null)
-                {
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam account using **!linksteam**.");
-                    return null;
-                }
-
-                var player = _context.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
-                if (player == null)
-                {
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");
-                    return null;
-                }
-
-                return player;
-            }
-        }
 
         //todo: this method does not really belong here and should be moved elsewhere
         public static async Task<ArkSavegameToolkitNet.Domain.ArkPlayer> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, ArkServerContext serverContext)

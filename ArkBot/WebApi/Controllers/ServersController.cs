@@ -111,7 +111,7 @@ namespace ArkBot.WebApi.Controllers
                                     TimeSpan.Zero, null);
                             }).ToDictionary(x => x.Item1.Name, StringComparer.OrdinalIgnoreCase);
 
-                            var ids = new List<ulong>();
+                            var ids = new List<int>();
                             var steamIds = d.Values.Select(x => x.Item4).Where(x => x != null).ToArray();
                             foreach (var user in db.Users.Where(y => steamIds.Contains(y.SteamId)))
                             {
@@ -159,7 +159,7 @@ namespace ArkBot.WebApi.Controllers
                             sr.OnlinePlayers.Add(new OnlinePlayerViewModel
                             {
                                 SteamName = player.Name,
-                                CharacterName = extra?.Item1?.Name,
+                                CharacterName = extra?.Item1?.CharacterName,
                                 TribeName = extra?.Item6?.Name,
                                 DiscordName = extra != null && extra.Item3 != null ? $"{extra.Item3.Name}#{extra.Item3.Discriminator}" : null,
                                 TimeOnline = player.Time.ToStringCustom(),

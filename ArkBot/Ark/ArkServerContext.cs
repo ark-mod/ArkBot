@@ -38,6 +38,43 @@ namespace ArkBot.Ark
 
         public IEnumerable<ArkTamedCreature> NoRafts => TamedCreatures?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
 
+        public IEnumerable<ArkTamedCreature> CloudCreatures
+        {
+            get
+            {
+                var cluster = _contextManager.GetCluster(Config.Cluster);
+                var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos);
+
+                return cloudCreatures;
+            }
+        }
+
+        public IEnumerable<ArkTamedCreature> InclCloud
+        {
+            get
+            {
+                var cluster = _contextManager.GetCluster(Config.Cluster);
+                var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos);
+
+                if (cloudCreatures == null) return TamedCreatures;
+                if (TamedCreatures == null) return cloudCreatures;
+                return cloudCreatures.Concat(TamedCreatures);
+            }
+        }
+
+        public IEnumerable<ArkTamedCreature> InclCloudNoRafts
+        {
+            get
+            {
+                var cluster = _contextManager.GetCluster(Config.Cluster);
+                var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos)?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
+
+                if (cloudCreatures == null) return NoRafts;
+                if (NoRafts == null) return cloudCreatures;
+                return cloudCreatures.Concat(NoRafts);
+            }
+        }
+
         public SaveState SaveState { get; set; }
         public ArkTamedCreature[] TamedCreatures { get; set; }
         public ArkWildCreature[] WildCreatures { get; set; }
@@ -193,13 +230,13 @@ namespace ArkBot.Ark
                 {
                     GameObject status = null;
                     statusComponents.TryGetValue(x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId, out status);
-                    return x.AsTamedCreature(status, null, save.SaveState);
+                    return x.AsTamedCreature(status, save.SaveState);
                 }).ToArray();
                 var wild = save.Objects.Where(x => x.IsWildCreature).Select(x =>
                 {
                     GameObject status = null;
                     statusComponents.TryGetValue(x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId, out status);
-                    return x.AsWildCreature(status, null, save.SaveState);
+                    return x.AsWildCreature(status, save.SaveState);
                 }).ToArray();
 
                 var _myData = ArkName.Create("MyData");
