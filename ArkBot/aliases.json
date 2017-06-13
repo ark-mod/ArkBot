@@ -276,13 +276,30 @@
       "Bigfoot_Character_BP_C"
     ],
     [
-      "Hesperornis"
+      "Griffin",
+      "Griffin_Character_BP_C",
+      "Gryphon"
+    ],
+    [
+      "Hesperornis",
+      "Hesperornis_Character_BP_C",
+      "Duck"
     ],
     [
       "Human"
     ],
     [
-      "Hyaenodon"
+      "Hyaenodon",
+      "Hyaenodon_Character_BP_C",
+      "Hyena"
+    ],
+    [
+      "Ice Worm Queen",
+      "Iceworm_Queen_Character_BP_C"
+    ],
+    [
+      "Ice Worm",
+      "Iceworm_Character_Minion_BP_Smaller_C"
     ],
     [
       "Ichthy",
@@ -377,7 +394,8 @@
       "Mantis_Character_BP_C"
     ],
     [
-      "Megalania"
+      "Megalania",
+      "Megalania_Character_BP_C"
     ],
     [
       "Megaloceros",
@@ -402,7 +420,8 @@
       "Gorilla_Character_BP_C"
     ],
     [
-      "Megatherium"
+      "Megatherium",
+      "Megatherium_Character_BP_C"
     ],
     [
       "Mesopithecus",
@@ -426,6 +445,10 @@
     [
       "Moschops",
       "Moschops_Character_BP_C"
+    ],
+    [
+      "Motorboat",
+      "MotorRaft_BP_C"
     ],
     [
       "Onyc",
@@ -477,6 +500,10 @@
       "Phiomia",
       "Phiomia_Character_BP_C",
       "Pig"
+    ],
+    [
+      "Polar Bear",
+      "Polar_Bear_C"
     ],
     [
       "Phoenix"
@@ -536,6 +563,11 @@
       "RockGolem_Character_BP_C",
       "Rock Golem",
       "Golem"
+    ],
+    [
+      "Lava Elemental",
+      "LavaGolem_Character_BP_C",
+      "Lava Golem"
     ],
     [
       "Sabertooth",
@@ -704,8 +736,16 @@
       "Wyvern_Character_BP_Poison_C"
     ],
     [
+      "Ice Wyvern",
+      "Ragnarok_Wyvern_Override_Ice_C"
+    ],
+    [
       "Yeti",
       "Yeti_Character_BP_C"
+    ],
+    [
+      "Yutyrannus",
+      "Yutyrannus_Character_BP_C"
     ],
     [
       "Zombie Fire Wyvern",
