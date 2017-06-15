@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { NotificationsService } from 'angular2-notifications';
 import * as moment from 'moment'
@@ -35,7 +35,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private httpService: HttpService,
     private dataService: DataService,
     private messageService: MessageService,
-    private notificationsService: NotificationsService) {
+    private notificationsService: NotificationsService,
+    private ref: ChangeDetectorRef) {
     }
 
     getPlayer(): void {
@@ -53,6 +54,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
           this.sortCluster();
           this.filterCluster();
           this.loaded = true;
+
+          this.ref.detectChanges(); //todo: evaluate
         })
         .catch(error => {
           this.player = null;
@@ -134,7 +137,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     else {
       let filter = this.creaturesFilter.toLowerCase();
       this.filteredCreatures = this.player.Servers[this.serverKey].Creatures.filter(creature => 
-        creature.Species.toLowerCase().indexOf(filter) >= 0 
+        (creature.Species != null && creature.Species.toLowerCase().indexOf(filter) >= 0) 
         || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0));
     }
 
@@ -172,7 +175,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     else {
       let filter = this.creaturesClusterFilter.toLowerCase();
       this.filteredClusterCreatures = this.player.Clusters[this.clusterKey].Creatures.filter(creature => 
-        creature.Species.toLowerCase().indexOf(filter) >= 0 
+        (creature.Species != null && creature.Species.toLowerCase().indexOf(filter) >= 0) 
         || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0));
     }
   }
@@ -202,6 +205,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   haveCluster(): boolean {
     return this.player != null && Object.keys(this.player.Clusters).length > 0;
+  }
+
+  sumKibbleAndEggs(): number {
+    return this.player.Servers[this.serverKey].KibblesAndEggs.reduce((a, b) => a + b.KibbleCount + b.EggCount, 0);
   }
 
   showServerUpdateNotification(serverKey: string): void {

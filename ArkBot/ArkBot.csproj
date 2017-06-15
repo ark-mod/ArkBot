@@ -552,6 +552,7 @@
     <Compile Include="WebApi\Controllers\PlayerController.cs" />
     <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
     <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
+    <Compile Include="WebApi\Model\KibbleAndEggViewModel.cs" />
     <Compile Include="WebApi\Model\OnlinePlayerViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerClusterViewModely.cs" />
     <Compile Include="WebApi\Model\CloudCreatureViewModel.cs" />

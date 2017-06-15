@@ -192,6 +192,7 @@ namespace ArkBot.Ark
         public void AddCluster(ArkClusterContext context)
         {
             context.UpdateCompleted += Context_UpdateCompleted;
+            context._contextManager = this;
             _clusterContexts.Add(context.Config.Key, context);
         }
 
@@ -206,6 +207,13 @@ namespace ArkBot.Ark
             }
 
             return null;
+        }
+
+        public ArkServerContext[] GetServersInCluster(string key)
+        {
+            if (key == null) return null;
+
+            return Servers.Where(x => x.Config.Cluster.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
 
         public ArkClusterContext GetCluster(string key)

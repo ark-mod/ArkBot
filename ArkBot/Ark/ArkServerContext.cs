@@ -20,12 +20,13 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Ark
 {
-    public class ArkServerContext : IArkUpdateableContext,  IDisposable
+    public class ArkServerContext : ArkGameData, IArkUpdateableContext,  IDisposable
     {
         public ServerConfigSection Config { get; set; }
 
         internal IArkSaveFileWatcher _saveFileWatcher;
         internal ArkContextManager _contextManager;
+        internal ArkClusterContext _clusterContext;
         private ILifetimeScope _scope;
 
         //public event UpdateTriggeredEventHandler UpdateQueued;
@@ -36,52 +37,52 @@ namespace ArkBot.Ark
 
         public bool IsInitialized { get; set; }
 
-        public IEnumerable<ArkTamedCreature> NoRafts => TamedCreatures?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
+        //public IEnumerable<ArkTamedCreature> NoRafts => TamedCreatures?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
 
-        public IEnumerable<ArkTamedCreature> CloudCreatures
-        {
-            get
-            {
-                var cluster = _contextManager.GetCluster(Config.Cluster);
-                var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos);
+        //public IEnumerable<ArkTamedCreature> CloudCreatures
+        //{
+        //    get
+        //    {
+        //        var cluster = _contextManager.GetCluster(Config.Cluster);
+        //        var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos);
 
-                return cloudCreatures;
-            }
-        }
+        //        return cloudCreatures;
+        //    }
+        //}
 
-        public IEnumerable<ArkTamedCreature> InclCloud
-        {
-            get
-            {
-                var cluster = _contextManager.GetCluster(Config.Cluster);
-                var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos);
+        //public IEnumerable<ArkTamedCreature> InclCloud
+        //{
+        //    get
+        //    {
+        //        var cluster = _contextManager.GetCluster(Config.Cluster);
+        //        var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos);
 
-                if (cloudCreatures == null) return TamedCreatures;
-                if (TamedCreatures == null) return cloudCreatures;
-                return cloudCreatures.Concat(TamedCreatures);
-            }
-        }
+        //        if (cloudCreatures == null) return TamedCreatures;
+        //        if (TamedCreatures == null) return cloudCreatures;
+        //        return cloudCreatures.Concat(TamedCreatures);
+        //    }
+        //}
 
-        public IEnumerable<ArkTamedCreature> InclCloudNoRafts
-        {
-            get
-            {
-                var cluster = _contextManager.GetCluster(Config.Cluster);
-                var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos)?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
+        //public IEnumerable<ArkTamedCreature> InclCloudNoRafts
+        //{
+        //    get
+        //    {
+        //        var cluster = _contextManager.GetCluster(Config.Cluster);
+        //        var cloudCreatures = cluster?.CloudInventories?.SelectMany(x => x.Dinos)?.Where(x => !x.ClassName.Equals("Raft_BP_C"));
 
-                if (cloudCreatures == null) return NoRafts;
-                if (NoRafts == null) return cloudCreatures;
-                return cloudCreatures.Concat(NoRafts);
-            }
-        }
+        //        if (cloudCreatures == null) return NoRafts;
+        //        if (NoRafts == null) return cloudCreatures;
+        //        return cloudCreatures.Concat(NoRafts);
+        //    }
+        //}
 
-        public SaveState SaveState { get; set; }
-        public ArkTamedCreature[] TamedCreatures { get; set; }
-        public ArkWildCreature[] WildCreatures { get; set; }
-        public ArkSavegameToolkitNet.Domain.ArkTribe[] Tribes { get; set; }
-        public ArkPlayer[] Players { get; set; }
-        public ArkItem[] Items { get; set; }
-        public ArkStructure[] Structures { get; set; }
+        //public SaveState SaveState { get; set; }
+        //public ArkTamedCreature[] TamedCreatures { get; set; }
+        //public ArkWildCreature[] WildCreatures { get; set; }
+        //public ArkSavegameToolkitNet.Domain.ArkTribe[] Tribes { get; set; }
+        //public ArkPlayer[] Players { get; set; }
+        //public ArkItem[] Items { get; set; }
+        //public ArkStructure[] Structures { get; set; }
 
         public SteamManager Steam { get; private set; }
 
@@ -127,9 +128,10 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkServerContext(ServerConfigSection config, ILifetimeScope scope)
+        public ArkServerContext(ServerConfigSection config, ArkClusterContext clusterContext, ILifetimeScope scope) : base(config?.SaveFilePath, clusterContext)
         {
             Config = config;
+            _clusterContext = clusterContext;
             _scope = scope;
             _saveFileWatcher = _scope.Resolve<IArkSaveFileWatcher>(new TypedParameter(typeof(ArkServerContext), this));
             Steam = new SteamManager(config);
@@ -145,131 +147,42 @@ namespace ArkBot.Ark
             //backup this savegame
             if (!manualUpdate)
             {
-                SavegameBackupResult result = null;
+                SavegameBackupResult bresult = null;
                 try
                 {
                     if (fullconfig.BackupsEnabled)
                     {
-                        result = savegameBackupService.CreateBackup(Config, _contextManager?.GetCluster(Config.Cluster)?.Config);
-                        if (result != null && result.ArchivePaths != null) progress.Report($@"Server ({Config.Key}): Backup successfull ({(string.Join(", ", result.ArchivePaths.Select(x => $@"""{x}""")))})!");
+                        bresult = savegameBackupService.CreateBackup(Config, _contextManager?.GetCluster(Config.Cluster)?.Config);
+                        if (bresult != null && bresult.ArchivePaths != null) progress.Report($@"Server ({Config.Key}): Backup successfull ({(string.Join(", ", bresult.ArchivePaths.Select(x => $@"""{x}""")))})!");
                         else progress.Report($"Server ({Config.Key}): Backup failed...");
                     }
                 }
                 catch (Exception ex) { Logging.LogException($"Server ({Config.Key}): Backup failed", ex, typeof(ArkServerContext), LogLevel.ERROR, ExceptionLevel.Ignored); }
-                BackupCompleted?.Invoke(this, fullconfig.BackupsEnabled, result);
+                BackupCompleted?.Invoke(this, fullconfig.BackupsEnabled, bresult);
             }
 
 
             //todo: temp copy all
-            var copy = true;
-            var success = false;
-            var cancelled = false;
-            var tmppaths = new List<string>();
-            var gid = Guid.NewGuid().ToString();
-            var tempFileOutputDirPath = Path.Combine(fullconfig.TempFileOutputDirPath, gid);
-            ArkSavegame save = null;
+            ArkGameDataUpdateResult result = null;
             var st = Stopwatch.StartNew();
             try
             {
                 progress.Report($"Server ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
 
-                var directoryPath = Path.GetDirectoryName(Config.SaveFilePath);
-                if (copy)
+                result = Update(ct, _clusterContext != null); //update and defer apply new data until cluster is updated
+
+                if (result?.Success == true)
                 {
-                    //todo: if it exists get a new path
-                    if (!Directory.Exists(tempFileOutputDirPath)) Directory.CreateDirectory(tempFileOutputDirPath);
+                    progress.Report($"Server ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
+                    IsInitialized = true;
+
+                    LastUpdate = DateTime.Now;
                 }
 
-                if (copy)
-                {
-                    var saveFilePath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(Config.SaveFilePath));
-                    tmppaths.Add(saveFilePath);
-                    File.Copy(Config.SaveFilePath, saveFilePath);
+                if (result?.Cancelled == true)
+                    progress.Report($"Server ({Config.Key}): Update was cancelled after {st.ElapsedMilliseconds:N0} ms");
 
-                    save = new ArkSavegame(saveFilePath);
-                }
-                else save = new ArkSavegame(Config.SaveFilePath);
-                save.LoadEverything();
-                ct.ThrowIfCancellationRequested();
 
-                ArkSavegameToolkitNet.ArkTribe[] tribes = null;
-                if (copy)
-                {
-                    var tribePaths = new List<string>();
-                    foreach (var tp in Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly))
-                    {
-                        var tribePath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(tp));
-                        tribePaths.Add(tp);
-                        tmppaths.Add(tribePath);
-                        File.Copy(tp, tribePath);
-                    }
-                    tribes = tribePaths.Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
-                }
-                else tribes = Directory.GetFiles(directoryPath, "*.arktribe", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkTribe(x)).ToArray();
-                ct.ThrowIfCancellationRequested();
-
-                ArkProfile[] profiles = null;
-                if (copy)
-                {
-                    var profilePaths = new List<string>();
-                    foreach (var pp in Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly))
-                    {
-                        var profilePath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(pp));
-                        profilePaths.Add(pp);
-                        tmppaths.Add(profilePath);
-                        File.Copy(pp, profilePath);
-                    }
-                    profiles = profilePaths.Select(x => new ArkProfile(x)).ToArray();
-                }
-                else profiles = Directory.GetFiles(directoryPath, "*.arkprofile", SearchOption.TopDirectoryOnly).Select(x => new ArkProfile(x)).ToArray();
-                ct.ThrowIfCancellationRequested();
-
-                var _myCharacterStatusComponent = ArkName.Create("MyCharacterStatusComponent");
-                var statusComponents = save.Objects.Where(x => x.IsDinoStatusComponent).ToDictionary(x => x.Index, x => x);
-                var tamed = save.Objects.Where(x => x.IsTamedCreature).Select(x =>
-                {
-                    GameObject status = null;
-                    statusComponents.TryGetValue(x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId, out status);
-                    return x.AsTamedCreature(status, save.SaveState);
-                }).ToArray();
-                var wild = save.Objects.Where(x => x.IsWildCreature).Select(x =>
-                {
-                    GameObject status = null;
-                    statusComponents.TryGetValue(x.GetPropertyValue<ObjectReference>(_myCharacterStatusComponent).ObjectId, out status);
-                    return x.AsWildCreature(status, save.SaveState);
-                }).ToArray();
-
-                var _myData = ArkName.Create("MyData");
-                var _playerDataID = ArkName.Create("PlayerDataID");
-                var _linkedPlayerDataID = ArkName.Create("LinkedPlayerDataID");
-                var playerdict = save.Objects.Where(x => x.IsPlayerCharacter).ToLookup(x => x.GetPropertyValue<ulong>(_linkedPlayerDataID), x => x);
-                var duplicates = playerdict.Where(x => x.Count() > 1).ToArray();
-                var players = profiles.Select(x =>
-                {
-                    var mydata = x.GetPropertyValue<StructPropertyList>(_myData);
-                    var playerId = mydata.GetPropertyValue<ulong>(_playerDataID);
-                    var player = playerdict[playerId]?.FirstOrDefault();
-                    return x.Profile.AsPlayer(player, x.SaveTime, save.SaveState);
-                }).ToArray();
-
-                SaveState = save.SaveState;
-                TamedCreatures = tamed;
-                WildCreatures = wild;
-                Players = players;
-                Tribes = tribes.Select(x => x.Tribe.AsTribe(x.SaveTime)).ToArray();
-                Items = save.Objects.Where(x => x.IsItem).Select(x => x.AsItem(save.SaveState)).ToArray();
-                Structures = save.Objects.Where(x => x.IsStructure).Select(x => x.AsStructure(save.SaveState)).ToArray();
-
-                progress.Report($"Server ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
-                IsInitialized = true;
-                
-                LastUpdate = DateTime.Now;
-                success = true;
-            }
-            catch (OperationCanceledException)
-            {
-                progress.Report($"Server ({Config.Key}): Update was cancelled after {st.ElapsedMilliseconds:N0} ms");
-                cancelled = true;
             }
             catch (Exception ex)
             {
@@ -278,23 +191,10 @@ namespace ArkBot.Ark
             }
             finally
             {
-                save?.Dispose();
-                if (copy)
-                {
-                    try
-                    {
-                        foreach (var path in tmppaths) File.Delete(path);
-                        Directory.Delete(tempFileOutputDirPath);
-                    }
-                    catch { /* ignore exception */ }
-                }
-
-                UpdateCompleted?.Invoke(this, success, cancelled);
+                UpdateCompleted?.Invoke(this, result?.Success ?? false, result?.Cancelled ?? false);
             }
 
-            GC.Collect();
-
-            return success;
+            return result?.Success ?? false;
         }
 
         public void OnVoteInitiated(Database.Model.Vote item)

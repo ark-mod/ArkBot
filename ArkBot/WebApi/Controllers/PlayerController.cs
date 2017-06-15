@@ -1,6 +1,7 @@
 ﻿using ArkBot.Ark;
 using ArkBot.Data;
 using ArkBot.Helpers;
+using ArkBot.Extensions;
 using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
 using ArkSavegameToolkitNet.Domain;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -47,7 +49,7 @@ namespace ArkBot.WebApi.Controllers
 
             foreach (var context in _contextManager.Clusters)
             {
-                var cloudInventory = context.CloudInventories?.FirstOrDefault(x => x.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase));
+                var cloudInventory = context.Inventories?.FirstOrDefault(x => x.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase));
                 if (cloudInventory == null) continue;
 
                 var vm = BuildClusterViewModelForPlayer(context, cloudInventory);
@@ -80,6 +82,7 @@ namespace ArkBot.WebApi.Controllers
             };
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId));
+            vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, playerId));
 
             return vm;
         }
@@ -104,7 +107,8 @@ namespace ArkBot.WebApi.Controllers
             };
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id));
-            
+            vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id));
+
             return vm;
         }
 
@@ -182,6 +186,56 @@ namespace ArkBot.WebApi.Controllers
             }
 
             return vm;
+        }
+
+        internal static List<KibbleAndEggViewModel> BuildKibblesAndEggsViewModelsForPlayerId(ArkServerContext context, int playerId)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            //PrimalItemConsumable_Egg_Kaprosuchus_C, PrimalItemConsumable_Egg_Kaprosuchus_Fertilized_C, PrimalItemConsumable_Egg_Wyvern_Fertilized_Lightning_C
+            var _rEgg = new Regex(@"^PrimalItemConsumable_Egg_(?<name>.+?)_C$", RegexOptions.Singleline);
+
+            //PrimalItemConsumable_Kibble_GalliEgg_C, PrimalItemConsumable_Kibble_Compy_C
+            var _rKibble = new Regex(@"^PrimalItemConsumable_Kibble_(?<name>.+?)(?:Egg)?_C$", RegexOptions.IgnoreCase | RegexOptions.Singleline); 
+
+            var inv = new[] { player?.Items, tribe?.Items }.Where(x => x != null).SelectMany(x => x).ToArray();
+
+            var kibbles = inv.Where(x => x.ClassName.StartsWith("PrimalItemConsumable_Kibble", StringComparison.Ordinal))
+                .GroupBy(x => x.ClassName)
+                .Select(x =>
+                {
+                    var name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                })
+                .ToArray();
+
+            var eggs = inv.Where(x => x.ClassName.StartsWith("PrimalItemConsumable_Egg", StringComparison.Ordinal) && !x.ClassName.Contains("_Fertilized_"))
+                .GroupBy(x => x.ClassName)
+                .Select(x =>
+                {
+                    var name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                })
+                .ToList();
+
+            var keys = kibbles.Select(x => x.Name).Concat(eggs.Select(x => x.Name)).Distinct();
+
+            var results = keys.Select(x =>
+            {
+                var k = kibbles.FirstOrDefault(y => y.Name.Equals(x));
+                var e = eggs.FirstOrDefault(y => y.Name.Equals(x));
+                return new KibbleAndEggViewModel
+                {
+                    Name = k?.Name ?? e?.Name,
+                    KibbleCount = k?.Count ?? 0L,
+                    EggCount = e?.Count ?? 0L
+                };
+            }).OrderByDescending(x => x.EggCount + x.KibbleCount).ToList();
+
+            return results;
         }
     }
 }

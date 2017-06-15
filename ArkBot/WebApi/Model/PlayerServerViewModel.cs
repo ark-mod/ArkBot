@@ -11,6 +11,7 @@ namespace ArkBot.WebApi.Model
         public PlayerServerViewModel()
         {
             Creatures = new List<TamedCreatureViewModel>();
+            KibblesAndEggs = new List<KibbleAndEggViewModel>();
         }
 
         public string ClusterKey { get; set; }
@@ -27,5 +28,6 @@ namespace ArkBot.WebApi.Model
         public float? TopoMapY { get; set; }
         public DateTime SavedAt { get; set; }
         public List<TamedCreatureViewModel> Creatures { get; set; }
+        public List<KibbleAndEggViewModel> KibblesAndEggs { get; set; }
     }
 }

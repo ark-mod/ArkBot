@@ -642,7 +642,10 @@ namespace ArkBot.ViewModel
                 var backupService = Container.Resolve<ISavegameBackupService>();
                 foreach (var server in _config.Servers)
                 {
-                    var context = Container.Resolve<ArkServerContext>(new TypedParameter(typeof(ServerConfigSection), server));
+                    var clusterContext = _contextManager.GetCluster(server.Cluster);
+                    var context = Container.Resolve<ArkServerContext>(
+                        new TypedParameter(typeof(ServerConfigSection), server), 
+                        new TypedParameter(typeof(ArkClusterContext), clusterContext));
                     var initTask = context.Initialize(); //fire and forget
                     _contextManager.AddServer(context);
                 }

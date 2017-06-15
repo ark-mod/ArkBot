@@ -117,6 +117,31 @@
     </table>
   </div>
 </section>
+<section *ngIf="player?.Servers[serverKey]?.KibblesAndEggs.length > 0" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Kibbles and Eggs <span class="w3-tag w3-large theme-d1">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>
+  </div>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Name</th>
+          <th>Kibbles</th>
+          <th>Eggs</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ke of player.Servers[serverKey].KibblesAndEggs">
+          <td>{{ke.Name}}</td>
+          <td>{{ke.KibbleCount}}</td>
+          <td>{{ke.EggCount}}</td>
+          <td>{{ke.KibbleCount + ke.EggCount}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 <section *ngIf="haveCluster()" class="w3-container">
   <h2 class="theme-text-d1">Clusters</h2>
   <div *ngIf="player?.Clusters" class="w3-bar theme-l2 w3-card-4">
