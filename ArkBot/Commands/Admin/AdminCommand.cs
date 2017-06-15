@@ -417,7 +417,7 @@ namespace ArkBot.Commands.Experimental
                     });
                 }
 
-                sb.AppendLine($"**Countdown have been initiated. Announcement will be made.**");
+                sb.AppendLine($"**Countdown on server {serverContext.Config.Key} have been initiated. Announcement will be made.**");
                 await _scheduledTasksManager.StartCountdown(serverContext, reason, delayInMinutes, react);
             }
             else

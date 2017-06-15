@@ -66,7 +66,7 @@ namespace ArkBot.ScheduledTasks
             await serverContext.Steam.SendRconCommand($"serverchat Countdown started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...");
             if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
             {
-                await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, $"**Countdown started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...**");
+                await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, $"**Countdown on server {serverContext.Config.Key} started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...**");
             }
 
             foreach (var min in Enumerable.Range(1, delayInMinutes))
@@ -80,7 +80,7 @@ namespace ArkBot.ScheduledTasks
                         await serverContext.Steam.SendRconCommand(countdown > 0 ? $"serverchat {reason} in {countdown} minute{(countdown > 1 ? "s" : "")}..." : $"serverchat {reason}...");
                         if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
                         {
-                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, countdown > 0 ? $"**{reason} in {countdown} minute{(countdown > 1 ? "s" : "")}...**" : $"**{reason}...**");
+                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, countdown > 0 ? $"**{serverContext.Config.Key}: {reason} in {countdown} minute{(countdown > 1 ? "s" : "")}...**" : $"**{serverContext.Config.Key}: {reason}...**");
                         }
                         if (countdown <= 0 && react != null) await react();
                     })
@@ -108,7 +108,7 @@ namespace ArkBot.ScheduledTasks
                     bool tmp;
                     _timedTasks.TryRemove(task, out tmp);
 
-                    await task.Callback();
+                    var fireAndForget = Task.Run(task.Callback); //fire and forget
                 }
 
                 if (_config.InfoTopicChannel != null)
