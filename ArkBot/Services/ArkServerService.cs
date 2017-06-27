@@ -102,7 +102,7 @@ namespace ArkBot.Helpers
             return true;
         }
 
-        public async Task<bool> ShutdownServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsNotStarted = true)
+        public async Task<bool> ShutdownServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsNotStarted = true, bool skipSavingBeforeShutdown = false)
         {
             var success = false;
 
@@ -127,7 +127,10 @@ namespace ArkBot.Helpers
             var processId = ids.First();
 
             //save world 
-            if (!await SaveWorld(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, noUpdateForThisCall: true)) return false;
+            if (!skipSavingBeforeShutdown)
+            {
+                if (!await SaveWorld(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, noUpdateForThisCall: true)) return false;
+            }
 
             if (sendMessageDirected != null) await sendMessageDirected($"shutting down the server...");
             var result2 = await serverContext.Steam.SendRconCommand("doexit");

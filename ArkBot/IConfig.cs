@@ -9,6 +9,7 @@
         string BotNamespace { get; set; }
         string BotToken { get; set; }
         string BotUrl { get; set; }
+        string AppUrl { get; set; }
         string ClusterSavePath { get; set; }
         //bool Debug { get; set; }
         //string DebugSaveFilePath { get; set; }

@@ -63,10 +63,13 @@ namespace ArkBot.ScheduledTasks
 
         public async Task StartCountdown(ArkServerContext serverContext, string reason, int delayInMinutes, Func<Task> react = null)
         {
-            await serverContext.Steam.SendRconCommand($"serverchat Countdown started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...");
+            // collection of servers that should receive notifications via rcon for this countdown event
+            var serverContexts = serverContext == null ? _contextManager.Servers.Where(x => !x.Config.DisableChatNotificationOnGlobalCountdown).ToArray() : new ArkServerContext[] { serverContext };
+
+            foreach (var sc in serverContexts) await sc.Steam.SendRconCommand($"serverchat Countdown started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...");
             if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
             {
-                await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, $"**Countdown on server {serverContext.Config.Key} started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...**");
+                await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, $"**Countdown{(serverContext == null ? "" : $" on server {serverContext.Config.Key}")} started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...**");
             }
 
             foreach (var min in Enumerable.Range(1, delayInMinutes))
@@ -77,10 +80,10 @@ namespace ArkBot.ScheduledTasks
                     Callback = new Func<Task>(async () =>
                     {
                         var countdown = delayInMinutes - min;
-                        await serverContext.Steam.SendRconCommand(countdown > 0 ? $"serverchat {reason} in {countdown} minute{(countdown > 1 ? "s" : "")}..." : $"serverchat {reason}...");
+                        foreach (var sc in serverContexts) await sc.Steam.SendRconCommand(countdown > 0 ? $"serverchat {reason} in {countdown} minute{(countdown > 1 ? "s" : "")}..." : $"serverchat {reason}...");
                         if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
                         {
-                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, countdown > 0 ? $"**{serverContext.Config.Key}: {reason} in {countdown} minute{(countdown > 1 ? "s" : "")}...**" : $"**{serverContext.Config.Key}: {reason}...**");
+                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, countdown > 0 ? $"**{(serverContext == null ? "" : $"{serverContext.Config.Key}: ")}{reason} in {countdown} minute{(countdown > 1 ? "s" : "")}...**" : $"**{(serverContext == null ? "" : $"{serverContext.Config.Key}: ")}{reason}...**");
                         }
                         if (countdown <= 0 && react != null) await react();
                     })

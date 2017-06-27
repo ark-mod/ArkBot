@@ -12,6 +12,12 @@ namespace ArkBot.Steam
     public class SteamManager : IDisposable
     {
         private ServerConfigSection _config;
+        private DateTime _sourceServerLastReconnect;
+        private DateTime _rconServerLastReconnect;
+        private object _sourceServerLock = new object();
+        private object _rconServerLock = new object();
+        private Task _sourceServerReconnectTask;
+        private Task _rconServerReconnectTask;
         private Server _sourceServer;
         private Server _rconServer;
 
@@ -59,50 +65,86 @@ namespace ArkBot.Steam
 
         private async Task ReconnectSource()
         {
-            await Task.Run(() =>
+            if (DateTime.Now - _sourceServerLastReconnect <= TimeSpan.FromSeconds(15)) return;
+
+            Task reconnect = null;
+            lock (_sourceServerLock)
             {
-                try
+                if (_sourceServerReconnectTask != null) reconnect = Task.WhenAll(_sourceServerReconnectTask);
+                else
                 {
-                    _sourceServer?.Dispose();
-                    _sourceServer = null;
+                    _sourceServerLastReconnect = DateTime.Now;
+                    _sourceServerReconnectTask = reconnect = Task.Run(() =>
+                    {
+                        try
+                        {
+                            _sourceServer?.Dispose();
+                            _sourceServer = null;
 
-                    _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.Port, false, 2000, 5000, 1, true);
-                }
-                catch (Exception ex)
-                {
-                    _sourceServer?.Dispose();
-                    _sourceServer = null;
+                            _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.Port, false, 2000, 5000, 1, true);
+                        }
+                        catch (Exception ex)
+                        {
+                            _sourceServer?.Dispose();
+                            _sourceServer = null;
 
-                    Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.Port})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                            Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.Port})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                        }
+                    });
                 }
-            });
+            }
+
+            await reconnect;
+
+            lock (_sourceServerLock)
+            {
+                _sourceServerReconnectTask = null;
+            }
         }
 
         private async Task ReconnectRcon()
         {
-            await Task.Run(() =>
+            if (DateTime.Now - _rconServerLastReconnect <= TimeSpan.FromSeconds(15)) return;
+
+            Task reconnect = null;
+            lock (_rconServerLock)
             {
-                try
+                if (_rconServerReconnectTask != null) reconnect = Task.WhenAll(_rconServerReconnectTask);
+                else
                 {
-                    _rconServer?.Dispose();
-                    _rconServer = null;
+                    _rconServerLastReconnect = DateTime.Now;
+                    _rconServerReconnectTask = reconnect = Task.Run(() =>
+                    {
+                        try
+                        {
+                            _rconServer?.Dispose();
+                            _rconServer = null;
 
-                    _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
-                    _rconServer?.GetControl(_config.RconPassword);
-                }
-                catch (SocketException)
-                {
-                    _rconServer?.Dispose();
-                    _rconServer = null;
-                }
-                catch (Exception ex)
-                {
-                    _rconServer?.Dispose();
-                    _rconServer = null;
+                            _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
+                            _rconServer?.GetControl(_config.RconPassword);
+                        }
+                        catch (SocketException)
+                        {
+                            _rconServer?.Dispose();
+                            _rconServer = null;
+                        }
+                        catch (Exception ex)
+                        {
+                            _rconServer?.Dispose();
+                            _rconServer = null;
 
-                    Logging.LogException($"Error when connecting to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                            Logging.LogException($"Error when connecting to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                        }
+                    });
                 }
-            });
+            }
+
+            await reconnect;
+
+            lock (_rconServerLock)
+            {
+                _rconServerReconnectTask = null;
+            }
         }
 
         public async Task<long> Ping()
@@ -169,6 +211,13 @@ namespace ArkBot.Steam
                             cache.Set(cacheKey, info, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
                         }
                     }
+                    catch (System.Net.Sockets.SocketException ex)
+                    when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
+                    {
+                        _sourceServer?.Dispose();
+                        _sourceServer = null;
+                        return;
+                    }
                     catch (Exception ex)
                     {
                         _sourceServer?.Dispose();
@@ -208,6 +257,13 @@ namespace ArkBot.Steam
                             cache.Set(cacheKey, rules, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
                         }
                     }
+                    catch (System.Net.Sockets.SocketException ex)
+                    when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
+                    {
+                        _sourceServer?.Dispose();
+                        _sourceServer = null;
+                        return;
+                    }
                     catch (Exception ex)
                     {
                         _sourceServer?.Dispose();
@@ -246,6 +302,13 @@ namespace ArkBot.Steam
                             _lastServerPlayers = DateTime.Now;
                             cache.Set(cacheKey, players, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
                         }
+                    }
+                    catch (System.Net.Sockets.SocketException ex)
+                    when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
+                    {
+                        _sourceServer?.Dispose();
+                        _sourceServer = null;
+                        return;
                     }
                     catch (Exception ex)
                     {

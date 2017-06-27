@@ -35,6 +35,10 @@ namespace ArkBot
         [Description("Website url associated with the bot or ARK server (optional).")]
         public string BotUrl { get; set; }
 
+        [JsonProperty(PropertyName = "appUrl")]
+        [Description("External url pointing to the Web App (optional).")]
+        public string AppUrl { get; set; }
+
         [JsonProperty(PropertyName = "saveFilePath")]
         [Description("Absolute file path of the .ark save file to monitor/extract data from.")]
         public string SaveFilePath { get; set; }
@@ -259,6 +263,11 @@ namespace ArkBot
         [JsonProperty(PropertyName = "usePowershellOutputRedirect")]
         [Description("Use alternative powershell/file based output redirect for update progress notifications.")]
         public bool UsePowershellOutputRedirect { get; set; }
+
+        [JsonProperty(PropertyName = "disableChatNotificationOnGlobalCountdown")]
+        [Description("Disable chat notifications for this server instance when trigged by admin multiple server countdown (feature is used for compatibility with cross server chat).")]
+        public bool DisableChatNotificationOnGlobalCountdown { get; set; }
+        
     }
 
     public class ClusterConfigSection

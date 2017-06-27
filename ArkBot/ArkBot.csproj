@@ -382,6 +382,7 @@
     <Compile Include="ArkSaveFileWatcherTimer.cs" />
     <Compile Include="Ark\IArkUpdateableContext.cs" />
     <Compile Include="Commands\ServersCommand.cs" />
+    <Compile Include="Commands\DisabledCommands.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />
@@ -426,6 +427,7 @@
     <Compile Include="Database\EfDatabaseContextFactory.cs" />
     <Compile Include="Database\Model\PlayedEntry.cs" />
     <Compile Include="Discord\DiscordManager.cs" />
+    <Compile Include="Discord\DiscordMessage.cs" />
     <Compile Include="Extensions\DiscordChannelExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />

@@ -149,8 +149,14 @@
       "Coel"
     ],
     [
-      "Compy",
-      "Compy_Character_BP_C"
+      "Ocean Coelacanth",
+      "Coel_Character_BP_Ocean_C",
+      "Ocean Coel"
+    ],
+    [
+      "Compsognathus",
+      "Compy_Character_BP_C",
+      "Compy"
     ],
     [
       "Daeodon",
@@ -465,8 +471,9 @@
       "Sheep"
     ],
     [
-      "Pachy",
-      "Pachy_Character_BP_C"
+      "Pachycephalosaurus",
+      "Pachy_Character_BP_C",
+      "Pachy"
     ],
     [
       "Pachyrhinosaurus",
@@ -539,8 +546,9 @@
       "Purlovia_Character_BP_C"
     ],
     [
-      "Quetzal",
+      "Quetzalcoatl",
       "Quetz_Character_BP_C",
+      "Quetzal",
       "Quetz"
     ],
     [
@@ -552,8 +560,9 @@
       "Raptor_Character_BP_C"
     ],
     [
-      "Rex",
-      "Rex_Character_BP_C"
+      "Tyrannosaurus",
+      "Rex_Character_BP_C",
+      "Rex"
     ],
     [
       "Rock Elemental",
@@ -577,8 +586,9 @@
       "Salmon"
     ],
     [
-      "Sarco",
+      "Sarcosuchus",
       "Sarco_Character_BP_C",
+      "Sarco",
       "Crocodile"
     ],
     [
@@ -649,8 +659,9 @@
       "Terrorbird"
     ],
     [
-      "Therizinosaurus",
+      "Therizinosaur",
       "Therizino_Character_BP_C",
+      "Therizinosaurus",
       "Therizino",
       "Theriz"
     ],

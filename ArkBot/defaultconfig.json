@@ -3,6 +3,7 @@
   "botName": "ARK Discord Bot",
   "botNamespace": "http://www.arkdiscordbot.com/",
   "botUrl": "",
+  "appUrl": "",
   "serverKey":  "server1",
   "serverIp": "127.0.0.1",
   "serverPort": 27015,
@@ -48,7 +49,8 @@
       "serverExecutableArguments":  "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server1",
-      "usePowershellOutputRedirect":  false
+      "usePowershellOutputRedirect": false,
+      "disableChatNotificationOnGlobalCountdown": false
     },
     {
       "key": "server2",
@@ -62,7 +64,8 @@
       "serverExecutableArguments":  "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server2",
-      "usePowershellOutputRedirect":  false
+      "usePowershellOutputRedirect": false,
+      "disableChatNotificationOnGlobalCountdown": false
     }
   ],
   "clusters": [
