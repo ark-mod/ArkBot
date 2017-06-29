@@ -1,16 +1,15 @@
 <simple-notifications [options]="notificationOptions"></simple-notifications>
-<div class="theme-c1 w3-container">
-  <div class="w3-display-container" style="height: 90px;">
+<!--<div class="theme-c1 w3-container">
+  <div class="w3-display-container" style="height: 80px;">
     <div class="w3-display-left"><h1 style="font-size: 4em; margin: 0px;">ARK</h1></div><div class="w3-display-right"><img src="assets/logo_small.png" /></div>
-    <div class="w3-display-topright w3-tiny">Theme: <a href="#" (click)="setTheme('light')">Light</a> | <a href="#" (click)="setTheme('dark')">Dark</a></div>
   </div>
+</div>-->
+
+<router-outlet name="menu"></router-outlet>
+<div id="page">
+  <div class="w3-bar">
+    <breadcrumb prefix="Home" [useBootstrap]="false" class="breadcrumb w3-bar-item"></breadcrumb>
+    <div class="w3-bar-item w3-right w3-tiny theme-l1">Theme: <a href="#" (click)="setTheme('light')">Light</a> | <a href="#" (click)="setTheme('dark')">Dark</a></div>
+  </div>
+  <router-outlet></router-outlet>
 </div>
-<!--
-<div class="navigation w3-bar w3-light-grey">
-  <a routerLink="/servers" routerLinkActive="w3-green" class="w3-bar-item w3-button w3-mobile w3-text-white">Home</a>
-</div>
--->
-<div class="w3-bar">
-  <breadcrumb prefix="Home" [useBootstrap]="false" class="breadcrumb w3-bar-item"></breadcrumb>
-</div>
-<router-outlet></router-outlet>

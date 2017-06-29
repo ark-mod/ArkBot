@@ -1,6 +1,6 @@
 <section *ngIf="loaded == false" class="w3-container">
-  <div class="w3-panel w3-light-grey">
-    <h3 class="w3-text-grey">Loading...</h3>
+  <div class="w3-panel theme-l2">
+    <h3 class="theme-text-l1-light">Loading...</h3>
   </div> 
 </section>
 <section *ngIf="loaded == true &amp;&amp; player == null" class="w3-container">
@@ -9,14 +9,14 @@
     <p>No data could be loaded for the given steam id.</p>
   </div> 
 </section>
-<section *ngIf="player" class="w3-container">
+<section *ngIf="!isMenuActive('creatures_cloud') &amp;&amp; player != undefined" class="w3-container">
   <h2 class="theme-text-d1">Servers</h2>
   <div *ngIf="player?.Servers" class="w3-bar theme-l2 w3-card-4">
     <button *ngFor="let server of keysGetter(player?.Servers)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': active(server)}" [style.width.%]="serverWidth()" (click)="activate(server)">{{server}}</button>
   </div>
 </section>
-<section *ngIf="player" class="w3-container">
-  <h2 class="theme-text-d1">Player</h2>
+<section *ngIf="isMenuActive('profile') &amp;&amp; player != undefined" class="w3-container">
+  <a id="player"></a><h2 class="theme-text-d1">Player</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
       <thead>
@@ -50,9 +50,9 @@
     </table>
   </div>
 </section>
-<section *ngIf="player" class="w3-container">
+<section *ngIf="isMenuActive('creatures') &amp;&amp; player != undefined" class="w3-container">
   <div class="w3-cell-row">
-    <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredCreatures.length}}</span></h2></div>
+    <div class="w3-cell"><a id="creatures"></a><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredCreatures.length}}</span></h2></div>
     <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
   </div>
   <div class="inner-addon right-addon">
@@ -91,7 +91,7 @@
           <td>
             <div *ngIf="creature.FoodStatus != null" class="app-green-light w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.FoodStatus | percent:'1.0-0'}}</div>
-              <div class="w3-green w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
+              <div class="theme-c1 w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
             </div>
           </td>
           <td>{{creature.Latitude | number:'1.1-1'}}</td>
@@ -104,7 +104,7 @@
                 <div class="w3-cell w3-cell-middle">
                   <div class="app-green-light w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
                     <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
-                    <div class="w3-green w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
+                    <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
                   </div>
                 </div>
                 <div class="w3-cell">cuddle {{toRelativeDate(creature.BabyNextCuddle)}}</div>
@@ -117,9 +117,9 @@
     </table>
   </div>
 </section>
-<section *ngIf="player?.Servers[serverKey]?.KibblesAndEggs.length > 0" class="w3-container">
+<section *ngIf="isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey]?.KibblesAndEggs.length > 0" class="w3-container">
   <div class="w3-cell-row">
-    <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Kibbles and Eggs <span class="w3-tag w3-large theme-d1">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>
+    <div class="w3-cell"><a id="kibblesandeggs"></a><h2 class="theme-text-d1 w3-left">Kibbles and Eggs <span class="w3-tag w3-large theme-d1">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>
   </div>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -142,13 +142,13 @@
     </table>
   </div>
 </section>
-<section *ngIf="haveCluster()" class="w3-container">
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; haveCluster()" class="w3-container">
   <h2 class="theme-text-d1">Clusters</h2>
   <div *ngIf="player?.Clusters" class="w3-bar theme-l2 w3-card-4">
     <button *ngFor="let cluster of keysGetter(player?.Clusters)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCluster(cluster)}" [style.width.%]="clusterWidth()" (click)="activateCluster(cluster)">{{cluster}}</button>
   </div>
 </section>
-<section *ngIf="haveCluster()" class="w3-container">
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; haveCluster()" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredClusterCreatures.length}}</span></h2></div>
   </div>

@@ -1,6 +1,6 @@
 <section *ngIf="loaded == false" class="w3-container">
-  <div class="w3-panel w3-light-grey">
-    <h3 class="w3-text-grey">Loading...</h3>
+  <div class="w3-panel theme-l2">
+    <h3 class="theme-text-l1-light">Loading...</h3>
   </div> 
 </section>
 <section *ngIf="loaded == true &amp;&amp; server == null" class="w3-container">
@@ -9,7 +9,7 @@
     <p>No data could be loaded for the given server key.</p>
   </div> 
 </section>
-<section *ngIf="server" class="w3-container">
+<section *ngIf="isMenuActive('players') &amp;&amp; server" class="w3-container">
   <h2 class="theme-text-d1">Players</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -36,7 +36,7 @@
     </table>
   </div>
 </section>
-<section *ngIf="server" class="w3-container">
+<section *ngIf="isMenuActive('tribes') &amp;&amp; server" class="w3-container">
   <h2 class="theme-text-d1">Tribes</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">

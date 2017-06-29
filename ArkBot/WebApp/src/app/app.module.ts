@@ -9,6 +9,7 @@ import { Ng2BreadcrumbModule } from 'ng2-breadcrumb/ng2-breadcrumb';
 
 import { AppComponent } from './app.component';
 import { PlayerComponent } from './player/player.component';
+import { PlayerMenuComponent } from './player-menu/player-menu.component';
 import { ServerComponent } from './server/server.component';
 import { ServerListComponent } from './server-list/server-list.component';
 import { AdminServerComponent } from './admin-server/admin-server.component';
@@ -19,27 +20,67 @@ import { MessageService } from './message.service';
 import { DataService } from './data.service';
 import { SanitizeStylePipe } from './sanitize-style.pipe';
 import { ClickOutsideDirective } from './clickOutside.directive';
+import { ServerListMenuComponent } from './server-list-menu/server-list-menu.component';
+import { MenuComponent } from './menu/menu.component';
+import { ServerMenuComponent } from './server-menu/server-menu.component';
+import { AdminServerMenuComponent } from './admin-server-menu/admin-server-menu.component';
 
 const appRoutes: Routes = [
   {
-    path: 'player/:id', 
-    component: PlayerComponent,
-    data: { title: 'Player' }
+    path: 'player/:id',
+    children: [
+      {
+        path: '',
+        component: PlayerComponent
+      },
+      {
+        path: '',
+        component: PlayerMenuComponent,
+        outlet: 'menu'
+      }
+    ]
   },
   {
-    path: 'server/:id', 
-    component: ServerComponent,
-    data: { title: 'Server' }
+    path: 'server/:id',
+    children: [
+      {
+        path: '',
+        component: ServerComponent
+      },
+      {
+        path: '',
+        component: ServerMenuComponent,
+        outlet: 'menu'
+      }
+    ]
   },
   {
-    path: 'admin/:id', 
-    component: AdminServerComponent,
-    data: { title: 'Admin Server' }
+    path: 'admin/:id',
+    children: [
+      {
+        path: '',
+        component: AdminServerComponent
+      },
+      {
+        path: '',
+        component: AdminServerMenuComponent,
+        outlet: 'menu'
+      }
+    ]
   },
   {
     path: 'servers',
-    component: ServerListComponent,
-    data: { title: 'Server List' }
+    children: [
+      {
+        path: '',
+        component: ServerListComponent
+      },
+      {
+        path: '',
+        component: ServerListMenuComponent,
+        outlet: 'menu'
+      }
+    ]
   },
   { path: '',
     redirectTo: '/servers',
@@ -55,8 +96,13 @@ const appRoutes: Routes = [
     SanitizeStylePipe,
     ClickOutsideDirective,
     PlayerComponent,
+    PlayerMenuComponent,
     ServerComponent,
-    AdminServerComponent
+    AdminServerComponent,
+    ServerListMenuComponent,
+    MenuComponent,
+    ServerMenuComponent,
+    AdminServerMenuComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),

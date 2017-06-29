@@ -15,6 +15,9 @@ import { HttpService } from '../http.service';
   styleUrls: ['./player.component.css']
 })
 export class PlayerComponent implements OnInit, OnDestroy {
+  private menuOption: string = undefined; 
+  private menuOptionSubscription: any;
+
   serverUpdatedSubscription: any;
   player: Player;
   filteredCreatures: Creature[];
@@ -66,6 +69,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
   
   ngOnInit(): void {
+    this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => this.menuOption = menuOption);
     this.steamId = this.route.snapshot.params['id'];
 
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
@@ -74,6 +78,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.menuOptionSubscription.unsubscribe();
     this.serverUpdatedSubscription.unsubscribe();
   }
 
@@ -221,5 +226,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
           clickToClose: true
       }
     );
+  }
+
+  isMenuActive(menuOption: string): boolean {
+    return this.menuOption == menuOption;
   }
 }
