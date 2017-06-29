@@ -86,16 +86,22 @@ namespace ArkBot.Data
 
         public ArkSpeciesStatsData()
         {
-            StatMultipliers = new double[0][];
+            StatMultipliersMp = new double[0][];
             SpeciesStats = new List<SpeciesStat>();
             SpeciesNames = new List<string>();
         }
 
         /// <summary>
-        /// These are the default stat multipliers (on official servers)
+        /// These are the default stat multipliers for MP (on official servers)
         /// </summary>
-        [JsonProperty("statMultipliers")]
-        public double[][] StatMultipliers { get; set; }
+        [JsonProperty("statMultipliersMP")]
+        public double[][] StatMultipliersMp { get; set; }
+
+        /// <summary>
+        /// These are the default stat multipliers for SP (on official servers)
+        /// </summary>
+        [JsonProperty("statMultipliersSP")]
+        public double[][] StatMultipliersSp { get; set; }
 
         [JsonProperty("species")]
         public List<SpeciesStat> SpeciesStats { get; set; }
@@ -180,7 +186,7 @@ namespace ArkBot.Data
         public double? GetMaxValue(string[] speciesaliases, Stat stat, int baseLevel, int tamedLevel, double tamingEfficiency, double imprintingBonus = 0)
         {
             var index = (int)stat;
-            var multipliers = index < StatMultipliers?.Length ? StatMultipliers.ElementAt(index) : null;
+            var multipliers = index < StatMultipliersMp?.Length ? StatMultipliersMp.ElementAt(index) : null;
             var stats = SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase))?.Stats;
 
             if (multipliers == null || multipliers.Length != 4 || stats == null) return null;

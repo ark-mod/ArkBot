@@ -17,8 +17,9 @@ namespace ArkBot.Commands
     public class DisabledCommands : ICommand
     {
         public string Name => "disabled";
-        public string[] Aliases => new string[] { "players", "playersx", "playerlist", "playerslist", "findtame",
-            "findtames", "findpet", "findpets", "checkfood", "food", "mydinos", "mykibbles", "myeggs", "myresources", "mystuff", "myitems",
+        public string[] Aliases => new string[] { "players", "playersx", "playerlist", "playerslist",
+            "findtame", "findtames", "findpet", "findpets",
+            "checkfood", "food", "mydinos", "mykibbles", "myeggs", "myresources", "mystuff", "myitems",
             "stats", "statistics", "top", "status", "serverstatus", "server", "vote", "votes", "voting" };
         public string Description => null;
         public string SyntaxHelp => null;
