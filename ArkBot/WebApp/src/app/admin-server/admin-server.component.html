@@ -69,3 +69,7 @@
     </table>
   </div>
 </section>
+<section *ngIf="isMenuActive('structures')" class="w3-container">
+  <h2 class="theme-text-d1">Structures</h2>
+  <arkmap-structures [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
+</section>

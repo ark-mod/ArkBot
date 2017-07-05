@@ -24,7 +24,7 @@
             <th>Server</th>
             <th>Time Online</th>
         </tr>
-        <tbody *ngFor="let server of dataService.Servers.Servers">
+        <ng-container *ngFor="let server of dataService.Servers.Servers">
           <tr *ngFor="let player of server.OnlinePlayers">
             <td>{{player.SteamName}}</td>
             <td>{{player.CharacterName}}</td>
@@ -33,7 +33,7 @@
             <td>{{server.Key}}</td>
             <td>{{player.TimeOnline}}</td>
           </tr>
-        </tbody>
+        </ng-container>
     </table>
   </div>
 </section>
@@ -41,7 +41,7 @@
   <div *ngFor="let server of dataService.Servers.Servers" class="w3-card-4 w3-responsive">
     <table *ngIf="isMenuActive(server.Key)" class="w3-table-all w3-small border-theme">
         <tr>
-          <th class="theme-d1" colspan="2" style="font-size: 1.5em;"><a [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a></th>
+          <th class="theme-d1" colspan="2" style="padding: 0px 16px;"><h3><a [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a></h3></th>
         </tr>
         <tr>
           <th class="theme-d1">Address</th>
@@ -62,6 +62,10 @@
         <tr>
           <th class="theme-d1">Tamed Creatures</th>
           <td>{{server.TamedCreatureCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Cloud Creatures</th>
+          <td>{{server.CloudCreatureCount}}</td>
         </tr>
         <tr>
           <th class="theme-d1">Wild Creatures</th>
@@ -87,6 +91,10 @@
           <th class="theme-d1">Next Update</th>
           <td>{{server.NextUpdate}}</td>
         </tr>
+        <tr>
+          <th class="theme-d1">Uptime</th>
+          <td>{{server.ServerStarted ? toRelativeDate(server.ServerStarted) : '-'}}</td>
+        </tr>
         <tr style="border-bottom: none;">
           <th colspan="2" class="theme-d1">Online Players ({{server.OnlinePlayerCount}} / {{server.OnlinePlayerMax}})</th>
         </tr>
@@ -111,5 +119,35 @@
           </td>
         </tr>
     </table>
+  </div>
+</section><br />
+<section *ngIf="isMenuActive('overview')" class="w3-container margin-top">
+  <h3 class="theme-text-d1">External Resources</h3>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Wiki</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p><a href="http://ark.gamepedia.com/" style="text-decoration: none;">Official ARK Survival Evolved Wiki&nbsp;❯</a></p>
+    </div>
+  </div>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Taming Calculators</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <ul class="w3-ul" style="margin: 7px 0px;">
+        <li style="padding-left: 0px;"><a href="http://www.survive-ark.com/taming-calculator/" style="text-decoration: none;">Survive ARK: Taming Calculator&nbsp;❯</a></li>
+        <li style="padding-left: 0px;"><a href="http://www.dododex.com/" style="text-decoration: none;">Dododex: Taming Calculator&nbsp;❯</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Creature Library and Breeding Suggestions</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p><a href="https://github.com/cadon/ARKStatsExtractor" style="text-decoration: none;">ARK Smart Breeding&nbsp;❯</a></p>
+    </div>
   </div>
 </section>

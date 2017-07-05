@@ -1,0 +1,42 @@
+<canvas #myCanvas [width]="width" [height]="height" style="width: 100%;"></canvas>
+
+<h2 class="theme-text-d1">Player/Tribe Locations</h2>
+<div class="w3-card-4 w3-responsive">
+  <table class="w3-table-all border-theme">
+    <thead>
+      <tr class="theme-d1">
+        <th>Name</th>
+        <th>Id</th>
+        <th>Type</th>
+        <th>Locations</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let owner of owners">
+        <td><input type="radio" [(ngModel)]="selectedOwner" [value]="owner" (change)="updateSelection()" /> {{owner.Name}}</td>
+        <td>{{owner.OwnerId}}</td>
+        <td>{{owner.Type}}</td>
+        <td>{{owner.pointsNum}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<ng-container *ngIf="selectedOwner">
+  <h2 class="theme-text-d1">Selected Owner</h2>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Location #</th>
+          <th>Structures</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let point of keysGetter(selectedOwner.points)">
+          <td>{{point}}</td>
+          <td><span *ngFor="let structure of keysGetter(selectedOwner.points[point].structures)">{{selectedOwner.points[point].structures[structure]}}x {{types[structure].ClassName}}, </span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<ng-container>

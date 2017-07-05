@@ -12,6 +12,8 @@ namespace ArkBot.WebApi.Model
         {
             Creatures = new List<TamedCreatureViewModel>();
             KibblesAndEggs = new List<KibbleAndEggViewModel>();
+            CropPlots = new List<CropPlotViewModel>();
+            ElectricalGenerators = new List<ElectricalGeneratorViewModel>();
         }
 
         public string ClusterKey { get; set; }
@@ -29,5 +31,7 @@ namespace ArkBot.WebApi.Model
         public DateTime SavedAt { get; set; }
         public List<TamedCreatureViewModel> Creatures { get; set; }
         public List<KibbleAndEggViewModel> KibblesAndEggs { get; set; }
+        public List<CropPlotViewModel> CropPlots { get; set; }
+        public List<ElectricalGeneratorViewModel> ElectricalGenerators { get; set; }
     }
 }

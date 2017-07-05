@@ -4,6 +4,8 @@ import { DataService } from '../data.service';
 import { NotificationsService } from 'angular2-notifications';
 import { MessageService } from '../message.service';
 
+import * as moment from 'moment'
+
 @Component({
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
@@ -51,5 +53,9 @@ export class ServerListComponent implements OnInit, OnDestroy {
 
   isMenuActive(menuOption: string): boolean {
     return this.menuOption == menuOption;
+  }
+
+  toRelativeDate(datejson: string): string {
+    return moment(new Date(datejson)).fromNow();
   }
 }

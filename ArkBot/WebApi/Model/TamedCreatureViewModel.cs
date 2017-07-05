@@ -13,6 +13,8 @@ namespace ArkBot.WebApi.Model
             Aliases = new string[] { };
         }
 
+        public long Id1 { get; set; }
+        public long Id2 { get; set; }
         public string Name { get; set; }
         public string ClassName { get; set; }
         public string Species { get; set; }

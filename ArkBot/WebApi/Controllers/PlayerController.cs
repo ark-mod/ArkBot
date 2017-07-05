@@ -83,6 +83,8 @@ namespace ArkBot.WebApi.Controllers
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId));
             vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, playerId));
+            vm.CropPlots.AddRange(BuildCropPlotViewModelsForPlayerId(context, playerId));
+            vm.ElectricalGenerators.AddRange(BuildElectricalGeneratorViewModelsForPlayerId(context, playerId));
 
             return vm;
         }
@@ -108,6 +110,8 @@ namespace ArkBot.WebApi.Controllers
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id));
             vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id));
+            vm.CropPlots.AddRange(BuildCropPlotViewModelsForPlayerId(context, player.Id));
+            vm.ElectricalGenerators.AddRange(BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id));
 
             return vm;
         }
@@ -142,6 +146,8 @@ namespace ArkBot.WebApi.Controllers
                     var aliases = ArkSpeciesAliases.Instance.GetAliases(item.c.ClassName);
                     var vmc = new TamedCreatureViewModel
                     {
+                        Id1 = item.c.Id1,
+                        Id2 = item.c.Id2,
                         Name = item.c.Name,
                         ClassName = item.c.ClassName,
                         Species = aliases?.FirstOrDefault(),
@@ -234,6 +240,74 @@ namespace ArkBot.WebApi.Controllers
                     EggCount = e?.Count ?? 0L
                 };
             }).OrderByDescending(x => x.EggCount + x.KibbleCount).ToList();
+
+            return results;
+        }
+
+        internal static List<CropPlotViewModel> BuildCropPlotViewModelsForPlayerId(ArkServerContext context, int playerId)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            var cropPlots = new[] { player?.Structures, tribe?.Structures }.Where(x => x != null).SelectMany(x => x).OfType<ArkStructureCropPlot>().Where(x => x.PlantedCropClassName != null).ToArray();
+            
+            var results = cropPlots.Select(x =>
+            {
+                return new CropPlotViewModel(x.Location)
+                {
+                    ClassName = x.ClassName,
+                    //FertilizerAmount = x.FertilizerAmount ?? 0.0f,
+                    FertilizerQuantity = (int)Math.Round(GetFertilizerQuantityFromItems(x.Inventory), 0),
+                    WaterAmount = x.WaterAmount,
+                    PlantedCropClassName = x.PlantedCropClassName,
+                };
+            }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
+
+            return results;
+        }
+
+        private static readonly Dictionary<string, int> _fertilizerUnits = new Dictionary<string, int>
+        {
+            { "PrimalItemConsumable_HumanPoop", 1000 },
+            { "PrimalItemConsumable_DinoPoopSmall", 3500 },
+            { "PrimalItemConsumable_DinoPoopMedium", 7500 },
+            { "PrimalItemConsumable_DinoPoopLarge", 15000 },
+            { "PrimalItemConsumable_DinoPoopMassive_C", 35000 },
+            { "PrimalItemConsumable_Fertilizer_Compost_C", 54000 }
+        };
+
+        internal static double GetFertilizerQuantityFromItems(ArkItem[] cropPlotInventory)
+        {
+            if (cropPlotInventory == null) return 0.0d;
+
+            var fertilizerQuantity = 0.0d;
+            foreach (var i in cropPlotInventory)
+            {
+                int units = 0;
+                if (!_fertilizerUnits.TryGetValue(i.ClassName, out units)) continue;
+
+                fertilizerQuantity += (i.SavedDurability ?? 0.0f) * units;
+            }
+
+            return fertilizerQuantity;
+        }
+
+        internal static List<ElectricalGeneratorViewModel> BuildElectricalGeneratorViewModelsForPlayerId(ArkServerContext context, int playerId)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            var electricalGenerators = new[] { player?.Structures, tribe?.Structures }.Where(x => x != null).SelectMany(x => x).OfType<ArkStructureElectricGenerator>().ToArray();
+
+            var results = electricalGenerators.Select(x =>
+            {
+                return new ElectricalGeneratorViewModel(x.Location)
+                {
+                    Activated = x.Activated,
+                    //FuelTime = x.FuelTime,
+                    GasolineQuantity = (int)(x.Inventory?.Where(y => y.ClassName.Equals("PrimalItemResource_Gasoline_C", StringComparison.Ordinal)).Sum(y => y.Quantity) ?? 0)
+                };
+            }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
 
             return results;
         }

@@ -175,6 +175,74 @@
     </table>
   </div>
 </section>
+<section *ngIf="isMenuActive('crop_plots') &amp;&amp; player?.Servers[serverKey]?.CropPlots.length > 0" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="cropplots"></a><h2 class="theme-text-d1 w3-left">Crops</h2></div>
+  </div>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Crop</th>
+          <th>Size</th>
+          <th>Fertilizer %</th>
+          <th>Fertilizer Units</th>
+          <th>Water</th>
+          <th>Lat</th>
+          <th>Lng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cp of player.Servers[serverKey].CropPlots">
+          <td>{{(cp.PlantedCropName || cp.PlantedCropClassName)}}</td>
+          <td>{{cp.Size}}</td>
+          <td>
+            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(cp.FertilizerQuantity / cp.FertilizerMax) | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="(cp.FertilizerQuantity / cp.FertilizerMax) * 100">&nbsp;</div>
+            </div>
+          </td>
+          <td>{{cp.FertilizerQuantity | number}}</td>
+          <td>{{cp.WaterAmount | number:'1.0-0'}}</td>
+          <td>{{cp.Latitude | number:'1.1-1'}}</td>
+          <td>{{cp.Longitude | number:'1.1-1'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section *ngIf="isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey]?.ElectricalGenerators.length > 0" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="electricalgenerators"></a><h2 class="theme-text-d1 w3-left">Electrical Generators</h2></div>
+  </div>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Gasoline %</th>
+          <th>Gasoline Quantity</th>
+          <th>Activated</th>
+          <th>Lat</th>
+          <th>Lng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let eg of player.Servers[serverKey].ElectricalGenerators">
+          <td>
+            <div *ngIf="eg.Activated == true" class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="(eg.GasolineQuantity / 800.0) * 100">&nbsp;</div>
+            </div>
+          </td>
+          <td>{{eg.GasolineQuantity | number}}</td>
+          <td>{{(eg.Activated == true ? "Yes" : "No")}}</td>
+          <td>{{eg.Latitude | number:'1.1-1'}}</td>
+          <td>{{eg.Longitude | number:'1.1-1'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
   <header class="w3-container theme-l1"> 

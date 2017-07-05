@@ -24,6 +24,7 @@ import { ServerListMenuComponent } from './server-list-menu/server-list-menu.com
 import { MenuComponent } from './menu/menu.component';
 import { ServerMenuComponent } from './server-menu/server-menu.component';
 import { AdminServerMenuComponent } from './admin-server-menu/admin-server-menu.component';
+import { ArkmapStructuresComponent } from './arkmap-structures/arkmap-structures.component';
 
 const appRoutes: Routes = [
   {
@@ -102,7 +103,8 @@ const appRoutes: Routes = [
     ServerListMenuComponent,
     MenuComponent,
     ServerMenuComponent,
-    AdminServerMenuComponent
+    AdminServerMenuComponent,
+    ArkmapStructuresComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),

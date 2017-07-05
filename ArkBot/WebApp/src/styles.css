@@ -30,6 +30,9 @@ body.dark { background-color: #141519 !important; color: #fff; }
 .dark .w3-table-all tr:nth-child(odd){background-color:#141519; color: #fff}
 .dark .w3-table-all tr:nth-child(even){background-color:#22232B; color: #fff}
 
+.dark .w3-ul li{border-bottom:1px solid #2B2D33}
+.dark .w3-ul li:last-child{border-bottom: none;}
+
 .dark .w3-card-4 {box-shadow:none;}
 
 .dark .breadcrumb ul li a { color: #fff !important}

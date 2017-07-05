@@ -9,7 +9,7 @@ import { DataService } from '../data.service';
 export class MenuComponent implements OnInit, OnDestroy {
 private menuOption: string = undefined; 
   private menuOptionSubscription: any;
-  public menuVisible: boolean = true;
+  public menuVisible: boolean = false;
 
   constructor(
     public dataService: DataService) { }

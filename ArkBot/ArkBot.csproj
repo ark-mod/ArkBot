@@ -381,6 +381,7 @@
     </Compile>
     <Compile Include="ArkSaveFileWatcherTimer.cs" />
     <Compile Include="Ark\IArkUpdateableContext.cs" />
+    <Compile Include="Commands\Admin\RconCommand.cs" />
     <Compile Include="Commands\ServersCommand.cs" />
     <Compile Include="Commands\DisabledCommands.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
@@ -548,12 +549,15 @@
     <Compile Include="WebApi\Controllers\MapController.cs" />
     <Compile Include="WebApi\Controllers\BulkController.cs" />
     <Compile Include="WebApi\Controllers\AdminServerController.cs" />
+    <Compile Include="WebApi\Controllers\StructuresController.cs" />
     <Compile Include="WebApi\Controllers\ServerController.cs" />
     <Compile Include="WebApi\Controllers\TribeController.cs" />
     <Compile Include="WebApi\Controllers\ServersController.cs" />
     <Compile Include="WebApi\Controllers\PlayerController.cs" />
     <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
     <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
+    <Compile Include="WebApi\Model\ElectricalGeneratorViewModel.cs" />
+    <Compile Include="WebApi\Model\CropPlotViewModel.cs" />
     <Compile Include="WebApi\Model\KibbleAndEggViewModel.cs" />
     <Compile Include="WebApi\Model\OnlinePlayerViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerClusterViewModely.cs" />
@@ -561,6 +565,11 @@
     <Compile Include="WebApi\Model\AdminServerViewModel.cs" />
     <Compile Include="WebApi\Model\AdminPlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\AdminTribeReferenceViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureBase.cs" />
+    <Compile Include="WebApi\Model\StructureOwnerViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureTypeViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureViewModel.cs" />
+    <Compile Include="WebApi\Model\StructuresViewModel.cs" />
     <Compile Include="WebApi\Model\TribeReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerServerViewModel.cs" />

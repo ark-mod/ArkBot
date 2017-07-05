@@ -102,7 +102,7 @@ namespace ArkBot.Helpers
             return true;
         }
 
-        public async Task<bool> ShutdownServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsNotStarted = true, bool skipSavingBeforeShutdown = false)
+        public async Task<bool> ShutdownServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsNotStarted = true, bool forcedShutdown = false)
         {
             var success = false;
 
@@ -126,42 +126,64 @@ namespace ArkBot.Helpers
             }
             var processId = ids.First();
 
-            //save world 
-            if (!skipSavingBeforeShutdown)
+            if (forcedShutdown)
             {
-                if (!await SaveWorld(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, noUpdateForThisCall: true)) return false;
-            }
-
-            if (sendMessageDirected != null) await sendMessageDirected($"shutting down the server...");
-            var result2 = await serverContext.Steam.SendRconCommand("doexit");
-            if (result2 == null)
-            {
-                if (sendMessageDirected != null) await sendMessageDirected($"failed to shutdown the server.");
-                return success;
-            }
-
-            var n = 0;
-            var timeout = false;
-            do
-            {
-                if (n >= 60)
+                try
                 {
-                    timeout = true;
-                    break;
+                    var process = Process.GetProcessById((int)processId);
+                    if (process == null)
+                    {
+                        if (sendMessageDirected != null) await sendMessageDirected($"failed to get process with id '{processId}'.");
+                        return false;
+                    }
+
+                    process.Kill();
+                }
+                catch (Exception)
+                {
+                    if (sendMessageDirected != null) await sendMessageDirected($"failed to terminate process with id '{processId}'.");
+                    return false;
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                n++;
-            } while (ProcessHelper.IsProcessStarted((int)processId));
-
-            if (timeout)
-            {
-                if (sendMessageDirected != null) await sendMessageDirected($"timeout while waiting for the server to shutdown...");
-                return success;
+                if (sendMessageDirected != null) await sendMessageDirected($"server forced shutdown complete!");
+                success = true;
             }
+            else
+            {
+                //save world 
+                if (!await SaveWorld(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, noUpdateForThisCall: true)) return false;
 
-            if (sendMessageDirected != null) await sendMessageDirected($"server shutdown complete!");
-            success = true;
+                if (sendMessageDirected != null) await sendMessageDirected($"shutting down the server...");
+                var result2 = await serverContext.Steam.SendRconCommand("doexit");
+                if (result2 == null)
+                {
+                    if (sendMessageDirected != null) await sendMessageDirected($"failed to shutdown the server.");
+                    return success;
+                }
+
+                var n = 0;
+                var timeout = false;
+                do
+                {
+                    if (n >= 60)
+                    {
+                        timeout = true;
+                        break;
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                    n++;
+                } while (ProcessHelper.IsProcessStarted((int)processId));
+
+                if (timeout)
+                {
+                    if (sendMessageDirected != null) await sendMessageDirected($"timeout while waiting for the server to shutdown...");
+                    return success;
+                }
+
+                if (sendMessageDirected != null) await sendMessageDirected($"server shutdown complete!");
+                success = true;
+            }
 
             return success;
         }
@@ -463,6 +485,29 @@ namespace ArkBot.Helpers
                     if (tmpFilePathToPowershellOutput != null) File.Delete(tmpFilePathToPowershellOutput);
                 }
                 catch { }
+            }
+        }
+
+        public DateTime? GetServerStartTime(string serverKey)
+        {
+            var serverContext = _contextManager.GetServer(serverKey);
+            if (serverContext == null) return null;
+
+            var ids = GetProcessIdsForServerKey(serverKey);
+            if (ids.Length <= 0) return null;
+            else if (ids.Length > 1) return null;
+            var processId = ids.First();
+            
+            try
+            {
+                var process = Process.GetProcessById((int)processId);
+                if (process == null) return null;
+
+                return process.StartTime;
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
