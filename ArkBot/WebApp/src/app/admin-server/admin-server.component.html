@@ -73,3 +73,7 @@
   <h2 class="theme-text-d1">Structures</h2>
   <arkmap-structures [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
+<section *ngIf="isMenuActive('structures2')" class="w3-container">
+  <h2 class="theme-text-d1">Structures 2</h2>
+  <arkmap-structures2 [mapName]="structures2?.MapName" [structures]="structures2"></arkmap-structures2>
+</section>

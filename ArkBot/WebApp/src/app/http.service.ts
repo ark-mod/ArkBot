@@ -14,6 +14,7 @@ export class HttpService {
   private serversUrl = '/servers';
   private serverUrl = '/server';
   private structuresUrl = '/structures';
+  private structures2Url = '/structures2';
   private adminServerUrl = '/adminserver';
   private playerUrl = '/player';
 
@@ -35,6 +36,13 @@ export class HttpService {
 
   getStructures(serverKey: string): Promise<any> {
     return this.http.get(`${this.getApiBaseUrl()}${this.structuresUrl}/${serverKey}?t=${+new Date()}`)
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
+  getStructures2(serverKey: string): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.structures2Url}/${serverKey}?t=${+new Date()}`)
                .toPromise()
                .then(response => response.json() as any)
                .catch(this.handleError);

@@ -47,6 +47,26 @@
     <ApplicationIcon>basket_empty.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Accord, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.3.5.0\lib\net46\Accord.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.MachineLearning, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.MachineLearning.3.5.0\lib\net46\Accord.MachineLearning.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Math, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Math.3.5.0\lib\net46\Accord.Math.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Math.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Math.3.5.0\lib\net46\Accord.Math.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Statistics, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Statistics.3.5.0\lib\net46\Accord.Statistics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ArkSavegameToolkitNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\external\ArkSavegameToolkitNet\$(Configuration)\ArkSavegameToolkitNet.dll</HintPath>
@@ -549,6 +569,7 @@
     <Compile Include="WebApi\Controllers\MapController.cs" />
     <Compile Include="WebApi\Controllers\BulkController.cs" />
     <Compile Include="WebApi\Controllers\AdminServerController.cs" />
+    <Compile Include="WebApi\Controllers\Structures2Controller.cs" />
     <Compile Include="WebApi\Controllers\StructuresController.cs" />
     <Compile Include="WebApi\Controllers\ServerController.cs" />
     <Compile Include="WebApi\Controllers\TribeController.cs" />
@@ -567,7 +588,10 @@
     <Compile Include="WebApi\Model\AdminTribeReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\StructureBase.cs" />
     <Compile Include="WebApi\Model\StructureOwnerViewModel.cs" />
+    <Compile Include="WebApi\Model\Structures2ViewModel.cs" />
     <Compile Include="WebApi\Model\StructureTypeViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureAreaViewModel.cs" />
+    <Compile Include="WebApi\Model\Structure2ViewModel.cs" />
     <Compile Include="WebApi\Model\StructureViewModel.cs" />
     <Compile Include="WebApi\Model\StructuresViewModel.cs" />
     <Compile Include="WebApi\Model\TribeReferenceViewModel.cs" />
@@ -666,8 +690,10 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Fody.1.29.2\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.29.2\build\dotnet\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\packages\Accord.3.5.0\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.5.0\build\Accord.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Import Project="..\packages\Accord.3.5.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.5.0\build\Accord.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
