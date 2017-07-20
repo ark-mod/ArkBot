@@ -21,7 +21,6 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   loaded: boolean = false;
   serverKey: string;
   structures: any;
-  structures2: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -56,17 +55,6 @@ export class AdminServerComponent implements OnInit, OnDestroy {
         });
   }
 
-  getStructures2(): void {
-      this.httpService
-        .getStructures2(this.serverKey)
-        .then(structures2 => {
-          this.structures2 = structures2;
-        })
-        .catch(error => {
-          this.structures2 = undefined;
-        });
-  }
-
   ngOnInit() {
     this.serverKey = this.route.snapshot.params['id'];
 
@@ -74,8 +62,6 @@ export class AdminServerComponent implements OnInit, OnDestroy {
       this.menuOption = menuOption;
       if (this.menuOption == "structures") {
         this.getStructures();
-      } else if(this.menuOption == "structures2") {
-        this.getStructures2();
       }
     });
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => {

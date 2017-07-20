@@ -10,6 +10,7 @@ using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -41,7 +42,8 @@ namespace ArkBot.WebApi.Controllers
 
         public async Task<ServerStatusAllViewModel> Get()
         {
-            var result = new ServerStatusAllViewModel();
+            var result = new ServerStatusAllViewModel { User = WebApiHelper.GetUser(Request) };
+
             foreach (var context in _contextManager.Servers)
             {
                 var serverContext = _contextManager.GetServer(context.Config.Key);

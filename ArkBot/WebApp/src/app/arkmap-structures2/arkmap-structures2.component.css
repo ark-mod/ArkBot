@@ -1,9 +1,0 @@
-.map canvas { position: absolute; top: 0; left: 0; width: 100%; }
-.map svg { position: absolute; top: 0; left: 0; width: 100%; }
-rect.overlay { fill: transparent; }
-.wrapper { position: relative; }
-.wrapper:after {
-  padding-top: 100%;
-  display: block;
-  content: '';
-}

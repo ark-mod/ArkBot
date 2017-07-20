@@ -17,7 +17,6 @@ import { HttpService } from '../http.service';
 export class PlayerComponent implements OnInit, OnDestroy {
   private menuOption: string = undefined; 
   private menuOptionSubscription: any;
-  private _dataService: any;
 
   serverUpdatedSubscription: any;
   player: Player;
@@ -34,6 +33,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showMap: boolean = false;
   serverKey: string;
   clusterKey: string;
+  creaturesMode: string = "status";
   creatureStates: any = {};
 
   constructor(
@@ -44,7 +44,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private notificationsService: NotificationsService,
     private ref: ChangeDetectorRef) {
-      this._dataService = dataService;
     }
 
     getPlayer(): void {
@@ -265,5 +264,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let s = this.getStateForCreature(creature);
 
     s.imprintNotifications = !s.imprintNotifications;
+  }
+
+  isSelf(): boolean {
+    var user = this.dataService.Servers ? this.dataService.Servers.User : undefined;
+    return user && user.SteamId ? user.SteamId == this.steamId : false;
+  }
+
+  activeCreaturesMode(mode: string): boolean {
+    return mode == this.creaturesMode;
+  }
+
+  activateCreaturesMode(mode: string): void {
+    this.creaturesMode = mode;
+  }
+
+  copyCreature(creature: any): void {
+
   }
 }

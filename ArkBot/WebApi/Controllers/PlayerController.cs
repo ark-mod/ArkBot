@@ -32,14 +32,17 @@ namespace ArkBot.WebApi.Controllers
             {
             };
 
+            var uservm = WebApiHelper.GetUser(Request);
+            var isSelf = uservm?.SteamId != null ? id.Equals(uservm.SteamId, StringComparison.OrdinalIgnoreCase) : false;
+
             var players = _contextManager.Servers.ToDictionary(x => x.Config.Key, x => x.Players?.FirstOrDefault(y => y.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase)));
             foreach (var context in _contextManager.Servers)
             {
                 PlayerServerViewModel vm = null;
 
                 var player = players[context.Config.Key];
-                if (player == null) vm = BuildViewModelForTransferedPlayer(context, id, players.Values.Where(x => x != null).Select(x => x.Id).ToArray()); //player have local profile on other server
-                else vm = BuildViewModelForPlayer(context, player); //player with local profile
+                if (player == null) vm = BuildViewModelForTransferedPlayer(context, id, players.Values.Where(x => x != null).Select(x => x.Id).ToArray(), isSelf); //player have local profile on other server
+                else vm = BuildViewModelForPlayer(context, player, isSelf); //player with local profile
 
                 if (vm == null) continue;
 
@@ -61,7 +64,7 @@ namespace ArkBot.WebApi.Controllers
             return result;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, int[] playerIds)
+        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, int[] playerIds, bool isSelf = false)
         {
             if (playerIds == null || playerIds.Length == 0) return null;
 
@@ -81,7 +84,7 @@ namespace ArkBot.WebApi.Controllers
                 SavedAt = tribe.SavedAt
             };
 
-            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId));
+            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId, isSelf));
             vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, playerId));
             vm.CropPlots.AddRange(BuildCropPlotViewModelsForPlayerId(context, playerId));
             vm.ElectricalGenerators.AddRange(BuildElectricalGeneratorViewModelsForPlayerId(context, playerId));
@@ -89,7 +92,7 @@ namespace ArkBot.WebApi.Controllers
             return vm;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForPlayer(ArkServerContext context, ArkPlayer player)
+        internal static PlayerServerViewModel BuildViewModelForPlayer(ArkServerContext context, ArkPlayer player, bool isSelf = false)
         {
             var vm = new PlayerServerViewModel
             {
@@ -108,7 +111,7 @@ namespace ArkBot.WebApi.Controllers
                 SavedAt = player.SavedAt
             };
 
-            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id));
+            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id, isSelf));
             vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id));
             vm.CropPlots.AddRange(BuildCropPlotViewModelsForPlayerId(context, player.Id));
             vm.ElectricalGenerators.AddRange(BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id));
@@ -116,7 +119,7 @@ namespace ArkBot.WebApi.Controllers
             return vm;
         }
 
-        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, int playerId)
+        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, int playerId, bool isSelf = false)
         {
             var result = new List<TamedCreatureViewModel>();
             if (context.TamedCreatures != null)
@@ -166,6 +169,32 @@ namespace ArkBot.WebApi.Controllers
                         BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
                         OwnerType = item.o
                     };
+                    if (isSelf)
+                    {
+                        //0: health
+                        //1: stamina
+                        //2: torpor
+                        //3: oxygen
+                        //4: food
+                        //5: water
+                        //6: temperature
+                        //7: weight
+                        //8: melee damage
+                        //9: movement speed
+                        //10: fortitude
+                        //11: crafting speed
+
+                        vmc.BaseStats = new CreatureBaseStatsViewModel {
+                            Health = item.c.BaseStats[0],
+                            Stamina = item.c.BaseStats[1],
+                            Oxygen = item.c.BaseStats[3],
+                            Food = item.c.BaseStats[4],
+                            Weight = item.c.BaseStats[7],
+                            Melee = item.c.BaseStats[8],
+                            MovementSpeed = item.c.BaseStats[9]
+                        };
+
+                    }
                     result.Add(vmc);
                 }
             }

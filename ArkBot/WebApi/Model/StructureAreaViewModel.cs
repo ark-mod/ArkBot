@@ -11,11 +11,11 @@ namespace ArkBot.WebApi.Model
     {
         public StructureAreaViewModel()
         {
-            Structures = new List<Structure2ViewModel>();
+            Structures = new List<StructureViewModel>();
         }
 
         public int OwnerId { get; set; }
-        public List<Structure2ViewModel> Structures { get; set; }
+        public List<StructureViewModel> Structures { get; set; }
         public int StructureCount { get; set; }
         public float Latitude { get; set; }
         public float Longitude { get; set; }

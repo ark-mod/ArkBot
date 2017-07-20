@@ -71,6 +71,10 @@ namespace ArkBot.WebApp
     {
         public SinglePageApplicationModule()
         {
+            Get[""] = _ =>
+            {
+                return Response.AsFile(@"index.html");
+            };
             Get[@"^(?<path>.*)$"] = parameters =>
             {
                 if (File.Exists(Path.Combine(Response.RootPath, parameters["path"].Value))) return Response.AsFile((string)parameters["path"].Value);
