@@ -140,6 +140,8 @@ namespace ArkBot.Commands.Experimental
                 UpdateServer = false,
                 UpdateServers = false,
                 Backups = false,
+                CloudBackups = "",
+                SteamId = 0L,
                 SaveWorld = false,
                 DestroyWildDinos = false,
                 EnableVoting = false,
@@ -200,10 +202,10 @@ namespace ArkBot.Commands.Experimental
             var sb = new StringBuilder();
 
             var isCountdown = !string.IsNullOrEmpty(args.Countdown) && _rCountdown.IsMatch(args.Countdown);
-            var isMultiServerCommand = isCountdown
+            var isMultiServerCommand = args != null && (isCountdown || !string.IsNullOrEmpty(args.CloudBackups)
                 || args.StartServer || args.StartServers || args.StopServer || args.StopServers
                 || args.ShutdownServer || args.ShutdownServers || args.RestartServer || args.RestartServers
-                || args.UpdateServer || args.UpdateServers;
+                || args.UpdateServer || args.UpdateServers);
 
             var serverContext = args?.ServerKey != null ? _contextManager.GetServer(args.ServerKey) : null;
             if (serverContext == null && !isMultiServerCommand)
@@ -212,8 +214,25 @@ namespace ArkBot.Commands.Experimental
                 return;
             }
 
+            ArkClusterContext clusterContext = null;
+            if (args?.CloudBackups != null)
+            {
+                if ((clusterContext = _contextManager.GetCluster(args.CloudBackups)) == null)
+                {
+                    await e.Channel.SendMessage($"**The given identifier is not a valid cluster key.**");
+                    return;
+                }
+                if (!(args.SteamId > 0))
+                {
+                    await e.Channel.SendMessage($"**A valid steam id must be provided.**");
+                    return;
+                }
+            }
+
             // collection of servers that this countdown applies to
-            var serverContexts = serverContext == null ? _contextManager.Servers.ToArray() : new ArkServerContext[] { serverContext };
+            var serverContexts = clusterContext != null ? _contextManager.GetServersInCluster(clusterContext.Config.Key) 
+                : serverContext == null ? _contextManager.Servers.ToArray() 
+                : new ArkServerContext[] { serverContext };
 
             if (isCountdown)
             {
@@ -275,6 +294,26 @@ namespace ArkBot.Commands.Experimental
                 sb.AppendLine($"**Countdown{(serverContext == null ? "" : $" on server {serverContext.Config.Key}")} have been initiated. Announcement will be made.**");
                 await _scheduledTasksManager.StartCountdown(serverContext, reason, delayInMinutes, react);
             }
+            else if (!string.IsNullOrEmpty(args.CloudBackups))
+            {
+                sb.AppendLine("**Cloud backups feature is currently not operational...**");
+                //var result = _savegameBackupService.GetBackupsList(serverContexts.Select(x => x.Config.Key).ToArray(), true, (fi, be) => fi.LastWriteTime >= DateTime.Now.AddDays(-1) && be.Files);
+                //if (result?.Count > 0)
+                //{
+                //    var data = result.OrderByDescending(x => x.DateModified).Take(25).Select(x => new
+                //    {
+                //        Path = x.Path,
+                //        Age = (DateTime.Now - x.DateModified).ToStringCustom(),
+                //        FileSize = x.ByteSize.ToFileSize()
+                //    }).ToArray();
+                //    var table = FixedWidthTableHelper.ToString(data, x => x
+                //        .For(y => y.Path, header: "Backup")
+                //        .For(y => y.Age, alignment: 1)
+                //        .For(y => y.FileSize, header: "File Size", alignment: 1));
+                //    sb.Append($"```{table}```");
+                //}
+                //else sb.AppendLine("**Could not find any savegame backups...**");
+            }
             else if (args.TerminateServer)
             {
                 var dm = new DiscordMessage(e.Channel, e.User.Id);
@@ -326,7 +365,7 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.Backups)
             {
-                var result = _savegameBackupService.GetBackupsList(serverContext.Config.Key);
+                var result = _savegameBackupService.GetBackupsList(new[] { serverContext.Config.Key });
                 if (result?.Count > 0)
                 {
                     var data = result.OrderByDescending(x => x.DateModified).Take(25).Select(x => new

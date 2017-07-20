@@ -117,6 +117,59 @@
     </table>
   </div>
 </section>
+<section *ngIf="isMenuActive('breeding') &amp;&amp; player != undefined" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="imprint_timers"></a><h2 class="theme-text-d1 w3-left">Breeding <span class="w3-tag w3-large theme-d1">{{imprintCreatures.length}}</span></h2></div>
+      <div class="w3-cell w3-cell-middle"><button class="w3-button w3-right" [ngClass]="{'theme-d1': imprintNotifications, 'theme-l2': !imprintNotifications, 'theme-hover': !imprintNotifications}" (click)="imprintNotifications = !imprintNotifications"><i *ngIf="imprintNotifications" class="material-icons" style="margin: -5px 5px -5px -5px; vertical-align: middle;">check</i>{{(imprintNotifications ? "Notifications Enabled" : "Enable Notifications")}}</button></div>
+  </div>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Name</th>
+          <th>Species</th>
+          <th>Gender</th>
+          <th>Base Level</th>
+          <th>Imprint</th>
+          <th>Grown</th>
+          <th>Next Imprint</th>
+          <th *ngIf="imprintNotifications"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let creature of imprintCreatures; let index = index" [ngClass]="{'odd': index % 2 == 1}">
+          <td>{{creature.Name}}</td>
+          <td>{{creature.Species}}</td>
+          <td>{{creature.Gender}}</td>
+          <td>{{creature.BaseLevel}}</td>
+          <td>{{creature.Imprint | percent:'1.0-0'}}</td>
+          <td>
+            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
+            </div>
+          </td>
+          <td><timer [time]="creature.BabyNextCuddle" [notification]="imprintNotifications" [state]="getStateForCreature(creature)"></timer></td>
+          <td *ngIf="imprintNotifications"><input style="top: 0;" class="w3-check w3-right" type="checkbox" [checked]="getStateForCreature(creature).imprintNotifications" (change)="toggleImprintNotificationForCreature(creature)" /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p *ngIf="_dataService?.Servers?.Servers[serverKey]" class="w3-small">
+    <!-- todo: dataservice.Servers needs to be observable -->
+    Last Update {{_dataService?.Servers?.Servers[serverKey]?.LastUpdate}}, Next Update {{_dataService?.Servers?.Servers[serverKey]?.NextUpdate}}
+  </p>
+  <div class="w3-margin-top"><button class="w3-button theme-d1" (click)="updateServer(serverKey)">Update Json</button></div>
+  <div class="w3-margin-top">
+    <strong>Todo</strong><br />
+    <ul>
+      <li>Tid för fullväxt</li>
+      <li>Alarm som repeterar till completed</li>
+      <li>Tid för senaste och nästa uppdatering</li>
+      <li>Fixa ready/completed -> countdown när servern sparat efter att en imprint skett. Nu uppdateras inte sidan</li>
+    </ul>
+  </div>
+</section>
 <section *ngIf="isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey]?.KibblesAndEggs.length > 0" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="kibblesandeggs"></a><h2 class="theme-text-d1 w3-left">Kibbles and Eggs <span class="w3-tag w3-large theme-d1">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>
