@@ -1,27 +1,44 @@
-<canvas #myCanvas [width]="width" [height]="height" style="width: 100%;"></canvas>
-
-<h2 class="theme-text-d1">Player/Tribe Locations</h2>
-<div class="w3-card-4 w3-responsive">
-  <table class="w3-table-all border-theme">
-    <thead>
-      <tr class="theme-d1">
-        <th>Name</th>
-        <th>Id</th>
-        <th>Type</th>
-        <th>Locations</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let owner of owners">
-        <td><input type="radio" [(ngModel)]="selectedOwner" [value]="owner" (change)="updateSelection()" /> {{owner.Name}}</td>
-        <td>{{owner.OwnerId}}</td>
-        <td>{{owner.Type}}</td>
-        <td>{{owner.pointsNum}}</td>
-      </tr>
-    </tbody>
-  </table>
+<div class="wrapper">
+  <div class="map" #map></div>
 </div>
-<ng-container *ngIf="selectedOwner">
+
+<ng-container *ngIf="ownersSorted">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Player/Tribe Locations</h2></div>
+    <div class="w3-cell w3-cell-middle">
+      <div class="w3-clear">
+        <!--<button class="w3-button theme-d1 w3-right w3-margin-left" (click)="reset($event)">All</button>
+        <button class="w3-button theme-d1 w3-right" (click)="reset($event)">None</button>-->
+        <button class="w3-button theme-d1 w3-right" (click)="reset($event)">Reset</button>
+      </div>
+    </div>
+  </div>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Name</th>
+          <th>Id</th>
+          <th>Type</th>
+          <th style="cursor: pointer;" title="Sort by Locations" (click)="setOwnerSort('locations')">Locations</th>
+          <th style="cursor: pointer;" title="Sort by Structure Count" (click)="setOwnerSort('structures')">Structures</th>
+          <th style="cursor: pointer;" title="Sort by Last Active Time" (click)="setOwnerSort('lastactive')">Last Active</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let owner of ownersSorted">
+          <td><input type="radio" [(ngModel)]="selectedOwner" [value]="owner" (change)="updateSelection()" /> {{owner.Name}}</td>
+          <td>{{owner.OwnerId}}</td>
+          <td>{{owner.Type}}</td>
+          <td>{{owner.AreaCount}}</td>
+          <td>{{owner.StructureCount}}</td>
+          <td>{{toRelativeDate(owner.LastActiveTime)}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-container>
+<!--<ng-container *ngIf="selectedOwner">
   <h2 class="theme-text-d1">Selected Owner</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -39,4 +56,4 @@
       </tbody>
     </table>
   </div>
-<ng-container>
+<ng-container>-->

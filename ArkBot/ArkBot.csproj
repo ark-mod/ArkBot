@@ -192,8 +192,20 @@
       <HintPath>..\packages\Microsoft.Owin.Hosting.2.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Jwt.3.1.0\lib\net45\Microsoft.Owin.Security.Jwt.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.StaticFiles, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -248,6 +260,14 @@
       <HintPath>..\packages\Owin.Compression.1.0.15\lib\net45\Owin.Compression.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Owin.Security.Providers.OpenIDBase, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.Security.Providers.OpenIDBase.2.1.1\lib\net45\Owin.Security.Providers.OpenIDBase.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin.Security.Providers.Steam, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.Security.Providers.Steam.2.15.1\lib\net45\Owin.Security.Providers.Steam.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Prism, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
@@ -287,12 +307,17 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll</HintPath>
+    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -455,6 +480,7 @@
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Helpers\ArkDataHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
+    <Compile Include="Helpers\WebApiHelper.cs" />
     <Compile Include="Interop\Kernel32.cs" />
     <Compile Include="Layout\LayoutInitializer.cs" />
     <Compile Include="Layout\PaneStyleSelector.cs" />
@@ -566,10 +592,10 @@
     <Compile Include="Voting\VoteStateChangeResult.cs" />
     <Compile Include="Voting\InitiateVoteResult.cs" />
     <Compile Include="Voting\VotingManager.cs" />
+    <Compile Include="WebApi\Controllers\AuthenticationController.cs" />
     <Compile Include="WebApi\Controllers\MapController.cs" />
     <Compile Include="WebApi\Controllers\BulkController.cs" />
     <Compile Include="WebApi\Controllers\AdminServerController.cs" />
-    <Compile Include="WebApi\Controllers\Structures2Controller.cs" />
     <Compile Include="WebApi\Controllers\StructuresController.cs" />
     <Compile Include="WebApi\Controllers\ServerController.cs" />
     <Compile Include="WebApi\Controllers\TribeController.cs" />
@@ -577,6 +603,7 @@
     <Compile Include="WebApi\Controllers\PlayerController.cs" />
     <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
     <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
+    <Compile Include="WebApi\Model\CreatureBaseStatsViewModel.cs" />
     <Compile Include="WebApi\Model\ElectricalGeneratorViewModel.cs" />
     <Compile Include="WebApi\Model\CropPlotViewModel.cs" />
     <Compile Include="WebApi\Model\KibbleAndEggViewModel.cs" />
@@ -588,12 +615,10 @@
     <Compile Include="WebApi\Model\AdminTribeReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\StructureBase.cs" />
     <Compile Include="WebApi\Model\StructureOwnerViewModel.cs" />
-    <Compile Include="WebApi\Model\Structures2ViewModel.cs" />
+    <Compile Include="WebApi\Model\StructuresViewModel.cs" />
     <Compile Include="WebApi\Model\StructureTypeViewModel.cs" />
     <Compile Include="WebApi\Model\StructureAreaViewModel.cs" />
-    <Compile Include="WebApi\Model\Structure2ViewModel.cs" />
     <Compile Include="WebApi\Model\StructureViewModel.cs" />
-    <Compile Include="WebApi\Model\StructuresViewModel.cs" />
     <Compile Include="WebApi\Model\TribeReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerServerViewModel.cs" />
@@ -604,6 +629,7 @@
     <Compile Include="WebApi\Model\ServerStatusAllViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerViewModel.cs" />
     <Compile Include="WebApi\Model\TamedCreatureViewModel.cs" />
+    <Compile Include="WebApi\Model\UserViewModel.cs" />
     <Compile Include="WebApi\WebApiStartup.cs" />
     <Compile Include="WebApp\WebAppStartup.cs" />
     <Compile Include="WpfCommands\RelayCommand.cs" />

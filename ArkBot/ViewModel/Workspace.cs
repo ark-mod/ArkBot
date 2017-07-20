@@ -88,7 +88,7 @@ namespace ArkBot.ViewModel
         private IDisposable _webapp;
 
         private ArkContextManager _contextManager;
-        private IConfig _config;
+        internal IConfig _config;
 
         public Workspace()
         {

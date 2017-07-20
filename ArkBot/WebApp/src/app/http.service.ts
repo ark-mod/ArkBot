@@ -1,5 +1,5 @@
 import { Injectable }    from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions  } from '@angular/http';
 
 import 'rxjs/add/operator/toPromise';
 
@@ -14,49 +14,42 @@ export class HttpService {
   private serversUrl = '/servers';
   private serverUrl = '/server';
   private structuresUrl = '/structures';
-  private structures2Url = '/structures2';
   private adminServerUrl = '/adminserver';
   private playerUrl = '/player';
+  private options: RequestOptions = new RequestOptions({ withCredentials: true });
 
   constructor(private http: Http) { }
 
   getServers(): Promise<Servers> {
-    return this.http.get(`${this.getApiBaseUrl()}${this.serversUrl}?t=${+new Date()}`)
+    return this.http.get(`${this.getApiBaseUrl()}${this.serversUrl}?t=${+new Date()}`, this.options)
                .toPromise()
                .then(response => response.json() as Servers)
                .catch(this.handleError);
   }
 
   getServer(serverKey: string): Promise<any> {
-    return this.http.get(`${this.getApiBaseUrl()}${this.serverUrl}/${serverKey}?t=${+new Date()}`)
+    return this.http.get(`${this.getApiBaseUrl()}${this.serverUrl}/${serverKey}?t=${+new Date()}`, this.options)
                .toPromise()
                .then(response => response.json() as any)
                .catch(this.handleError);
   }
 
   getStructures(serverKey: string): Promise<any> {
-    return this.http.get(`${this.getApiBaseUrl()}${this.structuresUrl}/${serverKey}?t=${+new Date()}`)
-               .toPromise()
-               .then(response => response.json() as any)
-               .catch(this.handleError);
-  }
-
-  getStructures2(serverKey: string): Promise<any> {
-    return this.http.get(`${this.getApiBaseUrl()}${this.structures2Url}/${serverKey}?t=${+new Date()}`)
+    return this.http.get(`${this.getApiBaseUrl()}${this.structuresUrl}/${serverKey}?t=${+new Date()}`, this.options)
                .toPromise()
                .then(response => response.json() as any)
                .catch(this.handleError);
   }
 
   getPlayer(steamId: string): Promise<Player> {
-    return this.http.get(`${this.getApiBaseUrl()}${this.playerUrl}/${steamId}?t=${+new Date()}`)
+    return this.http.get(`${this.getApiBaseUrl()}${this.playerUrl}/${steamId}?t=${+new Date()}`, this.options)
                .toPromise()
                .then(response => response.json() as Player)
                .catch(this.handleError);
   }
 
   getAdminServer(serverKey: string): Promise<any> {
-    return this.http.get(`${this.getApiBaseUrl()}${this.adminServerUrl}/${serverKey}?t=${+new Date()}`)
+    return this.http.get(`${this.getApiBaseUrl()}${this.adminServerUrl}/${serverKey}?t=${+new Date()}`, this.options)
                .toPromise()
                .then(response => response.json() as any)
                .catch(this.handleError);

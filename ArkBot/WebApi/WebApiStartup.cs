@@ -18,6 +18,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.IO;
+using Microsoft.Owin.Security;
+using Owin.Security.Providers.Steam;
+using Microsoft.Owin.Security.OAuth;
+using System.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.Owin.Security.Jwt;
+using Microsoft.Owin.Security.Cookies;
 
 namespace ArkBot.WebApi
 {
@@ -29,6 +36,12 @@ namespace ArkBot.WebApi
         {
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
+            config.Routes.MapHttpRoute(
+                name: "DefaultAuth",
+                routeTemplate: "api/{controller}/{action}/{id}",
+                defaults: new { id = RouteParameter.Optional },
+                constraints: new { controller = "authentication" }
+            );
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
@@ -44,6 +57,22 @@ namespace ArkBot.WebApi
             appBuilder.UseAutofacWebApi(config);
             appBuilder.UseCompressionModule();
             appBuilder.UseCors(CorsOptions.AllowAll);
+
+            appBuilder.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = "Cookie",
+                AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active,
+            });
+
+            appBuilder.SetDefaultSignInAsAuthenticationType("ExternalCookie");
+            appBuilder.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = "ExternalCookie",
+                AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Passive,
+            });
+
+            appBuilder.UseSteamAuthentication(applicationKey: Workspace.Instance._config.SteamApiKey);
+
             appBuilder.UseWebApi(config);
             appBuilder.MapSignalR(hubConfig);
             //appBuilder.UseFileServer(new FileServerOptions

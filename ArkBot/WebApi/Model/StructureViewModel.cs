@@ -9,13 +9,9 @@ namespace ArkBot.WebApi.Model
 {
     public class StructureViewModel
     {
-        [JsonProperty("x")]
-        public float X { get; set; }
-        [JsonProperty("y")]
-        public float Y { get; set; }
         [JsonProperty("t")]
         public int TypeId { get; set; }
-        [JsonProperty("o")]
-        public int OwnerId { get; set; }
+        [JsonProperty("c")]
+        public int Count { get; set; }
     }
 }
