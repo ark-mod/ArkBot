@@ -18,6 +18,7 @@ namespace ArkBot.Ark
 
         internal ArkContextManager _contextManager;
 
+        public event GameDataUpdatedEventHandler GameDataUpdated;
         public event UpdateCompletedEventHandler UpdateCompleted;
 
         public bool IsInitialized { get; set; }
@@ -82,6 +83,7 @@ namespace ArkBot.Ark
                         foreach (var serverContext in servers)
                         {
                             var success = serverContext.ApplyPreviousUpdate();
+                            if (success == true) serverContext.OnGameDataUpdated();
                         }
                     }
                 }

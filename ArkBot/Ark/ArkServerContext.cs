@@ -30,6 +30,7 @@ namespace ArkBot.Ark
         private ILifetimeScope _scope;
 
         //public event UpdateTriggeredEventHandler UpdateQueued;
+        public event GameDataUpdatedEventHandler GameDataUpdated;
         public event UpdateCompletedEventHandler UpdateCompleted;
         public event BackupCompletedEventHandler BackupCompleted;
         public event VoteInitiatedEventHandler VoteInitiated;
@@ -192,9 +193,15 @@ namespace ArkBot.Ark
             finally
             {
                 UpdateCompleted?.Invoke(this, result?.Success ?? false, result?.Cancelled ?? false);
+                if (result?.Success == true && result?.Cancelled == false && _clusterContext == null) OnGameDataUpdated();
             }
 
             return result?.Success ?? false;
+        }
+
+        public void OnGameDataUpdated()
+        {
+            GameDataUpdated?.Invoke(this);
         }
 
         public void OnVoteInitiated(Database.Model.Vote item)

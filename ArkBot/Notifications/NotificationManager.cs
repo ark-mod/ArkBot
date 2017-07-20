@@ -25,16 +25,14 @@ namespace ArkBot.Notifications
             _connectionManager = _dependencyResolver.Resolve<IDependencyResolver>().Resolve<IConnectionManager>();
             _hubContext = _connectionManager.GetHubContext<ServerUpdateHub>();
 
-            _contextManager.UpdateCompleted += _contextManager_UpdateCompleted;
+            _contextManager.GameDataUpdated += _contextManager_GameDataUpdated;
         }
 
         /// <summary>
-        /// On updates broadcast SignalR clients with serverUpdateNotification-/clusterUpdateNotification-message
+        /// When gamedata changes broadcast SignalR clients with serverUpdateNotification-/clusterUpdateNotification-message
         /// </summary>
-        private void _contextManager_UpdateCompleted(IArkUpdateableContext sender, bool successful, bool cancelled)
+        private void _contextManager_GameDataUpdated(IArkUpdateableContext sender)
         {
-            if (!successful) return;
-
             if (sender is ArkServerContext) _hubContext.Clients.All.serverUpdateNotification((sender as ArkServerContext).Config.Key);
             if (sender is ArkClusterContext) _hubContext.Clients.All.clusterUpdateNotification((sender as ArkClusterContext).Config.Key);
         }

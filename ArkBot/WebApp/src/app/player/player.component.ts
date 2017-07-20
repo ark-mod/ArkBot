@@ -17,10 +17,13 @@ import { HttpService } from '../http.service';
 export class PlayerComponent implements OnInit, OnDestroy {
   private menuOption: string = undefined; 
   private menuOptionSubscription: any;
+  private _dataService: any;
 
   serverUpdatedSubscription: any;
   player: Player;
   filteredCreatures: Creature[];
+  imprintCreatures: Creature[];
+  imprintNotifications: boolean = false;
   creaturesFilter: string;
   filteredClusterCreatures: any[];
   creaturesClusterFilter: string;
@@ -31,6 +34,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   showMap: boolean = false;
   serverKey: string;
   clusterKey: string;
+  creatureStates: any = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +44,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private notificationsService: NotificationsService,
     private ref: ChangeDetectorRef) {
+      this._dataService = dataService;
     }
 
     getPlayer(): void {
@@ -63,6 +68,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         .catch(error => {
           this.player = null;
           this.filteredCreatures = null;
+          this.imprintCreatures = null;
           this.filteredClusterCreatures = null;
           this.loaded = true;
         });
@@ -146,6 +152,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
         || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0));
     }
 
+    let imprintCreatures = this.player.Servers[this.serverKey].Creatures.filter(creature => creature.BabyAge != null);
+    imprintCreatures.sort((c1, c2) => {
+        if(new Date(c1.BabyNextCuddle) < new Date(c2.BabyNextCuddle)) {
+          return -1;
+        } else if(new Date(c1.BabyNextCuddle) > new Date(c2.BabyNextCuddle)) {
+            return 1;
+        } else {
+          return 0; 
+        }
+    });
+    this.imprintCreatures = imprintCreatures;
+
     let points = [];
     for(let creature of this.filteredCreatures) {
       let point = {} as any;
@@ -189,6 +207,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if(this.steamId == null || this.steamId == "") {
       this.player = null;
       this.filteredCreatures = null;
+      this.imprintCreatures = null;
       return;
     }
     this.getPlayer();
@@ -230,5 +249,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   isMenuActive(menuOption: string): boolean {
     return this.menuOption == menuOption;
+  }
+
+  getStateForCreature(creature: any): any {
+    if (!creature) return undefined;
+    let s = this.creatureStates[creature.Id1 + "_" + creature.Id2];
+    if (!s) {
+      s = { imprintNotifications: true };
+      this.creatureStates[creature.Id1 + "_" + creature.Id2] = s;
+    }
+    return s;
+  }
+
+  toggleImprintNotificationForCreature(creature: any): void {
+    let s = this.getStateForCreature(creature);
+
+    s.imprintNotifications = !s.imprintNotifications;
   }
 }
