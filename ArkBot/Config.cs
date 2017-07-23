@@ -188,6 +188,10 @@ namespace ArkBot
         [JsonProperty(PropertyName = "ports")]
         [Description("Ports to bind the ssl certificate to.")]
         public int[] Ports { get; set; }
+
+        [JsonProperty(PropertyName = "useCompatibilityNonSNIBindings")]
+        [Description("Use non SNI SSL bindings for previous Windows OS (before Windows 8/2012)")]
+        public bool UseCompatibilityNonSNIBindings { get; set; }
     }
 
     public class ArkMultipliersConfigSection
