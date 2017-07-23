@@ -5,6 +5,10 @@
 
 export const environment = {
   production: false,
+  //apiBaseUrl: "<protocol>//<hostname>:8500/api",
+  //signalrBaseUrl: "<protocol>//<hostname>:8500/signalr"
   apiBaseUrl: "<protocol>//<hostname>:60001/api",
   signalrBaseUrl: "<protocol>//<hostname>:60001/signalr"
+  //apiBaseUrl: "<protocol>//app.arksverige.se:60001/api",
+  //signalrBaseUrl: "<protocol>//app.arksverige.se:60001/signalr"
 };

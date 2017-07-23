@@ -10,7 +10,7 @@ namespace ArkBot.Helpers
 {
     public static class WebApiHelper
     {
-        public static UserViewModel GetUser(HttpRequestMessage request)
+        public static UserViewModel GetUser(HttpRequestMessage request, IConfig config)
         {
             var ctx = request.GetOwinContext();
             var authuser = ctx.Authentication.User;
@@ -23,7 +23,8 @@ namespace ArkBot.Helpers
                 return new UserViewModel
                 {
                     Name = name,
-                    SteamId = steamId
+                    SteamId = steamId,
+                    IsAdmin = !string.IsNullOrEmpty(steamId) && config.UserRoles?.Admins?.Contains(steamId) == true
                 };
             }
 

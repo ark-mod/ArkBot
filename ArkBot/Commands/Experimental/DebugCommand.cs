@@ -129,7 +129,7 @@ namespace ArkBot.Commands.Experimental
 
                 var files = new List<string>();
                 var tempfiles = new List<string>();
-                var basepath = _config.JsonOutputDirPath;
+                var basepath = (string)null;
                 if (!string.IsNullOrEmpty(args.key))
                 {
                     //todo: no cluster data support
@@ -187,14 +187,8 @@ namespace ArkBot.Commands.Experimental
                 }
                 else
                 {
-                    var pattern = "*.json";
-                    var _files = Directory.GetFiles(_config.JsonOutputDirPath, pattern, SearchOption.AllDirectories);
-                    if (_files == null || _files.Length <= 0)
-                    {
-                        await e.Channel.SendMessage("Could not find any json files... :(");
-                        return;
-                    }
-                    files.AddRange(_files);
+                    await e.Channel.SendMessage($"**This command must include a valid server instance key.**");
+                    return;
                 }
 
                 var path = Path.Combine(_config.TempFileOutputDirPath, "json_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
@@ -226,19 +220,24 @@ namespace ArkBot.Commands.Experimental
                     return;
                 }
 
-                var saveFilePath = _config.SaveFilePath;
-                var clusterSavePath = _config.ClusterSavePath;
+                var saveFilePath = (string)null;
+                var clusterSavePath = (string)null;
                 if (!string.IsNullOrEmpty(args.key))
                 {
                     var server = _config.Servers?.FirstOrDefault(x => x.Key.Equals(args.key, StringComparison.OrdinalIgnoreCase));
                     if (server == null)
                     {
-                        await e.Channel.SendMessage("The key did not exist.");
+                        await e.Channel.SendMessage("The server instance key did not exist.");
                         return;
                     }
                     saveFilePath = server.SaveFilePath;
                     var cluster = !string.IsNullOrEmpty(server.Cluster) ? _config.Clusters?.FirstOrDefault(x => x.Key.Equals(server.Cluster, StringComparison.OrdinalIgnoreCase)) : null;
                     clusterSavePath = cluster?.SavePath;
+                }
+                else
+                {
+                    await e.Channel.SendMessage($"**This command must include a valid server instance key.**");
+                    return;
                 }
 
                 var dir = Path.GetDirectoryName(saveFilePath);

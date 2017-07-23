@@ -42,7 +42,7 @@ namespace ArkBot.WebApi.Controllers
 
         public async Task<ServerStatusAllViewModel> Get()
         {
-            var result = new ServerStatusAllViewModel { User = WebApiHelper.GetUser(Request) };
+            var result = new ServerStatusAllViewModel { User = WebApiHelper.GetUser(Request, _config) };
 
             foreach (var context in _contextManager.Servers)
             {

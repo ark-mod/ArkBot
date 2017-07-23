@@ -10,5 +10,6 @@ namespace ArkBot.WebApi.Model
     {
         public string Name { get; set; }
         public string SteamId { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

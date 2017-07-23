@@ -10,6 +10,8 @@ import { Servers } from './servers';
 @Injectable()
 export class DataService {
   public Servers: Servers;
+  public UserSteamId: string;
+  public UserIsAdmin: boolean = false;
   public ServersUpdated$: EventEmitter<Servers>;
   private menuOption: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
 
@@ -34,10 +36,17 @@ export class DataService {
         .getServers()
         .then(servers => {
           this.Servers = servers;
+
+          var user = servers ? servers.User : undefined;
+          this.UserSteamId = user && user.SteamId ? user.SteamId : undefined;
+          this.UserIsAdmin = user && user.IsAdmin == true;
+
           this.ServersUpdated$.emit(servers);
         })
         .catch(error => {
           this.Servers = null;
+          this.UserSteamId = undefined;
+          this.UserIsAdmin = false;
           this.ServersUpdated$.emit(null);
         });
   }

@@ -23,6 +23,10 @@ namespace ArkBot.WebApi.Model
         public float TopoMapY { get; set; }
         public float Radius { get; set; }
         public float RadiusPx { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public float RadiusUu { get; set; }
         public float TrashQuota { get; set; }
     }
 }

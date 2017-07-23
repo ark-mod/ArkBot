@@ -15,6 +15,13 @@ namespace ArkBot.WebApi.Controllers
 {
     public class AuthenticationController : ApiController
     {
+        private IConfig _config;
+
+        public AuthenticationController(IConfig config)
+        {
+            _config = config;
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<HttpResponseMessage> Login(FormDataCollection formData)
@@ -50,6 +57,10 @@ namespace ArkBot.WebApi.Controllers
 
             var claims = result?.Identity.Claims.ToList();
             claims.Add(new Claim(ClaimTypes.AuthenticationMethod, "Steam"));
+
+            var steamId = claims?.FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", StringComparison.OrdinalIgnoreCase))?.Value;
+            if (steamId != null) steamId = steamId.Replace("http://steamcommunity.com/openid/id/", "");
+            if (!string.IsNullOrEmpty(steamId) && _config.UserRoles?.Admins?.Contains(steamId) == true) claims.Add(new Claim(ClaimTypes.Role, "admin"));
 
             var ci = new ClaimsIdentity(claims, "Cookie");
             ctx.Authentication.SignIn(ci);

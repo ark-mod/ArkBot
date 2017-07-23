@@ -15,6 +15,7 @@ export class HttpService {
   private serverUrl = '/server';
   private structuresUrl = '/structures';
   private adminServerUrl = '/adminserver';
+  private administerUrl = '/administer';
   private playerUrl = '/player';
   private options: RequestOptions = new RequestOptions({ withCredentials: true });
 
@@ -50,6 +51,34 @@ export class HttpService {
 
   getAdminServer(serverKey: string): Promise<any> {
     return this.http.get(`${this.getApiBaseUrl()}${this.adminServerUrl}/${serverKey}?t=${+new Date()}`, this.options)
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
+  adminDestroyAllStructuresForTeamId(serverKey: string, teamId: string): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.administerUrl}/DestroyAllStructuresForTeamId/${serverKey}?teamId=${teamId}&t=${+new Date()}`, this.options)
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
+  adminDestroyStructuresForTeamIdAtPosition(serverKey: string, teamId: string, x: number, y: number, radius: number, rafts: number): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.administerUrl}/DestroyStructuresForTeamIdAtPosition/${serverKey}?teamId=${teamId}&x=${x}&y=${y}&radius=${radius}&rafts=${rafts}&t=${+new Date()}`, this.options)
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
+  adminDestroyDinosForTeamId(serverKey: string, teamId: string): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.administerUrl}/DestroyDinosForTeamId/${serverKey}?teamId=${teamId}&t=${+new Date()}`, this.options)
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
+  adminSaveWorld(serverKey: string): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.administerUrl}/SaveWorld/${serverKey}?t=${+new Date()}`, this.options)
                .toPromise()
                .then(response => response.json() as any)
                .catch(this.handleError);

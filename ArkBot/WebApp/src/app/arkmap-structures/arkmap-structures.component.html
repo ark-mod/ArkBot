@@ -1,4 +1,70 @@
+<!--<div class="contextMenu" #contextMenu>
+  <ng-container *ngIf="currentOwner &amp;&amp; currentArea">
+    <h4 style="margin-bottom: 3px;">{{currentOwner.Name}}</h4>
+    <div>Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}</div>
+    <div *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}</div>
+    <div class="w3-margin-bottom">{{currentArea.StructureCount | number}} structures</div>
+    <button *ngIf="dataService.UserIsAdmin" class="w3-button theme-d1" style="width: 100%;" (click)="confirmDestroyCurrentArea()">Destroy this area</button>
+  </ng-container>
+</div>-->
+<div #contextMenu class="contextMenu w3-modal">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="hideContextMenu()" style="font-size: 0;">
+    <ng-container *ngIf="currentArea &amp;&amp; currentOwner">
+      <header class="w3-container theme-d1"> 
+        <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+        <h2>{{currentOwner.Name}}</h2>
+      </header>
+      <div class="w3-container w3-medium">
+        <div class="w3-section">
+          Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}<br />
+          <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
+          {{currentArea.StructureCount | number}} structures
+        </div>
+        <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="setSelectedOwner(currentOwner)">Show only areas for this team</button></div>
+        <div class="w3-section" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="destroyCurrentArea($event)" [width]="100">Destroy this area</confirm-button></div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="currentOwner &amp;&amp; !currentArea">
+      <header class="w3-container theme-d1"> 
+        <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+        <h2>{{currentOwner.Name}}</h2>
+      </header>
+      <div class="w3-container w3-medium">
+        <div class="w3-section">
+          <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
+          {{currentOwner.AreaCount | number}} areas<br />
+          {{currentOwner.StructureCount | number}} structures<br />
+          {{currentOwner.CreatureCount | number}} creatures
+        </div>
+        <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="setSelectedOwner(currentOwner)">Show only areas for this team</button></div>
+        <div class="w3-section" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="destroyAllStructuresForTeam($event)" [width]="100">Destroy all structures</confirm-button></div>
+        <div class="w3-section" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="destroyDinosForTeam($event)" [width]="100">Destroy all creatures</confirm-button></div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="modalInfo">
+      <header class="w3-container theme-d1"> 
+        <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+        <h2>{{modalInfo.Header}}</h2>
+      </header>
+      <div class="w3-container w3-medium">
+        <div class="w3-section">
+          {{modalInfo.Message}}
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<div class="w3-cell-row">
+  <div class="w3-cell"><a id="structures"></a><h2 class="theme-text-d1 w3-left">Structures</h2></div>
+  <div class="w3-cell w3-cell-middle" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="saveWorld($event)" class="w3-right" [width]="undefined">Save World</confirm-button></div>
+</div>
+
 <div class="wrapper">
+  <div class="buttons">
+    <button class="w3-button theme-d1" style="padding: 3px 6px;" (click)="zoomIn()"><i class="material-icons w3-xxlarge">add</i></button>
+    <button class="w3-button theme-d1" style="padding: 3px 6px;" (click)="zoomOut()"><i class="material-icons w3-xxlarge">remove</i></button>
+  </div>
   <div class="map" #map></div>
 </div>
 
@@ -18,42 +84,25 @@
       <thead>
         <tr class="theme-d1">
           <th>Name</th>
-          <th>Id</th>
           <th>Type</th>
-          <th style="cursor: pointer;" title="Sort by Locations" (click)="setOwnerSort('locations')">Locations</th>
-          <th style="cursor: pointer;" title="Sort by Structure Count" (click)="setOwnerSort('structures')">Structures</th>
+          <th style="cursor: pointer;" title="Sort by Location Count" (click)="setOwnerSort('locations')">A#</th>
+          <th style="cursor: pointer;" title="Sort by Structure Count" (click)="setOwnerSort('structures')">S#</th>
+          <th title="Creature Count">C#</th>
           <th style="cursor: pointer;" title="Sort by Last Active Time" (click)="setOwnerSort('lastactive')">Last Active</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let owner of ownersSorted">
           <td><input type="radio" [(ngModel)]="selectedOwner" [value]="owner" (change)="updateSelection()" /> {{owner.Name}}</td>
-          <td>{{owner.OwnerId}}</td>
           <td>{{owner.Type}}</td>
           <td>{{owner.AreaCount}}</td>
           <td>{{owner.StructureCount}}</td>
+          <td>{{owner.CreatureCount}}</td>
           <td>{{toRelativeDate(owner.LastActiveTime)}}</td>
+          <td><button class="w3-button theme-d1 w3-right" (click)="showOwnerModal($event, owner)">Options</button></td>
         </tr>
       </tbody>
     </table>
   </div>
 </ng-container>
-<!--<ng-container *ngIf="selectedOwner">
-  <h2 class="theme-text-d1">Selected Owner</h2>
-  <div class="w3-card-4 w3-responsive">
-    <table class="w3-table-all border-theme">
-      <thead>
-        <tr class="theme-d1">
-          <th>Location #</th>
-          <th>Structures</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let point of keysGetter(selectedOwner.points)">
-          <td>{{point}}</td>
-          <td><span *ngFor="let structure of keysGetter(selectedOwner.points[point].structures)">{{selectedOwner.points[point].structures[structure]}}x {{types[structure].ClassName}}, </span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-<ng-container>-->
