@@ -36,7 +36,8 @@
     "domains": [
       "app.yourdomain.com"
     ],
-    "ports": [ <60001/web api port>, <web app port> ]
+    "ports": [ <60001/web api port>, <web app port> ],
+    "useCompatibilityNonSNIBindings":  false
   },
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,

@@ -35,6 +35,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
@@ -688,50 +689,61 @@ namespace ArkBot.ViewModel
                     var attribute = (GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0];
                     var appId = attribute.Value;
 
-                    using (var rlt = new X509Certificate2(path, _config.Ssl.Password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet))
+                    try
                     {
-                        using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                        using (var rlt = new X509Certificate2(path, _config.Ssl.Password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet))
                         {
-                            store.Open(OpenFlags.ReadWrite);
-
-                            var certs = store.Certificates.Find(X509FindType.FindBySubjectName, _config.Ssl.Domains.First(), false);
-
-                            if (!store.Certificates.Contains(rlt)) store.Add(rlt);
-                            store.Close();
-                        }
-
-                        Console.AddLog(@"Binding SSL Certificate to hostname/port...");
-                        foreach(var port in _config.Ssl.Ports)
-                        {
-                            var commands = new[]
+                            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
                             {
-                                $"netsh http delete sslcert hostnameport={hostname}:{port}",
-                                $"netsh http add sslcert hostnameport={hostname}:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my"
-                            };
+                                store.Open(OpenFlags.ReadWrite);
 
-                            var exitCode = 0;
-                            foreach (var cmd in commands)
-                            {
-                                await Task.Run(() =>
-                                {
-                                    using (var proc = Process.Start(new ProcessStartInfo
-                                    {
-                                        FileName = "cmd.exe",
-                                        Arguments = $"/c {cmd}",
-                                        Verb = "runas",
-                                        UseShellExecute = false,
-                                        WindowStyle = ProcessWindowStyle.Hidden,
-                                        CreateNoWindow = true
-                                    }))
-                                    {
-                                        proc.WaitForExit();
-                                        exitCode = proc.ExitCode; //only add (last cmd) is interesting
-                                    }
-                                });
+                                var certs = store.Certificates.Find(X509FindType.FindBySubjectName, _config.Ssl.Domains.First(), false);
+
+                                if (!store.Certificates.Contains(rlt)) store.Add(rlt);
+                                store.Close();
                             }
 
-                            Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] hostnameport: {hostname}:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
+                            if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog(@"Binding SSL Certificate to ip/port...");
+                            else Console.AddLog(@"Binding SSL Certificate to hostname/port...");
+                            foreach (var port in _config.Ssl.Ports)
+                            {
+                                var commands = new[]
+                                {
+                                _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http delete sslcert ipport=0.0.0.0:{port}" : $"netsh http delete sslcert hostnameport={hostname}:{port}",
+                                _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http add sslcert ipport=0.0.0.0:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my" : $"netsh http add sslcert hostnameport={hostname}:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my"
+                            };
+
+                                var exitCode = 0;
+                                foreach (var cmd in commands)
+                                {
+                                    await Task.Run(() =>
+                                    {
+                                        using (var proc = Process.Start(new ProcessStartInfo
+                                        {
+                                            FileName = "cmd.exe",
+                                            Arguments = $"/c {cmd}",
+                                            Verb = "runas",
+                                            UseShellExecute = false,
+                                            WindowStyle = ProcessWindowStyle.Hidden,
+                                            CreateNoWindow = true
+                                        }))
+                                        {
+                                            proc.WaitForExit();
+                                            exitCode = proc.ExitCode; //only add (last cmd) is interesting
+                                    }
+                                    });
+                                }
+
+                                if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] ipport: 0.0.0.0:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
+                                else Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] hostnameport: {hostname}:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
+                            }
                         }
+                    }
+                    catch (CryptographicException ex)
+                    {
+                        Logging.LogException("Failed to open SSL certificate.", ex, this.GetType(), LogLevel.FATAL, ExceptionLevel.Unhandled);
+                        WriteAndWaitForKey("Failed to open SSL certificate (wrong password?)");
+                        return;
                     }
                 }
             }
