@@ -43,6 +43,12 @@ namespace ArkBot.WebApi
                 constraints: new { controller = "authentication" }
             );
             config.Routes.MapHttpRoute(
+                name: "DefaultAdminister",
+                routeTemplate: "api/{controller}/{action}/{id}",
+                defaults: new { id = RouteParameter.Optional },
+                constraints: new { controller = "administer" }
+            );
+            config.Routes.MapHttpRoute(
                 name: "DefaultApi",
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
@@ -62,6 +68,7 @@ namespace ArkBot.WebApi
             {
                 AuthenticationType = "Cookie",
                 AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active,
+                CookieSecure = Workspace.Instance._config.Ssl?.Enabled == true ? CookieSecureOption.Always : CookieSecureOption.SameAsRequest
             });
 
             appBuilder.SetDefaultSignInAsAuthenticationType("ExternalCookie");

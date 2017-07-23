@@ -26,8 +26,8 @@ namespace ArkBot.Helpers
         private Signaller<Tuple<ArkServerContext, bool, SavegameBackupResult>> _signaller;
         private ArkContextManager _contextManager;
 
-        private const int _saveWorldDefaultTimeoutSeconds = 180;
-        private const int _updateDefaultTimeoutSeconds = 300;
+        private const int _saveWorldDefaultTimeoutSeconds = 240;
+        private const int _updateDefaultTimeoutSeconds = 600;
 
         public ArkServerService(IConstants constants, IConfig config, ArkContextManager contextManager)
         {
@@ -165,7 +165,7 @@ namespace ArkBot.Helpers
                 var timeout = false;
                 do
                 {
-                    if (n >= 60)
+                    if (n >= 180)
                     {
                         timeout = true;
                         break;

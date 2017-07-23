@@ -18,10 +18,12 @@ namespace ArkBot.WebApi.Controllers
     public class PlayerController : ApiController
     {
         private ArkContextManager _contextManager;
+        private IConfig _config;
 
-        public PlayerController(ArkContextManager contextManager)
+        public PlayerController(ArkContextManager contextManager, IConfig config)
         {
             _contextManager = contextManager;
+            _config = config;
         }
 
         /// <param name="id">steamId</param>
@@ -32,7 +34,7 @@ namespace ArkBot.WebApi.Controllers
             {
             };
 
-            var uservm = WebApiHelper.GetUser(Request);
+            var uservm = WebApiHelper.GetUser(Request, _config);
             var isSelf = uservm?.SteamId != null ? id.Equals(uservm.SteamId, StringComparison.OrdinalIgnoreCase) : false;
 
             var players = _contextManager.Servers.ToDictionary(x => x.Config.Key, x => x.Players?.FirstOrDefault(y => y.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase)));

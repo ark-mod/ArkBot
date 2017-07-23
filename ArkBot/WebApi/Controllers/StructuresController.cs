@@ -254,10 +254,12 @@ namespace ArkBot.WebApi.Controllers
                 area.Structures.Add(Tuple.Create(type.Id, x));
 
                 var loc = x.Location;
-                if (minmax.MinLat == null || loc.Latitude.Value < minmax.MinLat.Latitude.Value) minmax.MinLat = loc;
-                if (minmax.MaxLat == null || loc.Latitude.Value > minmax.MaxLat.Latitude.Value) minmax.MaxLat = loc;
-                if (minmax.MinLng == null || loc.Longitude.Value < minmax.MinLng.Longitude.Value) minmax.MinLng = loc;
-                if (minmax.MaxLng == null || loc.Longitude.Value > minmax.MaxLng.Longitude.Value) minmax.MaxLng = loc;
+                if (minmax.MinY == null || loc.Y < minmax.MinY.Y) minmax.MinY = loc;
+                if (minmax.MaxY == null || loc.Y > minmax.MaxY.Y) minmax.MaxY = loc;
+                if (minmax.MinX == null || loc.X < minmax.MinX.X) minmax.MinX = loc;
+                if (minmax.MaxX == null || loc.X > minmax.MaxX.X) minmax.MaxX = loc;
+                if (minmax.MinZ == null || loc.Z < minmax.MinZ.Z) minmax.MinZ = loc;
+                if (minmax.MaxZ == null || loc.Z > minmax.MaxZ.Z) minmax.MaxZ = loc;
             });
 
             if (context.Structures != null)
@@ -282,12 +284,16 @@ namespace ArkBot.WebApi.Controllers
                     var isTribe = first.TargetingTeam.HasValue && (!first.OwningPlayerId.HasValue || first.TargetingTeam.Value != first.OwningPlayerId.Value);
                     var owner = owners.GetOrAdd(arkOwnerId, (key) =>
                     {
+                        var tribe = isTribe ? context.Tribes.FirstOrDefault(y => y.Id == first.TargetingTeam.Value) : null;
+                        var player = !isTribe ? context.Players.FirstOrDefault(y => y.Id == first.OwningPlayerId) : null;
+
                         return new StructureOwnerViewModel(new Lazy<int>(() => ids.AddOrUpdate("ownerId", 0, (key2, value) => value + 1)))
                         {
                             OwnerId = arkOwnerId,
                             Name = first.OwnerName,
                             Type = isTribe ? "tribe" : "player",
-                            LastActiveTime = (isTribe ? context.Tribes.FirstOrDefault(y => y.Id == first.TargetingTeam.Value)?.LastActiveTime : context.Players.FirstOrDefault(y => y.Id == first.OwningPlayerId)?.SavedAt)
+                            LastActiveTime = isTribe ? tribe?.LastActiveTime : player?.SavedAt,
+                            CreatureCount = (isTribe ? tribe?.Creatures.Count() : player?.Creatures.Count()) ?? 0
                         };
                     });
                     owner.Id = owner._generateId.Value;
@@ -311,15 +317,22 @@ namespace ArkBot.WebApi.Controllers
                         //var maxLat = area.Max(y => y.Item2.Location.Latitude.Value);
                         //var minLng = area.Min(y => y.Item2.Location.Longitude.Value);
                         //var maxLng = area.Max(y => y.Item2.Location.Longitude.Value);
-                        var dLat = (minmax.MaxLat.Latitude.Value - minmax.MinLat.Latitude.Value) / 2f;
-                        var dLng = (minmax.MaxLng.Longitude.Value - minmax.MinLng.Longitude.Value) / 2f;
-                        var avgLat = minmax.MinLat.Latitude.Value + dLat;
-                        var avgLng = minmax.MinLng.Longitude.Value + dLng;
+                        var dLat = (minmax.MaxY.Latitude.Value - minmax.MinY.Latitude.Value) / 2f;
+                        var dLng = (minmax.MaxX.Longitude.Value - minmax.MinX.Longitude.Value) / 2f;
+                        var avgLat = minmax.MinY.Latitude.Value + dLat;
+                        var avgLng = minmax.MinX.Longitude.Value + dLng;
 
-                        var dY = (minmax.MaxLat.TopoMapY.Value - minmax.MinLat.TopoMapY.Value) / 2f;
-                        var dX = (minmax.MaxLng.TopoMapX.Value - minmax.MinLng.TopoMapX.Value) / 2f;
-                        var avgY = minmax.MinLat.TopoMapY.Value + dY;
-                        var avgX = minmax.MinLng.TopoMapX.Value + dX;
+                        var dY = (minmax.MaxY.Y - minmax.MinY.Y) / 2f;
+                        var dX = (minmax.MaxX.X - minmax.MinX.X) / 2f;
+                        var dZ = (minmax.MaxZ.Z - minmax.MinZ.Z) / 2f;
+                        var avgY = minmax.MinY.Y + dY;
+                        var avgX = minmax.MinX.X + dX;
+                        var avgZ = minmax.MinZ.Z + dZ;
+
+                        var dTopoMapY = (minmax.MaxY.TopoMapY.Value - minmax.MinY.TopoMapY.Value) / 2f;
+                        var dTopoMapX = (minmax.MaxX.TopoMapX.Value - minmax.MinX.TopoMapX.Value) / 2f;
+                        var avgTopoMapY = minmax.MinY.TopoMapY.Value + dTopoMapY;
+                        var avgTopoMapX = minmax.MinX.TopoMapX.Value + dTopoMapX;
 
                         var structureGroups = area.Structures.GroupBy(y => y.Item1).Select(y => new StructureViewModel
                         {
@@ -335,9 +348,13 @@ namespace ArkBot.WebApi.Controllers
                             Latitude = (float)Math.Round(avgLat, 2),
                             Longitude = (float)Math.Round(avgLng, 2),
                             Radius = (float)Math.Round(Math.Sqrt(dLat * dLat + dLng * dLng), 2),
-                            TopoMapX = (float)Math.Round(avgX, 2),
-                            TopoMapY = (float)Math.Round(avgY, 2),
-                            RadiusPx = (float)Math.Round(Math.Sqrt(dX * dX + dY * dY), 2),
+                            TopoMapX = (float)Math.Round(avgTopoMapX, 2),
+                            TopoMapY = (float)Math.Round(avgTopoMapY, 2),
+                            RadiusPx = (float)Math.Round(Math.Sqrt(dTopoMapX * dTopoMapX + dTopoMapY * dTopoMapY), 2),
+                            X = (float)Math.Round(avgX, 2),
+                            Y = (float)Math.Round(avgY, 2),
+                            Z = (float)Math.Round(avgZ, 2),
+                            RadiusUu = (float)Math.Round(Math.Sqrt(dX * dX + dY * dY), 2),
                             TrashQuota = area.TrashTierCount / (float)area.Structures.Count
                         });
                     } while (structures.Count > 0);
@@ -381,10 +398,12 @@ namespace ArkBot.WebApi.Controllers
 
         private class MinMaxCoords
         {
-            public ArkLocation MinLat { get; set; }
-            public ArkLocation MaxLat { get; set; }
-            public ArkLocation MinLng { get; set; }
-            public ArkLocation MaxLng { get; set; }
+            public ArkLocation MinY { get; set; }
+            public ArkLocation MaxY { get; set; }
+            public ArkLocation MinX { get; set; }
+            public ArkLocation MaxX { get; set; }
+            public ArkLocation MinZ { get; set; }
+            public ArkLocation MaxZ { get; set; }
         }
 
         private class Area

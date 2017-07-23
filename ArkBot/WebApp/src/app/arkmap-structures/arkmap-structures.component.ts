@@ -1,6 +1,9 @@
-import { Component, Input, ViewChild, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, HostListener, ViewEncapsulation } from '@angular/core';
+import { Component, Input, ViewChild, OnInit, OnDestroy, OnChanges, SimpleChanges, ElementRef, HostListener, ViewEncapsulation, NgZone } from '@angular/core';
 import { Observable } from "rxjs/Observable";
 import { BehaviorSubject } from "rxjs/Rx";
+
+import { DataService } from '../data.service';
+import { HttpService } from '../http.service';
 
 import { environment } from '../../environments/environment';
 import * as d3 from "d3";
@@ -13,6 +16,9 @@ import * as moment from 'moment'
   encapsulation: ViewEncapsulation.None
 })
 export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
+    public currentArea: any;
+    public currentOwner: any;
+    public modalInfo: any;
     private _structures = new BehaviorSubject<any>(undefined);
     private _structuresSubscription: any;
     @Input()
@@ -24,10 +30,12 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
         return this._structures.getValue();
     }
 
+    @Input() serverKey: string;
     @Input() mapName: string;
     //@ViewChild('myCanvas') canvasRef: ElementRef;
     //@ViewChild('mySvg') svgRef: ElementRef;
     @ViewChild('map') mapContainer: ElementRef;
+    @ViewChild('contextMenu') contextMenu: ElementRef;
     /*@HostListener('window:resize')
     onResize(): void {
       this.resize();
@@ -79,10 +87,13 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
         }
     };
 
-    constructor() {
+    constructor(
+      public dataService: DataService,
+      private httpService: HttpService,
+      private zone: NgZone) {
       this.width = 1024;
       this.height = 1024;
-      //this.zoom = d3.zoom().scaleExtent([1, 10]);
+      this.zoom = d3.zoom().scaleExtent([1, 8]);
     }
 
     ngOnInit() {
@@ -100,12 +111,15 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
         //.attr('height', 1024)
         .attr('viewBox', '0 0 1024 1024')
         .attr('preserveAspectRatio', 'xMidYMid')
-        .append('g');
+        .append('g')
+        .on("contextmenu", (d, e) => {
+          d3.event.preventDefault();
+        });
 
-      /*this.map.tooltip = d3.select(element)
+      /*this.map.tooltip = d3.select(document)
         .append("div")
         .style("position", "absolute")
-        .style("z-index", "10")
+        .style("z-index", "20")
         .style("visibility", "hidden")
         .text("");*/
 
@@ -124,7 +138,10 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
           .domain([0, 1024])
           .range([0, 1024]);
 
-      d3.select(element).call(d3.zoom().scaleExtent([1, 8]).on('zoom', () => this.redraw()) );
+      d3.select(element).call(this.zoom.on('zoom', () => {
+        this.hideContextMenu();
+        this.redraw();
+      })).on('wheel.zoom', null);
 
       if(this.structures) this.updateMap();
     }
@@ -133,9 +150,18 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
       this._structuresSubscription.unsubscribe();
     }
 
+    zoomIn(): void {
+      this.zoom.scaleBy(d3.select(this.mapContainer.nativeElement), 1.2);
+    }
+
+    zoomOut(): void {
+      this.zoom.scaleBy(d3.select(this.mapContainer.nativeElement), 0.8);
+    }
+
     updateSelection() {
       this.map.svg.circle.attr("display", (d) => {
-        return !this.selectedOwner || this.selectedOwner.Id == d.OwnerId ? 'block' : 'none'; 
+        var owner = this.structures.Owners[d.OwnerId];
+        return !d.Removed && !owner.Removed && (!this.selectedOwner || (this.selectedOwner && this.selectedOwner.Id == d.OwnerId)) ? 'block' : 'none'; 
       });
 
       this.redraw();
@@ -192,6 +218,15 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
                 return this.map.tooltip.style("top", x.invert(p[1])+"px").style("left",y.invert(p[0])+"px");})
               .on("mouseout", (d) => {return this.map.tooltip.style("visibility", "hidden");});*/
 
+              this.map.svg.circle.on("click", (d) => {
+                d3.event.preventDefault();
+                let p = <any> { };
+                p.x = d3.event.pageX;
+                p.y = d3.event.pageY;
+                
+                this.showAreaModal(d, p);
+              });
+
           this.map.svg.circle.append("svg:title")
             .text((d) => {
               var owner = this.structures.Owners[d.OwnerId];
@@ -202,7 +237,7 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
                 + "---\n"
                 + d.Structures.map((s) => {
                   let type = this.structures.Types[s.t];
-                  return s.c + ": " + (type ? type.Name + " (" + s.t + ")" : s.t);
+                  return s.c + ": " + (type ? type.Name : s.t);
                 }).join("\n"); 
             });
       };
@@ -239,16 +274,20 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
       this.redraw();
     }*/
 
+    private prevTransformK: number;
+
     redraw(): void {
       var transform = d3.zoomTransform(this.mapContainer.nativeElement);
 
       this.map.svg.attr("transform", "translate(" + transform.x + "," + transform.y + ") scale(" + transform.k + ")");
 
-      this.map.svg.circle.attr("stroke-width", (d) => {
-        var owner = this.structures.Owners[d.OwnerId];
-        var active = owner.LastActiveTime ? moment(new Date(owner.LastActiveTime)).isSameOrAfter(moment().subtract(28, 'day')) : false;
-        return (active && (d.StructureCount >= 100 || (d.TrashQuota < 0.5 && d.StructureCount >= 10)) ? 3 : 2)/transform.k; 
-      });
+      if(transform.k != this.prevTransformK) {
+        this.map.svg.circle.attr("stroke-width", (d) => {
+          var owner = this.structures.Owners[d.OwnerId];
+          var active = owner.LastActiveTime ? moment(new Date(owner.LastActiveTime)).isSameOrAfter(moment().subtract(28, 'day')) : false;
+          return (active && (d.StructureCount >= 100 || (d.TrashQuota < 0.5 && d.StructureCount >= 10)) ? 3 : 2)/transform.k; 
+        });
+      }
 
       let ctx: CanvasRenderingContext2D = this.map.canvas;
 
@@ -258,6 +297,8 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
       ctx.scale(transform.k, transform.k);
       
       ctx.drawImage(this.img, 0, 0);
+
+      this.prevTransformK = transform.k;
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -284,10 +325,127 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
     reset() {
       this.selectedOwner = undefined;
       this.updateSelection();
+      //this.zoom.scaleTo(d3.select(this.mapContainer.nativeElement), 1.0);
+      //this.zoom.translateTo(d3.select(this.mapContainer.nativeElement), 0, 0); //not working
+    }
+
+    setSelectedOwner(owner: any) {
+      this.selectedOwner = owner;
+      this.updateSelection();
     }
 
     setOwnerSort(field: string) : void {
       this.ownerSortField = field;
       this.sortOwners(this.structures);
+    }
+
+    showAreaModal(area: any, point: any): void {
+      this.currentArea = area;
+      this.currentOwner = this.structures.Owners[area.OwnerId];
+
+      let cm = d3.select(this.contextMenu.nativeElement);
+      cm.style("display", "block");
+
+      if(d3.event) d3.event.stopPropagation();
+    }
+
+    showOwnerModal(event: any, owner: any): void {
+      this.currentOwner = owner;
+
+      let cm = d3.select(this.contextMenu.nativeElement);
+      cm.style("display", "block");
+
+      event.stopPropagation();
+    }
+
+    showInfoModal(header: string, message: string): void {
+      let modalInfo = <any> {};
+      modalInfo.Header = header;
+      modalInfo.Message = message;
+      this.modalInfo = modalInfo;
+
+      let cm = d3.select(this.contextMenu.nativeElement);
+      cm.style("display", "block");
+
+      if(d3.event) d3.event.stopPropagation();
+    }
+
+    hideContextMenu(): void {
+      let cm = d3.select(this.contextMenu.nativeElement);
+      cm.style("display", "none");
+
+      this.currentArea = undefined;
+      this.currentOwner = undefined;
+      this.modalInfo = undefined;
+    }
+
+    destroyCurrentArea(event: string): void {
+      this.httpService.adminDestroyStructuresForTeamIdAtPosition(this.serverKey, this.currentOwner.OwnerId, this.currentArea.X, this.currentArea.Y, +this.currentArea.RadiusUu + 1000 /* 10m */, 1)
+      .then(response => {
+          this.currentArea.Removed = true;
+          this.currentOwner.AreaCount -= 1;
+          //if(response.DestroyedStructureCount) this.currentOwner.StructureCount -= response.DestroyedStructureCount; //this does not work well because of server not saving which areas have been demolished inbetween updates
+          this.currentOwner.StructureCount -= this.currentArea.StructureCount;
+
+          this.hideContextMenu();
+          this.showInfoModal("Action Successfull!", response.Message);
+
+          this.updateSelection();
+        })
+        .catch(error => {
+          this.hideContextMenu();
+          let json = error && error._body ? JSON.parse(error._body) : undefined;
+          this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
+    }
+
+    destroyAllStructuresForTeam(event: string): void {
+      this.httpService.adminDestroyAllStructuresForTeamId(this.serverKey, this.currentOwner.OwnerId)
+      .then(response => {
+          this.currentOwner.Removed = true;
+          this.currentOwner.AreaCount = 0;
+          this.currentOwner.StructureCount = 0;
+          //if(response.DestroyedStructureCount) owner.StructureCount -= response.DestroyedStructureCount; //this does not work well because of server not saving which areas have been demolished inbetween updates
+
+          this.hideContextMenu();
+          this.showInfoModal("Action Successfull!", response.Message);
+
+          this.updateSelection();
+        })
+        .catch(error => {
+          this.hideContextMenu();
+          let json = error && error._body ? JSON.parse(error._body) : undefined;
+          this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
+    }
+
+    destroyDinosForTeam(event: string): void {
+      this.httpService.adminDestroyDinosForTeamId(this.serverKey, this.currentOwner.OwnerId)
+      .then(response => {
+          this.currentOwner.CreatureCount = 0;
+
+          this.hideContextMenu();
+          this.showInfoModal("Action Successfull!", response.Message);
+
+          this.updateSelection();
+        })
+        .catch(error => {
+          this.hideContextMenu();
+          let json = error && error._body ? JSON.parse(error._body) : undefined;
+          this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
+    }
+
+    saveWorld(event: string): void {
+      this.httpService.adminSaveWorld(this.serverKey)
+      .then(response => {
+          this.hideContextMenu();
+          this.showInfoModal("Action Successfull!", response.Message);
+        })
+        .catch(error => {
+          this.hideContextMenu();
+          let json = error && error._body ? JSON.parse(error._body) : undefined;
+          this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
     }
 }

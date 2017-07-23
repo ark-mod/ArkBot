@@ -2,6 +2,7 @@
 .light .theme-l2 {color:#000 !important; background-color:#f1f1f1 !important}
 .light .theme-d1 {color:#fff !important; background-color:#2196F3 !important}
 .light .theme-c1 {color:#fff !important; background-color:#4CAF50 !important}
+.light .theme-e1 {color:#fff !important; background-color:#f44336 !important}
 .light .odd .theme-l2 {color:#000 !important; background-color:#f5f5f5 !important}
 
 .light .theme-l2.theme-hover:hover {color:#000 !important; background-color:#ccc !important}
@@ -21,6 +22,7 @@ body.dark { background-color: #141519 !important; color: #fff; }
 .dark .theme-l2 {color:#fff !important; background-color:#2A2C36 !important}
 .dark .theme-d1 {color:#fff !important; background-color:#114F7F !important}
 .dark .theme-c1 {color:#fff !important; background-color:#114F7F !important}
+.dark .theme-e1 {color:#fff !important; background-color:#f44336 !important}
 
 .dark .theme-l2.theme-hover:hover {color:#fff !important; background-color:#ccc !important}
 

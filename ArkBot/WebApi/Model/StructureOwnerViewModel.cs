@@ -26,5 +26,6 @@ namespace ArkBot.WebApi.Model
         public DateTime? LastActiveTime { get; set; }
         public int AreaCount { get; set; }
         public int StructureCount { get; set; }
+        public int CreatureCount { get; set; }
     }
 }
