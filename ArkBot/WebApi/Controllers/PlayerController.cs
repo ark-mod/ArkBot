@@ -101,17 +101,21 @@ namespace ArkBot.WebApi.Controllers
                 ClusterKey = context.Config.Key,
                 SteamId = player.SteamId,
                 CharacterName = player.CharacterName,
-                Gender = player.Gender.ToString(),
-                Level = player.CharacterLevel,
                 Latitude = player.Location?.Latitude,
                 Longitude = player.Location?.Longitude,
                 TopoMapX = player.Location?.TopoMapX,
                 TopoMapY = player.Location?.TopoMapY,
-                EngramPoints = player.TotalEngramPoints,
                 TribeId = player.TribeId,
                 TribeName = player.TribeId.HasValue ? context.Tribes.FirstOrDefault(x => x.Id == player.TribeId.Value)?.Name : null,
                 SavedAt = player.SavedAt
-            };
+        };
+
+            if (!player.IsExternalPlayer)
+            {
+                vm.Gender = player.Gender.ToString();
+                vm.Level = player.CharacterLevel;
+                vm.EngramPoints = player.TotalEngramPoints;
+            }
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id, isSelf));
             vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id));

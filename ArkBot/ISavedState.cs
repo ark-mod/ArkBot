@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ArkBot
 {
@@ -8,6 +9,7 @@ namespace ArkBot
         TimeSpan LatestTribeLogTime { get; set; }
         bool VotingDisabled { get; set; }
         bool SkipExtractNextRestart { get; set; }
+        List<PlayerLastActiveSavedState> PlayerLastActive { get; set; }
         bool Save();
     }
 }

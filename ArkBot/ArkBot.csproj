@@ -356,6 +356,10 @@
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.6.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.7.0\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
@@ -489,6 +493,7 @@
     <Compile Include="Helpers\ProcessHelper.cs" />
     <Compile Include="Helpers\WebApiHelper.cs" />
     <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="PlayerLastActiveSavedState.cs" />
     <Compile Include="Layout\LayoutInitializer.cs" />
     <Compile Include="Layout\PaneStyleSelector.cs" />
     <Compile Include="Layout\PaneTemplateSelector.cs" />
@@ -501,6 +506,8 @@
     </Compile>
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksManager.cs" />
+    <Compile Include="Services\IPlayerLastActiveService.cs" />
+    <Compile Include="Services\PlayerLastActiveService.cs" />
     <Compile Include="Services\ArkServerService.cs" />
     <Compile Include="IArkSaveFileWatcher.cs" />
     <Compile Include="ISavedState.cs" />

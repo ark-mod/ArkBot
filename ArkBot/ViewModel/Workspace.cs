@@ -482,6 +482,7 @@ namespace ArkBot.ViewModel
             builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
             builder.RegisterType<ArkServerService>().As<IArkServerService>().SingleInstance();
             builder.RegisterType<SavegameBackupService>().As<ISavegameBackupService>().SingleInstance();
+            builder.RegisterType<PlayerLastActiveService>().As<IPlayerLastActiveService>().SingleInstance();
 
             //register vote handlers
             builder.RegisterType<BanVoteHandler>().As<IVoteHandler<BanVote>>();
@@ -522,6 +523,7 @@ namespace ArkBot.ViewModel
 
             if (_config.Servers?.Length > 0)
             {
+                var playerLastActiveService = Container.Resolve<IPlayerLastActiveService>();
                 var backupService = Container.Resolve<ISavegameBackupService>();
                 foreach (var server in _config.Servers)
                 {
@@ -827,10 +829,17 @@ namespace ArkBot.ViewModel
             {
                 if (disposing)
                 {
-                    _webapi?.Dispose();
+                    try
+                    {
+                        _webapi?.Dispose();
+                    } catch (ObjectDisposedException) { }
                     _webapi = null;
 
-                    _webapp?.Dispose();
+                    try
+                    {
+                        _webapp?.Dispose();
+                    }
+                    catch (ObjectDisposedException) { }
                     _webapp = null;
                 }
 

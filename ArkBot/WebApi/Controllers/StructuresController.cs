@@ -216,9 +216,11 @@ namespace ArkBot.WebApi.Controllers
 
         private const float _coordRadius = 3.0f;
         private ArkContextManager _contextManager;
+        private ISavedState _savedState;
 
-        public StructuresController(ArkContextManager contextManager)
+        public StructuresController(ISavedState savedState, ArkContextManager contextManager)
         {
+            _savedState = savedState;
             _contextManager = contextManager;
         }
 
@@ -286,13 +288,39 @@ namespace ArkBot.WebApi.Controllers
                     {
                         var tribe = isTribe ? context.Tribes.FirstOrDefault(y => y.Id == first.TargetingTeam.Value) : null;
                         var player = !isTribe ? context.Players.FirstOrDefault(y => y.Id == first.OwningPlayerId) : null;
+                        var lastActiveTime = isTribe ? tribe?.LastActiveTime : player?.LastActiveTime;
+
+                        //check saved player last active times for cross server activity
+                        var externalLastActiveTime = (DateTime?)null;
+                        if (isTribe && tribe != null && tribe.Members.Length > 0)
+                        {
+                            //for tribes check all last active times for member steamIds (across all servers/clusters)
+                            var memberIds = tribe.Members.Select(y => y.SteamId).ToList();
+                            var states = _savedState.PlayerLastActive.Where(y =>
+                                y.SteamId != null && memberIds.Contains(y.SteamId, StringComparer.OrdinalIgnoreCase)).ToArray();
+                            if (states?.Length > 0) externalLastActiveTime = states.Max(y => y.LastActiveTime);
+                        }
+                        else if (!isTribe && player != null)
+                        {
+                            //for players check all last active times for player steamid (across all servers/clusters)
+                            var states = _savedState.PlayerLastActive.Where(y =>
+                                y.SteamId != null && y.SteamId.Equals(player.SteamId, StringComparison.OrdinalIgnoreCase)).ToArray();
+                            if (states?.Length > 0) externalLastActiveTime = states.Max(y => y.LastActiveTime);
+                        }
+
+                        //set last active time to cross server time if it is more recent
+                        if ((externalLastActiveTime.HasValue && !lastActiveTime.HasValue)
+                            || (externalLastActiveTime.HasValue && lastActiveTime.HasValue && externalLastActiveTime.Value > lastActiveTime.Value))
+                        {
+                            lastActiveTime = externalLastActiveTime;
+                        }
 
                         return new StructureOwnerViewModel(new Lazy<int>(() => ids.AddOrUpdate("ownerId", 0, (key2, value) => value + 1)))
                         {
                             OwnerId = arkOwnerId,
                             Name = first.OwnerName,
                             Type = isTribe ? "tribe" : "player",
-                            LastActiveTime = isTribe ? tribe?.LastActiveTime : player?.SavedAt,
+                            LastActiveTime = lastActiveTime,
                             CreatureCount = (isTribe ? tribe?.Creatures.Count() : player?.Creatures.Count()) ?? 0
                         };
                     });
