@@ -37,7 +37,7 @@ namespace ArkBot.WebApi.Controllers
 
                 foreach (var player in context.Players)
                 {
-                    if (DateTime.UtcNow - player.SavedAt > ageLimit) continue;
+                    if (DateTime.UtcNow - player.LastActiveTime > ageLimit) continue;
 
                     var vm = PlayerController.BuildViewModelForPlayer(context, player);
 

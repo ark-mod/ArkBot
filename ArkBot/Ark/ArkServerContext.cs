@@ -28,6 +28,7 @@ namespace ArkBot.Ark
         internal ArkContextManager _contextManager;
         internal ArkClusterContext _clusterContext;
         private ILifetimeScope _scope;
+        private ISavedState _savedState;
 
         //public event UpdateTriggeredEventHandler UpdateQueued;
         public event GameDataUpdatedEventHandler GameDataUpdated;
@@ -129,12 +130,13 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkServerContext(ServerConfigSection config, ArkClusterContext clusterContext, ILifetimeScope scope) : base(config?.SaveFilePath, clusterContext)
+        public ArkServerContext(ServerConfigSection config, ArkClusterContext clusterContext, ISavedState savedState, ILifetimeScope scope) : base(config?.SaveFilePath, clusterContext)
         {
             Config = config;
             _clusterContext = clusterContext;
             _scope = scope;
             _saveFileWatcher = _scope.Resolve<IArkSaveFileWatcher>(new TypedParameter(typeof(ArkServerContext), this));
+            _savedState = savedState;
             Steam = new SteamManager(config);
         }
 
@@ -170,7 +172,9 @@ namespace ArkBot.Ark
             {
                 progress.Report($"Server ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
 
-                result = Update(ct, _clusterContext != null); //update and defer apply new data until cluster is updated
+                result = Update(ct, _savedState.PlayerLastActive.Where(x => x.ServerKey != null && x.ServerKey.Equals(Config.Key, StringComparison.OrdinalIgnoreCase)).Select(x => 
+                    new ArkPlayerExternal { Id = x.Id, SteamId = x.SteamId, TribeId = x.TribeId, LastActiveTime = x.LastActiveTime, Name = x.Name, CharacterName = x.CharacterName })
+                .ToArray(), _clusterContext != null); //update and defer apply new data until cluster is updated
 
                 if (result?.Success == true)
                 {

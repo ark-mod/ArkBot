@@ -13,13 +13,14 @@ namespace ArkBot
     {
         internal string _Path { get; set; }
 
-        public SavedState(string path)
+        public SavedState(string path) : this()
         {
             _Path = path;
         }
 
         public SavedState()
         {
+            PlayerLastActive = new List<PlayerLastActiveSavedState>();
         }
 
         [JsonProperty(PropertyName = "latestTribeLogDay")]
@@ -33,6 +34,9 @@ namespace ArkBot
 
         [JsonProperty(PropertyName = "skipExtractNextRestart")]
         public bool SkipExtractNextRestart { get; set; }
+
+        [JsonProperty(PropertyName = "playerLastActive")]
+        public List<PlayerLastActiveSavedState> PlayerLastActive { get; set; }
 
         public bool Save()
         {
