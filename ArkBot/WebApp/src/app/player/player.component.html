@@ -315,8 +315,8 @@
 </section>
 <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
-  <header class="w3-container theme-l1"> 
-    <span (click)="showMap = false" class="w3-button theme-l1 w3-xlarge w3-display-topright">&times;</span>
+  <header class="w3-container theme-d1"> 
+    <span (click)="showMap = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
     <h2>Map</h2>
   </header>
   <arkmap [mapName]="player?.MapNames[serverKey]" [points]="points"></arkmap>

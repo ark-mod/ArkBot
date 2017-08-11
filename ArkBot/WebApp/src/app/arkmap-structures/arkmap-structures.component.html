@@ -14,7 +14,7 @@
         <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
         <h2>{{currentOwner.Name}}</h2>
       </header>
-      <div class="w3-container w3-medium">
+      <div class="w3-container w3-medium theme-l2">
         <div class="w3-section">
           Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}<br />
           <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
@@ -29,7 +29,7 @@
         <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
         <h2>{{currentOwner.Name}}</h2>
       </header>
-      <div class="w3-container w3-medium">
+      <div class="w3-container w3-medium theme-l2">
         <div class="w3-section">
           <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
           {{currentOwner.AreaCount | number}} areas<br />
@@ -46,7 +46,7 @@
         <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
         <h2>{{modalInfo.Header}}</h2>
       </header>
-      <div class="w3-container w3-medium">
+      <div class="w3-container w3-medium theme-l2">
         <div class="w3-section">
           {{modalInfo.Message}}
         </div>

@@ -27,6 +27,7 @@
         bool DiscordBotEnabled { get; set; }
         string WebApiListenPrefix { get; set; }
         string WebAppListenPrefix { get; set; }
+        string[] WebAppRedirectListenPrefix { get; set; }
         string PowershellFilePath { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
         SslConfigSection Ssl { get; set; }

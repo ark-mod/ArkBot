@@ -91,6 +91,7 @@ namespace ArkBot.ViewModel
         private SavedState _savedstate = null;
         private IDisposable _webapi;
         private IDisposable _webapp;
+        private List<IDisposable> _webappRedirects;
 
         private ArkContextManager _contextManager;
         internal IConfig _config;
@@ -102,6 +103,8 @@ namespace ArkBot.ViewModel
             ManuallyUpdateClusters = new ObservableCollection<MenuItemViewModel>();
             ClosingCommand = new DelegateCommand<System.ComponentModel.CancelEventArgs>(OnClosing);
             PropertyChanged += Workspace_PropertyChanged;
+
+            _webappRedirects = new List<IDisposable>();
         }
 
         private void Workspace_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -757,6 +760,15 @@ namespace ArkBot.ViewModel
             //webapi
             _webapp = Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppStartup>(url: _config.WebAppListenPrefix);
             Console.AddLog("Web App started");
+
+            if (_config.WebAppRedirectListenPrefix?.Length > 0)
+            {
+                foreach (var redir in _config.WebAppRedirectListenPrefix)
+                {
+                    _webappRedirects.Add(Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppRedirectStartup>(url: redir));
+                    Console.AddLog("Web App redirect added");
+                }
+            }
         }
 
         private Task _runDiscordBotTask;
@@ -841,6 +853,16 @@ namespace ArkBot.ViewModel
                     }
                     catch (ObjectDisposedException) { }
                     _webapp = null;
+
+                    foreach (var redir in _webappRedirects.ToArray())
+                    {
+                        try
+                        {
+                            redir?.Dispose();
+                        }
+                        catch (ObjectDisposedException) { }
+                        _webappRedirects.Remove(redir);
+                    }
                 }
 
                 disposedValue = true;

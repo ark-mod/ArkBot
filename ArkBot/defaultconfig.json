@@ -25,6 +25,9 @@
   "discordBotEnabled": true,
   "webApiListenPrefix": "http://+:60001<if you use another port see readme>/",
   "webAppListenPrefix": "http://+:<your open port>/",
+  "webAppRedirectListenPrefix": [
+    "http://+:<your open port>/"
+  ],
   "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
   "useCompatibilityChangeWatcher": false,
   "ssl": {

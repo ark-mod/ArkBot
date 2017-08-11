@@ -647,6 +647,7 @@
     <Compile Include="WebApi\Model\TamedCreatureViewModel.cs" />
     <Compile Include="WebApi\Model\UserViewModel.cs" />
     <Compile Include="WebApi\WebApiStartup.cs" />
+    <Compile Include="WebApp\WebAppRedirectStartup.cs" />
     <Compile Include="WebApp\WebAppStartup.cs" />
     <Compile Include="WpfCommands\RelayCommand.cs" />
   </ItemGroup>
