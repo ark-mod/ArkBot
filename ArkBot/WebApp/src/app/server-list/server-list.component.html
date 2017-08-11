@@ -1,3 +1,17 @@
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.UserSteamId != undefined" class="w3-container">
+  <h3 class="theme-text-d1">My Profile</h3>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Hello, {{dataService.Servers.User.Name}}</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p>
+        Find your tames, view base stats and keep track of their food status. Get notified of pending imprints, the amount of fertilizer and gasoline remaining in your crops and generators. This and much more is available in your profile.
+      </p>
+      <p><a [routerLink]="'/player/' + dataService.UserSteamId" class="" style="text-decoration: none;">View my profile&nbsp;❯</a></p>
+    </div>
+  </div>
+</section>
 <section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined" class="w3-container">
   <h3 class="theme-text-d1">Servers</h3>
   <div *ngFor="let server of dataService.Servers.Servers" class="w3-card-4 w3-margin-bottom">
