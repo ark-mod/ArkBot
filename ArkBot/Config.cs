@@ -19,6 +19,7 @@ namespace ArkBot
             Servers = new ServerConfigSection[] { };
             Clusters = new ClusterConfigSection[] { };
             DiscordBotEnabled = true;
+            WebAppRedirectListenPrefix = new string[] { };
         }
 
         [JsonProperty(PropertyName = "botId")]
@@ -120,6 +121,10 @@ namespace ArkBot
         [JsonProperty(PropertyName = "webAppListenPrefix")]
         [Description("Http listen prefix for Web App (requires a port that is open to external connections)")]
         public string WebAppListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "webAppRedirectListenPrefix")]
+        [Description("Http listen prefix(es) that are redirected to BotUrl.")]
+        public string[] WebAppRedirectListenPrefix { get; set; }
 
         [JsonProperty(PropertyName = "powershellFilePath")]
         [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect)")]

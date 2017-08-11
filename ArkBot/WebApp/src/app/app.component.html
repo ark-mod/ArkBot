@@ -15,16 +15,16 @@
 </div>
 <div id="modal_login" class="w3-modal" [style.display]="showLogin ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeLogin($event)" style="font-size: 0;">
-    <header class="w3-container theme-l1"> 
-      <span (click)="showLogin = false" class="w3-button theme-l1 w3-xlarge w3-display-topright">&times;</span>
+    <header class="w3-container theme-d1"> 
+      <span (click)="showLogin = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
       <h2>Log In</h2>
     </header>
-    <form class="w3-container w3-medium" method="post" [action]="getLoginUrl()" ngNoForm>
+    <form class="w3-container theme-l2 w3-medium" method="post" [action]="getLoginUrl()" ngNoForm>
       <div class="w3-section">
         <p>To give you access to personal information, first, we must verify your identity.</p>
         <p>Please authenticate with our app through Steam by clicking on the button below.</p>
         <input name="returnUrl" type="hidden" [value]="currentUrl" />
-        <button type="submit" class="w3-button w3-block w3-green w3-section w3-padding" name="provider" title="Log in using your Steam account">Go to Steam</button>
+        <button type="submit" class="w3-button w3-block theme-d1 w3-section w3-padding" name="provider" title="Log in using your Steam account">Go to Steam</button>
       </div>
     </form>
   </div>
