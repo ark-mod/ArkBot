@@ -55,7 +55,8 @@ namespace ArkBot.Data
                             {
                                 using (var reader = new StreamReader(_speciesstatsFileName))
                                 {
-                                    var data = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(await reader.ReadToEndAsync());
+                                    var json = await reader.ReadToEndAsync();
+                                    var data = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(json);
                                     if (data != null) Data = data;
                                 }
                             }
@@ -86,28 +87,24 @@ namespace ArkBot.Data
 
         public ArkSpeciesStatsData()
         {
-            StatMultipliersMp = new double[0][];
+            StatMultipliers = new double[0][];
             SpeciesStats = new List<SpeciesStat>();
-            SpeciesNames = new List<string>();
         }
 
         /// <summary>
         /// These are the default stat multipliers for MP (on official servers)
         /// </summary>
-        [JsonProperty("statMultipliersMP")]
-        public double[][] StatMultipliersMp { get; set; }
+        [JsonProperty("statMultipliers")]
+        public double[][] StatMultipliers { get; set; }
 
         /// <summary>
         /// These are the default stat multipliers for SP (on official servers)
         /// </summary>
         [JsonProperty("statMultipliersSP")]
-        public double[][] StatMultipliersSp { get; set; }
+        public double?[][] StatMultipliersSp { get; set; }
 
         [JsonProperty("species")]
         public List<SpeciesStat> SpeciesStats { get; set; }
-
-        [JsonProperty("speciesNames")]
-        public List<string> SpeciesNames { get; set; }
 
         /// <summary>
         /// Stats in order: Health, Stamina, Oxygen, Food, Weight, Damage, Speed, Torpor
@@ -186,7 +183,7 @@ namespace ArkBot.Data
         public double? GetMaxValue(string[] speciesaliases, Stat stat, int baseLevel, int tamedLevel, double tamingEfficiency, double imprintingBonus = 0)
         {
             var index = (int)stat;
-            var multipliers = index < StatMultipliersMp?.Length ? StatMultipliersMp.ElementAt(index) : null;
+            var multipliers = index < StatMultipliers?.Length ? StatMultipliers.ElementAt(index) : null;
             var stats = SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase))?.Stats;
 
             if (multipliers == null || multipliers.Length != 4 || stats == null) return null;

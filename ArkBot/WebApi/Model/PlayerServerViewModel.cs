@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,9 @@ namespace ArkBot.WebApi.Model
         public PlayerServerViewModel()
         {
             Creatures = new List<TamedCreatureViewModel>();
-            KibblesAndEggs = new List<KibbleAndEggViewModel>();
-            CropPlots = new List<CropPlotViewModel>();
-            ElectricalGenerators = new List<ElectricalGeneratorViewModel>();
+            //KibblesAndEggs = new List<KibbleAndEggViewModel>();
+            //CropPlots = new List<CropPlotViewModel>();
+            //ElectricalGenerators = new List<ElectricalGeneratorViewModel>();
         }
 
         public string ClusterKey { get; set; }
@@ -30,8 +31,15 @@ namespace ArkBot.WebApi.Model
         public float? TopoMapY { get; set; }
         public DateTime SavedAt { get; set; }
         public List<TamedCreatureViewModel> Creatures { get; set; }
+
+        // these fields are only set when creature is owned by the authenticated person making the request
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<KibbleAndEggViewModel> KibblesAndEggs { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<CropPlotViewModel> CropPlots { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<ElectricalGeneratorViewModel> ElectricalGenerators { get; set; }
     }
 }
