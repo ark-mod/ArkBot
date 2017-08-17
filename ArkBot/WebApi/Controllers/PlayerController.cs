@@ -87,9 +87,12 @@ namespace ArkBot.WebApi.Controllers
             };
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId, isSelf));
-            vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, playerId));
-            vm.CropPlots.AddRange(BuildCropPlotViewModelsForPlayerId(context, playerId));
-            vm.ElectricalGenerators.AddRange(BuildElectricalGeneratorViewModelsForPlayerId(context, playerId));
+            if (isSelf)
+            {
+                vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, playerId);
+                vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, playerId);
+                vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, playerId);
+            }
 
             return vm;
         }
@@ -118,9 +121,12 @@ namespace ArkBot.WebApi.Controllers
             }
 
             vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id, isSelf));
-            vm.KibblesAndEggs.AddRange(BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id));
-            vm.CropPlots.AddRange(BuildCropPlotViewModelsForPlayerId(context, player.Id));
-            vm.ElectricalGenerators.AddRange(BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id));
+            if (isSelf)
+            {
+                vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id);
+                vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, player.Id);
+                vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id);
+            }
 
             return vm;
         }
