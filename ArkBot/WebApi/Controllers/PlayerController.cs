@@ -171,7 +171,7 @@ namespace ArkBot.WebApi.Controllers
                         Longitude = item.c.Location?.Longitude,
                         TopoMapX = item.c.Location?.TopoMapX,
                         TopoMapY = item.c.Location?.TopoMapY,
-                        NextMating = item.c.NextAllowedMatingTimeApprox,
+                        NextMating = item.c.Gender == ArkCreatureGender.Female ? item.c.NextAllowedMatingTimeApprox : null,
                         BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
                         OwnerType = item.o
                     };
