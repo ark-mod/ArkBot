@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="ExternalTools.props" Condition="Exists('ExternalTools.props')" />
   <Import Project="WebAppFiles.props" Condition="Exists('WebAppFiles.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -47,6 +46,26 @@
     <ApplicationIcon>basket_empty.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Accord, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.3.5.0\lib\net46\Accord.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.MachineLearning, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.MachineLearning.3.5.0\lib\net46\Accord.MachineLearning.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Math, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Math.3.5.0\lib\net46\Accord.Math.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Math.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Math.3.5.0\lib\net46\Accord.Math.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Accord.Statistics, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Statistics.3.5.0\lib\net46\Accord.Statistics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ArkSavegameToolkitNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\external\ArkSavegameToolkitNet\$(Configuration)\ArkSavegameToolkitNet.dll</HintPath>
@@ -73,6 +92,14 @@
     </Reference>
     <Reference Include="Autofac.Integration.WebApi.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.WebApi2.Owin.4.0.0\lib\net45\Autofac.Integration.WebApi.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>..\packages\Portable.BouncyCastle.1.8.1.2\lib\net4\BouncyCastle.Crypto.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Certes, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Certes.1.0.7\lib\net45\Certes.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CoreRCON.NET-4.6, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -172,8 +199,20 @@
       <HintPath>..\packages\Microsoft.Owin.Hosting.2.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Jwt.3.1.0\lib\net45\Microsoft.Owin.Security.Jwt.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.StaticFiles, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -228,6 +267,14 @@
       <HintPath>..\packages\Owin.Compression.1.0.15\lib\net45\Owin.Compression.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Owin.Security.Providers.OpenIDBase, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.Security.Providers.OpenIDBase.2.1.1\lib\net45\Owin.Security.Providers.OpenIDBase.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin.Security.Providers.Steam, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.Security.Providers.Steam.2.15.1\lib\net45\Owin.Security.Providers.Steam.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Prism, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
@@ -267,12 +314,17 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll</HintPath>
+    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -304,9 +356,13 @@
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.6.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.7.0\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.Cors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -381,7 +437,9 @@
     </Compile>
     <Compile Include="ArkSaveFileWatcherTimer.cs" />
     <Compile Include="Ark\IArkUpdateableContext.cs" />
+    <Compile Include="Commands\Admin\RconCommand.cs" />
     <Compile Include="Commands\ServersCommand.cs" />
+    <Compile Include="Commands\DisabledCommands.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />
@@ -426,12 +484,16 @@
     <Compile Include="Database\EfDatabaseContextFactory.cs" />
     <Compile Include="Database\Model\PlayedEntry.cs" />
     <Compile Include="Discord\DiscordManager.cs" />
+    <Compile Include="Discord\DiscordMessage.cs" />
     <Compile Include="Extensions\DiscordChannelExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
+    <Compile Include="Helpers\ArkDataHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
+    <Compile Include="Helpers\WebApiHelper.cs" />
     <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="PlayerLastActiveSavedState.cs" />
     <Compile Include="Layout\LayoutInitializer.cs" />
     <Compile Include="Layout\PaneStyleSelector.cs" />
     <Compile Include="Layout\PaneTemplateSelector.cs" />
@@ -444,6 +506,8 @@
     </Compile>
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksManager.cs" />
+    <Compile Include="Services\IPlayerLastActiveService.cs" />
+    <Compile Include="Services\PlayerLastActiveService.cs" />
     <Compile Include="Services\ArkServerService.cs" />
     <Compile Include="IArkSaveFileWatcher.cs" />
     <Compile Include="ISavedState.cs" />
@@ -542,21 +606,35 @@
     <Compile Include="Voting\VoteStateChangeResult.cs" />
     <Compile Include="Voting\InitiateVoteResult.cs" />
     <Compile Include="Voting\VotingManager.cs" />
+    <Compile Include="WebApi\Controllers\AdministerController.cs" />
+    <Compile Include="WebApi\Controllers\AuthenticationController.cs" />
     <Compile Include="WebApi\Controllers\MapController.cs" />
     <Compile Include="WebApi\Controllers\BulkController.cs" />
     <Compile Include="WebApi\Controllers\AdminServerController.cs" />
+    <Compile Include="WebApi\Controllers\StructuresController.cs" />
     <Compile Include="WebApi\Controllers\ServerController.cs" />
     <Compile Include="WebApi\Controllers\TribeController.cs" />
     <Compile Include="WebApi\Controllers\ServersController.cs" />
     <Compile Include="WebApi\Controllers\PlayerController.cs" />
     <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
+    <Compile Include="WebApi\Model\AdministerResponseViewModel.cs" />
     <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
+    <Compile Include="WebApi\Model\CreatureBaseStatsViewModel.cs" />
+    <Compile Include="WebApi\Model\ElectricalGeneratorViewModel.cs" />
+    <Compile Include="WebApi\Model\CropPlotViewModel.cs" />
+    <Compile Include="WebApi\Model\KibbleAndEggViewModel.cs" />
     <Compile Include="WebApi\Model\OnlinePlayerViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerClusterViewModely.cs" />
     <Compile Include="WebApi\Model\CloudCreatureViewModel.cs" />
     <Compile Include="WebApi\Model\AdminServerViewModel.cs" />
     <Compile Include="WebApi\Model\AdminPlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\AdminTribeReferenceViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureBase.cs" />
+    <Compile Include="WebApi\Model\StructureOwnerViewModel.cs" />
+    <Compile Include="WebApi\Model\StructuresViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureTypeViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureAreaViewModel.cs" />
+    <Compile Include="WebApi\Model\StructureViewModel.cs" />
     <Compile Include="WebApi\Model\TribeReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerServerViewModel.cs" />
@@ -567,7 +645,9 @@
     <Compile Include="WebApi\Model\ServerStatusAllViewModel.cs" />
     <Compile Include="WebApi\Model\PlayerViewModel.cs" />
     <Compile Include="WebApi\Model\TamedCreatureViewModel.cs" />
+    <Compile Include="WebApi\Model\UserViewModel.cs" />
     <Compile Include="WebApi\WebApiStartup.cs" />
+    <Compile Include="WebApp\WebAppRedirectStartup.cs" />
     <Compile Include="WebApp\WebAppStartup.cs" />
     <Compile Include="WpfCommands\RelayCommand.cs" />
   </ItemGroup>
@@ -637,7 +717,6 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="ExternalTools.targets" Condition="Exists('ExternalTools.targets')" />
   <Import Project="WebAppFiles.targets" Condition="Exists('WebAppFiles.targets')" />
   <PropertyGroup>
     <PostBuildEvent>
@@ -653,8 +732,10 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Fody.1.29.2\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.29.2\build\dotnet\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\packages\Accord.3.5.0\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.5.0\build\Accord.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
+  <Import Project="..\packages\Accord.3.5.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.5.0\build\Accord.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

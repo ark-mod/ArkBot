@@ -30,7 +30,6 @@ namespace ArkBot.Discord
     public class ArkDiscordBot : IDisposable
     {
         private DiscordClient _discord;
-        private IArkContext _context;
         private IConfig _config;
         private IConstants _constants;
         private IBarebonesSteamOpenId _openId;
@@ -45,7 +44,6 @@ namespace ArkBot.Discord
         public ArkDiscordBot(
             DiscordClient discord,
             IConfig config, 
-            IArkContext context, 
             IConstants constants, 
             IBarebonesSteamOpenId openId, 
             EfDatabaseContextFactory databaseContextFactory, 
@@ -56,7 +54,6 @@ namespace ArkBot.Discord
         {
             _discord = discord;
             _config = config;
-            _context = context;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
             _openId = openId;
@@ -65,7 +62,7 @@ namespace ArkBot.Discord
             _contextManager = contextManager;
             _votingManager = votingManager;
 
-            _context.Updated += _context_Updated;
+            //_context.Updated += _context_Updated;
 
             _discord.UsingCommands(x =>
             {
@@ -140,67 +137,67 @@ namespace ArkBot.Discord
 
         private async Task UpdateNicknamesAndRoles(Server _server = null)
         {
-            try
-            {
-                //change nicknames, add/remove from ark-role
-                Database.Model.User[] linkedusers = null;
-                using (var db = _databaseContextFactory.Create())
-                {
-                    linkedusers = db.Users.Where(x => !x.Unlinked).ToArray();
-                }
+            //try
+            //{
+            //    //change nicknames, add/remove from ark-role
+            //    Database.Model.User[] linkedusers = null;
+            //    using (var db = _databaseContextFactory.Create())
+            //    {
+            //        linkedusers = db.Users.Where(x => !x.Unlinked).ToArray();
+            //    }
 
-                foreach (var server in _discord.Servers)
-                {
-                    if (_server != null && server.Id != _server.Id) continue;
+            //    foreach (var server in _discord.Servers)
+            //    {
+            //        if (_server != null && server.Id != _server.Id) continue;
 
-                    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
-                    if (role == null) continue;
+            //        var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
+            //        if (role == null) continue;
 
-                    foreach (var user in server.Users)
-                    {
-                        try
-                        {
-                            var dbuser = linkedusers.FirstOrDefault(x => (ulong)x.DiscordId == user.Id);
-                            if (dbuser == null)
-                            {
-                                if (user.HasRole(role))
-                                {
-                                    Logging.Log($@"Removing role ({role.Name}) from user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
-                                    await user.RemoveRoles(role);
-                                }
-                                continue;
-                            }
+            //        foreach (var user in server.Users)
+            //        {
+            //            try
+            //            {
+            //                var dbuser = linkedusers.FirstOrDefault(x => (ulong)x.DiscordId == user.Id);
+            //                if (dbuser == null)
+            //                {
+            //                    if (user.HasRole(role))
+            //                    {
+            //                        Logging.Log($@"Removing role ({role.Name}) from user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
+            //                        await user.RemoveRoles(role);
+            //                    }
+            //                    continue;
+            //                }
 
-                            if (!user.HasRole(role))
-                            {
-                                Logging.Log($@"Adding role ({role.Name}) from user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
-                                await user.AddRoles(role);
-                            }
+            //                if (!user.HasRole(role))
+            //                {
+            //                    Logging.Log($@"Adding role ({role.Name}) from user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
+            //                    await user.AddRoles(role);
+            //                }
 
-                            var player = _context.Players?.FirstOrDefault(x => { long steamId = 0; return long.TryParse(x.SteamId, out steamId) ? steamId == dbuser.SteamId : false; });
-                            var playerName = player?.Name?.Length > 32 ? player?.Name?.Substring(0, 32) : player?.Name;
-                            if (!string.IsNullOrWhiteSpace(playerName) 
-                                && !user.ServerPermissions.Administrator
-                                && !playerName.Equals(user.Name, StringComparison.Ordinal) 
-                                && (user.Nickname == null || !playerName.Equals(user.Nickname, StringComparison.Ordinal)))
-                            {
-                                //must be less or equal to 32 characters
-                                Logging.Log($@"Changing nickname (from: ""{user.Nickname ?? "null"}"", to: ""{playerName}"") for user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
-                                await user.Edit(nickname: playerName);
-                            }
-                        }
-                        catch (HttpException ex)
-                        {
-                            //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
-                            Logging.LogException("HttpException while trying to update nicknames/roles (could be due to permissions)", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                        }
-                    }
-                }
-            }
-            catch(WebException ex)
-            {
-                Logging.LogException("Exception while trying to update nicknames/roles", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
-            }
+            //                var player = _context.Players?.FirstOrDefault(x => { long steamId = 0; return long.TryParse(x.SteamId, out steamId) ? steamId == dbuser.SteamId : false; });
+            //                var playerName = player?.Name?.Length > 32 ? player?.Name?.Substring(0, 32) : player?.Name;
+            //                if (!string.IsNullOrWhiteSpace(playerName) 
+            //                    && !user.ServerPermissions.Administrator
+            //                    && !playerName.Equals(user.Name, StringComparison.Ordinal) 
+            //                    && (user.Nickname == null || !playerName.Equals(user.Nickname, StringComparison.Ordinal)))
+            //                {
+            //                    //must be less or equal to 32 characters
+            //                    Logging.Log($@"Changing nickname (from: ""{user.Nickname ?? "null"}"", to: ""{playerName}"") for user ({user.Name}#{user.Discriminator})", GetType(), LogLevel.DEBUG);
+            //                    await user.Edit(nickname: playerName);
+            //                }
+            //            }
+            //            catch (HttpException ex)
+            //            {
+            //                //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
+            //                Logging.LogException("HttpException while trying to update nicknames/roles (could be due to permissions)", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
+            //            }
+            //        }
+            //    }
+            //}
+            //catch(WebException ex)
+            //{
+            //    Logging.LogException("Exception while trying to update nicknames/roles", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
+            //}
         }
 
         private async void _openId_SteamOpenIdCallback(object sender, SteamOpenIdCallbackEventArgs e)
@@ -245,23 +242,23 @@ namespace ArkBot.Discord
                     var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
                     if (user == null || role == null) continue;
 
-                    try
-                    {
-                        if (!user.HasRole(role)) await user.AddRoles(role);
+                    //try
+                    //{
+                    //    if (!user.HasRole(role)) await user.AddRoles(role);
 
-                        var p = _context.Players?.FirstOrDefault(x => { ulong steamId = 0; return ulong.TryParse(x.SteamId, out steamId) ? steamId == e.SteamId : false; });
-                        if (p != null && !string.IsNullOrWhiteSpace(p.Name))
-                        {
+                    //    var p = _context.Players?.FirstOrDefault(x => { ulong steamId = 0; return ulong.TryParse(x.SteamId, out steamId) ? steamId == e.SteamId : false; });
+                    //    if (p != null && !string.IsNullOrWhiteSpace(p.Name))
+                    //    {
 
-                            //must be less or equal to 32 characters
-                            await user.Edit(nickname: p.Name.Length > 32 ? p.Name.Substring(0, 32) : p.Name);
+                    //        //must be less or equal to 32 characters
+                    //        await user.Edit(nickname: p.Name.Length > 32 ? p.Name.Substring(0, 32) : p.Name);
 
-                        }
-                    }
-                    catch (HttpException)
-                    {
-                        //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
-                    }
+                    //    }
+                    //}
+                    //catch (HttpException)
+                    //{
+                    //    //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
+                    //}
                 }
 
                 using (var context = _databaseContextFactory.Create())
@@ -306,7 +303,7 @@ namespace ArkBot.Discord
             sb.AppendLine(message);
             if(e.Exception != null) sb.AppendLine($"Exception: {e.Exception.ToString()}");
             sb.AppendLine();
-            _context.Progress.Report(sb.ToString());
+            //_context.Progress.Report(sb.ToString());
 
             //if there is an exception log all information pertaining to it so that we can possibly fix it in the future
             if (e.Exception != null) Logging.LogException(message, e.Exception, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
@@ -323,7 +320,7 @@ namespace ArkBot.Discord
 
         public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
-            await _context.Initialize(token, skipExtract);
+            //await _context.Initialize(token, skipExtract);
         }
 
         public async Task Start(ArkSpeciesAliases aliases = null)

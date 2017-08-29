@@ -3,33 +3,45 @@
   "botName": "ARK Discord Bot",
   "botNamespace": "http://www.arkdiscordbot.com/",
   "botUrl": "",
-  "serverKey":  "server1",
-  "serverIp": "127.0.0.1",
-  "serverPort": 27015,
+  "appUrl": "",
   "enabledChannels": [ "bot-commands" ],
   "infoTopicChannel": "bot-commands",
   "announcementChannel":  "bot-notifications",
-  "saveFilePath": "C:\\ARK Servers\\server1\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
-  "clusterSavePath": "C:\\ARK Servers\\cluster1",
-  "arktoolsExecutablePath": "Tools\\ark-tools\\ark-tools.exe",
-  "jsonOutputDirPath": "C:\\ark-tool-data",
-  "tempFileOutputDirPath": "C:\\ark-tool-data",
+  "tempFileOutputDirPath": "C:\\arkbot-temp",
   "botToken": "<token from discord>",
   "steamOpenIdRelyingServiceListenPrefix":  "http://+:<your open port>/openid/",
   "steamOpenIdRedirectUri": "http://<your public ip or domain>:<your open port>/openid/",
   "googleApiKey": "<google api key>",
   "steamApiKey": "<steam webapi key>",
   "adminRoleName": "admin",
-  "developerRoleName": "developer", 
+  "developerRoleName": "developer",
   "memberRoleName": "ark",
+  "userRoles": {
+    "admins":  []
+  },
   "disableDeveloperFetchSaveData" :  false,
   "backupsEnabled": false,
   "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
   "discordBotEnabled": true,
   "webApiListenPrefix": "http://+:60001<if you use another port see readme>/",
   "webAppListenPrefix": "http://+:<your open port>/",
+  "webAppRedirectListenPrefix": [
+    "http://+:<your open port>/"
+  ],
   "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-  "useCompatibilityChangeWatcher":  false,
+  "useCompatibilityChangeWatcher": false,
+  "ssl": {
+    "enabled":  false,
+    "challengeListenPrefix": "http://+:80/",
+    "name": "ark-bot-ssl",
+    "password": "secret123",
+    "email": "youremail@yourdomain.com",
+    "domains": [
+      "app.yourdomain.com"
+    ],
+    "ports": [ <60001/web api port>, <web app port> ],
+    "useCompatibilityNonSNIBindings":  false
+  },
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
     "babyMatureSpeedMultiplier": 1.0,
@@ -48,7 +60,8 @@
       "serverExecutableArguments":  "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server1",
-      "usePowershellOutputRedirect":  false
+      "usePowershellOutputRedirect": false,
+      "disableChatNotificationOnGlobalCountdown": false
     },
     {
       "key": "server2",
@@ -62,7 +75,8 @@
       "serverExecutableArguments":  "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server2",
-      "usePowershellOutputRedirect":  false
+      "usePowershellOutputRedirect": false,
+      "disableChatNotificationOnGlobalCountdown": false
     }
   ],
   "clusters": [

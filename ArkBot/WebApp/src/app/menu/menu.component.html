@@ -1,0 +1,6 @@
+<div id="menu" class="w3-sidebar theme-l2" style="min-height: 52px;"> 
+  <button id="menubtn" class="w3-button w3-xlarge w3-display-topright" (click)="toggleMenu()">☰</button>
+  <section id="menucontent" class="w3-container"  [ngClass]="{'hide': !menuVisible}">
+    <ng-content></ng-content>
+  </section>
+</div>

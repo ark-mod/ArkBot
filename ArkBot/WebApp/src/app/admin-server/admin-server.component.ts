@@ -13,10 +13,14 @@ import { HttpService } from '../http.service';
   styleUrls: ['./admin-server.component.css']
 })
 export class AdminServerComponent implements OnInit, OnDestroy {
+  private menuOption: string = undefined; 
+  private menuOptionSubscription: any;
+
   serverUpdatedSubscription: any;
   server: any;
   loaded: boolean = false;
   serverKey: string;
+  structures: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,9 +44,26 @@ export class AdminServerComponent implements OnInit, OnDestroy {
         });
   }
 
+  getStructures(): void {
+      this.httpService
+        .getStructures(this.serverKey)
+        .then(structures => {
+          this.structures = structures;
+        })
+        .catch(error => {
+          this.structures = undefined;
+        });
+  }
+
   ngOnInit() {
     this.serverKey = this.route.snapshot.params['id'];
 
+    this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => {
+      this.menuOption = menuOption;
+      if (this.menuOption == "structures") {
+        this.getStructures();
+      }
+    });
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => {
         if(this.serverKey == serverKey) {
           this.updateServer();
@@ -54,6 +75,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.menuOptionSubscription.unsubscribe();
     this.serverUpdatedSubscription.unsubscribe();
   }
 
@@ -79,5 +101,9 @@ export class AdminServerComponent implements OnInit, OnDestroy {
           clickToClose: true
       }
     );
+  }
+
+  isMenuActive(menuOption: string): boolean {
+    return this.menuOption == menuOption;
   }
 }

@@ -13,10 +13,13 @@ namespace ArkBot
         public Config()
         {
             // Default values
+            Ssl = new SslConfigSection();
+            UserRoles = new UserRolesConfigSection();
             ArkMultipliers = new ArkMultipliersConfigSection();
             Servers = new ServerConfigSection[] { };
             Clusters = new ClusterConfigSection[] { };
             DiscordBotEnabled = true;
+            WebAppRedirectListenPrefix = new string[] { };
         }
 
         [JsonProperty(PropertyName = "botId")]
@@ -35,21 +38,9 @@ namespace ArkBot
         [Description("Website url associated with the bot or ARK server (optional).")]
         public string BotUrl { get; set; }
 
-        [JsonProperty(PropertyName = "saveFilePath")]
-        [Description("Absolute file path of the .ark save file to monitor/extract data from.")]
-        public string SaveFilePath { get; set; }
-
-        [JsonProperty(PropertyName = "clusterSavePath")]
-        [Description("The directory path where cluster save data is stored.")]
-        public string ClusterSavePath { get; set; }
-
-        [JsonProperty(PropertyName = "arktoolsExecutablePath")]
-        [Description("File path of the ark-tools executable used to extract data from Ark (should normally be a relative path to the ark-tools.exe packaged with this application).")]
-        public string ArktoolsExecutablePath { get; set; }
-
-        [JsonProperty(PropertyName = "jsonOutputDirPath")]
-        [Description("An existing directory path where temporary json files can be stored during extraction.")]
-        public string JsonOutputDirPath { get; set; }
+        [JsonProperty(PropertyName = "appUrl")]
+        [Description("External url pointing to the Web App (optional).")]
+        public string AppUrl { get; set; }
 
         [JsonProperty(PropertyName = "tempFileOutputDirPath")]
         [Description("An existing directory path where temporary binary files can be stored (map-images etc.)")]
@@ -75,26 +66,6 @@ namespace ArkBot
         [Description("Steam API key used for fetching user information.")]
         public string SteamApiKey { get; set; }
 
-        //[JsonProperty(PropertyName = "debugNoExtract")]
-        //[Description("Skips ark-tool extraction and uses already extracted files in json output directory path.")]
-        //public bool DebugNoExtract { get; set; }
-
-        //[JsonProperty(PropertyName = "debug")]
-        //[Description("Run tool with debug option set (includes experimental features etc.)")]
-        //public bool Debug { get; set; }
-
-        //[JsonProperty(PropertyName = "debugSaveFilePath")]
-        //[Description("Debug template path for saveFilePath.")]
-        //public string DebugSaveFilePath { get; set; }
-
-        //[JsonProperty(PropertyName = "debugClusterSavePath")]
-        //[Description("Debug template path for clusterSavePath.")]
-        //public string DebugClusterSavePath { get; set; }
-
-        //[JsonProperty(PropertyName = "debugJsonOutputDirPath")]
-        //[Description("Debug template path for jsonOutputDirPath.")]
-        //public string DebugJsonOutputDirPath { get; set; }
-
         [JsonProperty(PropertyName = "arkMultipliers")]
         [Description("Server specific multipliers.")]
         public ArkMultipliersConfigSection ArkMultipliers { get; set; }
@@ -115,17 +86,9 @@ namespace ArkBot
         [Description("The name of the member role in Discord.")]
         public string MemberRoleName { get; set; }
 
-        [JsonProperty(PropertyName = "serverKey")]
-        [Description("Temporary: The server key from server instances for which the Discord Bot is configured. This is a temporary configuration needed while migrating from single server to multi server support.")]
-        public string ServerKey { get; set; }
-
-        [JsonProperty(PropertyName = "serverIp")]
-        [Description("The IP address used to connect to the ARK server.")]
-        public string ServerIp { get; set; }
-
-        [JsonProperty(PropertyName = "serverPort")]
-        [Description("The port used to connect to the ARK server.")]
-        public int ServerPort { get; set; }
+        [JsonProperty(PropertyName = "userRoles")]
+        [Description("Role based access control.")]
+        public UserRolesConfigSection UserRoles { get; set; }
 
         [JsonProperty(PropertyName = "enabledChannels")]
         [Description("A list of channels where the bot will listen to and answer commands.")]
@@ -159,6 +122,10 @@ namespace ArkBot
         [Description("Http listen prefix for Web App (requires a port that is open to external connections)")]
         public string WebAppListenPrefix { get; set; }
 
+        [JsonProperty(PropertyName = "webAppRedirectListenPrefix")]
+        [Description("Http listen prefix(es) that are redirected to BotUrl.")]
+        public string[] WebAppRedirectListenPrefix { get; set; }
+
         [JsonProperty(PropertyName = "powershellFilePath")]
         [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect)")]
         public string PowershellFilePath { get; set; }
@@ -167,6 +134,10 @@ namespace ArkBot
         [Description("Use timer based .ark save file watcher rather than the default (based on FileSystemWatcher)")]
         public bool UseCompatibilityChangeWatcher { get; set; }
 
+        [JsonProperty(PropertyName = "ssl")]
+        [Description("Configure Web App and WebAPI to use SSL with a free certificate from Lets Encrypt")]
+        public SslConfigSection Ssl { get; set; }
+
         [JsonProperty(PropertyName = "servers")]
         [Description("Server instance configurations.")]
         public ServerConfigSection[] Servers { get; set; }
@@ -174,6 +145,58 @@ namespace ArkBot
         [JsonProperty(PropertyName = "clusters")]
         [Description("Cluster instance configurations.")]
         public ClusterConfigSection[] Clusters { get; set; }
+    }
+
+    public class UserRolesConfigSection
+    {
+        public UserRolesConfigSection()
+        {
+            Admins = new string[] { };
+        }
+
+        [JsonProperty(PropertyName = "admins")]
+        [Description("Collection of steam id(s) belonging to the admin role.")]
+        public string[] Admins { get; set; }
+    }
+
+    public class SslConfigSection
+    {
+        public SslConfigSection()
+        {
+            Domains = new string[] { };
+        }
+
+        [JsonProperty(PropertyName = "enabled")]
+        [Description("Toggle ssl.")]
+        public bool Enabled { get; set; }
+
+        [JsonProperty(PropertyName = "challengeListenPrefix")]
+        [Description("Http listen prefix for ssl challenge request (external port must be 80)")]
+        public string ChallengeListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "name")]
+        [Description("Friendly name of the certificate.")]
+        public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "password")]
+        [Description("Private password.")]
+        public string Password { get; set; }
+
+        [JsonProperty(PropertyName = "email")]
+        [Description("Registration contact email.")]
+        public string Email { get; set; }
+
+        [JsonProperty(PropertyName = "domains")]
+        [Description("Domain name(s) to issue the certificate for.")]
+        public string[] Domains { get; set; }
+
+        [JsonProperty(PropertyName = "ports")]
+        [Description("Ports to bind the ssl certificate to.")]
+        public int[] Ports { get; set; }
+
+        [JsonProperty(PropertyName = "useCompatibilityNonSNIBindings")]
+        [Description("Use non SNI SSL bindings for previous Windows OS (before Windows 8/2012)")]
+        public bool UseCompatibilityNonSNIBindings { get; set; }
     }
 
     public class ArkMultipliersConfigSection
@@ -259,6 +282,11 @@ namespace ArkBot
         [JsonProperty(PropertyName = "usePowershellOutputRedirect")]
         [Description("Use alternative powershell/file based output redirect for update progress notifications.")]
         public bool UsePowershellOutputRedirect { get; set; }
+
+        [JsonProperty(PropertyName = "disableChatNotificationOnGlobalCountdown")]
+        [Description("Disable chat notifications for this server instance when trigged by admin multiple server countdown (feature is used for compatibility with cross server chat).")]
+        public bool DisableChatNotificationOnGlobalCountdown { get; set; }
+        
     }
 
     public class ClusterConfigSection

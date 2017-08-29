@@ -16,5 +16,6 @@ namespace ArkBot.WebApi.Model
 
         public IList<ServerStatusViewModel> Servers { get; set; }
         public IList<ClusterStatusViewModel> Clusters { get; set; }
+        public UserViewModel User { get; set; }
     }
 }

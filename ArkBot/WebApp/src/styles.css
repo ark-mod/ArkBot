@@ -2,6 +2,11 @@
 .light .theme-l2 {color:#000 !important; background-color:#f1f1f1 !important}
 .light .theme-d1 {color:#fff !important; background-color:#2196F3 !important}
 .light .theme-c1 {color:#fff !important; background-color:#4CAF50 !important}
+.light .theme-e1 {color:#fff !important; background-color:#f44336 !important}
+.light .odd .theme-l2 {color:#000 !important; background-color:#f5f5f5 !important}
+
+.light .theme-l1.theme-hover:hover {color:#000 !important; background-color:#ccc !important}
+.light .theme-l2.theme-hover:hover {color:#000 !important; background-color:#ccc !important}
 
 .light .theme-text-l1-light {color:darkgray !important}
 .light .theme-text-d1 {color:#2196F3 !important}
@@ -10,31 +15,47 @@
 .light .border-theme {border-color:#ddd !important}
 
 
-body.dark { background-color: #000 !important }
-.dark .theme-l1 {color:#fff !important; background-color:#000 !important}
-.dark .theme-l2 {color:#fff !important; background-color:#111 !important}
+body.dark { background-color: #141519 !important; color: #fff; }
+
+/*.dark .w3-btn:hover, .dark .w3-button:hover {box-shadow:none; background-opacity: #3F4251 !important;}*/
+
+.dark .theme-l1 {color:#fff !important; background-color:#141519 !important}
+.dark .theme-l2 {color:#fff !important; background-color:#2A2C36 !important}
 .dark .theme-d1 {color:#fff !important; background-color:#114F7F !important}
-.dark .theme-c1 {color:#fff !important; background-color:#183819 !important}
+.dark .theme-c1 {color:#fff !important; background-color:#114F7F !important}
+.dark .theme-e1 {color:#fff !important; background-color:#f44336 !important}
+
+.dark .theme-l1.theme-hover:hover {color:#fff !important; background-color:#ccc !important}
+.dark .theme-l2.theme-hover:hover {color:#fff !important; background-color:#ccc !important}
 
 .dark .theme-text-l1-light {color:darkgray !important}
-.dark .theme-text-d1 {color:#114F7F !important}
-.dark .theme-text-c1 {color:#183819 !important}
+.dark .theme-text-d1 {color:#fff !important}
+.dark .theme-text-c1 {color:#114F7F !important}
 
-.dark .border-theme {border-color:#114F7F !important}
+.dark .border-theme {border-color:#2B2D33 !important}
 
-.dark .w3-bordered tr,.dark .w3-table-all tr{border-bottom:1px solid #333}
-.dark .w3-striped tbody tr:nth-child(even){background-color:#1f1f1f; color: #fff}
-.dark .w3-table-all tr:nth-child(odd){background-color:#000; color: #fff}
-.dark .w3-table-all tr:nth-child(even){background-color:#1f1f1f; color: #fff}
+.dark .w3-bordered tr,.dark .w3-table-all tr{border-bottom:1px solid #2B2D33}
+.dark .w3-striped tbody tr:nth-child(even){background-color:#22232B; color: #fff}
+.dark .w3-table-all tr:nth-child(odd){background-color:#141519; color: #fff}
+.dark .w3-table-all tr:nth-child(even){background-color:#22232B; color: #fff}
+
+.dark .w3-ul li{border-bottom:1px solid #2B2D33}
+.dark .w3-ul li:last-child{border-bottom: none;}
 
 .dark .w3-card-4 {box-shadow:none;}
 
-.dark .breadcrumb ul li a { color: #114F7F !important}
+.dark .breadcrumb ul li a { color: #fff !important}
 /*.w3-card,.w3-card-2{box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)}
 .w3-card-4,.w3-hover-shadow:hover{box-shadow:0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19)}*/
 
+.dark .app-green-light,.app-hover-green-light:hover{background-color:#58A6DD!important}
+
 /* You can add global styles to this file, and also import other style files */
 .app-green-light,.app-hover-green-light:hover{background-color:#CEEDCE!important}
+
+.light .theme-d1 a:hover, .light .theme-c1 a:hover { color:#fff; }
+.light a:hover { color:#2196F3; }
+a:hover { opacity: 0.60; }
 
 body { margin-bottom: 2em;}
 
@@ -85,4 +106,26 @@ body { margin-bottom: 2em;}
     text-decoration: none;
     cursor: pointer;
     color: #2196f3;
+}
+
+#page { margin-left: 220px; }
+#menu.w3-sidebar { width: 220px; padding-bottom: 10px; }
+#menu .w3-cell { display: inline-block; width: 100%; text-align: left; }
+#menucontent.hide { display: block; }
+#menubtn { display: none; }
+
+@media screen and (max-width: 767px) {
+    #page { margin-left: 0px; }
+    #menu.w3-sidebar
+    {
+        position: relative !important; width: auto;
+    }
+    #menu .w3-cell { display: table-cell; width: auto; text-align: center; }
+    #menubtn { display: block; }
+    #menucontent.hide { display: none; }
+}
+
+@media screen and (max-width: 600px) {
+    #menu .w3-cell { display: block; }
+    #menucontent.hide { display: none; }
 }

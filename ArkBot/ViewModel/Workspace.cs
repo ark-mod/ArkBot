@@ -15,9 +15,13 @@ using ArkBot.WpfCommands;
 using Autofac;
 using Autofac.Integration.SignalR;
 using Autofac.Integration.WebApi;
+using Certes;
+using Certes.Acme;
+using Certes.Pkcs;
 using Discord;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.Owin;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Prism.Commands;
@@ -30,6 +34,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -37,6 +44,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace ArkBot.ViewModel
 {
@@ -55,9 +63,6 @@ namespace ArkBot.ViewModel
 
         public ConsoleViewModel Console => _console ?? (_console = new ConsoleViewModel());
         private ConsoleViewModel _console;
-
-        public ICommand SteamCmdTestCommand => _steamCmdTestCommand ?? (_steamCmdTestCommand = new RelayCommand(parameter => OnSteamCmdTest(parameter), parameter => CanSteamCmdTest(parameter)));
-        private RelayCommand _steamCmdTestCommand;
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
@@ -86,9 +91,10 @@ namespace ArkBot.ViewModel
         private SavedState _savedstate = null;
         private IDisposable _webapi;
         private IDisposable _webapp;
+        private List<IDisposable> _webappRedirects;
 
         private ArkContextManager _contextManager;
-        private IConfig _config;
+        internal IConfig _config;
 
         public Workspace()
         {
@@ -97,6 +103,8 @@ namespace ArkBot.ViewModel
             ManuallyUpdateClusters = new ObservableCollection<MenuItemViewModel>();
             ClosingCommand = new DelegateCommand<System.ComponentModel.CancelEventArgs>(OnClosing);
             PropertyChanged += Workspace_PropertyChanged;
+
+            _webappRedirects = new List<IDisposable>();
         }
 
         private void Workspace_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -139,119 +147,6 @@ namespace ArkBot.ViewModel
         private void OnExit(object parameter)
         {
             Application.Current.MainWindow.Close();
-        }
-
-        private bool CanSteamCmdTest(object parameter)
-        {
-            return true;
-        }
-
-        private async void OnSteamCmdTest(object parameter)
-        {
-            if (MessageBox.Show("Are you sure you want to run a SteamCmd test?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None) != MessageBoxResult.Yes) return;
-            var hidden = MessageBox.Show("As hidden window?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
-            var nowindow = MessageBox.Show("Create no window?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
-            var outputdata = MessageBox.Show("Redirect output?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
-            var exitwhendone = MessageBox.Show("Exit steamcmd when script finishes?", "SteamCmd test", MessageBoxButton.YesNo, MessageBoxImage.None);
-
-            var showMsg = new Action<string>((msg) => MessageBox.Show(msg, "SteamCmd test", MessageBoxButton.OK, MessageBoxImage.None));
-            var serverContext = _contextManager.GetServer(_config.ServerKey);
-            if (serverContext == null)
-            {
-                showMsg("Failed to get server instance.");
-                return;
-            }
-
-            var n = 0;
-            string tmpInstallDir = null;
-            var tmpPath = Path.GetTempFileName();
-            do
-            {
-                if (n >= 100)
-                {
-                    showMsg("Failed to create a temp directory.");
-                    return;
-                }
-                tmpInstallDir = Path.Combine(_config.TempFileOutputDirPath, Guid.NewGuid().ToString());
-                n++;
-            } while (Directory.Exists(tmpInstallDir));
-
-            try
-            {
-                Directory.CreateDirectory(tmpInstallDir);
-
-                var exit = exitwhendone == MessageBoxResult.Yes ? $"{Environment.NewLine}quit" : "";
-                File.WriteAllText(tmpPath, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{tmpInstallDir}\"{Environment.NewLine}app_update 376030{exit}");
-
-                var tcs = new TaskCompletionSource<int>();
-                var si = new ProcessStartInfo
-                {
-                    FileName = serverContext.Config.SteamCmdExecutablePath,
-                    Arguments = $@"+runscript {tmpPath}",
-                    WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
-                    Verb = "runas",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = outputdata == MessageBoxResult.Yes ? true : false,
-                    WindowStyle = hidden == MessageBoxResult.Yes ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
-                    CreateNoWindow = nowindow == MessageBoxResult.Yes ? true : false
-                };
-                var process = new Process
-                {
-                    StartInfo = si,
-                    EnableRaisingEvents = true
-                };
-                if (outputdata == MessageBoxResult.Yes)
-                {
-                    process.OutputDataReceived += (s, e) =>
-                    {
-                        if (e?.Data == null) return;
-                        Console.AddLog(e.Data);
-                    };
-                }
-
-                process.Exited += (sender, args) => tcs.TrySetResult(process.ExitCode);
-                if (!process.Start())
-                {
-                    showMsg("Process failed to start");
-                    return;
-                }
-                if(outputdata == MessageBoxResult.Yes) process.BeginOutputReadLine();
-
-                if (nowindow == MessageBoxResult.Yes || hidden == MessageBoxResult.Yes)
-                {
-                    var closeTask = Task.Run(() =>
-                    {
-                        MessageBox.Show("Stop the test?", "SteamCmd test", MessageBoxButton.OK, MessageBoxImage.None);
-                        process.Kill();
-                    }).ConfigureAwait(false);
-                }
-
-                var result = await tcs.Task;
-                showMsg($"Process exited with code {result}");
-            }
-            catch(Exception ex)
-            {
-                showMsg($"Exception: {ex.ToString()}");
-            }
-            finally
-            {
-                try
-                {
-                    if (tmpInstallDir.StartsWith(_config.TempFileOutputDirPath))
-                    {
-                        foreach (var file in Directory.GetFiles(tmpInstallDir))
-                        {
-                            File.Delete(file);
-                        }
-                        foreach (var dir in Directory.GetDirectories(tmpInstallDir))
-                        {
-                            Directory.Delete(dir, true);
-                        }
-                        Directory.Delete(tmpInstallDir);
-                    }
-                }
-                catch (Exception) { }
-            }
         }
 
         static void WriteAndWaitForKey(params string[] msgs)
@@ -318,30 +213,6 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotNamespace))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(_config.SaveFilePath) || !File.Exists(_config.SaveFilePath))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.SaveFilePath)} is not a valid file path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SaveFilePath))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.ClusterSavePath) || !Directory.Exists(_config.ClusterSavePath))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.ClusterSavePath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ClusterSavePath))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.ArktoolsExecutablePath) || !File.Exists(_config.ArktoolsExecutablePath))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.ArktoolsExecutablePath)} is not a valid file path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ArktoolsExecutablePath))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.JsonOutputDirPath) || !Directory.Exists(_config.JsonOutputDirPath))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.JsonOutputDirPath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.JsonOutputDirPath))}");
-                sb.AppendLine();
-            }
             if (string.IsNullOrWhiteSpace(_config.TempFileOutputDirPath) || !Directory.Exists(_config.TempFileOutputDirPath))
             {
                 sb.AppendLine($@"Error: {nameof(_config.TempFileOutputDirPath)} is not a valid directory path.");
@@ -378,18 +249,6 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamApiKey))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(_config.ServerIp))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.ServerIp)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ServerIp))}");
-                sb.AppendLine();
-            }
-            if (_config.ServerPort <= 0)
-            {
-                sb.AppendLine($@"Error: {nameof(_config.ServerPort)} is not valid.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ServerPort))}");
-                sb.AppendLine();
-            }
             if (_config.BackupsEnabled && (string.IsNullOrWhiteSpace(_config.BackupsDirectoryPath) || !FileHelper.IsValidDirectoryPath(_config.BackupsDirectoryPath)))
             {
                 sb.AppendLine($@"Error: {nameof(_config.BackupsDirectoryPath)} is not a valid directory path.");
@@ -408,6 +267,39 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebAppListenPrefix))}");
                 sb.AppendLine();
             }
+            if (_config.Ssl?.Enabled == true)
+            {
+                if (string.IsNullOrWhiteSpace(_config.Ssl.Name))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Ssl)}.{nameof(_config.Ssl.Name)} is not set.");
+                    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.Name))}");
+                    sb.AppendLine();
+                }
+                if (string.IsNullOrWhiteSpace(_config.Ssl.Password))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Ssl)}.{nameof(_config.Ssl.Password)} is not set.");
+                    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.Password))}");
+                    sb.AppendLine();
+                }
+                if (string.IsNullOrWhiteSpace(_config.Ssl.Email))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Ssl)}.{nameof(_config.Ssl.Email)} is not set.");
+                    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.Email))}");
+                    sb.AppendLine();
+                }
+                if (!(_config.Ssl.Domains?.Length >= 1) || _config.Ssl.Domains.Any(x => string.IsNullOrWhiteSpace(x)))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Ssl)}.{nameof(_config.Ssl.Domains)} is not set.");
+                    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.Domains))}");
+                    sb.AppendLine();
+                }
+                if (string.IsNullOrWhiteSpace(_config.Ssl.ChallengeListenPrefix))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Ssl)}.{nameof(_config.Ssl.ChallengeListenPrefix)} is not set.");
+                    sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.ChallengeListenPrefix))}");
+                    sb.AppendLine();
+                }
+            }
 
             var clusterkeys = _config.Clusters?.Select(x => x.Key).ToArray();
             var serverkeys = _config.Servers?.Select(x => x.Key).ToArray();
@@ -421,12 +313,6 @@ namespace ArkBot.ViewModel
             {
                 sb.AppendLine($@"Error: {nameof(_config.Clusters)} contain non-unique keys.");
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.Clusters))}");
-                sb.AppendLine();
-            }
-            if (serverkeys?.Length > 0 && (string.IsNullOrEmpty(_config.ServerKey) || !serverkeys.Contains(_config.ServerKey, StringComparer.OrdinalIgnoreCase)))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.ServerKey)} must be set to a value server key if server instances are configured.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.ServerKey))}");
                 sb.AppendLine();
             }
             if (_config.Servers?.Length > 0)
@@ -545,7 +431,7 @@ namespace ArkBot.ViewModel
             _savedstate = _savedstate ?? new SavedState(constants.SavedStateFilePath);
             //var context = new ArkContext(config, constants, progress);
 
-            var playedTimeWatcher = new PlayedTimeWatcher(_config);
+            //var playedTimeWatcher = new PlayedTimeWatcher(_config);
 
             var options = new SteamOpenIdOptions
             {
@@ -589,9 +475,7 @@ namespace ArkBot.ViewModel
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(_config as Config).As<IConfig>();
-            builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
-            builder.RegisterType<ArkContext>().As<IArkContext>()
-                .WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).SingleInstance();
+            //builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
             builder.RegisterAssemblyTypes(thisAssembly).As<ArkBot.Commands.ICommand>().AsSelf().SingleInstance()
                 .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
             builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
@@ -601,6 +485,7 @@ namespace ArkBot.ViewModel
             builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
             builder.RegisterType<ArkServerService>().As<IArkServerService>().SingleInstance();
             builder.RegisterType<SavegameBackupService>().As<ISavegameBackupService>().SingleInstance();
+            builder.RegisterType<PlayerLastActiveService>().As<IPlayerLastActiveService>().SingleInstance();
 
             //register vote handlers
             builder.RegisterType<BanVoteHandler>().As<IVoteHandler<BanVote>>();
@@ -641,10 +526,14 @@ namespace ArkBot.ViewModel
 
             if (_config.Servers?.Length > 0)
             {
+                var playerLastActiveService = Container.Resolve<IPlayerLastActiveService>();
                 var backupService = Container.Resolve<ISavegameBackupService>();
                 foreach (var server in _config.Servers)
                 {
-                    var context = Container.Resolve<ArkServerContext>(new TypedParameter(typeof(ServerConfigSection), server));
+                    var clusterContext = _contextManager.GetCluster(server.Cluster);
+                    var context = Container.Resolve<ArkServerContext>(
+                        new TypedParameter(typeof(ServerConfigSection), server), 
+                        new TypedParameter(typeof(ArkClusterContext), clusterContext));
                     var initTask = context.Initialize(); //fire and forget
                     _contextManager.AddServer(context);
                 }
@@ -690,6 +579,180 @@ namespace ArkBot.ViewModel
             //load the species stats data
             await ArkSpeciesStats.Instance.LoadOrUpdate();
 
+            //ssl
+            if (_config.Ssl?.Enabled == true)
+            {
+                var path = $"{_config.Ssl.Name}.pfx";
+                var revoke = false;
+                var renew = false;
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        using (var rlt = new X509Certificate2(path, _config.Ssl.Password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet))
+                        {
+                            if (DateTime.Now < rlt.NotBefore || DateTime.Now > rlt.NotAfter.AddDays(-31))
+                            {
+                                using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                                {
+                                    store.Open(OpenFlags.ReadWrite);
+                                    if (store.Certificates.Contains(rlt)) store.Remove(rlt);
+                                    store.Close();
+                                }
+
+                                renew = revoke = true;
+                            }
+                        }
+                    }
+                    catch (Exception ex) { Logging.LogException("Failed to remove ssl certificate from store.", ex, this.GetType()); }
+                }
+                else renew = true;
+
+                if (renew)
+                {
+                    var success = false;
+                    Console.AddLog(@"SSL Certificate request issued...");
+                    try
+                    {
+                        using (var client = new AcmeClient(WellKnownServers.LetsEncrypt))
+                        {
+                            var account = await client.NewRegistraton($"mailto:{_config.Ssl.Email}");
+                            account.Data.Agreement = account.GetTermsOfServiceUri();
+                            account = await client.UpdateRegistration(account);
+
+                            var authz = await client.NewAuthorization(new AuthorizationIdentifier
+                            {
+                                Type = AuthorizationIdentifierTypes.Dns,
+                                Value = _config.Ssl.Domains.First()
+                            });
+
+                            var httpChallengeInfo = authz.Data.Challenges.Where(c => c.Type == ChallengeTypes.Http01).First();
+                            var keyAuthString = client.ComputeKeyAuthorization(httpChallengeInfo);
+
+                            using (var webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.Ssl.ChallengeListenPrefix, (appBuilder) =>
+                            {
+                                var challengePath = new PathString("/.well-known/acme-challenge/");
+                                appBuilder.Use(new Func<AppFunc, AppFunc>((next) =>
+                                {
+                                    AppFunc appFunc = async environment =>
+                                    {
+                                        IOwinContext context = new OwinContext(environment);
+                                        if (!context.Request.Path.Equals(challengePath)) await next.Invoke(environment);
+
+                                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                                        context.Response.ContentType = "application/text";
+                                        await context.Response.WriteAsync(keyAuthString);
+                                    };
+                                    return appFunc;
+                                }));
+                            }))
+                            {
+                                var httpChallenge = await client.CompleteChallenge(httpChallengeInfo);
+
+                                authz = await client.GetAuthorization(httpChallenge.Location);
+                                while (authz.Data.Status == EntityStatus.Pending)
+                                {
+                                    await Task.Delay(500);
+                                    authz = await client.GetAuthorization(httpChallenge.Location);
+                                }
+
+                                if (authz.Data.Status == EntityStatus.Valid)
+                                {
+                                    if (revoke)
+                                    {
+                                        //await client.RevokeCertificate(path); //todo: how to revoke a cert when we do not have the AcmeCertificate-object?
+                                        if (File.Exists(path)) File.Delete(path);
+                                    }
+
+                                    var csr = new CertificationRequestBuilder();
+                                    foreach (var domain in _config.Ssl.Domains) csr.AddName("CN", domain);
+                                    var cert = await client.NewCertificate(csr);
+
+                                    var pfxBuilder = cert.ToPfx();
+                                    var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
+                                    File.WriteAllBytes(path, pfx);
+
+                                    success = true;
+                                }
+                            }
+                        }
+
+                        if (success) Console.AddLog(@"SSL Certificate request completed!");
+                        else Console.AddLog(@"SSL Certificate challenge failed!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
+                        Logging.LogException("Failed to issue ssl certificate.", ex, this.GetType());
+                    }
+                }
+
+                if (File.Exists(path))
+                {
+                    var hostname = _config.Ssl.Domains.First();
+
+                    var attribute = (GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0];
+                    var appId = attribute.Value;
+
+                    try
+                    {
+                        using (var rlt = new X509Certificate2(path, _config.Ssl.Password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet))
+                        {
+                            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                            {
+                                store.Open(OpenFlags.ReadWrite);
+
+                                var certs = store.Certificates.Find(X509FindType.FindBySubjectName, _config.Ssl.Domains.First(), false);
+
+                                if (!store.Certificates.Contains(rlt)) store.Add(rlt);
+                                store.Close();
+                            }
+
+                            if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog(@"Binding SSL Certificate to ip/port...");
+                            else Console.AddLog(@"Binding SSL Certificate to hostname/port...");
+                            foreach (var port in _config.Ssl.Ports)
+                            {
+                                var commands = new[]
+                                {
+                                _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http delete sslcert ipport=0.0.0.0:{port}" : $"netsh http delete sslcert hostnameport={hostname}:{port}",
+                                _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http add sslcert ipport=0.0.0.0:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my" : $"netsh http add sslcert hostnameport={hostname}:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my"
+                            };
+
+                                var exitCode = 0;
+                                foreach (var cmd in commands)
+                                {
+                                    await Task.Run(() =>
+                                    {
+                                        using (var proc = Process.Start(new ProcessStartInfo
+                                        {
+                                            FileName = "cmd.exe",
+                                            Arguments = $"/c {cmd}",
+                                            Verb = "runas",
+                                            UseShellExecute = false,
+                                            WindowStyle = ProcessWindowStyle.Hidden,
+                                            CreateNoWindow = true
+                                        }))
+                                        {
+                                            proc.WaitForExit();
+                                            exitCode = proc.ExitCode; //only add (last cmd) is interesting
+                                    }
+                                    });
+                                }
+
+                                if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] ipport: 0.0.0.0:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
+                                else Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] hostnameport: {hostname}:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
+                            }
+                        }
+                    }
+                    catch (CryptographicException ex)
+                    {
+                        Logging.LogException("Failed to open SSL certificate.", ex, this.GetType(), LogLevel.FATAL, ExceptionLevel.Unhandled);
+                        WriteAndWaitForKey("Failed to open SSL certificate (wrong password?)");
+                        return;
+                    }
+                }
+            }
+
             //webapi
             _webapi = Microsoft.Owin.Hosting.WebApp.Start<WebApiStartup>(url: _config.WebApiListenPrefix);
             Console.AddLog("Web API started");
@@ -697,6 +760,15 @@ namespace ArkBot.ViewModel
             //webapi
             _webapp = Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppStartup>(url: _config.WebAppListenPrefix);
             Console.AddLog("Web App started");
+
+            if (_config.WebAppRedirectListenPrefix?.Length > 0)
+            {
+                foreach (var redir in _config.WebAppRedirectListenPrefix)
+                {
+                    _webappRedirects.Add(Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppRedirectStartup>(url: redir));
+                    Console.AddLog("Web App redirect added");
+                }
+            }
         }
 
         private Task _runDiscordBotTask;
@@ -708,7 +780,6 @@ namespace ArkBot.ViewModel
             {
                 var config = scope.Resolve<IConfig>();
                 var constants = scope.Resolve<IConstants>();
-                var context = scope.Resolve<IArkContext>();
                 var savedstate = scope.Resolve<ISavedState>();
                 var skipExtract = savedstate.SkipExtractNextRestart;
                 if (skipExtract)
@@ -725,7 +796,6 @@ namespace ArkBot.ViewModel
                     if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
                     db.Database.Initialize(false);
-                    //context.Database.Create();
                 }
 
                 var _bot = scope.Resolve<ArkDiscordBot>();
@@ -737,17 +807,6 @@ namespace ArkBot.ViewModel
                 while (true)
                 {
                     if (_runDiscordBotCts.IsCancellationRequested) break;
-
-                    //if (Console.KeyAvailable)
-                    //{
-                    //    var key = Console.ReadKey(true);
-                    //    if (key.Modifiers == ConsoleModifiers.Shift && key.Key == ConsoleKey.Enter) break;
-                    //    else if (isConnected && key.Key == ConsoleKey.N && config.Debug)
-                    //    {
-                    //        //if we are debugging, trigger new changed event
-                    //        context.DebugTriggerOnChange();
-                    //    }
-                    //}
 
                     if (!isConnected && (DateTime.Now - lastAttempt) >= retryInterval)
                     {
@@ -782,11 +841,28 @@ namespace ArkBot.ViewModel
             {
                 if (disposing)
                 {
-                    _webapi?.Dispose();
+                    try
+                    {
+                        _webapi?.Dispose();
+                    } catch (ObjectDisposedException) { }
                     _webapi = null;
 
-                    _webapp?.Dispose();
+                    try
+                    {
+                        _webapp?.Dispose();
+                    }
+                    catch (ObjectDisposedException) { }
                     _webapp = null;
+
+                    foreach (var redir in _webappRedirects.ToArray())
+                    {
+                        try
+                        {
+                            redir?.Dispose();
+                        }
+                        catch (ObjectDisposedException) { }
+                        _webappRedirects.Remove(redir);
+                    }
                 }
 
                 disposedValue = true;

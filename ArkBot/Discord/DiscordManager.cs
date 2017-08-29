@@ -41,5 +41,16 @@ namespace ArkBot.Discord
                 await channel.Edit(name, topic, position);
             }
         }
+
+        public string GetDiscordUserNameById(ulong id)
+        {
+            foreach (var server in _discord.Servers)
+            {
+                var user = server.GetUser(id);
+                if (user != null) return $"{user.Name}#{user.Discriminator}";
+            }
+
+            return null;
+        }
     }
 }

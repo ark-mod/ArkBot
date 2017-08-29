@@ -59,7 +59,7 @@ namespace ArkBot.WebApi.Controllers
                     TribeId = x.TribeId,
                     CreatureCount = cc1 + cc2,
                     StructureCount = sc1 + sc2,
-                    LastActiveTime = x.SavedAt
+                    LastActiveTime = x.LastActiveTime
                 };
             }).OrderByDescending(x => x.LastActiveTime));
 
@@ -85,7 +85,7 @@ namespace ArkBot.WebApi.Controllers
                     MemberSteamIds = members.Select(y => y.SteamId).ToList(),
                     CreatureCount = cc1,
                     StructureCount = sc1,
-                    LastActiveTime = members.Count > 0 ? members.Max(y => y.SavedAt) : x.SavedAt
+                    LastActiveTime = x.LastActiveTime
                 };
             }).OrderByDescending(x => x.LastActiveTime));
 

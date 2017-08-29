@@ -12,15 +12,16 @@ using System.Threading.Tasks;
 
 namespace ArkBot.Ark
 {
-    public class ArkClusterContext : IArkUpdateableContext
+    public class ArkClusterContext : ArkClusterData, IArkUpdateableContext
     {
-        public ClusterConfigSection Config { get; set; }
+        public ClusterConfigSection Config { get; private set; }
 
+        internal ArkContextManager _contextManager;
+
+        public event GameDataUpdatedEventHandler GameDataUpdated;
         public event UpdateCompletedEventHandler UpdateCompleted;
 
         public bool IsInitialized { get; set; }
-
-        public ArkSavegameToolkitNet.Domain.ArkCloudInventory[] CloudInventories { get; set; }
 
         private List<DateTime> _previousUpdates = new List<DateTime>();
 
@@ -41,58 +42,31 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkClusterContext(ClusterConfigSection config)
+        public ArkClusterContext(ClusterConfigSection config) : base(config.SavePath)
         {
             Config = config;
         }
 
         public bool Update(bool manualUpdate, IConfig fullconfig, ISavegameBackupService savegameBackupService, IProgress<string> progress, CancellationToken ct)
         {
-            //todo: temp copy all
-            var copy = true;
-            var success = false;
-            var cancelled = false;
-            var tmppaths = new List<string>();
-            var gid = Guid.NewGuid().ToString();
-            var tempFileOutputDirPath = Path.Combine(fullconfig.TempFileOutputDirPath, gid);
+            ArkClusterDataUpdateResult result = null;
             var st = Stopwatch.StartNew();
             try
             {
                 progress.Report($"Cluster ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
 
-                if (copy)
+                result = Update(ct);
+
+                if (result?.Success == true)
                 {
-                    //todo: if it exists get a new path
-                    if (!Directory.Exists(tempFileOutputDirPath)) Directory.CreateDirectory(tempFileOutputDirPath);
+                    progress.Report($"Cluster ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
+                    IsInitialized = true;
+
+                    LastUpdate = DateTime.Now;
                 }
 
-                ArkSavegameToolkitNet.ArkCloudInventory[] cloudInventories = null;
-                if (copy)
-                {
-                    var cloudInventoryPaths = new List<string>();
-                    foreach (var ci in Directory.GetFiles(Config.SavePath, "*", SearchOption.TopDirectoryOnly))
-                    {
-                        var cloudInventoryPath = Path.Combine(tempFileOutputDirPath, Path.GetFileName(ci));
-                        cloudInventoryPaths.Add(ci);
-                        tmppaths.Add(cloudInventoryPath);
-                        File.Copy(ci, cloudInventoryPath);
-                    }
-                    cloudInventories = cloudInventoryPaths.Select(x => new ArkSavegameToolkitNet.ArkCloudInventory(x)).ToArray();
-                }
-                else cloudInventories = Directory.GetFiles(Config.SavePath, "*", SearchOption.TopDirectoryOnly).Select(x => new ArkSavegameToolkitNet.ArkCloudInventory(x)).ToArray();
-
-                CloudInventories = cloudInventories.Where(x => x.InventoryData != null).Select(x => x.InventoryData.AsCloudInventory(x.SteamId)).ToArray();
-
-                progress.Report($"Cluster ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
-                IsInitialized = true;
-
-                LastUpdate = DateTime.Now;
-                success = true;
-            }
-            catch (OperationCanceledException)
-            {
-                progress.Report($"Cluster ({Config.Key}): Update was cancelled after {st.ElapsedMilliseconds:N0} ms");
-                cancelled = true;
+                if (result?.Cancelled == true)
+                    progress.Report($"Cluster ({Config.Key}): Update was cancelled after {result.Elapsed.TotalMilliseconds:N0} ms");
             }
             catch (Exception ex)
             {
@@ -101,22 +75,28 @@ namespace ArkBot.Ark
             }
             finally
             {
-                if (copy)
+                try
                 {
-                    try
+                    var servers = _contextManager.GetServersInCluster(Config.Key);
+                    if (servers != null)
                     {
-                        foreach (var path in tmppaths) File.Delete(path);
-                        Directory.Delete(tempFileOutputDirPath);
+                        foreach (var serverContext in servers)
+                        {
+                            var success = serverContext.ApplyPreviousUpdate();
+                            if (success == true) serverContext.OnGameDataUpdated();
+                        }
                     }
-                    catch { /* ignore exception */ }
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogException($"Failed to apply updates to servers in cluster ({Config.Key})", ex, this.GetType(), LogLevel.ERROR, ExceptionLevel.Ignored);
+                    progress.Report($"Cluster ({Config.Key}): Failed to apply updates to servers in cluster");
                 }
 
-                UpdateCompleted?.Invoke(this, success, cancelled);
+                UpdateCompleted?.Invoke(this, result?.Success ?? false, result?.Cancelled ?? false);
             }
 
-            GC.Collect();
-
-            return success;
+            return result?.Success ?? false;
         }
     }
 }

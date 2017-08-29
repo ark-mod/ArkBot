@@ -10,6 +10,7 @@ using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,17 +23,27 @@ namespace ArkBot.WebApi.Controllers
         private IConfig _config;
         private EfDatabaseContextFactory _databaseContextFactory;
         private ArkContextManager _contextManager;
+        private Discord.DiscordManager _discordManager;
+        private IArkServerService _serverService;
 
-        public ServersController(IConfig config, EfDatabaseContextFactory databaseContextFactory,  ArkContextManager contextManager)
+        public ServersController(
+            IConfig config,
+            EfDatabaseContextFactory databaseContextFactory,  
+            ArkContextManager contextManager, 
+            Discord.DiscordManager discordManager,
+            IArkServerService serverService)
         {
             _config = config;
             _databaseContextFactory = databaseContextFactory;
             _contextManager = contextManager;
+            _discordManager = discordManager;
+            _serverService = serverService;
         }
 
         public async Task<ServerStatusAllViewModel> Get()
         {
-            var result = new ServerStatusAllViewModel();
+            var result = new ServerStatusAllViewModel { User = WebApiHelper.GetUser(Request, _config) };
+
             foreach (var context in _contextManager.Servers)
             {
                 var serverContext = _contextManager.GetServer(context.Config.Key);
@@ -52,21 +63,13 @@ namespace ArkBot.WebApi.Controllers
                     var version = m.Success ? m.Groups["version"] : null;
                     var currentTime = rules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
                     var tamedDinosCount = context.TamedCreatures?.Count();
-                    //var uploadedDinosCount = _context.Cluster?.Creatures?.Count();
+                    var uploadedDinosCount = context.CloudCreatures?.Count();
                     var wildDinosCount = context.WildCreatures?.Count();
                     //var tamedDinosMax = 6000; //todo: remove hardcoded value
                     var structuresCount = context.Structures?.Count();
                     var totalPlayers = context.Players?.Count();
                     var totalTribes = context.Tribes?.Count();
-
-                    //server uptime
-                    //DateTime? serverStarted = null;
-                    //try
-                    //{
-                    //    serverStarted = Process.GetProcessesByName(_constants.ArkServerProcessName)?.FirstOrDefault()?.StartTime;
-
-                    //}
-                    //catch { /* ignore exceptions */ }
+                    var serverStarted = _serverService.GetServerStartTime(context.Config.Key);
 
                     var nextUpdate = context.ApproxTimeUntilNextUpdate;
                     var nextUpdateTmp = nextUpdate?.ToStringCustom();
@@ -85,25 +88,27 @@ namespace ArkBot.WebApi.Controllers
                         MapName = info.Map,
                         InGameTime = currentTime,
                         TamedCreatureCount = tamedDinosCount ?? 0,
+                        CloudCreatureCount = uploadedDinosCount ?? 0,
                         WildCreatureCount = wildDinosCount ?? 0,
                         StructureCount = structuresCount ?? 0,
                         PlayerCount = totalPlayers ?? 0,
                         TribeCount = totalTribes ?? 0,
                         LastUpdate = lastUpdateString,
-                        NextUpdate = nextUpdateString
+                        NextUpdate = nextUpdateString,
+                        ServerStarted = serverStarted
                     };
 
                     var players = playerinfos?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
                     using (var db = _databaseContextFactory.Create())
                     {
-                        Dictionary<string, Tuple<ArkPlayer, Database.Model.User, User, long?, TimeSpan, ArkTribe>> d = null;
+                        Dictionary<string, Tuple<ArkPlayer, Database.Model.User, string, long?, TimeSpan, ArkTribe>> d = null;
                         if (context.Players != null)
                         {
                             var playerNames = players.Select(x => x.Name).ToArray();
                             d = context.Players.Where(x => playerNames.Contains(x.Name, StringComparer.Ordinal)).Select(x =>
                             {
                                 long steamId;
-                                return new Tuple<ArkPlayer, Database.Model.User, User, long?, TimeSpan, ArkTribe>(
+                                return new Tuple<ArkPlayer, Database.Model.User, string, long?, TimeSpan, ArkTribe>(
                                     x,
                                     null,
                                     null,
@@ -111,7 +116,7 @@ namespace ArkBot.WebApi.Controllers
                                     TimeSpan.Zero, null);
                             }).ToDictionary(x => x.Item1.Name, StringComparer.OrdinalIgnoreCase);
 
-                            var ids = new List<ulong>();
+                            var ids = new List<int>();
                             var steamIds = d.Values.Select(x => x.Item4).Where(x => x != null).ToArray();
                             foreach (var user in db.Users.Where(y => steamIds.Contains(y.SteamId)))
                             {
@@ -120,7 +125,7 @@ namespace ArkBot.WebApi.Controllers
 
                                 ids.Add(item.Item1.Id);
 
-                                var discordUser = (User)null; //e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
+                                var discordUser = _discordManager.GetDiscordUserNameById((ulong)user.DiscordId); //e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
                                 var playedLastSevenDays = TimeSpan.MinValue; //TimeSpan.FromSeconds(user?.Played?.OrderByDescending(x => x.Date).Take(7).Sum(x => x.TimeInSeconds) ?? 0);
 
                                 d[item.Item1.Name] = Tuple.Create(item.Item1, user, discordUser, item.Item4, playedLastSevenDays, item.Item1.TribeId.HasValue ? context.Tribes?.FirstOrDefault(x => x.Id == item.Item1.TribeId.Value) : null);
@@ -159,9 +164,9 @@ namespace ArkBot.WebApi.Controllers
                             sr.OnlinePlayers.Add(new OnlinePlayerViewModel
                             {
                                 SteamName = player.Name,
-                                CharacterName = extra?.Item1?.Name,
+                                CharacterName = extra?.Item1?.CharacterName,
                                 TribeName = extra?.Item6?.Name,
-                                DiscordName = extra != null && extra.Item3 != null ? $"{extra.Item3.Name}#{extra.Item3.Discriminator}" : null,
+                                DiscordName = extra?.Item3,
                                 TimeOnline = player.Time.ToStringCustom(),
                                 TimeOnlineSeconds = (int)Math.Round(player.Time.TotalSeconds)
                             });
