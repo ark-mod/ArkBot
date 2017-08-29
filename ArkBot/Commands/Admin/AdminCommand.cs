@@ -59,10 +59,19 @@ namespace ArkBot.Commands.Experimental
             "**<server key> updateserver**: Update the server.",
             "**<server key> startserver**: Start the server.",
             "**<server key> stopserver**: Stop/shutdown the server.",
+            "**<server key> terminateserver**: Forcibly shutdown an unresponsive server.",
+            "**restartservers**: Restart all servers.",
+            "**updateservers**: Update all servers.",
+            "**startservers**: Start all servers.",
+            "**stopservers**: Stop/shutdown all servers.",
             "**<server key> countdown <minutes> <event description>**: Start a countdown without any action.",
             "**<server key> countdown <minutes> <event description> stopserver**: Start a countdown with subsequent server shutdown.",
             "**<server key> countdown <minutes> <event description> restartserver**: Start a countdown with subsequent server restart.",
-            "**<server key> countdown <minutes> <event description> updateserver**: Start a countdown with subsequent server update."
+            "**<server key> countdown <minutes> <event description> updateserver**: Start a countdown with subsequent server update.",
+            "**countdown <minutes> <event description>**: Start a countdown on all servers without any action.",
+            "**countdown <minutes> <event description> stopservers**: Start a countdown on all servers with subsequent server shutdown.",
+            "**countdown <minutes> <event description> restartservers**: Start a countdown on all servers with subsequent server restart.",
+            "**countdown <minutes> <event description> updateservers**: Start a countdown on all servers with subsequent server update."
         };
 
         public bool DebugOnly => false;
@@ -75,7 +84,6 @@ namespace ArkBot.Commands.Experimental
         //    return !string.IsNullOrWhiteSpace(_config.RconPassword) && _config.RconPort > 0;
         //}
 
-        private IArkContext _context;
         private IConfig _config;
         private IConstants _constants;
         private EfDatabaseContextFactory _databaseContextFactory;
@@ -86,8 +94,7 @@ namespace ArkBot.Commands.Experimental
         private ScheduledTasksManager _scheduledTasksManager;
 
         public AdminCommand(
-            ILifetimeScope scope, 
-            IArkContext context, 
+            ILifetimeScope scope,
             IConfig config, 
             IConstants constants, 
             EfDatabaseContextFactory databaseContextFactory, 
@@ -97,7 +104,6 @@ namespace ArkBot.Commands.Experimental
             ArkContextManager contextManager,
             ScheduledTasksManager scheduledTasksManager)
         {
-            _context = context;
             _config = config;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
@@ -123,11 +129,19 @@ namespace ArkBot.Commands.Experimental
             {
                 ServerKey = "",
                 StartServer = false,
+                StartServers = false,
                 ShutdownServer = false,
+                ShutdownServers = false,
                 StopServer = false,
+                StopServers = false,
+                TerminateServer = false,
                 RestartServer = false,
+                RestartServers = false,
                 UpdateServer = false,
+                UpdateServers = false,
                 Backups = false,
+                CloudBackups = "",
+                SteamId = 0L,
                 SaveWorld = false,
                 DestroyWildDinos = false,
                 EnableVoting = false,
@@ -154,12 +168,18 @@ namespace ArkBot.Commands.Experimental
                 True = false,
                 False = false
             }, x =>
-                x.For(y => y.ServerKey, noPrefix: true, isRequired: true)
+                x.For(y => y.ServerKey, noPrefix: true)
                 .For(y => y.StartServer, flag: true)
+                .For(y => y.StartServers, flag: true)
                 .For(y => y.ShutdownServer, flag: true)
+                .For(y => y.ShutdownServers, flag: true)
                 .For(y => y.StopServer, flag: true)
+                .For(y => y.StopServers, flag: true)
+                .For(y => y.TerminateServer, flag: true)
                 .For(y => y.RestartServer, flag: true)
+                .For(y => y.RestartServers, flag: true)
                 .For(y => y.UpdateServer, flag: true)
+                .For(y => y.UpdateServers, flag: true)
                 .For(y => y.Backups, flag: true)
                 .For(y => y.SaveWorld, flag: true)
                 .For(y => y.DestroyWildDinos, flag: true)
@@ -181,29 +201,163 @@ namespace ArkBot.Commands.Experimental
             var _rCountdown = new Regex(@"^\s*(?<min>\d+)\s+(?<reason>.+)$", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
             var sb = new StringBuilder();
 
+            var isCountdown = !string.IsNullOrEmpty(args.Countdown) && _rCountdown.IsMatch(args.Countdown);
+            var isMultiServerCommand = args != null && (isCountdown || !string.IsNullOrEmpty(args.CloudBackups)
+                || args.StartServer || args.StartServers || args.StopServer || args.StopServers
+                || args.ShutdownServer || args.ShutdownServers || args.RestartServer || args.RestartServers
+                || args.UpdateServer || args.UpdateServers);
+
             var serverContext = args?.ServerKey != null ? _contextManager.GetServer(args.ServerKey) : null;
-            if (serverContext == null)
+            if (serverContext == null && !isMultiServerCommand)
             {
                 await e.Channel.SendMessage($"**Admin commands need to be prefixed with a valid server instance key.**");
                 return;
             }
 
+            ArkClusterContext clusterContext = null;
+            if (args?.CloudBackups != null)
+            {
+                if ((clusterContext = _contextManager.GetCluster(args.CloudBackups)) == null)
+                {
+                    await e.Channel.SendMessage($"**The given identifier is not a valid cluster key.**");
+                    return;
+                }
+                if (!(args.SteamId > 0))
+                {
+                    await e.Channel.SendMessage($"**A valid steam id must be provided.**");
+                    return;
+                }
+            }
 
-            if (args.StartServer)
+            // collection of servers that this countdown applies to
+            var serverContexts = clusterContext != null ? _contextManager.GetServersInCluster(clusterContext.Config.Key) 
+                : serverContext == null ? _contextManager.Servers.ToArray() 
+                : new ArkServerContext[] { serverContext };
+
+            if (isCountdown)
             {
-                await _arkServerService.StartServer(serverContext.Config.Key, (s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
+                var m = _rCountdown.Match(args.Countdown);
+                var reason = m.Groups["reason"].Value;
+                var delayInMinutes = int.Parse(m.Groups["min"].Value);
+                if (delayInMinutes < 1) delayInMinutes = 1;
+
+                Func<Task> react = null;
+                if (args.StopServer || args.StopServers || args.ShutdownServer || args.ShutdownServers)
+                {
+                    react = new Func<Task>(async () =>
+                    {
+                        var tasks = serverContexts.Select(x => Task.Run(async () =>
+                        {
+                            string message = null;
+                            if (!await _arkServerService.ShutdownServer(x.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }))
+                            {
+                                Logging.Log($@"Countdown to shutdown server ({x.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
+                            }
+                        })).ToArray();
+
+                        await Task.WhenAll(tasks);
+                    });
+                }
+                else if (args.UpdateServer || args.UpdateServers)
+                {
+                    react = new Func<Task>(async () =>
+                    {
+                        var tasks = serverContexts.Select(x => Task.Run(async () =>
+                        {
+                            string message = null;
+                            if (!await _arkServerService.UpdateServer(x.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }, (s) => s.FirstCharToUpper(), 300))
+                            {
+                                Logging.Log($@"Countdown to update server ({x.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
+                            }
+                        })).ToArray();
+
+                        await Task.WhenAll(tasks);
+                    });
+                }
+                else if (args.RestartServer || args.RestartServers)
+                {
+                    react = new Func<Task>(async () =>
+                    {
+                        var tasks = serverContexts.Select(x => Task.Run(async () =>
+                        {
+                            string message = null;
+                            if (!await _arkServerService.RestartServer(x.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }))
+                            {
+                                Logging.Log($@"Countdown to restart server ({x.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
+                            }
+                        })).ToArray();
+
+                        await Task.WhenAll(tasks);
+                    });
+                }
+
+                sb.AppendLine($"**Countdown{(serverContext == null ? "" : $" on server {serverContext.Config.Key}")} have been initiated. Announcement will be made.**");
+                await _scheduledTasksManager.StartCountdown(serverContext, reason, delayInMinutes, react);
             }
-            else if (args.Countdown == null && (args.ShutdownServer || args.StopServer))
+            else if (!string.IsNullOrEmpty(args.CloudBackups))
             {
-                await _arkServerService.ShutdownServer(serverContext.Config.Key, (s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
+                sb.AppendLine("**Cloud backups feature is currently not operational...**");
+                //var result = _savegameBackupService.GetBackupsList(serverContexts.Select(x => x.Config.Key).ToArray(), true, (fi, be) => fi.LastWriteTime >= DateTime.Now.AddDays(-1) && be.Files);
+                //if (result?.Count > 0)
+                //{
+                //    var data = result.OrderByDescending(x => x.DateModified).Take(25).Select(x => new
+                //    {
+                //        Path = x.Path,
+                //        Age = (DateTime.Now - x.DateModified).ToStringCustom(),
+                //        FileSize = x.ByteSize.ToFileSize()
+                //    }).ToArray();
+                //    var table = FixedWidthTableHelper.ToString(data, x => x
+                //        .For(y => y.Path, header: "Backup")
+                //        .For(y => y.Age, alignment: 1)
+                //        .For(y => y.FileSize, header: "File Size", alignment: 1));
+                //    sb.Append($"```{table}```");
+                //}
+                //else sb.AppendLine("**Could not find any savegame backups...**");
             }
-            else if (args.Countdown == null && args.RestartServer)
+            else if (args.TerminateServer)
             {
-                await _arkServerService.RestartServer(serverContext.Config.Key, (s) => e.Channel.SendMessageDirectedAt(e.User.Id, s));
+                var dm = new DiscordMessage(e.Channel, e.User.Id);
+                await _arkServerService.ShutdownServer(serverContext.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{serverContext.Config.Key}: {s}"), true, true);
             }
-            else if (args.Countdown == null && args.UpdateServer)
+            else if (args.StartServer || args.StartServers)
             {
-                await _arkServerService.UpdateServer(serverContext.Config.Key, (s) => e.Channel.SendMessageDirectedAt(e.User.Id, s), (s) => e.Channel.GetMessageDirectedAtText(e.User.Id, s), 300);
+                var tasks = serverContexts.Select(x => Task.Run(async () =>
+                {
+                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    await _arkServerService.StartServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"));
+                })).ToArray();
+
+                await Task.WhenAll(tasks);
+            }
+            else if (args.Countdown == null && (args.ShutdownServer || args.ShutdownServers || args.StopServer || args.StopServers))
+            {
+                var tasks = serverContexts.Select(x => Task.Run(async () =>
+                {
+                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    await _arkServerService.ShutdownServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"));
+                })).ToArray();
+
+                await Task.WhenAll(tasks);
+            }
+            else if (args.Countdown == null && (args.RestartServer || args.RestartServers))
+            {
+                var tasks = serverContexts.Select(x => Task.Run(async () =>
+                {
+                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    await _arkServerService.RestartServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"));
+                })).ToArray();
+
+                await Task.WhenAll(tasks);
+            }
+            else if (args.Countdown == null && (args.UpdateServer || args.UpdateServers))
+            {
+                var tasks = serverContexts.Select(x => Task.Run(async () =>
+                {
+                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    await _arkServerService.UpdateServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"), (s) => e.Channel.GetMessageDirectedAtText(e.User.Id, $"{x.Config.Key}: {s}"), 300);
+                })).ToArray();
+
+                await Task.WhenAll(tasks);
             }
             else if (args.SaveWorld)
             {
@@ -211,7 +365,7 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.Backups)
             {
-                var result = _savegameBackupService.GetBackupsList(serverContext.Config.Key);
+                var result = _savegameBackupService.GetBackupsList(new[] { serverContext.Config.Key });
                 if (result?.Count > 0)
                 {
                     var data = result.OrderByDescending(x => x.DateModified).Take(25).Select(x => new
@@ -377,51 +531,6 @@ namespace ArkBot.Commands.Experimental
                 var result = await serverContext.Steam.SendRconCommand($"GetTribeIdPlayerList {args.GetTribeIdPlayerList}");
                 if (result == null) sb.AppendLine("**Failed to get a list of players in tribe... :(**");
                 else sb.AppendLine(result);
-            }
-            else if (!string.IsNullOrEmpty(args.Countdown) && _rCountdown.IsMatch(args.Countdown))
-            {
-                var m = _rCountdown.Match(args.Countdown);
-                var reason = m.Groups["reason"].Value;
-                var delayInMinutes = int.Parse(m.Groups["min"].Value);
-                if (delayInMinutes < 1) delayInMinutes = 1;
-
-                Func<Task> react = null;
-                if (args.StopServer || args.ShutdownServer)
-                {
-                    react = new Func<Task>(async () =>
-                    {
-                        string message = null;
-                        if (!await _arkServerService.ShutdownServer(serverContext.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }))
-                        {
-                            Logging.Log($@"Countdown to shutdown server ({serverContext.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
-                        }
-                    });
-                }
-                else if (args.UpdateServer)
-                {
-                    react = new Func<Task>(async () =>
-                    {
-                        string message = null;
-                        if (!await _arkServerService.UpdateServer(serverContext.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }, (s) => s.FirstCharToUpper(), 300))
-                        {
-                            Logging.Log($@"Countdown to update server ({serverContext.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
-                        }
-                    });
-                }
-                else if (args.RestartServer)
-                {
-                    react = new Func<Task>(async () =>
-                    {
-                        string message = null;
-                        if (!await _arkServerService.RestartServer(serverContext.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }))
-                        {
-                            Logging.Log($@"Countdown to restart server ({serverContext.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
-                        }
-                    });
-                }
-
-                sb.AppendLine($"**Countdown have been initiated. Announcement will be made.**");
-                await _scheduledTasksManager.StartCountdown(serverContext, reason, delayInMinutes, react);
             }
             else
             {

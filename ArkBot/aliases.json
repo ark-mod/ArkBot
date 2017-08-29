@@ -149,8 +149,14 @@
       "Coel"
     ],
     [
-      "Compy",
-      "Compy_Character_BP_C"
+      "Ocean Coelacanth",
+      "Coel_Character_BP_Ocean_C",
+      "Ocean Coel"
+    ],
+    [
+      "Compsognathus",
+      "Compy_Character_BP_C",
+      "Compy"
     ],
     [
       "Daeodon",
@@ -276,13 +282,30 @@
       "Bigfoot_Character_BP_C"
     ],
     [
-      "Hesperornis"
+      "Griffin",
+      "Griffin_Character_BP_C",
+      "Gryphon"
+    ],
+    [
+      "Hesperornis",
+      "Hesperornis_Character_BP_C",
+      "Duck"
     ],
     [
       "Human"
     ],
     [
-      "Hyaenodon"
+      "Hyaenodon",
+      "Hyaenodon_Character_BP_C",
+      "Hyena"
+    ],
+    [
+      "Ice Worm Queen",
+      "Iceworm_Queen_Character_BP_C"
+    ],
+    [
+      "Ice Worm",
+      "Iceworm_Character_Minion_BP_Smaller_C"
     ],
     [
       "Ichthy",
@@ -377,7 +400,8 @@
       "Mantis_Character_BP_C"
     ],
     [
-      "Megalania"
+      "Megalania",
+      "Megalania_Character_BP_C"
     ],
     [
       "Megaloceros",
@@ -402,7 +426,8 @@
       "Gorilla_Character_BP_C"
     ],
     [
-      "Megatherium"
+      "Megatherium",
+      "Megatherium_Character_BP_C"
     ],
     [
       "Mesopithecus",
@@ -415,7 +440,7 @@
     ],
     [
       "Morellatops",
-      "camelsaurus_Character_BP",
+      "camelsaurus_Character_BP_C",
       "Camelsaurus"
     ],
     [
@@ -428,9 +453,17 @@
       "Moschops_Character_BP_C"
     ],
     [
+      "Motorboat",
+      "MotorRaft_BP_C"
+    ],
+    [
       "Onyc",
       "Bat_Character_BP_C",
       "Bat"
+    ],
+    [
+      "Otter",
+      "Otter_Character_BP_C"
     ],
     [
       "Oviraptor",
@@ -442,8 +475,9 @@
       "Sheep"
     ],
     [
-      "Pachy",
-      "Pachy_Character_BP_C"
+      "Pachycephalosaurus",
+      "Pachy_Character_BP_C",
+      "Pachy"
     ],
     [
       "Pachyrhinosaurus",
@@ -479,7 +513,13 @@
       "Pig"
     ],
     [
-      "Phoenix"
+      "Phoenix",
+      "Phoenix_Character_BP_C",
+      "Firebird"
+    ],
+    [
+      "Polar Bear",
+      "Polar_Bear_C"
     ],
     [
       "Piranha",
@@ -515,8 +555,9 @@
       "Purlovia_Character_BP_C"
     ],
     [
-      "Quetzal",
+      "Quetzalcoatl",
       "Quetz_Character_BP_C",
+      "Quetzal",
       "Quetz"
     ],
     [
@@ -528,14 +569,20 @@
       "Raptor_Character_BP_C"
     ],
     [
-      "Rex",
-      "Rex_Character_BP_C"
+      "Tyrannosaurus",
+      "Rex_Character_BP_C",
+      "Rex"
     ],
     [
       "Rock Elemental",
       "RockGolem_Character_BP_C",
       "Rock Golem",
       "Golem"
+    ],
+    [
+      "Lava Elemental",
+      "LavaGolem_Character_BP_C",
+      "Lava Golem"
     ],
     [
       "Sabertooth",
@@ -548,8 +595,9 @@
       "Salmon"
     ],
     [
-      "Sarco",
+      "Sarcosuchus",
       "Sarco_Character_BP_C",
+      "Sarco",
       "Crocodile"
     ],
     [
@@ -620,8 +668,9 @@
       "Terrorbird"
     ],
     [
-      "Therizinosaurus",
+      "Therizinosaur",
       "Therizino_Character_BP_C",
+      "Therizinosaurus",
       "Therizino",
       "Theriz"
     ],
@@ -686,7 +735,7 @@
       "Vulture_Character_BP_C"
     ],
     [
-      "Wooly Rhino",
+      "Woolly Rhino",
       "Rhino_Character_BP_C",
       "Woolly Rhinoceros",
       "Rhino"
@@ -704,8 +753,16 @@
       "Wyvern_Character_BP_Poison_C"
     ],
     [
+      "Ice Wyvern",
+      "Ragnarok_Wyvern_Override_Ice_C"
+    ],
+    [
       "Yeti",
       "Yeti_Character_BP_C"
+    ],
+    [
+      "Yutyrannus",
+      "Yutyrannus_Character_BP_C"
     ],
     [
       "Zombie Fire Wyvern",

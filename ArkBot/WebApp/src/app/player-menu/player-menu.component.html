@@ -1,0 +1,12 @@
+<app-menu #menu>
+  <h2 class="theme-text-d1">Player</h2>
+  <div class="w3-cell-row theme-l2">
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('profile')}" (click)="menu.activate('profile')">Profile</div>
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('creatures')}" (click)="menu.activate('creatures')">Creatures</div>
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('creatures_cloud')}" (click)="menu.activate('creatures_cloud')">Creatures (Cloud)</div>
+    <div *ngIf="isSelf()" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('breeding')}" (click)="menu.activate('breeding')">Breeding</div>
+    <div *ngIf="isSelf()" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('crop_plots')}" (click)="menu.activate('crop_plots')">Crops</div>
+    <div *ngIf="isSelf()" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('electrical_generators')}" (click)="menu.activate('electrical_generators')">Electrical Generators</div>
+    <div *ngIf="isSelf()" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('kibbles_and_eggs')}" (click)="menu.activate('kibbles_and_eggs')">Kibbles and Eggs</div>
+  </div>
+</app-menu>

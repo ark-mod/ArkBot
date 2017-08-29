@@ -12,6 +12,6 @@ namespace ArkBot.Data
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
         [JsonProperty(PropertyName = "count")]
-        public int Count { get; set; }
+        public long Count { get; set; }
     }
 }

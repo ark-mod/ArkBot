@@ -69,7 +69,7 @@ namespace ArkBot.Commands
 
                 foreach (var server in _config.Servers)
                 {
-                    var serverContext = _contextManager.GetServer(_config.ServerKey);
+                    var serverContext = _contextManager.GetServer(server.Key);
                     var info = serverContext.Steam.GetServerInfoCached();
                     string name = null;
                     if (info != null)

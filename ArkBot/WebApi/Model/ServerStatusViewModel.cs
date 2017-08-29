@@ -22,12 +22,14 @@ namespace ArkBot.WebApi.Model
         public string MapName { get; set; }
         public string InGameTime { get; set; }
         public int TamedCreatureCount { get; set; }
+        public int CloudCreatureCount { get; set; }
         public int WildCreatureCount { get; set; }
         public int StructureCount { get; set; }
         public int PlayerCount { get; set; }
         public int TribeCount { get; set; }
         public string LastUpdate { get; set; }
         public string NextUpdate { get; set; }
+        public DateTime? ServerStarted { get; set; }
         public IList<OnlinePlayerViewModel> OnlinePlayers { get; set; }
     }
 }

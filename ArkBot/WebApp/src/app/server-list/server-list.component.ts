@@ -4,6 +4,8 @@ import { DataService } from '../data.service';
 import { NotificationsService } from 'angular2-notifications';
 import { MessageService } from '../message.service';
 
+import * as moment from 'moment'
+
 @Component({
   selector: 'app-server-list',
   templateUrl: './server-list.component.html',
@@ -13,6 +15,9 @@ export class ServerListComponent implements OnInit, OnDestroy {
   serverUpdatedSubscription: any;
   serverUpdateInterval: any;
 
+  private menuOption: string = undefined; 
+  private menuOptionSubscription: any;
+
   constructor(
     public dataService: DataService,
     private messageService: MessageService,
@@ -21,6 +26,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => this.showServerUpdateNotification(serverKey));
+    this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => this.menuOption = menuOption);
 
     this.serverUpdateInterval = window.setInterval(() => {
         this.dataService.updateServer(null);
@@ -29,6 +35,7 @@ export class ServerListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.serverUpdatedSubscription.unsubscribe();
+    this.menuOptionSubscription.unsubscribe();
     window.clearInterval(this.serverUpdateInterval);
   }
 
@@ -42,5 +49,13 @@ export class ServerListComponent implements OnInit, OnDestroy {
           clickToClose: true
       }
     );
+  }
+
+  isMenuActive(menuOption: string): boolean {
+    return this.menuOption == menuOption;
+  }
+
+  toRelativeDate(datejson: string): string {
+    return moment(new Date(datejson)).fromNow();
   }
 }

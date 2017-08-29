@@ -1,6 +1,6 @@
 <section *ngIf="loaded == false" class="w3-container">
-  <div class="w3-panel w3-light-grey">
-    <h3 class="w3-text-grey">Loading...</h3>
+  <div class="w3-panel theme-l2">
+    <h3 class="theme-text-l1-light">Loading...</h3>
   </div> 
 </section>
 <section *ngIf="loaded == true &amp;&amp; player == null" class="w3-container">
@@ -9,14 +9,14 @@
     <p>No data could be loaded for the given steam id.</p>
   </div> 
 </section>
-<section *ngIf="player" class="w3-container">
+<section *ngIf="!isMenuActive('creatures_cloud') &amp;&amp; player != undefined" class="w3-container">
   <h2 class="theme-text-d1">Servers</h2>
   <div *ngIf="player?.Servers" class="w3-bar theme-l2 w3-card-4">
     <button *ngFor="let server of keysGetter(player?.Servers)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': active(server)}" [style.width.%]="serverWidth()" (click)="activate(server)">{{server}}</button>
   </div>
 </section>
-<section *ngIf="player" class="w3-container">
-  <h2 class="theme-text-d1">Player</h2>
+<section *ngIf="isMenuActive('profile') &amp;&amp; player != undefined" class="w3-container">
+  <a id="player"></a><h2 class="theme-text-d1">Player</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
       <thead>
@@ -50,88 +50,196 @@
     </table>
   </div>
 </section>
-<section *ngIf="player" class="w3-container">
+<section *ngIf="isMenuActive('creatures') &amp;&amp; player != undefined" class="w3-container">
   <div class="w3-cell-row">
-    <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredCreatures.length}}</span></h2></div>
+    <div class="w3-cell"><a id="creatures"></a><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredCreatures.length}}</span></h2></div>
     <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
   </div>
-  <div class="inner-addon right-addon">
-    <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
-    <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
+  <div *ngIf="!(player.Servers[serverKey]?.Creatures?.length > 0)">There are no creatures...</div>
+  <ng-container *ngIf="player.Servers[serverKey]?.Creatures?.length > 0">
+    <div class="inner-addon right-addon">
+      <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
+      <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
+    </div>
+    <div *ngIf="isSelf()" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
+      <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('status')}" [style.width.%]="50" (click)="activateCreaturesMode('status')">Overview / Status</button>
+      <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('stats')}" [style.width.%]="50" (click)="activateCreaturesMode('stats')">Base Stats</button>
+    </div>
+    <div class="w3-card-4 w3-responsive">
+      <table class="w3-table-all border-theme">
+        <thead>
+          <tr class="theme-d1">
+            <th>Name</th>
+            <!--<th>ClassName</th>-->
+            <th>Species</th>
+            <!--<th>Aliases</th>-->
+            <th>Gender</th>
+            <th>Base Level</th>
+            <ng-container *ngIf="activeCreaturesMode('status')">
+              <th>Level</th>
+              <th>Imprint</th>
+              <th>Food</th>
+              <th>Lat</th>
+              <th>Lng</th>
+              <th>Status</th>
+              <th>Owner</th>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('stats')">
+              <th>HP</th>
+              <th>ST</th>
+              <th>OX</th>
+              <th>FO</th>
+              <th>WE</th>
+              <th>ME</th>
+              <th>SP</th>
+              <!--<th></th>-->
+            </ng-container>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!(filteredCreatures?.length > 0)"><td colspan="11">No matching creatures...</td></tr>
+          <tr *ngFor="let creature of filteredCreatures">
+            <td>{{creature.Name}}</td>
+            <!--<td>{{creature.ClassName}}</td>-->
+            <td>{{creature.Species}}</td>
+            <!--<td>{{creature.Aliases}}</td>-->
+            <td>{{creature.Gender}}</td>
+            <td>{{creature.BaseLevel}}</td>
+            <ng-container *ngIf="activeCreaturesMode('status')">
+              <td><span *ngIf="creature.BaseLevel != creature.Level">{{creature.Level}}</span></td>
+              <td>{{creature.Imprint | percent:'1.0-0'}}</td>
+              <td>
+                <div *ngIf="creature.FoodStatus != null" class="app-green-light w3-round" style="width: 6em; position: relative;">
+                  <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.FoodStatus | percent:'1.0-0'}}</div>
+                  <div class="theme-c1 w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
+                </div>
+              </td>
+              <td>{{creature.Latitude | number:'1.1-1'}}</td>
+              <td>{{creature.Longitude | number:'1.1-1'}}</td>
+              <td>
+                <span *ngIf="haveMatingCooldown(creature.NextMating)">Next mating {{toRelativeDate(creature.NextMating)}}</span>
+                <div *ngIf="creature.BabyAge != null">
+                  <div>
+                    <div class="w3-cell w3-cell-middle">Baby</div>
+                    <div class="w3-cell w3-cell-middle">
+                      <div class="app-green-light w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
+                        <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
+                        <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
+                      </div>
+                    </div>
+                    <div class="w3-cell">cuddle {{toRelativeDate(creature.BabyNextCuddle)}}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{creature.OwnerType}}</td>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('stats')">
+              <td>{{creature.BaseStats.Health}}</td>
+              <td>{{creature.BaseStats.Stamina}}</td>
+              <td>{{creature.BaseStats.Oxygen}}</td>
+              <td>{{creature.BaseStats.Food}}</td>
+              <td>{{creature.BaseStats.Weight}}</td>
+              <td>{{creature.BaseStats.Melee}}</td>
+              <td>{{creature.BaseStats.MovementSpeed}}</td>
+              <!--<td><i class="material-icons w3-medium" style="cursor: pointer;" (click)="copyCreature(creature)">content_copy</i></td>-->
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</section>
+<section *ngIf="isMenuActive('breeding') &amp;&amp; player != undefined" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="imprint_timers"></a><h2 class="theme-text-d1 w3-left">Breeding <span class="w3-tag w3-large theme-d1">{{imprintCreatures.length}}</span></h2></div>
+      <div class="w3-cell w3-cell-middle"><button class="w3-button w3-right" [ngClass]="{'theme-d1': imprintNotifications, 'theme-l2': !imprintNotifications, 'theme-hover': !imprintNotifications}" (click)="imprintNotifications = !imprintNotifications"><i *ngIf="imprintNotifications" class="material-icons" style="margin: -5px 5px -5px -5px; vertical-align: middle;">check</i>{{(imprintNotifications ? "Notifications Enabled" : "Enable Notifications")}}</button></div>
   </div>
-  <div class="w3-card-4 w3-responsive">
+  <div *ngIf="!(imprintCreatures?.length > 0)">There are no baby creatures...</div>
+  <div *ngIf="imprintCreatures?.length > 0" class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
           <th>Name</th>
-          <!--<th>ClassName</th>-->
           <th>Species</th>
-          <!--<th>Aliases</th>-->
           <th>Gender</th>
           <th>Base Level</th>
-          <th>Level</th>
           <th>Imprint</th>
-          <th>Food</th>
-          <th>Lat</th>
-          <th>Lng</th>
-          <th>Status</th>
-          <th>Owner</th>
+          <th>Grown</th>
+          <th>Next Imprint</th>
+          <th *ngIf="imprintNotifications"></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let creature of filteredCreatures">
+        <tr *ngFor="let creature of imprintCreatures; let index = index" [ngClass]="{'odd': index % 2 == 1}">
           <td>{{creature.Name}}</td>
-          <!--<td>{{creature.ClassName}}</td>-->
           <td>{{creature.Species}}</td>
-          <!--<td>{{creature.Aliases}}</td>-->
           <td>{{creature.Gender}}</td>
           <td>{{creature.BaseLevel}}</td>
-          <td><span *ngIf="creature.BaseLevel != creature.Level">{{creature.Level}}</span></td>
           <td>{{creature.Imprint | percent:'1.0-0'}}</td>
           <td>
-            <div *ngIf="creature.FoodStatus != null" class="app-green-light w3-round" style="width: 6em; position: relative;">
-              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.FoodStatus | percent:'1.0-0'}}</div>
-              <div class="w3-green w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
+            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
             </div>
           </td>
-          <td>{{creature.Latitude | number:'1.1-1'}}</td>
-          <td>{{creature.Longitude | number:'1.1-1'}}</td>
-          <td>
-            <span *ngIf="haveMatingCooldown(creature.NextMating)">Next mating {{toRelativeDate(creature.NextMating)}}</span>
-            <div *ngIf="creature.BabyAge != null">
-              <div>
-                <div class="w3-cell w3-cell-middle">Baby</div>
-                <div class="w3-cell w3-cell-middle">
-                  <div class="app-green-light w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
-                    <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
-                    <div class="w3-green w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
-                  </div>
-                </div>
-                <div class="w3-cell">cuddle {{toRelativeDate(creature.BabyNextCuddle)}}</div>
-              </div>
-            </div>
-          </td>
-          <td>{{creature.OwnerType}}</td>
+          <td><timer [time]="creature.BabyNextCuddle" [notification]="imprintNotifications" [state]="getStateForCreature(creature)"></timer></td>
+          <td *ngIf="imprintNotifications"><input style="top: 0;" class="w3-check w3-right" type="checkbox" [checked]="getStateForCreature(creature).imprintNotifications" (change)="toggleImprintNotificationForCreature(creature)" /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!--<p *ngIf="_dataService?.Servers?.Servers[serverKey]" class="w3-small">
+    Last Update {{_dataService?.Servers?.Servers[serverKey]?.LastUpdate}}, Next Update {{_dataService?.Servers?.Servers[serverKey]?.NextUpdate}}
+  </p>-->
+</section>
+<section *ngIf="isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey]" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="kibblesandeggs"></a><h2 class="theme-text-d1 w3-left">Kibbles and Eggs <span class="w3-tag w3-large theme-d1">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>
+  </div>
+  <div *ngIf="!(player.Servers[serverKey].KibblesAndEggs?.length > 0)">There are no kibbles or eggs...</div>
+  <div *ngIf="player.Servers[serverKey].KibblesAndEggs?.length > 0" class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Name</th>
+          <th>Kibbles</th>
+          <th>Eggs</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ke of player.Servers[serverKey].KibblesAndEggs">
+          <td>{{ke.Name}}</td>
+          <td>{{ke.KibbleCount}}</td>
+          <td>{{ke.EggCount}}</td>
+          <td>{{ke.KibbleCount + ke.EggCount}}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </section>
-<section *ngIf="haveCluster()" class="w3-container">
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; haveCluster()" class="w3-container">
   <h2 class="theme-text-d1">Clusters</h2>
   <div *ngIf="player?.Clusters" class="w3-bar theme-l2 w3-card-4">
     <button *ngFor="let cluster of keysGetter(player?.Clusters)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCluster(cluster)}" [style.width.%]="clusterWidth()" (click)="activateCluster(cluster)">{{cluster}}</button>
   </div>
 </section>
-<section *ngIf="haveCluster()" class="w3-container">
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; !haveCluster()" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures</h2></div>
+  </div>
+  <div>There are no creatures in the cloud...</div>
+</section>
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; haveCluster()" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredClusterCreatures.length}}</span></h2></div>
   </div>
-  <div class="inner-addon right-addon">
+  <div *ngIf="!(player.Clusters[clusterKey]?.Creatures?.length > 0)">There are no creatures in the cloud...</div>
+  <div *ngIf="player.Clusters[clusterKey]?.Creatures?.length > 0" class="inner-addon right-addon">
     <i *ngIf="creaturesClusterFilter != null &amp;&amp; creaturesClusterFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesClusterFilter = ''; filterCluster();">close</i>
     <input [ngModel]="creaturesClusterFilter" (ngModelChange)="creaturesClusterFilter = $event; filterCluster();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
   </div>
-  <div class="w3-card-4 w3-responsive">
+  <div *ngIf="player.Clusters[clusterKey]?.Creatures?.length > 0" class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
@@ -141,6 +249,7 @@
         </tr>
       </thead>
       <tbody>
+        <tr *ngIf="!(filteredClusterCreatures?.length > 0)"><td colspan="3">No matching creatures...</td></tr>
         <tr *ngFor="let creature of filteredClusterCreatures">
           <td>{{creature.Name}}</td>
           <td>{{creature.Species}}</td>
@@ -150,10 +259,80 @@
     </table>
   </div>
 </section>
+<section *ngIf="isMenuActive('crop_plots') &amp;&amp; player?.Servers[serverKey]" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="cropplots"></a><h2 class="theme-text-d1 w3-left">Crops</h2></div>
+  </div>
+  <div *ngIf="!(player.Servers[serverKey].CropPlots?.length > 0)">There are no crops...</div>
+  <div *ngIf="player.Servers[serverKey].CropPlots?.length > 0" class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Crop</th>
+          <th>Size</th>
+          <th>Fertilizer %</th>
+          <th>Fertilizer Units</th>
+          <th>Water</th>
+          <th>Lat</th>
+          <th>Lng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cp of player.Servers[serverKey].CropPlots">
+          <td>{{(cp.PlantedCropName || cp.PlantedCropClassName)}}</td>
+          <td>{{cp.Size}}</td>
+          <td>
+            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(cp.FertilizerQuantity / cp.FertilizerMax) | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="(cp.FertilizerQuantity / cp.FertilizerMax) * 100">&nbsp;</div>
+            </div>
+          </td>
+          <td>{{cp.FertilizerQuantity | number}}</td>
+          <td>{{cp.WaterAmount | number:'1.0-0'}}</td>
+          <td>{{cp.Latitude | number:'1.1-1'}}</td>
+          <td>{{cp.Longitude | number:'1.1-1'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section *ngIf="isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey]" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="electricalgenerators"></a><h2 class="theme-text-d1 w3-left">Electrical Generators</h2></div>
+  </div>
+  <div *ngIf="!(player.Servers[serverKey].ElectricalGenerators?.length > 0)">There are no electrical generators...</div>
+  <div *ngIf="player.Servers[serverKey].ElectricalGenerators?.length > 0" class="w3-card-4 w3-responsive">
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Gasoline %</th>
+          <th>Gasoline Quantity</th>
+          <th>Activated</th>
+          <th>Lat</th>
+          <th>Lng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let eg of player.Servers[serverKey].ElectricalGenerators">
+          <td>
+            <div *ngIf="eg.Activated == true" class="app-green-light w3-round" style="width: 6em; position: relative;">
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="(eg.GasolineQuantity / 800.0) * 100">&nbsp;</div>
+            </div>
+          </td>
+          <td>{{eg.GasolineQuantity | number}}</td>
+          <td>{{(eg.Activated == true ? "Yes" : "No")}}</td>
+          <td>{{eg.Latitude | number:'1.1-1'}}</td>
+          <td>{{eg.Longitude | number:'1.1-1'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
-  <header class="w3-container theme-l1"> 
-    <span (click)="showMap = false" class="w3-button theme-l1 w3-xlarge w3-display-topright">&times;</span>
+  <header class="w3-container theme-d1"> 
+    <span (click)="showMap = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
     <h2>Map</h2>
   </header>
   <arkmap [mapName]="player?.MapNames[serverKey]" [points]="points"></arkmap>

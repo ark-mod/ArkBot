@@ -1,0 +1,10 @@
+<app-menu #menu>
+  <h2 class="theme-text-d1">Servers</h2>
+  <div class="w3-cell-row theme-l2">
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('overview')}" (click)="menu.activate('overview')">Overview</div>
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pveisland')}" (click)="menu.activate('pveisland')">pveisland</div>
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pvecenter')}" (click)="menu.activate('pvecenter')">pvecenter</div>
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pvescorched')}" (click)="menu.activate('pvescorched')">pvescorched</div>
+    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pveragnarok')}" (click)="menu.activate('pveragnarok')">pveragnarok</div>
+  </div>
+</app-menu>

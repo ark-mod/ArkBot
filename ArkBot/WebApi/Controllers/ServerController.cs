@@ -45,7 +45,7 @@ namespace ArkBot.WebApi.Controllers
                     SteamName = null,
                     TribeName = x.TribeId != null ? context.Tribes?.FirstOrDefault(y => y.Id == x.TribeId)?.Name : null,
                     TribeId = x.TribeId,
-                    LastActiveTime = x.SavedAt
+                    LastActiveTime = x.LastActiveTime
                 };
             }).OrderByDescending(x => x.LastActiveTime).Where(x => x.LastActiveTime >= DateTime.UtcNow.AddDays(-90)));
 
@@ -57,7 +57,7 @@ namespace ArkBot.WebApi.Controllers
                     Id = x.Id,
                     Name = x.Name,
                     MemberSteamIds = members.Select(y => y.SteamId).ToList(),
-                    LastActiveTime = members.Count > 0 ? members.Max(y => y.SavedAt) : x.SavedAt
+                    LastActiveTime = x.LastActiveTime
                 };
             }).OrderByDescending(x => x.LastActiveTime).Where(x => x.LastActiveTime >= DateTime.UtcNow.AddDays(-90)));
 

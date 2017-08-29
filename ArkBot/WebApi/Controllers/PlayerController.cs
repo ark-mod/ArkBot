@@ -1,5 +1,7 @@
 ﻿using ArkBot.Ark;
 using ArkBot.Data;
+using ArkBot.Helpers;
+using ArkBot.Extensions;
 using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
 using ArkSavegameToolkitNet.Domain;
@@ -7,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 
@@ -15,10 +18,12 @@ namespace ArkBot.WebApi.Controllers
     public class PlayerController : ApiController
     {
         private ArkContextManager _contextManager;
+        private IConfig _config;
 
-        public PlayerController(ArkContextManager contextManager)
+        public PlayerController(ArkContextManager contextManager, IConfig config)
         {
             _contextManager = contextManager;
+            _config = config;
         }
 
         /// <param name="id">steamId</param>
@@ -29,14 +34,17 @@ namespace ArkBot.WebApi.Controllers
             {
             };
 
+            var uservm = WebApiHelper.GetUser(Request, _config);
+            var isSelf = uservm?.SteamId != null ? id.Equals(uservm.SteamId, StringComparison.OrdinalIgnoreCase) : false;
+
             var players = _contextManager.Servers.ToDictionary(x => x.Config.Key, x => x.Players?.FirstOrDefault(y => y.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase)));
             foreach (var context in _contextManager.Servers)
             {
                 PlayerServerViewModel vm = null;
 
                 var player = players[context.Config.Key];
-                if (player == null) vm = BuildViewModelForTransferedPlayer(context, id, players.Values.Where(x => x != null).Select(x => x.Id).ToArray()); //player have local profile on other server
-                else vm = BuildViewModelForPlayer(context, player); //player with local profile
+                if (player == null) vm = BuildViewModelForTransferedPlayer(context, id, players.Values.Where(x => x != null).Select(x => x.Id).ToArray(), isSelf); //player have local profile on other server
+                else vm = BuildViewModelForPlayer(context, player, isSelf); //player with local profile
 
                 if (vm == null) continue;
 
@@ -46,7 +54,7 @@ namespace ArkBot.WebApi.Controllers
 
             foreach (var context in _contextManager.Clusters)
             {
-                var cloudInventory = context.CloudInventories?.FirstOrDefault(x => x.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase));
+                var cloudInventory = context.Inventories?.FirstOrDefault(x => x.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase));
                 if (cloudInventory == null) continue;
 
                 var vm = BuildClusterViewModelForPlayer(context, cloudInventory);
@@ -58,7 +66,7 @@ namespace ArkBot.WebApi.Controllers
             return result;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, ulong[] playerIds)
+        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, int[] playerIds, bool isSelf = false)
         {
             if (playerIds == null || playerIds.Length == 0) return null;
 
@@ -78,41 +86,57 @@ namespace ArkBot.WebApi.Controllers
                 SavedAt = tribe.SavedAt
             };
 
-            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId));
+            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId, isSelf));
+            if (isSelf)
+            {
+                vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, playerId);
+                vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, playerId);
+                vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, playerId);
+            }
 
             return vm;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForPlayer(ArkServerContext context, ArkPlayer player)
+        internal static PlayerServerViewModel BuildViewModelForPlayer(ArkServerContext context, ArkPlayer player, bool isSelf = false)
         {
             var vm = new PlayerServerViewModel
             {
                 ClusterKey = context.Config.Key,
                 SteamId = player.SteamId,
                 CharacterName = player.CharacterName,
-                Gender = player.Gender.ToString(),
-                Level = player.CharacterLevel,
                 Latitude = player.Location?.Latitude,
                 Longitude = player.Location?.Longitude,
                 TopoMapX = player.Location?.TopoMapX,
                 TopoMapY = player.Location?.TopoMapY,
-                EngramPoints = player.TotalEngramPoints,
                 TribeId = player.TribeId,
                 TribeName = player.TribeId.HasValue ? context.Tribes.FirstOrDefault(x => x.Id == player.TribeId.Value)?.Name : null,
                 SavedAt = player.SavedAt
-            };
+        };
 
-            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id));
-            
+            if (!player.IsExternalPlayer)
+            {
+                vm.Gender = player.Gender.ToString();
+                vm.Level = player.CharacterLevel;
+                vm.EngramPoints = player.TotalEngramPoints;
+            }
+
+            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id, isSelf));
+            if (isSelf)
+            {
+                vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id);
+                vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, player.Id);
+                vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id);
+            }
+
             return vm;
         }
 
-        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, ulong playerId)
+        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, int playerId, bool isSelf = false)
         {
             var result = new List<TamedCreatureViewModel>();
             if (context.TamedCreatures != null)
             {
-                var playercreatures = context.NoRafts.Where(x => (ulong)x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && (ulong)x.OwningPlayerId == playerId)).ToArray();
+                var playercreatures = context.NoRafts.Where(x => x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && x.OwningPlayerId == playerId)).ToArray();
                 var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains((int)playerId));
                 var tribecreatures = tribe != null ? context.NoRafts.Where(x => x.TargetingTeam == tribe.Id && !playercreatures.Any(y => y.Id == x.Id)).ToArray() : new ArkTamedCreature[] { };
                 foreach (var item in playercreatures.Select(x => new { c = x, o = "player" }).Concat(tribecreatures.Select(x => new { c = x, o = "tribe" })))
@@ -120,7 +144,7 @@ namespace ArkBot.WebApi.Controllers
 
                     var currentFood = item.c.CurrentStatusValues?.Length > 4 ? item.c.CurrentStatusValues[4] : null;
                     var maxFood = item.c.BaseStats?.Length > 4 && item.c.TamedStats?.Length > 4 ?
-                        ArkContext.CalculateMaxStat(
+                        ArkDataHelper.CalculateMaxStat(
                             ArkSpeciesStatsData.Stat.Food,
                             item.c.ClassName,
                             item.c.BaseStats[4],
@@ -137,6 +161,8 @@ namespace ArkBot.WebApi.Controllers
                     var aliases = ArkSpeciesAliases.Instance.GetAliases(item.c.ClassName);
                     var vmc = new TamedCreatureViewModel
                     {
+                        Id1 = item.c.Id1,
+                        Id2 = item.c.Id2,
                         Name = item.c.Name,
                         ClassName = item.c.ClassName,
                         Species = aliases?.FirstOrDefault(),
@@ -151,10 +177,36 @@ namespace ArkBot.WebApi.Controllers
                         Longitude = item.c.Location?.Longitude,
                         TopoMapX = item.c.Location?.TopoMapX,
                         TopoMapY = item.c.Location?.TopoMapY,
-                        NextMating = item.c.NextAllowedMatingTimeApprox,
+                        NextMating = item.c.Gender == ArkCreatureGender.Female ? item.c.NextAllowedMatingTimeApprox : null,
                         BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
                         OwnerType = item.o
                     };
+                    if (isSelf)
+                    {
+                        //0: health
+                        //1: stamina
+                        //2: torpor
+                        //3: oxygen
+                        //4: food
+                        //5: water
+                        //6: temperature
+                        //7: weight
+                        //8: melee damage
+                        //9: movement speed
+                        //10: fortitude
+                        //11: crafting speed
+
+                        vmc.BaseStats = new CreatureBaseStatsViewModel {
+                            Health = item.c.BaseStats[0],
+                            Stamina = item.c.BaseStats[1],
+                            Oxygen = item.c.BaseStats[3],
+                            Food = item.c.BaseStats[4],
+                            Weight = item.c.BaseStats[7],
+                            Melee = item.c.BaseStats[8],
+                            MovementSpeed = item.c.BaseStats[9]
+                        };
+
+                    }
                     result.Add(vmc);
                 }
             }
@@ -181,6 +233,124 @@ namespace ArkBot.WebApi.Controllers
             }
 
             return vm;
+        }
+
+        internal static List<KibbleAndEggViewModel> BuildKibblesAndEggsViewModelsForPlayerId(ArkServerContext context, int playerId)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            //PrimalItemConsumable_Egg_Kaprosuchus_C, PrimalItemConsumable_Egg_Kaprosuchus_Fertilized_C, PrimalItemConsumable_Egg_Wyvern_Fertilized_Lightning_C
+            var _rEgg = new Regex(@"^PrimalItemConsumable_Egg_(?<name>.+?)_C$", RegexOptions.Singleline);
+
+            //PrimalItemConsumable_Kibble_GalliEgg_C, PrimalItemConsumable_Kibble_Compy_C
+            var _rKibble = new Regex(@"^PrimalItemConsumable_Kibble_(?<name>.+?)(?:Egg)?_C$", RegexOptions.IgnoreCase | RegexOptions.Singleline); 
+
+            var inv = new[] { player?.Items, tribe?.Items }.Where(x => x != null).SelectMany(x => x).ToArray();
+
+            var kibbles = inv.Where(x => x.ClassName.StartsWith("PrimalItemConsumable_Kibble", StringComparison.Ordinal))
+                .GroupBy(x => x.ClassName)
+                .Select(x =>
+                {
+                    var name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                })
+                .ToArray();
+
+            var eggs = inv.Where(x => x.ClassName.StartsWith("PrimalItemConsumable_Egg", StringComparison.Ordinal) && !x.ClassName.Contains("_Fertilized_"))
+                .GroupBy(x => x.ClassName)
+                .Select(x =>
+                {
+                    var name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                })
+                .ToList();
+
+            var keys = kibbles.Select(x => x.Name).Concat(eggs.Select(x => x.Name)).Distinct();
+
+            var results = keys.Select(x =>
+            {
+                var k = kibbles.FirstOrDefault(y => y.Name.Equals(x));
+                var e = eggs.FirstOrDefault(y => y.Name.Equals(x));
+                return new KibbleAndEggViewModel
+                {
+                    Name = k?.Name ?? e?.Name,
+                    KibbleCount = k?.Count ?? 0L,
+                    EggCount = e?.Count ?? 0L
+                };
+            }).OrderByDescending(x => x.EggCount + x.KibbleCount).ToList();
+
+            return results;
+        }
+
+        internal static List<CropPlotViewModel> BuildCropPlotViewModelsForPlayerId(ArkServerContext context, int playerId)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            var cropPlots = new[] { player?.Structures, tribe?.Structures }.Where(x => x != null).SelectMany(x => x).OfType<ArkStructureCropPlot>().Where(x => x.PlantedCropClassName != null).ToArray();
+            
+            var results = cropPlots.Select(x =>
+            {
+                return new CropPlotViewModel(x.Location)
+                {
+                    ClassName = x.ClassName,
+                    //FertilizerAmount = x.FertilizerAmount ?? 0.0f,
+                    FertilizerQuantity = (int)Math.Round(GetFertilizerQuantityFromItems(x.Inventory), 0),
+                    WaterAmount = x.WaterAmount,
+                    PlantedCropClassName = x.PlantedCropClassName,
+                };
+            }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
+
+            return results;
+        }
+
+        private static readonly Dictionary<string, int> _fertilizerUnits = new Dictionary<string, int>
+        {
+            { "PrimalItemConsumable_HumanPoop", 1000 },
+            { "PrimalItemConsumable_DinoPoopSmall", 3500 },
+            { "PrimalItemConsumable_DinoPoopMedium", 7500 },
+            { "PrimalItemConsumable_DinoPoopLarge", 15000 },
+            { "PrimalItemConsumable_DinoPoopMassive_C", 35000 },
+            { "PrimalItemConsumable_Fertilizer_Compost_C", 54000 }
+        };
+
+        internal static double GetFertilizerQuantityFromItems(ArkItem[] cropPlotInventory)
+        {
+            if (cropPlotInventory == null) return 0.0d;
+
+            var fertilizerQuantity = 0.0d;
+            foreach (var i in cropPlotInventory)
+            {
+                int units = 0;
+                if (!_fertilizerUnits.TryGetValue(i.ClassName, out units)) continue;
+
+                fertilizerQuantity += (i.SavedDurability ?? 0.0f) * units;
+            }
+
+            return fertilizerQuantity;
+        }
+
+        internal static List<ElectricalGeneratorViewModel> BuildElectricalGeneratorViewModelsForPlayerId(ArkServerContext context, int playerId)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            var electricalGenerators = new[] { player?.Structures, tribe?.Structures }.Where(x => x != null).SelectMany(x => x).OfType<ArkStructureElectricGenerator>().ToArray();
+
+            var results = electricalGenerators.Select(x =>
+            {
+                return new ElectricalGeneratorViewModel(x.Location)
+                {
+                    Activated = x.Activated,
+                    //FuelTime = x.FuelTime,
+                    GasolineQuantity = (int)(x.Inventory?.Where(y => y.ClassName.Equals("PrimalItemResource_Gasoline_C", StringComparison.Ordinal)).Sum(y => y.Quantity) ?? 0)
+                };
+            }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
+
+            return results;
         }
     }
 }

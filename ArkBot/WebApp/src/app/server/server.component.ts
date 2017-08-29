@@ -13,6 +13,9 @@ import { HttpService } from '../http.service';
   styleUrls: ['./server.component.css']
 })
 export class ServerComponent implements OnInit, OnDestroy {
+  private menuOption: string = undefined; 
+  private menuOptionSubscription: any;
+
   server: any;
   filteredPlayers: any[];
   filteredTribes: any[];
@@ -48,6 +51,7 @@ export class ServerComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.serverKey = this.route.snapshot.params['id'];
 
+  this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => this.menuOption = menuOption);
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => {
       if(this.serverKey == serverKey) {
         this.updateServer();
@@ -59,6 +63,7 @@ export class ServerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.menuOptionSubscription.unsubscribe();
     this.serverUpdatedSubscription.unsubscribe();
   }
 
@@ -91,5 +96,9 @@ export class ServerComponent implements OnInit, OnDestroy {
           clickToClose: true
       }
     );
+  }
+
+  isMenuActive(menuOption: string): boolean {
+    return this.menuOption == menuOption;
   }
 }

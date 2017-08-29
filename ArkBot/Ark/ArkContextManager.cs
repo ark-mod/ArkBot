@@ -16,6 +16,7 @@ namespace ArkBot.Ark
 {
     public delegate void InitializationCompletedEventHandler();
     //public delegate void UpdateTriggeredEventHandler(ArkServerContext sender);
+    public delegate void GameDataUpdatedEventHandler(IArkUpdateableContext sender);
     public delegate void UpdateCompletedEventHandler(IArkUpdateableContext sender, bool successful, bool cancelled);
     public delegate void BackupCompletedEventHandler(ArkServerContext sender, bool backupsEnabled, SavegameBackupResult result);
     public delegate void VoteInitiatedEventHandler(ArkServerContext sender, VoteInitiatedEventArgs e);
@@ -32,6 +33,7 @@ namespace ArkBot.Ark
 
         public event InitializationCompletedEventHandler InitializationCompleted;
         //public event UpdateTriggeredEventHandler UpdateTriggered;
+        public event GameDataUpdatedEventHandler GameDataUpdated;
         public event UpdateCompletedEventHandler UpdateCompleted;
         public event BackupCompletedEventHandler BackupCompleted;
         public event VoteInitiatedEventHandler VoteInitiated;
@@ -149,6 +151,7 @@ namespace ArkBot.Ark
         {
             //context.UpdateQueued += Context_UpdateTriggered;
             context.UpdateCompleted += Context_UpdateCompleted;
+            context.GameDataUpdated += Context_GameDataUpdated;
             context.BackupCompleted += Context_BackupCompleted;
             context.VoteInitiated += Context_VoteInitiated;
             context.VoteResultForced += Context_VoteResultForced;
@@ -179,6 +182,11 @@ namespace ArkBot.Ark
             UpdateCompleted?.Invoke(sender, successful, cancelled);
         }
 
+        private void Context_GameDataUpdated(IArkUpdateableContext sender)
+        {
+            GameDataUpdated?.Invoke(sender);
+        }
+
         private void Context_BackupCompleted(ArkServerContext sender, bool backupsEnabled, Services.Data.SavegameBackupResult result)
         {
             BackupCompleted?.Invoke(sender, backupsEnabled, result);
@@ -192,6 +200,8 @@ namespace ArkBot.Ark
         public void AddCluster(ArkClusterContext context)
         {
             context.UpdateCompleted += Context_UpdateCompleted;
+            context.GameDataUpdated += Context_GameDataUpdated;
+            context._contextManager = this;
             _clusterContexts.Add(context.Config.Key, context);
         }
 
@@ -206,6 +216,13 @@ namespace ArkBot.Ark
             }
 
             return null;
+        }
+
+        public ArkServerContext[] GetServersInCluster(string key)
+        {
+            if (key == null) return null;
+
+            return Servers.Where(x => x.Config.Cluster.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
 
         public ArkClusterContext GetCluster(string key)

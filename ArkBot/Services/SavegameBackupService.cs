@@ -19,28 +19,34 @@ namespace ArkBot.Services
             _config = config;
         }
 
-        public IList<BackupListEntity> GetBackupsList(string serverKey = null, bool includeContents = false)
+        public IList<BackupListEntity> GetBackupsList(string[] serverKeys = null, bool includeContents = false, Func<FileInfo, BackupListEntity, bool> filterFunc = null)
         {
             var result = new List<BackupListEntity>();
 
-            var backupDirPath = serverKey == null ? _config.BackupsDirectoryPath : Path.Combine(_config.BackupsDirectoryPath, serverKey);
-            var backupDir = new DirectoryInfo(backupDirPath);
-            var files = backupDir.GetFiles("*.zip", SearchOption.AllDirectories);
-            if (files == null) return result;
-
-            foreach(var file in files)
+            foreach (var serverKey in serverKeys ?? new string[] { null })
             {
-                var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                var b = backupDirPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
+                var backupDirPath = serverKey == null ? _config.BackupsDirectoryPath : Path.Combine(_config.BackupsDirectoryPath, serverKey);
+                var backupDir = new DirectoryInfo(backupDirPath);
+                var files = backupDir.GetFiles("*.zip", SearchOption.AllDirectories);
+                if (files == null) return result;
 
-                result.Add(new BackupListEntity
+                foreach (var file in files)
                 {
-                    Path = path,
-                    ByteSize = file.Length,
-                    DateModified = file.LastWriteTime,
-                    Files = includeContents ? FileHelper.GetZipFileContents(file.FullName) : null
-                });
+                    var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    var b = backupDirPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
+
+                    var entry = new BackupListEntity
+                    {
+                        Path = path,
+                        ByteSize = file.Length,
+                        DateModified = file.LastWriteTime,
+                        Files = includeContents ? FileHelper.GetZipFileContents(file.FullName) : null
+                    };
+                    if (filterFunc != null && !filterFunc(file, entry)) continue;
+
+                    result.Add(entry);
+                }
             }
 
             return result;

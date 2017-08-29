@@ -1,9 +1,61 @@
-<section *ngIf="dataService.Servers" class="w3-container">
-  <h2 class="theme-text-d1">Servers</h2>
-  <div *ngFor="let server of dataService.Servers.Servers; let last = last;" class="w3-card-4 w3-responsive" style="margin-bottom: 2em; display: inline-block; vertical-align: top;" [style.margin-right.em]="last ? 0 : 2">
-    <table class="w3-table-all w3-small border-theme" style="width: auto;">
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.UserSteamId != undefined" class="w3-container">
+  <h3 class="theme-text-d1">My Profile</h3>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Hello, {{dataService.Servers.User.Name}}</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p>
+        Find your tames, view base stats and keep track of their food status. Get notified of pending imprints, the amount of fertilizer and gasoline remaining in your crops and generators. This and much more is available in your profile.
+      </p>
+      <p><a [routerLink]="'/player/' + dataService.UserSteamId" class="" style="text-decoration: none;">View my profile&nbsp;❯</a></p>
+    </div>
+  </div>
+</section>
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined" class="w3-container">
+  <h3 class="theme-text-d1">Servers</h3>
+  <div *ngFor="let server of dataService.Servers.Servers" class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3><a [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.MapName}} - {{server.Key}}</a></h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p class="w3-small">
+        Last Update {{server.LastUpdate}}, Next Update {{server.NextUpdate}}
+      </p>
+      <p><a [routerLink]="'/server/' + server.Key" class="" style="text-decoration: none;">View server ❯</a></p>
+    </div>
+  </div>
+</section>
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined" class="w3-container">
+  <h3 class="theme-text-d1">Online</h3>
+  <div class="w3-card-4 w3-responsive">
+    <table class="w3-table w3-striped w3-bordered border-theme">
+        <tr class="theme-d1">
+            <th>Steam Name</th>
+            <th>Character Name</th>
+            <th>Tribe Name</th>
+            <th>Discord Tag</th>
+            <th>Server</th>
+            <th>Time Online</th>
+        </tr>
+        <ng-container *ngFor="let server of dataService.Servers.Servers">
+          <tr *ngFor="let player of server.OnlinePlayers">
+            <td>{{player.SteamName}}</td>
+            <td>{{player.CharacterName}}</td>
+            <td>{{player.TribeName}}</td>
+            <td>{{player.DiscordName}}</td>
+            <td>{{server.Key}}</td>
+            <td>{{player.TimeOnline}}</td>
+          </tr>
+        </ng-container>
+    </table>
+  </div>
+</section>
+<section *ngIf="!isMenuActive('overview') &amp;&amp; dataService.Servers != undefined" class="w3-container">
+  <div *ngFor="let server of dataService.Servers.Servers" class="w3-card-4 w3-responsive">
+    <table *ngIf="isMenuActive(server.Key)" class="w3-table-all w3-small border-theme">
         <tr>
-          <th class="theme-d1" colspan="2" style="font-size: 1.5em;"><a [routerLink]="'/server/' + server.Key">{{server.Name}}</a></th>
+          <th class="theme-d1" colspan="2" style="padding: 0px 16px;"><h3><a [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a></h3></th>
         </tr>
         <tr>
           <th class="theme-d1">Address</th>
@@ -24,6 +76,10 @@
         <tr>
           <th class="theme-d1">Tamed Creatures</th>
           <td>{{server.TamedCreatureCount}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Cloud Creatures</th>
+          <td>{{server.CloudCreatureCount}}</td>
         </tr>
         <tr>
           <th class="theme-d1">Wild Creatures</th>
@@ -48,6 +104,10 @@
         <tr>
           <th class="theme-d1">Next Update</th>
           <td>{{server.NextUpdate}}</td>
+        </tr>
+        <tr>
+          <th class="theme-d1">Uptime</th>
+          <td>{{server.ServerStarted ? toRelativeDate(server.ServerStarted) : '-'}}</td>
         </tr>
         <tr style="border-bottom: none;">
           <th colspan="2" class="theme-d1">Online Players ({{server.OnlinePlayerCount}} / {{server.OnlinePlayerMax}})</th>
@@ -74,23 +134,34 @@
         </tr>
     </table>
   </div>
+</section><br />
+<section *ngIf="isMenuActive('overview')" class="w3-container margin-top">
+  <h3 class="theme-text-d1">External Resources</h3>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Wiki</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p><a href="http://ark.gamepedia.com/" style="text-decoration: none;">Official ARK Survival Evolved Wiki&nbsp;❯</a></p>
+    </div>
+  </div>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Taming Calculators</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <ul class="w3-ul" style="margin: 7px 0px;">
+        <li style="padding-left: 0px;"><a href="http://www.survive-ark.com/taming-calculator/" style="text-decoration: none;">Survive ARK: Taming Calculator&nbsp;❯</a></li>
+        <li style="padding-left: 0px;"><a href="http://www.dododex.com/" style="text-decoration: none;">Dododex: Taming Calculator&nbsp;❯</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="w3-card-4 w3-margin-bottom">
+    <header class="w3-container theme-d1">
+      <h3>Creature Library and Breeding Suggestions</h3>
+    </header>
+    <div class="w3-container theme-l1">
+      <p><a href="https://github.com/cadon/ARKStatsExtractor" style="text-decoration: none;">ARK Smart Breeding&nbsp;❯</a></p>
+    </div>
+  </div>
 </section>
-
-<!--
-  public string Key { get; set; }
-        public string Name { get; set; }
-        public string Address { get; set; }
-        public string Version { get; set; }
-        public int OnlinePlayerCount { get; set; }
-        public int OnlinePlayerMax { get; set; }
-        public string MapName { get; set; }
-        public string InGameTime { get; set; }
-        public int TamedCreatureCount { get; set; }
-        public int WildCreatureCount { get; set; }
-        public int StructureCount { get; set; }
-        public int PlayerCount { get; set; }
-        public int TribeCount { get; set; }
-        public string LastUpdate { get; set; }
-        public string NextUpdate { get; set; }
-        public IList<OnlinePlayerViewModel> OnlinePlayers { get; set; }
-          -->

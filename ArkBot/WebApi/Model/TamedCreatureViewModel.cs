@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace ArkBot.WebApi.Model
             Aliases = new string[] { };
         }
 
+        public long Id1 { get; set; }
+        public long Id2 { get; set; }
         public string Name { get; set; }
         public string ClassName { get; set; }
         public string Species { get; set; }
@@ -30,5 +33,9 @@ namespace ArkBot.WebApi.Model
         public DateTime? NextMating { get; set; }
         public DateTime? BabyNextCuddle { get; set; }
         public string OwnerType { get; set; }
+
+        // these fields are only set when creature is owned by the authenticated person making the request
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public CreatureBaseStatsViewModel BaseStats { get; set; }
     }
 }
