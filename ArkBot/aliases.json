@@ -462,6 +462,10 @@
       "Bat"
     ],
     [
+      "Otter",
+      "Otter_Character_BP_C"
+    ],
+    [
       "Oviraptor",
       "Oviraptor_Character_BP_C"
     ],
@@ -507,6 +511,11 @@
       "Phiomia",
       "Phiomia_Character_BP_C",
       "Pig"
+    ],
+    [
+      "Phoenix",
+      "Phoenix_Character_BP_C",
+      "Firebird"
     ],
     [
       "Polar Bear",
