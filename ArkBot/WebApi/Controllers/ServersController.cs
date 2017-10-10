@@ -81,7 +81,7 @@ namespace ArkBot.WebApi.Controllers
                     {
                         Key = context.Config.Key,
                         Name = name,
-                        Address = info.Address,
+                        Address = context.Config.DisplayAddress ?? info.Address,
                         Version = version.ToString(),
                         OnlinePlayerCount = info.Players,
                         OnlinePlayerMax = info.MaxPlayers,

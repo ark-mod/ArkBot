@@ -56,7 +56,73 @@
 </section>
 <ng-container *ngFor="let server of dataService.Servers?.Servers">
   <section *ngIf="isMenuActive(server.Key) &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')" class="w3-container">
-    <h3 class="theme-text-d1"><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>
+    <div class="w3-card-4 w3-responsive w3-margin-bottom">
+      <header class="w3-container theme-d1">
+        <h3><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>
+      </header>
+      <div class="w3-container theme-l1">
+        <table class="w3-table w3-bordered w3-small border-theme serverdetails">
+            <tr>
+              <th class="theme-text-d1">Address</th>
+              <td style="width: max-content;">{{server.Address}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Version</th>
+              <td>{{server.Version}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Player Slots</th>
+              <td>{{server.OnlinePlayerMax}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Map</th>
+              <td>{{server.MapName}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">In-Game Day</th>
+              <td>{{server.InGameTime}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Tamed Creatures</th>
+              <td>{{server.TamedCreatureCount | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Cloud Creatures</th>
+              <td>{{server.CloudCreatureCount | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Wild Creatures</th>
+              <td>{{server.WildCreatureCount | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Structures</th>
+              <td>{{server.StructureCount | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Players</th>
+              <td>{{server.PlayerCount | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Tribes</th>
+              <td>{{server.TribeCount | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Last Update</th>
+              <td>{{server.LastUpdate}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Next Update</th>
+              <td>{{server.NextUpdate}}</td>
+            </tr>
+            <tr style="border-bottom: none;">
+              <th class="theme-text-d1">Uptime</th>
+              <td>{{server.ServerStarted ? toRelativeDate(server.ServerStarted) : '-'}}</td>
+            </tr>
+          </table>
+      </div>
+    </div>
+
+    <!--<h3 class="theme-text-d1"><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>
     <div class="w3-responsive w3-margin-bottom">
       <table class="w3-table w3-bordered w3-small border-theme serverdetails">
         <tr>
@@ -116,7 +182,7 @@
           <td>{{server.ServerStarted ? toRelativeDate(server.ServerStarted) : '-'}}</td>
         </tr>
       </table>
-    </div>
+    </div>-->
     <ng-container *ngIf="dataService.hasFeatureAccess('home', 'online')">
       <h3 class="theme-text-d1">Online <span class="w3-tag w3-large theme-d1">{{server.OnlinePlayerCount}}</span></h3>
       <div *ngIf="server.OnlinePlayerCount == 0; else server_online_players_list">There are no players online...</div>
