@@ -17,11 +17,12 @@ using System.Web.Http;
 
 namespace ArkBot.WebApi.Controllers
 {
-    public class ServerController : ApiController
+    [AccessControl("pages", "server")]
+    public class ServerController : BaseApiController
     {
         private ArkContextManager _contextManager;
 
-        public ServerController(ArkContextManager contextManager)
+        public ServerController(ArkContextManager contextManager, IConfig config) : base(config)
         {
             _contextManager = contextManager;
         }
@@ -31,35 +32,44 @@ namespace ArkBot.WebApi.Controllers
             var context = _contextManager.GetServer(id);
             if (context == null) return null;
 
+            var demoMode = IsDemoMode() ? new DemoMode() : null;
             var result = new ServerViewModel
             {
             };
 
-            if (context.Players != null) result.Players.AddRange(context.Players.Select(x =>
+            if (HasFeatureAccess("server", "players") && context.Players != null)
             {
-                return new PlayerReferenceViewModel
+                result.Players.AddRange(context.Players.Select(x =>
                 {
-                    Id = x.Id,
-                    SteamId = x.SteamId,
-                    CharacterName = x.CharacterName,
-                    SteamName = null,
-                    TribeName = x.TribeId != null ? context.Tribes?.FirstOrDefault(y => y.Id == x.TribeId)?.Name : null,
-                    TribeId = x.TribeId,
-                    LastActiveTime = x.LastActiveTime
-                };
-            }).OrderByDescending(x => x.LastActiveTime).Where(x => x.LastActiveTime >= DateTime.UtcNow.AddDays(-90)));
+                    var tribe = x.TribeId != null ? context.Tribes?.FirstOrDefault(y => y.Id == x.TribeId) : null;
+                    return new PlayerReferenceViewModel
+                    {
+                        Id = x.Id,
+                        SteamId = x.SteamId,
+                        FakeSteamId = demoMode?.GetSteamId(x.SteamId),
+                        CharacterName = demoMode?.GetPlayerName(x.Id) ?? x.CharacterName,
+                        SteamName = null,
+                        TribeName = tribe != null ? demoMode?.GetTribeName(tribe.Id) ?? tribe.Name : null,
+                        TribeId = x.TribeId,
+                        LastActiveTime = x.LastActiveTime
+                    };
+                }).OrderByDescending(x => x.LastActiveTime).Where(x => x.LastActiveTime >= DateTime.UtcNow.AddDays(-90)));
+            }
 
-            if (context.Tribes != null) result.Tribes.AddRange(context.Tribes.Select(x =>
+            if (HasFeatureAccess("server", "tribes") && context.Tribes != null)
             {
-                var members = context.Players?.Where(y => x.MemberIds.Contains((int)y.Id)).ToList() ?? new List<ArkPlayer>();
-                return new TribeReferenceViewModel
+                result.Tribes.AddRange(context.Tribes.Select(x =>
                 {
-                    Id = x.Id,
-                    Name = x.Name,
-                    MemberSteamIds = members.Select(y => y.SteamId).ToList(),
-                    LastActiveTime = x.LastActiveTime
-                };
-            }).OrderByDescending(x => x.LastActiveTime).Where(x => x.LastActiveTime >= DateTime.UtcNow.AddDays(-90)));
+                    var members = context.Players?.Where(y => x.MemberIds.Contains((int)y.Id)).ToList() ?? new List<ArkPlayer>();
+                    return new TribeReferenceViewModel
+                    {
+                        Id = x.Id,
+                        Name = demoMode?.GetTribeName(x.Id) ?? x.Name,
+                        MemberSteamIds = members.Select(y => y.SteamId).ToList(),
+                        LastActiveTime = x.LastActiveTime
+                    };
+                }).OrderByDescending(x => x.LastActiveTime).Where(x => x.LastActiveTime >= DateTime.UtcNow.AddDays(-90)));
+            }
 
             return result;
         }

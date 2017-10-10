@@ -1,4 +1,5 @@
-﻿using Microsoft.Owin.Security;
+﻿using ArkBot.Helpers;
+using Microsoft.Owin.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,13 +14,10 @@ using System.Web.Http.Results;
 
 namespace ArkBot.WebApi.Controllers
 {
-    public class AuthenticationController : ApiController
+    public class AuthenticationController : BaseApiController
     {
-        private IConfig _config;
-
-        public AuthenticationController(IConfig config)
+        public AuthenticationController(IConfig config) : base(config)
         {
-            _config = config;
         }
 
         [HttpPost]
@@ -60,7 +58,12 @@ namespace ArkBot.WebApi.Controllers
 
             var steamId = claims?.FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", StringComparison.OrdinalIgnoreCase))?.Value;
             if (steamId != null) steamId = steamId.Replace("http://steamcommunity.com/openid/id/", "");
-            if (!string.IsNullOrEmpty(steamId) && _config.UserRoles?.Admins?.Contains(steamId) == true) claims.Add(new Claim(ClaimTypes.Role, "admin"));
+            if (!string.IsNullOrEmpty(steamId))
+            {
+                var roles = WebApiHelper.GetRolesForUser(_config, steamId);
+
+                foreach (var role in roles) claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var ci = new ClaimsIdentity(claims, "Cookie");
             ctx.Authentication.SignIn(ci);

@@ -52,6 +52,7 @@ namespace ArkBot.ViewModel
     {
         public struct Constants
         {
+            public const string ConfigFilePath = @"config.json";
             public const string LayoutFilePath = @".\Layout.config";
         }
 
@@ -65,6 +66,12 @@ namespace ArkBot.ViewModel
         private ConsoleViewModel _console;
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
+
+        public ICommand ExitCommand => _exitCommand ?? (_exitCommand = new RelayCommand(parameter => OnExit(parameter), parameter => CanExit(parameter)));
+        private RelayCommand _exitCommand;
+
+        public ICommand ReloadPartialConfig => _reloadPartialConfig ?? (_reloadPartialConfig = new RelayCommand(parameter => OnReloadPartialConfig(parameter), parameter => CanReloadPartialConfig(parameter)));
+        private RelayCommand _reloadPartialConfig;
 
         public ObservableCollection<MenuItemViewModel> ManuallyUpdateServers { get; set; }
         public ObservableCollection<MenuItemViewModel> ManuallyUpdateClusters { get; set; }
@@ -149,6 +156,36 @@ namespace ArkBot.ViewModel
             Application.Current.MainWindow.Close();
         }
 
+        private bool CanReloadPartialConfig(object parameter)
+        {
+            return true;
+        }
+
+        private void OnReloadPartialConfig(object parameter)
+        {
+            if (!File.Exists(Constants.ConfigFilePath)) return;
+
+            var config = (Config)null;
+            string exceptionMessage = null;
+            try
+            {
+                config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Constants.ConfigFilePath));
+            }
+            catch (Exception ex)
+            {
+                exceptionMessage = ex.Message;
+            }
+            if (_config == null)
+            {
+                MessageBox.Show("Config.json is not a valid configuration file." + (!string.IsNullOrWhiteSpace(exceptionMessage) ? "\n" + exceptionMessage : ""), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            //reload partial configuration
+            _config.AccessControl = config.AccessControl;
+            _config.UserRoles = config.UserRoles;
+        }
+
         static void WriteAndWaitForKey(params string[] msgs)
         {
             foreach (var msg in msgs) if (msg != null) System.Console.WriteLine(msg);
@@ -163,8 +200,7 @@ namespace ArkBot.ViewModel
             log4net.Config.XmlConfigurator.Configure();
 
             //load config and check for errors
-            var configPath = @"config.json";
-            if (!File.Exists(configPath))
+            if (!File.Exists(Constants.ConfigFilePath))
             {
                 WriteAndWaitForKey($@"The required file config.json is missing from application directory. Please copy defaultconfig.json, set the correct values for your environment and restart the application.");
                 return;
@@ -180,7 +216,7 @@ namespace ArkBot.ViewModel
             string exceptionMessage = null;
             try
             {
-                _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(configPath));
+                _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Constants.ConfigFilePath));
             }
             catch (Exception ex)
             {
@@ -504,6 +540,19 @@ namespace ArkBot.ViewModel
 
             builder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>().SingleInstance();
 
+            builder.RegisterType<WebApiStartup>().AsSelf();
+            builder.RegisterType<WebApp.WebAppStartup>().AsSelf();
+
+            var webapiConfig = new System.Web.Http.HttpConfiguration();
+            var webappConfig = new System.Web.Http.HttpConfiguration();
+            builder.RegisterInstance(webapiConfig).Keyed<System.Web.Http.HttpConfiguration>("webapi");
+            builder.RegisterInstance(webappConfig).Keyed<System.Web.Http.HttpConfiguration>("webapp");
+
+            builder.RegisterWebApiFilterProvider(webapiConfig);
+            builder.Register(c => new AccessControlAuthorizationFilter(c.Resolve<IConfig>()))
+                .AsWebApiAuthorizationFilterFor<WebApi.Controllers.BaseApiController>()
+                .InstancePerRequest();
+
             //kernel.Bind(typeof(IHubConnectionContext<dynamic>)).ToMethod(context =>
             //        resolver.Resolve<IConnectionManager>().GetHubContext<StockTickerHub>().Clients
             //         ).WhenInjectedInto<IStockTicker>();
@@ -754,11 +803,21 @@ namespace ArkBot.ViewModel
             }
 
             //webapi
-            _webapi = Microsoft.Owin.Hosting.WebApp.Start<WebApiStartup>(url: _config.WebApiListenPrefix);
+            _webapi = Microsoft.Owin.Hosting.WebApp.Start(_config.WebApiListenPrefix, app =>
+            {
+                var startup = Container.Resolve<WebApiStartup>();
+                startup.Configuration(app, _config, Container, webapiConfig);
+            });
             Console.AddLog("Web API started");
 
-            //webapi
-            _webapp = Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppStartup>(url: _config.WebAppListenPrefix);
+
+
+            //webapp
+            _webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.WebAppListenPrefix, app =>
+            {
+                var startup = Container.Resolve<WebApp.WebAppStartup>();
+                startup.Configuration(app, _config, Container, webappConfig);
+            });
             Console.AddLog("Web App started");
 
             if (_config.WebAppRedirectListenPrefix?.Length > 0)

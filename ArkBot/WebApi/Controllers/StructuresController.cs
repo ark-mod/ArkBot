@@ -19,7 +19,8 @@ using System.Web.Http;
 
 namespace ArkBot.WebApi.Controllers
 {
-    public class StructuresController : ApiController
+    [AccessControl("pages", "admin-server")]
+    public class StructuresController : BaseApiController
     {
         private static readonly Dictionary<string, bool> _trashTier = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
         {
@@ -218,17 +219,19 @@ namespace ArkBot.WebApi.Controllers
         private ArkContextManager _contextManager;
         private ISavedState _savedState;
 
-        public StructuresController(ISavedState savedState, ArkContextManager contextManager)
+        public StructuresController(ISavedState savedState, ArkContextManager contextManager, IConfig config) : base(config)
         {
             _savedState = savedState;
             _contextManager = contextManager;
         }
 
+        [AccessControl("admin-server", "structures")]
         public StructuresViewModel Get(string id)
         {
             var context = _contextManager.GetServer(id);
             if (context == null) return null;
 
+            var demoMode = IsDemoMode() ? new DemoMode() : null;
             var result = new StructuresViewModel
             {
                 MapName = context.SaveState?.MapName
@@ -318,7 +321,7 @@ namespace ArkBot.WebApi.Controllers
                         return new StructureOwnerViewModel(new Lazy<int>(() => ids.AddOrUpdate("ownerId", 0, (key2, value) => value + 1)))
                         {
                             OwnerId = arkOwnerId,
-                            Name = first.OwnerName,
+                            Name = demoMode != null ? isTribe ? demoMode.GetTribeName(arkOwnerId) : demoMode.GetPlayerName(arkOwnerId) : first.OwnerName,
                             Type = isTribe ? "tribe" : "player",
                             LastActiveTime = lastActiveTime,
                             CreatureCount = (isTribe ? tribe?.Creatures.Count() : player?.Creatures.Count()) ?? 0

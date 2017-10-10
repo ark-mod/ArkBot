@@ -18,6 +18,8 @@ import { ArkMapComponent } from './arkmap.component';
 import { HttpService } from './http.service';
 import { MessageService } from './message.service';
 import { DataService } from './data.service';
+import { DataServiceResolver } from './data-resolver.service';
+import { AccessControlRouteGuardService } from './access-control-route-guard.service';
 import { SanitizeStylePipe } from './sanitize-style.pipe';
 import { ClickOutsideDirective } from './clickOutside.directive';
 import { ServerListMenuComponent } from './server-list-menu/server-list-menu.component';
@@ -27,10 +29,15 @@ import { AdminServerMenuComponent } from './admin-server-menu/admin-server-menu.
 import { ArkmapStructuresComponent } from './arkmap-structures/arkmap-structures.component';
 import { TimerComponent } from './timer/timer.component';
 import { ConfirmButtonComponent } from './confirm-button/confirm-button.component';
+import { AccessDeniedComponent } from './access-denied/access-denied.component';
+import { DeveloperComponent } from './developer/developer.component';
 
 const appRoutes: Routes = [
   {
-    path: 'player/:id',
+    path: 'player/:playerid',
+    canActivate: [AccessControlRouteGuardService],
+    //resolve: { dataService: DataServiceResolver }, //only use when testing without canActivate (it does the same thing)
+    data: { name: 'player' },
     children: [
       {
         path: '',
@@ -45,6 +52,9 @@ const appRoutes: Routes = [
   },
   {
     path: 'server/:id',
+    canActivate: [AccessControlRouteGuardService],
+    //resolve: { dataService: DataServiceResolver }, //only use when testing without canActivate (it does the same thing)
+    data: { name: 'server' },
     children: [
       {
         path: '',
@@ -59,6 +69,9 @@ const appRoutes: Routes = [
   },
   {
     path: 'admin/:id',
+    canActivate: [AccessControlRouteGuardService],
+    //resolve: { dataService: DataServiceResolver }, //only use when testing without canActivate (it does the same thing)
+    data: { name: 'admin-server' },
     children: [
       {
         path: '',
@@ -73,6 +86,9 @@ const appRoutes: Routes = [
   },
   {
     path: 'servers',
+    canActivate: [AccessControlRouteGuardService],
+    //resolve: { dataService: DataServiceResolver }, //only use when testing without canActivate (it does the same thing)
+    data: { name: 'home' },
     children: [
       {
         path: '',
@@ -84,6 +100,14 @@ const appRoutes: Routes = [
         outlet: 'menu'
       }
     ]
+  },
+  {
+    path: 'developer',
+    component: DeveloperComponent
+  },
+  {
+    path: 'accessdenied',
+    component: AccessDeniedComponent
   },
   { path: '',
     redirectTo: '/servers',
@@ -108,7 +132,9 @@ const appRoutes: Routes = [
     AdminServerMenuComponent,
     ArkmapStructuresComponent,
     TimerComponent,
-    ConfirmButtonComponent
+    ConfirmButtonComponent,
+    AccessDeniedComponent,
+    DeveloperComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),
@@ -123,6 +149,8 @@ const appRoutes: Routes = [
     HttpService, 
     MessageService, 
     DataService,
+    DataServiceResolver,
+    AccessControlRouteGuardService,
     { provide: LOCALE_ID, useValue: "en-US" }],
   bootstrap: [AppComponent]
 })

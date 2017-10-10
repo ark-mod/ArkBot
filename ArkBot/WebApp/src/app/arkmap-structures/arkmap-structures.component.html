@@ -4,7 +4,7 @@
     <div>Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}</div>
     <div *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}</div>
     <div class="w3-margin-bottom">{{currentArea.StructureCount | number}} structures</div>
-    <button *ngIf="dataService.UserIsAdmin" class="w3-button theme-d1" style="width: 100%;" (click)="confirmDestroyCurrentArea()">Destroy this area</button>
+    <button *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')" class="w3-button theme-d1" style="width: 100%;" (click)="confirmDestroyCurrentArea()">Destroy this area</button>
   </ng-container>
 </div>-->
 <div #contextMenu class="contextMenu w3-modal">
@@ -21,7 +21,7 @@
           {{currentArea.StructureCount | number}} structures
         </div>
         <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="setSelectedOwner(currentOwner)">Show only areas for this team</button></div>
-        <div class="w3-section" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="destroyCurrentArea($event)" [width]="100">Destroy this area</confirm-button></div>
+        <div class="w3-section" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroyCurrentArea($event)" [width]="100">Destroy this area</confirm-button></div>
       </div>
     </ng-container>
     <ng-container *ngIf="currentOwner &amp;&amp; !currentArea">
@@ -37,8 +37,8 @@
           {{currentOwner.CreatureCount | number}} creatures
         </div>
         <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="setSelectedOwner(currentOwner)">Show only areas for this team</button></div>
-        <div class="w3-section" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="destroyAllStructuresForTeam($event)" [width]="100">Destroy all structures</confirm-button></div>
-        <div class="w3-section" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="destroyDinosForTeam($event)" [width]="100">Destroy all creatures</confirm-button></div>
+        <div class="w3-section" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroyAllStructuresForTeam($event)" [width]="100">Destroy all structures</confirm-button></div>
+        <div class="w3-section" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroyDinosForTeam($event)" [width]="100">Destroy all creatures</confirm-button></div>
       </div>
     </ng-container>
     <ng-container *ngIf="modalInfo">
@@ -57,7 +57,7 @@
 
 <div class="w3-cell-row">
   <div class="w3-cell"><a id="structures"></a><h2 class="theme-text-d1 w3-left">Structures</h2></div>
-  <div class="w3-cell w3-cell-middle" *ngIf="dataService.UserIsAdmin"><confirm-button (callback)="saveWorld($event)" class="w3-right" [width]="undefined">Save World</confirm-button></div>
+  <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="saveWorld($event)" class="w3-right" [width]="undefined">Save World</confirm-button></div>
 </div>
 
 <div class="wrapper">

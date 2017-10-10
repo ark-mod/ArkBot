@@ -9,7 +9,7 @@
 <div id="page">
   <div class="w3-bar">
     <breadcrumb prefix="Home" [useBootstrap]="false" class="breadcrumb w3-bar-item"></breadcrumb>
-    <div class="w3-bar-item w3-right w3-tiny theme-l1"><span *ngIf="dataService.Servers?.User">Logged in as {{dataService.Servers.User.Name}} | <a [href]="getLogoutUrl()">Logout</a> | </span><span *ngIf="!dataService.Servers?.User"><a href="#" (click)="openLogin($event)">Login</a> | </span>Theme: <a href="#" (click)="setTheme('light')">Light</a> | <a href="#" (click)="setTheme('dark')">Dark</a></div>
+    <div class="w3-bar-item w3-right w3-tiny theme-l1"><span *ngIf="dataService.Servers?.User?.SteamId">Logged in as {{dataService.Servers.User.Name}} | <a [href]="getLogoutUrl()">Logout</a> | </span><span *ngIf="!dataService.Servers?.User?.SteamId"><a href="#" (click)="openLogin($event)">Login</a> | </span>Theme: <a href="#" (click)="setTheme('light')">Light</a> | <a href="#" (click)="setTheme('dark')">Dark</a></div>
   </div>
   <router-outlet></router-outlet>
 </div>

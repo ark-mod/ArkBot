@@ -1,4 +1,6 @@
-﻿namespace ArkBot
+﻿using System.Collections.Generic;
+
+namespace ArkBot
 {
     public interface IConfig
     {
@@ -18,7 +20,8 @@
         string AdminRoleName { get; set; }
         string DeveloperRoleName { get; set; }
         string MemberRoleName { get; set; }
-        UserRolesConfigSection UserRoles { get; set; }
+        Dictionary<string, string[]> UserRoles { get; set; }
+        Dictionary<string, Dictionary<string, string[]>> AccessControl { get; set; }
         string[] EnabledChannels { get; set; }
         string InfoTopicChannel { get; set; }
         string AnnouncementChannel { get; set; }

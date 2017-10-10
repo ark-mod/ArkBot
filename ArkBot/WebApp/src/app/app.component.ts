@@ -26,7 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private httpService: HttpService,
     private breadcrumbService: BreadcrumbService,
     private notificationsService: NotificationsService) { 
-      //breadcrumbService.addFriendlyNameForRoute('/servers', 'Servers');
+      breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
       breadcrumbService.hideRoute('/player');
       breadcrumbService.hideRoute('/servers');
       breadcrumbService.hideRoute('/server');
@@ -38,7 +38,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.currentUrl = window.location.href || '/'
     this.serversUpdatedSubscription = this.dataService.ServersUpdated$.subscribe(servers => {
       if (!this.serversUpdatedBefore) {
-        if (servers && !servers.User) {
+        if (servers && (!servers.User || !servers.User.SteamId)) {
           //prompt for login
           this.showLogin = true;
         }

@@ -40,7 +40,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private httpService: HttpService,
-    private dataService: DataService,
+    public dataService: DataService,
     private messageService: MessageService,
     private notificationsService: NotificationsService,
     private ref: ChangeDetectorRef) {
@@ -50,10 +50,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
       this.httpService
         .getPlayer(this.steamId)
         .then(player => {
-          this.serverKey = Object.keys(player.Servers)[0];
+          var serverKeys = Object.keys(player.Servers);
+          if (!this.serverKey || serverKeys.find(k => k == this.serverKey) == undefined) this.serverKey = serverKeys.length > 0 ? serverKeys[0]: null;
 
           var clusterKeys = Object.keys(player.Clusters);
-          this.clusterKey = clusterKeys.length > 0 ? clusterKeys[0] : null;
+          if (!this.clusterKey || clusterKeys.find(k => k == this.clusterKey) == undefined) this.clusterKey = clusterKeys.length > 0 ? clusterKeys[0] : null;
           this.player = player;
 
           this.sort();
@@ -75,7 +76,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => this.menuOption = menuOption);
-    this.steamId = this.route.snapshot.params['id'];
+    this.steamId = this.route.snapshot.params['playerid'];
 
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
 
@@ -87,8 +88,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.serverUpdatedSubscription.unsubscribe();
   }
 
-  haveMatingCooldown(nextMating: string): boolean {
-    return new Date(nextMating) > new Date();
+  haveMatingCooldown(creature: any): boolean {
+    return creature.NextMating != null ? new Date(creature.NextMating) > new Date() : false;
   }
 
   toDate(datejson: string): string {
@@ -231,7 +232,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   sumKibbleAndEggs(): number {
-    return this.player.Servers[this.serverKey].KibblesAndEggs.reduce((a, b) => a + b.KibbleCount + b.EggCount, 0);
+    return this.player.Servers[this.serverKey].KibblesAndEggs != undefined ? this.player.Servers[this.serverKey].KibblesAndEggs.reduce((a, b) => a + b.KibbleCount + b.EggCount, 0) : 0;
   }
 
   showServerUpdateNotification(serverKey: string): void {
@@ -266,11 +267,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     s.imprintNotifications = !s.imprintNotifications;
   }
 
-  isSelf(): boolean {
-    var user = this.dataService.Servers ? this.dataService.Servers.User : undefined;
-    return user && user.SteamId ? user.SteamId == this.steamId : false;
-  }
-
   activeCreaturesMode(mode: string): boolean {
     return mode == this.creaturesMode;
   }
@@ -281,5 +277,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   copyCreature(creature: any): void {
 
+  }
+
+  getCurrentServer() {
+    if (!(this.dataService && this.dataService.Servers && this.dataService.Servers.Servers)) return undefined;
+    let server =  this.dataService.Servers.Servers.find(s => s.Key == this.serverKey);
+    return server;
   }
 }

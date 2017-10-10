@@ -26,7 +26,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private httpService: HttpService,
-    private dataService: DataService,
+    public dataService: DataService,
     private messageService: MessageService,
     private notificationsService: NotificationsService) {
     }

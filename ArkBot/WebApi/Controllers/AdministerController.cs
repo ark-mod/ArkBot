@@ -20,19 +20,20 @@ using System.Web.Http.Results;
 
 namespace ArkBot.WebApi.Controllers
 {
-    [Authorize(Roles = "admin")]
-    public class AdministerController : ApiController
+    [AccessControl("pages", "admin-server")]
+    public class AdministerController : BaseApiController
     {
         private ArkContextManager _contextManager;
 
         private Regex _rDestroyedStructureCount = new Regex(@"^Destroyed (?<num>\d+) structures", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
-        public AdministerController(ArkContextManager contextManager)
+        public AdministerController(ArkContextManager contextManager, IConfig config) : base(config)
         {
             _contextManager = contextManager;
         }
 
         [HttpGet]
+        [AccessControl("admin-server", "structures-rcon")]
         public async Task<HttpResponseMessage> SaveWorld(string id)
         {
             var serverContext = _contextManager.GetServer(id);
@@ -48,6 +49,7 @@ namespace ArkBot.WebApi.Controllers
         }
 
         [HttpGet]
+        [AccessControl("admin-server", "structures-rcon")]
         public async Task<HttpResponseMessage> DestroyAllStructuresForTeamId(string id, string teamId)
         {
             var serverContext = _contextManager.GetServer(id);
@@ -65,6 +67,7 @@ namespace ArkBot.WebApi.Controllers
         }
 
         [HttpGet]
+        [AccessControl("admin-server", "structures-rcon")]
         public async Task<HttpResponseMessage> DestroyStructuresForTeamIdAtPosition(string id, string teamId, float x, float y, float radius, int rafts)
         {
             var serverContext = _contextManager.GetServer(id);
@@ -82,6 +85,7 @@ namespace ArkBot.WebApi.Controllers
         }
 
         [HttpGet]
+        [AccessControl("admin-server", "structures-rcon")]
         public async Task<HttpResponseMessage> DestroyDinosForTeamId(string id, string teamId)
         {
             var serverContext = _contextManager.GetServer(id);

@@ -9,7 +9,7 @@
     <p>No data could be loaded for the given server key.</p>
   </div> 
 </section>
-<section *ngIf="isMenuActive('players') &amp;&amp; server" class="w3-container">
+<section *ngIf="isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'players')" class="w3-container">
   <h2 class="theme-text-d1">Players</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -28,10 +28,10 @@
       </thead>
       <tbody>
         <tr *ngFor="let player of server.Players">
-          <td>{{player.SteamId}}</td>
+          <td>{{player.FakeSteamId || player.SteamId}}</td>
           <td>{{player.Id}}</td>
           <!--<td>{{player.SteamName}}</td>-->
-          <td><a [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a></td>
+          <td><a *ngIf="dataService.hasFeatureAccess('pages', 'player', player.SteamId); else players_player_no_link" [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a><ng-template #players_player_no_link>{{player.CharacterName}}</ng-template></td>
           <td>{{player.TribeName}}</td>
           <td>{{player.TribeId}}</td>
           <td>{{player.StructureCount}}</td>
@@ -42,7 +42,7 @@
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('tribes') &amp;&amp; server" class="w3-container">
+<section *ngIf="isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'tribes')" class="w3-container">
   <h2 class="theme-text-d1">Tribes</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -60,7 +60,7 @@
         <tr *ngFor="let tribe of server.Tribes">
           <td>{{tribe.Id}}</td>
           <td>{{tribe.Name}}</td>
-          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><span *ngIf="!last">, </span></span></td>
+          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a *ngIf="dataService.hasFeatureAccess('pages', 'player', member); else tribes_player_no_link" [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribes_player_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf="!last">, </span></span></td>
           <td>{{tribe.StructureCount}}</td>
           <td>{{tribe.CreatureCount}}</td>
           <td>{{toRelativeDate(tribe.LastActiveTime)}}</td>
@@ -69,6 +69,6 @@
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('structures')" class="w3-container">
+<section *ngIf="isMenuActive('structures') &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>

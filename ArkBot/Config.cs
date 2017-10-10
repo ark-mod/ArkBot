@@ -14,12 +14,13 @@ namespace ArkBot
         {
             // Default values
             Ssl = new SslConfigSection();
-            UserRoles = new UserRolesConfigSection();
+            UserRoles = new Dictionary<string, string[]>();
             ArkMultipliers = new ArkMultipliersConfigSection();
             Servers = new ServerConfigSection[] { };
             Clusters = new ClusterConfigSection[] { };
             DiscordBotEnabled = true;
             WebAppRedirectListenPrefix = new string[] { };
+            AccessControl = new Dictionary<string, Dictionary<string, string[]>>();
         }
 
         [JsonProperty(PropertyName = "botId")]
@@ -87,8 +88,12 @@ namespace ArkBot
         public string MemberRoleName { get; set; }
 
         [JsonProperty(PropertyName = "userRoles")]
-        [Description("Role based access control.")]
-        public UserRolesConfigSection UserRoles { get; set; }
+        [Description("Explicit steam user role assignment.")]
+        public Dictionary<string, string[]> UserRoles { get; set; }
+
+        [JsonProperty(PropertyName = "accessControl")]
+        [Description("Per-feature role based access control configuration.")]
+        public Dictionary<string, Dictionary<string, string[]>> AccessControl { get; set; }
 
         [JsonProperty(PropertyName = "enabledChannels")]
         [Description("A list of channels where the bot will listen to and answer commands.")]
@@ -145,18 +150,6 @@ namespace ArkBot
         [JsonProperty(PropertyName = "clusters")]
         [Description("Cluster instance configurations.")]
         public ClusterConfigSection[] Clusters { get; set; }
-    }
-
-    public class UserRolesConfigSection
-    {
-        public UserRolesConfigSection()
-        {
-            Admins = new string[] { };
-        }
-
-        [JsonProperty(PropertyName = "admins")]
-        [Description("Collection of steam id(s) belonging to the admin role.")]
-        public string[] Admins { get; set; }
     }
 
     public class SslConfigSection

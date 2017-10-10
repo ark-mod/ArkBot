@@ -27,10 +27,10 @@ namespace ArkBot.WebApp
     {
         // This code configures the Web App. The Startup class is specified as a type
         // parameter in the WebApp.Start method.
-        public void Configuration(IAppBuilder appBuilder)
+        public void Configuration(IAppBuilder appBuilder, IConfig _config, IContainer container, HttpConfiguration config)
         {
             // Configure Web App for self-host. 
-            appBuilder.UseAutofacMiddleware(Workspace.Container);
+            appBuilder.UseAutofacMiddleware(container);
             appBuilder.UseCompressionModule();
             appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseNancy(new Nancy.Owin.NancyOptions

@@ -9,7 +9,7 @@
     <p>No data could be loaded for the given server key.</p>
   </div> 
 </section>
-<section *ngIf="isMenuActive('players') &amp;&amp; server" class="w3-container">
+<section *ngIf="isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'players')" class="w3-container">
   <h2 class="theme-text-d1">Players</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -27,7 +27,7 @@
         <tr *ngFor="let player of filteredPlayers">
           <!--<td><a [routerLink]="'/player/' + player.SteamId">{{player.SteamId}}</a></td>-->
           <!--<td>{{player.SteamName}}</td>-->
-          <td><a [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a></td>
+          <td><a *ngIf="dataService.hasFeatureAccess('pages', 'player', player.SteamId); else player_no_link" [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a><ng-template #player_no_link>{{player.CharacterName}}</ng-template></td>
           <td>{{player.TribeName}}</td>
           <!--<td>{{player.TribeId}}</td>-->
           <td>{{toRelativeDate(player.LastActiveTime)}}</td>
@@ -36,7 +36,7 @@
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('tribes') &amp;&amp; server" class="w3-container">
+<section *ngIf="isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'tribes')" class="w3-container">
   <h2 class="theme-text-d1">Tribes</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
@@ -52,7 +52,7 @@
         <tr *ngFor="let tribe of filteredTribes">
           <td>{{tribe.Id}}</td>
           <td>{{tribe.Name}}</td>
-          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><span *ngIf="!last">, </span></span></td>
+          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a *ngIf="dataService.hasFeatureAccess('pages', 'player', member); else tribe_member_no_link" [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribe_member_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf="!last">, </span></span></td>
           <td>{{toRelativeDate(tribe.LastActiveTime)}}</td>
         </tr>
       </tbody>
