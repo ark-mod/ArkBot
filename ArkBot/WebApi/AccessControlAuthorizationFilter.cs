@@ -100,19 +100,8 @@ namespace ArkBot.WebApi
             if (actionContext == null) throw ArgumentNull("actionContext");
             if (attribute == null) throw ArgumentNull("attribute");
 
-            IPrincipal principal = actionContext.ControllerContext.RequestContext.Principal;
-            if (((principal == null) || (principal.Identity == null)) || !principal.Identity.IsAuthenticated)
-            {
-                return false;
-            }
-
-            if (!(principal is ClaimsPrincipal))
-            {
-                return false;
-            }
-
-            var claim = principal as ClaimsPrincipal;
-            var user = WebApiHelper.GetUser(claim, _config);
+            var principal = actionContext.ControllerContext.RequestContext.Principal as ClaimsPrincipal;
+            var user = WebApiHelper.GetUser(principal, _config);
 
             var idObj = (object)null;
             if (idParamName != null) actionContext.ActionArguments?.TryGetValue(idParamName, out idObj);
