@@ -143,6 +143,10 @@ namespace ArkBot
         [Description("Configure Web App and WebAPI to use SSL with a free certificate from Lets Encrypt")]
         public SslConfigSection Ssl { get; set; }
 
+        [JsonProperty(PropertyName = "savegameExtractionMaxDegreeOfParallelism")]
+        [Description("Max degree of parallelism to use for savegame extraction. Change only if experiencing out of memory exceptions.")]
+        public int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
+
         [JsonProperty(PropertyName = "servers")]
         [Description("Server instance configurations.")]
         public ServerConfigSection[] Servers { get; set; }
@@ -231,6 +235,10 @@ namespace ArkBot
         [JsonProperty(PropertyName = "saveFilePath")]
         [Description("Absolute file path of the .ark save file to monitor/extract data from.")]
         public string SaveFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "displayAddress")]
+        [Description("Public server address visible to players.")]
+        public string DisplayAddress { get; set; }
 
         [JsonProperty(PropertyName = "ip")]
         [Description("The IP address used to connect to this server instance.")]

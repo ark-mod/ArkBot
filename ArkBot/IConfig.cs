@@ -34,6 +34,7 @@ namespace ArkBot
         string PowershellFilePath { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
         SslConfigSection Ssl { get; set; }
+        int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }

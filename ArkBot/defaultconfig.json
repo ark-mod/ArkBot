@@ -84,11 +84,13 @@
     "babyMatureSpeedMultiplier": 1.0,
     "cuddleIntervalMultiplier": 1.0
   },
+  "savegameExtractionMaxDegreeOfParallelism":  null,
   "servers": [
     {
       "key": "server1",
       "cluster": "cluster1",
       "saveFilePath": "C:\\ARK Servers\\server1\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
+      "displayAddress": "myarkserver.domain.com:27015",
       "ip": "127.0.0.1",
       "port": 27015,
       "rconPort": 27020,
@@ -104,6 +106,7 @@
       "key": "server2",
       "cluster" :  "cluster1",
       "saveFilePath": "C:\\ARK Servers\\server2\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
+      "displayAddress": "myarkserver.domain.com:27016",
       "ip": "127.0.0.1",
       "port": 27016,
       "rconPort": 27021,
