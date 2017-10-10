@@ -11,15 +11,17 @@ namespace ArkBot.WebApi.Model
         static readonly private Dictionary<string, string> _crops = new Dictionary<string, string>
         {
             { "PrimalItemConsumable_Seed_DefensePlant_C", "Plant Species X" },
+            { "PrimalItemConsumable_Seed_PlantSpeciesY_C", "Plant Species Y" },
             { "PrimalItemConsumable_Seed_Rockarrot_C", "Rockarrot" },
             { "PrimalItemConsumable_Seed_Longrass_C", "Longrass" },
             { "PrimalItemConsumable_Seed_Savoroot_C", "Savoroot" },
             { "PrimalItemConsumable_Seed_Citronal_C", "Citronal" },
-            { "PrimalItemConsumable_Berry_Amarberry_C", "Amarberry" },
-            { "PrimalItemConsumable_Berry_Azulberry_C", "Azulberry" },
-            { "PrimalItemConsumable_Berry_Tintoberry_C", "Tintoberry" },
-            { "PrimalItemConsumable_Berry_Stimberry_C", "Stimberry" },
-            { "PrimalItemConsumable_Berry_Narcoberry_C", "Narcoberry" }
+            { "PrimalItemConsumable_Seed_Amarberry_C", "Amarberry" },
+            { "PrimalItemConsumable_Seed_Azulberry_C", "Azulberry" },
+            { "PrimalItemConsumable_Seed_Tintoberry_C", "Tintoberry" },
+            { "PrimalItemConsumable_Seed_Mejoberry_C", "Mejoberry" },
+            { "PrimalItemConsumable_Seed_Stimberry_C", "Stimberry" },
+            { "PrimalItemConsumable_Seed_Narcoberry_C", "Narcoberry" }
         };
 
         static readonly private Dictionary<string, string> _sizes = new Dictionary<string, string>
