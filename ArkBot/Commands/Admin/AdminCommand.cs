@@ -231,8 +231,15 @@ namespace ArkBot.Commands.Experimental
 
             // collection of servers that this countdown applies to
             var serverContexts = clusterContext != null ? _contextManager.GetServersInCluster(clusterContext.Config.Key) 
+                : serverContext == null && !string.IsNullOrWhiteSpace(args.ServerKey) ? null
                 : serverContext == null ? _contextManager.Servers.ToArray() 
                 : new ArkServerContext[] { serverContext };
+
+            if (serverContexts == null)
+            {
+                await e.Channel.SendMessage($"**The given server instance key is not valid.**");
+                return;
+            }
 
             if (isCountdown)
             {

@@ -30,12 +30,10 @@ namespace ArkBot.WebApi
 {
     public class WebApiStartup
     {
-        // This code configures Web API. The Startup class is specified as a type
-        // parameter in the WebApp.Start method.
-        public void Configuration(IAppBuilder appBuilder)
+        // This code configures Web API.
+        public void Configuration(IAppBuilder appBuilder, IConfig _config, IContainer container, HttpConfiguration config)
         {
             // Configure Web API for self-host. 
-            HttpConfiguration config = new HttpConfiguration();
             config.Routes.MapHttpRoute(
                 name: "DefaultAuth",
                 routeTemplate: "api/{controller}/{action}/{id}",
@@ -53,13 +51,14 @@ namespace ArkBot.WebApi
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
-            config.DependencyResolver = new AutofacWebApiDependencyResolver(Workspace.Container);
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
             config.Formatters.Add(new BrowserJsonFormatter());
+            config.Services.Replace(typeof(System.Web.Http.ExceptionHandling.IExceptionLogger), new WebApiExceptionLogger());
 
             var hubConfig = new HubConfiguration { EnableDetailedErrors = true };
-            hubConfig.Resolver = Workspace.Container.Resolve<IDependencyResolver>();
+            hubConfig.Resolver = container.Resolve<IDependencyResolver>();
 
-            appBuilder.UseAutofacMiddleware(Workspace.Container);
+            appBuilder.UseAutofacMiddleware(container);
             appBuilder.UseAutofacWebApi(config);
             appBuilder.UseCompressionModule();
             appBuilder.UseCors(CorsOptions.AllowAll);
@@ -68,7 +67,7 @@ namespace ArkBot.WebApi
             {
                 AuthenticationType = "Cookie",
                 AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Active,
-                CookieSecure = Workspace.Instance._config.Ssl?.Enabled == true ? CookieSecureOption.Always : CookieSecureOption.SameAsRequest
+                CookieSecure = _config.Ssl?.Enabled == true ? CookieSecureOption.Always : CookieSecureOption.SameAsRequest
             });
 
             appBuilder.SetDefaultSignInAsAuthenticationType("ExternalCookie");
@@ -78,7 +77,7 @@ namespace ArkBot.WebApi
                 AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Passive,
             });
 
-            appBuilder.UseSteamAuthentication(applicationKey: Workspace.Instance._config.SteamApiKey);
+            appBuilder.UseSteamAuthentication(applicationKey: _config.SteamApiKey);
 
             appBuilder.UseWebApi(config);
             appBuilder.MapSignalR(hubConfig);

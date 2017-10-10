@@ -22,8 +22,12 @@ namespace ArkBot.WebApi.Controllers
     /// <summary>
     /// Supplies map images
     /// </summary>
-    public class MapController : ApiController
+    public class MapController : BaseApiController
     {
+        public MapController(IConfig config) : base(config)
+        {
+        }
+
         /// <param name="id">MapName</param>
         /// <returns></returns>
         public HttpResponseMessage Get(string id)

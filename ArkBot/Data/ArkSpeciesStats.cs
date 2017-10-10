@@ -180,6 +180,11 @@ namespace ArkBot.Data
 
         public enum Stat { Health, Stamina, Oxygen, Food, Weight, Damage, Speed, Torpor }
 
+        public SpeciesStat GetSpecies(string[] speciesaliases)
+        {
+            return SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
+        }
+
         public double? GetMaxValue(string[] speciesaliases, Stat stat, int baseLevel, int tamedLevel, double tamingEfficiency, double imprintingBonus = 0)
         {
             var index = (int)stat;

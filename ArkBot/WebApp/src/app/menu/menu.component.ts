@@ -10,6 +10,7 @@ export class MenuComponent implements OnInit, OnDestroy {
 private menuOption: string = undefined; 
   private menuOptionSubscription: any;
   public menuVisible: boolean = false;
+  private className: string = "menucontainer";
 
   constructor(
     public dataService: DataService) { }

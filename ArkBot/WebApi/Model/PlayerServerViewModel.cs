@@ -32,7 +32,9 @@ namespace ArkBot.WebApi.Model
         public DateTime SavedAt { get; set; }
         public List<TamedCreatureViewModel> Creatures { get; set; }
 
-        // these fields are only set when creature is owned by the authenticated person making the request
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string FakeSteamId { get; set; }
+
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<KibbleAndEggViewModel> KibblesAndEggs { get; set; }
 
@@ -41,5 +43,8 @@ namespace ArkBot.WebApi.Model
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public List<ElectricalGeneratorViewModel> ElectricalGenerators { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public List<TribeLogEntryViewModel> TribeLog { get; set; }
     }
 }

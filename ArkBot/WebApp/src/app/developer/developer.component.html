@@ -1,0 +1,3 @@
+<section class="w3-container">
+  <button class="w3-button" [ngClass]="{'theme-d1': demoMode, 'theme-l2': !demoMode, 'theme-hover': !demoMode}" (click)="toggleDemoMode()"><i *ngIf="demoMode" class="material-icons" style="margin: -5px 5px -5px -5px; vertical-align: middle;">check</i>{{(demoMode ? "Demo Mode Enabled" : "Enable Demo Mode")}}</button>
+</section>

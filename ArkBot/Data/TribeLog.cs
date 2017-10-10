@@ -12,6 +12,7 @@ namespace ArkBot.Data
         public int Day { get; set; }
         public TimeSpan Time { get; set; }
         public string Message { get; set; }
+        public string MessageUnformatted {  get { return _rRemoveColors.Replace(Message, "").TrimEnd('!'); } }
 
         public string Raw { get; set; }
 
@@ -20,7 +21,7 @@ namespace ArkBot.Data
 
         public string ToStringPretty()
         {
-            return $"Day {Day}, {Time:hh':'mm':'ss}: {_rRemoveColors.Replace(Message, "").TrimEnd('!')}";
+            return $"Day {Day}, {Time:hh':'mm':'ss}: {MessageUnformatted}";
         }
 
         public static TribeLog FromLog(string log)

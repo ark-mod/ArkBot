@@ -20,5 +20,18 @@ namespace ArkBot.Helpers
                             (double)(1 / (1 + (tamedIneffectivenessModifier ?? 0m))),
                             (double)(imprintingQuality ?? 0m));
         }
+
+        public static double? CalculateBabyFullyGrown(string speciesNameOrClass, float babyAge, IConfig config)
+        {
+            var speciesAliases = ArkSpeciesAliases.Instance.GetAliases(speciesNameOrClass) ?? new[] { speciesNameOrClass };
+            var data = ArkSpeciesStats.Instance.Data?.GetSpecies(speciesAliases);
+            if (data == null) return null;
+
+            var adj = data.Breeding.GetAdjusted(config.ArkMultipliers);
+
+            var remaining = (1.0f - babyAge) * adj.MaturationTime;
+
+            return remaining;
+        }
     }
 }

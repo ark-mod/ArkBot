@@ -606,8 +606,13 @@
     <Compile Include="Voting\VoteStateChangeResult.cs" />
     <Compile Include="Voting\InitiateVoteResult.cs" />
     <Compile Include="Voting\VotingManager.cs" />
+    <Compile Include="WebApi\DemoMode.cs" />
+    <Compile Include="WebApi\Model\TribeLogEntryViewModel.cs" />
+    <Compile Include="WebApi\PlayerIdAttribute.cs" />
+    <Compile Include="WebApi\AccessControlAuthorizationFilter.cs" />
     <Compile Include="WebApi\Controllers\AdministerController.cs" />
     <Compile Include="WebApi\Controllers\AuthenticationController.cs" />
+    <Compile Include="WebApi\Controllers\BaseApiController.cs" />
     <Compile Include="WebApi\Controllers\MapController.cs" />
     <Compile Include="WebApi\Controllers\BulkController.cs" />
     <Compile Include="WebApi\Controllers\AdminServerController.cs" />
@@ -616,6 +621,8 @@
     <Compile Include="WebApi\Controllers\TribeController.cs" />
     <Compile Include="WebApi\Controllers\ServersController.cs" />
     <Compile Include="WebApi\Controllers\PlayerController.cs" />
+    <Compile Include="WebApi\AccessControlAttribute.cs" />
+    <Compile Include="WebApi\WebApiExceptionLogger.cs" />
     <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
     <Compile Include="WebApi\Model\AdministerResponseViewModel.cs" />
     <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
@@ -629,6 +636,7 @@
     <Compile Include="WebApi\Model\AdminServerViewModel.cs" />
     <Compile Include="WebApi\Model\AdminPlayerReferenceViewModel.cs" />
     <Compile Include="WebApi\Model\AdminTribeReferenceViewModel.cs" />
+    <Compile Include="WebApi\Model\AccessControlViewModel.cs" />
     <Compile Include="WebApi\Model\StructureBase.cs" />
     <Compile Include="WebApi\Model\StructureOwnerViewModel.cs" />
     <Compile Include="WebApi\Model\StructuresViewModel.cs" />

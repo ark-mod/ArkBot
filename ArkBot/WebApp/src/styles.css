@@ -108,14 +108,14 @@ body { margin-bottom: 2em;}
     color: #2196f3;
 }
 
-#page { margin-left: 220px; }
+.menucontainer + #page { margin-left: 220px; }
 #menu.w3-sidebar { width: 220px; padding-bottom: 10px; }
 #menu .w3-cell { display: inline-block; width: 100%; text-align: left; }
 #menucontent.hide { display: block; }
 #menubtn { display: none; }
 
 @media screen and (max-width: 767px) {
-    #page { margin-left: 0px; }
+    .menucontainer + #page { margin-left: 0px; }
     #menu.w3-sidebar
     {
         position: relative !important; width: auto;

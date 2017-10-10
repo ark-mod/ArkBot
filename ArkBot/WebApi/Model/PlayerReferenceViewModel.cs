@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +16,8 @@ namespace ArkBot.WebApi.Model
         public string TribeName { get; set; }
         public int? TribeId { get; set; }
         public DateTime LastActiveTime { get; set; }
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string FakeSteamId { get; set; }
     }
 }

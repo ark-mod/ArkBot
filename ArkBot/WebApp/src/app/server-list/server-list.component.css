@@ -1,0 +1,7 @@
+.serverdetails th {
+    white-space: nowrap;
+}
+
+.serverdetails td {
+    width: 99%;
+}

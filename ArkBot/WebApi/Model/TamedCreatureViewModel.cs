@@ -31,6 +31,7 @@ namespace ArkBot.WebApi.Model
         public float? TopoMapX { get; set; }
         public float? TopoMapY { get; set; }
         public DateTime? NextMating { get; set; }
+        public DateTime? BabyFullyGrown { get; set; }
         public DateTime? BabyNextCuddle { get; set; }
         public string OwnerType { get; set; }
 

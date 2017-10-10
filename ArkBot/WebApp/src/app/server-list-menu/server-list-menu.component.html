@@ -2,9 +2,8 @@
   <h2 class="theme-text-d1">Servers</h2>
   <div class="w3-cell-row theme-l2">
     <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('overview')}" (click)="menu.activate('overview')">Overview</div>
-    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pveisland')}" (click)="menu.activate('pveisland')">pveisland</div>
-    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pvecenter')}" (click)="menu.activate('pvecenter')">pvecenter</div>
-    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pvescorched')}" (click)="menu.activate('pvescorched')">pvescorched</div>
-    <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('pveragnarok')}" (click)="menu.activate('pveragnarok')">pveragnarok</div>
+    <ng-container *ngIf="dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')">
+      <div *ngFor="let server of dataService.Servers.Servers" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active(server.Key)}" (click)="menu.activate(server.Key)">{{server.Key}}</div>
+    </ng-container>
   </div>
 </app-menu>

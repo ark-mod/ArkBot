@@ -15,27 +15,37 @@ using System.Web.Http;
 
 namespace ArkBot.WebApi.Controllers
 {
-    public class PlayerController : ApiController
+    public class PlayerController : BaseApiController
     {
         private ArkContextManager _contextManager;
-        private IConfig _config;
 
-        public PlayerController(ArkContextManager contextManager, IConfig config)
+        public PlayerController(ArkContextManager contextManager, IConfig config) : base(config)
         {
             _contextManager = contextManager;
-            _config = config;
         }
 
         /// <param name="id">steamId</param>
         /// <returns></returns>
-        public PlayerViewModel Get(string id)
+        [AccessControl("pages", "player")]
+        public PlayerViewModel Get([PlayerId] string id)
         {
+            var demoMode = IsDemoMode() ? new DemoMode() : null;
             var result = new PlayerViewModel
             {
             };
 
             var uservm = WebApiHelper.GetUser(Request, _config);
-            var isSelf = uservm?.SteamId != null ? id.Equals(uservm.SteamId, StringComparison.OrdinalIgnoreCase) : false;
+
+            // access control
+            var incProfile = HasFeatureAccess("player", "profile", id);
+            var incProfileDetailed = HasFeatureAccess("player", "profile-detailed", id);
+            var incCreatures = HasFeatureAccess("player", "creatures", id);
+            var incCreaturesBaseStats = HasFeatureAccess("player", "creatures-basestats", id);
+            var incCreaturesCloud = HasFeatureAccess("player", "creatures-cloud", id);
+            var incCrops = HasFeatureAccess("player", "crops", id);
+            var incGenerators = HasFeatureAccess("player", "generators", id);
+            var incKibblesEggs = HasFeatureAccess("player", "kibbles-eggs", id);
+            var incTribeLog = HasFeatureAccess("player", "tribelog", id);
 
             var players = _contextManager.Servers.ToDictionary(x => x.Config.Key, x => x.Players?.FirstOrDefault(y => y.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase)));
             foreach (var context in _contextManager.Servers)
@@ -43,8 +53,41 @@ namespace ArkBot.WebApi.Controllers
                 PlayerServerViewModel vm = null;
 
                 var player = players[context.Config.Key];
-                if (player == null) vm = BuildViewModelForTransferedPlayer(context, id, players.Values.Where(x => x != null).Select(x => x.Id).ToArray(), isSelf); //player have local profile on other server
-                else vm = BuildViewModelForPlayer(context, player, isSelf); //player with local profile
+                if (player == null)
+                {
+                    vm = BuildViewModelForTransferedPlayer(
+                        context,
+                        _config,
+                        id,
+                        players.Values.Where(x => x != null).Select(x => x.Id).ToArray(),
+                        demoMode,
+                        incProfile,
+                        incProfileDetailed,
+                        incCreatures,
+                        incCreaturesBaseStats,
+                        incCreaturesCloud,
+                        incCrops,
+                        incGenerators,
+                        incKibblesEggs,
+                        incTribeLog); //player have local profile on other server
+                }
+                else
+                {
+                    vm = BuildViewModelForPlayer(
+                        context,
+                        _config,
+                        player,
+                        demoMode,
+                        incProfile, 
+                        incProfileDetailed, 
+                        incCreatures, 
+                        incCreaturesBaseStats, 
+                        incCreaturesCloud, 
+                        incCrops, 
+                        incGenerators, 
+                        incKibblesEggs,
+                        incTribeLog); //player with local profile
+                }
 
                 if (vm == null) continue;
 
@@ -57,7 +100,7 @@ namespace ArkBot.WebApi.Controllers
                 var cloudInventory = context.Inventories?.FirstOrDefault(x => x.SteamId.Equals(id, StringComparison.OrdinalIgnoreCase));
                 if (cloudInventory == null) continue;
 
-                var vm = BuildClusterViewModelForPlayer(context, cloudInventory);
+                var vm = BuildClusterViewModelForPlayer(context, cloudInventory, demoMode, incCreaturesCloud);
                 if (vm == null) continue;
 
                 result.Clusters.Add(context.Config.Key, vm);
@@ -66,7 +109,21 @@ namespace ArkBot.WebApi.Controllers
             return result;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(ArkServerContext context, string steamId, int[] playerIds, bool isSelf = false)
+        internal static PlayerServerViewModel BuildViewModelForTransferedPlayer(
+            ArkServerContext context, 
+            IConfig config,
+            string steamId, 
+            int[] playerIds,
+            DemoMode demoMode,
+            bool incProfile,
+            bool incProfileDetailed,
+            bool incCreatures, 
+            bool incCreaturesBaseStats, 
+            bool incCreaturesCloud, 
+            bool incCrops, 
+            bool incGenerators, 
+            bool incKibblesEggs,
+            bool incTribeLog)
         {
             if (playerIds == null || playerIds.Length == 0) return null;
 
@@ -82,56 +139,73 @@ namespace ArkBot.WebApi.Controllers
                 ClusterKey = context.Config.Key,
                 SteamId = steamId,
                 TribeId = tribe.Id,
-                TribeName = tribe.Name,
+                TribeName = demoMode?.GetTribeName(tribe.Id) ?? tribe.Name,
                 SavedAt = tribe.SavedAt
             };
 
-            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, playerId, isSelf));
-            if (isSelf)
-            {
-                vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, playerId);
-                vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, playerId);
-                vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, playerId);
-            }
+            if (demoMode != null) vm.FakeSteamId = demoMode.GetSteamId(steamId);
+
+            if (incCreatures) vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, config, playerId, demoMode, incCreaturesBaseStats));
+            if (incKibblesEggs) vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, playerId);
+            if (incCrops) vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, playerId);
+            if (incGenerators) vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, playerId);
+            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, playerId, 100);
 
             return vm;
         }
 
-        internal static PlayerServerViewModel BuildViewModelForPlayer(ArkServerContext context, ArkPlayer player, bool isSelf = false)
+        internal static PlayerServerViewModel BuildViewModelForPlayer(
+            ArkServerContext context, 
+            IConfig config,
+            ArkPlayer player, 
+            DemoMode demoMode, 
+            bool incProfile, 
+            bool incProfileDetailed,
+            bool incCreatures, 
+            bool incCreaturesBaseStats, 
+            bool incCreaturesCloud, 
+            bool incCrops, 
+            bool incGenerators, 
+            bool incKibblesEggs,
+            bool incTribeLog)
         {
+            var tribe = player.TribeId.HasValue ? context.Tribes.FirstOrDefault(x => x.Id == player.TribeId.Value) : null;
             var vm = new PlayerServerViewModel
             {
                 ClusterKey = context.Config.Key,
                 SteamId = player.SteamId,
-                CharacterName = player.CharacterName,
-                Latitude = player.Location?.Latitude,
-                Longitude = player.Location?.Longitude,
-                TopoMapX = player.Location?.TopoMapX,
-                TopoMapY = player.Location?.TopoMapY,
+                FakeSteamId = demoMode?.GetSteamId(player.SteamId),
+                CharacterName = demoMode?.GetPlayerName(player.Id) ?? player.CharacterName,
                 TribeId = player.TribeId,
-                TribeName = player.TribeId.HasValue ? context.Tribes.FirstOrDefault(x => x.Id == player.TribeId.Value)?.Name : null,
+                TribeName = tribe != null ? demoMode?.GetTribeName(tribe.Id) ?? tribe?.Name : null,
                 SavedAt = player.SavedAt
-        };
+            };
 
-            if (!player.IsExternalPlayer)
+            if (incProfileDetailed)
             {
-                vm.Gender = player.Gender.ToString();
-                vm.Level = player.CharacterLevel;
-                vm.EngramPoints = player.TotalEngramPoints;
+                vm.Latitude = player.Location?.Latitude;
+                vm.Longitude = player.Location?.Longitude;
+                vm.TopoMapX = player.Location?.TopoMapX;
+                vm.TopoMapY = player.Location?.TopoMapY;
+
+                if (!player.IsExternalPlayer)
+                {
+                    vm.Gender = player.Gender.ToString();
+                    vm.Level = player.CharacterLevel;
+                    vm.EngramPoints = player.TotalEngramPoints;
+                }
             }
 
-            vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, player.Id, isSelf));
-            if (isSelf)
-            {
-                vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id);
-                vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, player.Id);
-                vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id);
-            }
+            if (incCreatures) vm.Creatures.AddRange(BuildCreatureViewModelsForPlayerId(context, config, player.Id, demoMode, incCreaturesBaseStats));
+            if (incKibblesEggs) vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id);
+            if (incCrops) vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, player.Id);
+            if (incGenerators) vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id);
+            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, player.Id, 100);
 
             return vm;
         }
 
-        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, int playerId, bool isSelf = false)
+        internal static List<TamedCreatureViewModel> BuildCreatureViewModelsForPlayerId(ArkServerContext context, IConfig config, int playerId, DemoMode demoMode, bool incBaseStats = false)
         {
             var result = new List<TamedCreatureViewModel>();
             if (context.TamedCreatures != null)
@@ -158,12 +232,20 @@ namespace ArkBot.WebApi.Controllers
                     var foodStatus = currentFood.HasValue && maxFood.HasValue ? currentFood.Value / (float)maxFood.Value : (float?)null;
                     if (foodStatus.HasValue && foodStatus > 1f) foodStatus = 1f;
 
+                    //baby fully grown
+                    var babyFullyGrownTimeApprox = (DateTime?)null;
+                    if (item.c.IsBaby && item.c.BabyAge.HasValue && context.SaveState.GameTime.HasValue)
+                    {
+                        var babyFullyGrown = ArkDataHelper.CalculateBabyFullyGrown(item.c.ClassName, item.c.BabyAge.Value, config);
+                        babyFullyGrownTimeApprox = context.SaveState.GetApproxDateTimeOf(context.SaveState.GameTime.Value + babyFullyGrown);
+                    }
+
                     var aliases = ArkSpeciesAliases.Instance.GetAliases(item.c.ClassName);
                     var vmc = new TamedCreatureViewModel
                     {
                         Id1 = item.c.Id1,
                         Id2 = item.c.Id2,
-                        Name = item.c.Name,
+                        Name = demoMode?.GetCreatureName(item.c.Id1, item.c.Id2, aliases?.FirstOrDefault()) ?? item.c.Name,
                         ClassName = item.c.ClassName,
                         Species = aliases?.FirstOrDefault(),
                         Aliases = aliases?.Skip(2).ToArray() ?? new string[] { }, //skip primary name and class name
@@ -177,11 +259,12 @@ namespace ArkBot.WebApi.Controllers
                         Longitude = item.c.Location?.Longitude,
                         TopoMapX = item.c.Location?.TopoMapX,
                         TopoMapY = item.c.Location?.TopoMapY,
-                        NextMating = item.c.Gender == ArkCreatureGender.Female ? item.c.NextAllowedMatingTimeApprox : null,
+                        NextMating = !item.c.IsBaby && item.c.Gender == ArkCreatureGender.Female ? item.c.NextAllowedMatingTimeApprox : null,
+                        BabyFullyGrown = babyFullyGrownTimeApprox,
                         BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
                         OwnerType = item.o
                     };
-                    if (isSelf)
+                    if (incBaseStats)
                     {
                         //0: health
                         //1: stamina
@@ -214,22 +297,25 @@ namespace ArkBot.WebApi.Controllers
             return result;
         }
 
-        internal static PlayerClusterViewModel BuildClusterViewModelForPlayer(ArkClusterContext context, ArkCloudInventory cloudInventory)
+        internal static PlayerClusterViewModel BuildClusterViewModelForPlayer(ArkClusterContext context, ArkCloudInventory cloudInventory, DemoMode demoMode, bool incCreaturesCloud)
         {
             var vm = new PlayerClusterViewModel();
 
-            foreach (var c in cloudInventory.Dinos)
+            if (incCreaturesCloud)
             {
-                var aliases = ArkSpeciesAliases.Instance.GetAliases(c.ClassName);
-                var vmc = new CloudCreatureViewModel
+                foreach (var c in cloudInventory.Dinos)
                 {
-                    Name = c.Name,
-                    ClassName = c.ClassName,
-                    Species = aliases?.FirstOrDefault(),
-                    Aliases = aliases?.Skip(2).ToArray() ?? new string[] { }, //skip primary name and class name
-                    Level = c.Level
-                };
-                vm.Creatures.Add(vmc);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliases(c.ClassName);
+                    var vmc = new CloudCreatureViewModel
+                    {
+                        Name = demoMode?.GetCreatureName(c.Id1, c.Id2, aliases?.FirstOrDefault()) ?? c.Name,
+                        ClassName = c.ClassName,
+                        Species = aliases?.FirstOrDefault(),
+                        Aliases = aliases?.Skip(2).ToArray() ?? new string[] { }, //skip primary name and class name
+                        Level = c.Level
+                    };
+                    vm.Creatures.Add(vmc);
+                }
             }
 
             return vm;
@@ -349,6 +435,25 @@ namespace ArkBot.WebApi.Controllers
                     GasolineQuantity = (int)(x.Inventory?.Where(y => y.ClassName.Equals("PrimalItemResource_Gasoline_C", StringComparison.Ordinal)).Sum(y => y.Quantity) ?? 0)
                 };
             }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
+
+            return results;
+        }
+
+        internal static List<TribeLogEntryViewModel> BuildTribeLogViewModelsForPlayerId(ArkServerContext context, int playerId, int? limit = null)
+        {
+            var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
+            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+
+            var tribelogs = tribe?.Logs?.Reverse().Take(limit ?? tribe.Logs.Length).Select(x => Data.TribeLog.FromLog(x)).ToArray() ?? new TribeLog[] { };
+            var results = tribelogs.Select(x =>
+            {
+                return new TribeLogEntryViewModel
+                {
+                    Day = x.Day,
+                    Time = x.Time,
+                    Message = x.MessageUnformatted
+                };
+            }).ToList();
 
             return results;
         }

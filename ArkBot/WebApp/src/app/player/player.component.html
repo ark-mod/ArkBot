@@ -15,42 +15,42 @@
     <button *ngFor="let server of keysGetter(player?.Servers)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': active(server)}" [style.width.%]="serverWidth()" (click)="activate(server)">{{server}}</button>
   </div>
 </section>
-<section *ngIf="isMenuActive('profile') &amp;&amp; player != undefined" class="w3-container">
+<section *ngIf="isMenuActive('profile') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'profile', steamId)" class="w3-container">
   <a id="player"></a><h2 class="theme-text-d1">Player</h2>
   <div class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
           <th>Character Name</th>
-          <th>Gender</th>
+          <th *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">Gender</th>
           <th>Tribe Name</th>
           <th>Steam Id</th>
           <th>Tribe Id</th>
-          <th>Level</th>
-          <th>Engram Points</th>
-          <th>Lat</th>
-          <th>Lng</th>
+          <th *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">Level</th>
+          <th *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">Engram Points</th>
+          <th *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">Lat</th>
+          <th *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">Lng</th>
           <th>Saved At</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>{{player?.Servers[serverKey]?.CharacterName}}</td>
-          <td>{{player?.Servers[serverKey]?.Gender}}</td>
+          <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.Gender}}</td>
           <td>{{player?.Servers[serverKey]?.TribeName}}</td>
-          <td>{{player?.Servers[serverKey]?.SteamId}}</td>
+          <td>{{player?.Servers[serverKey]?.FakeSteamId || player?.Servers[serverKey]?.SteamId}}</td>
           <td>{{player?.Servers[serverKey]?.TribeId}}</td>
-          <td>{{player?.Servers[serverKey]?.Level}}</td>
-          <td>{{player?.Servers[serverKey]?.EngramPoints | number}}</td>
-          <td>{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>
-          <td>{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>
+          <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.Level}}</td>
+          <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.EngramPoints | number}}</td>
+          <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>
+          <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>
           <td>{{toDate(player?.Servers[serverKey]?.SavedAt)}}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('creatures') &amp;&amp; player != undefined" class="w3-container">
+<section *ngIf="isMenuActive('creatures') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'creatures', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="creatures"></a><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredCreatures.length}}</span></h2></div>
     <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
@@ -61,7 +61,7 @@
       <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
       <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
     </div>
-    <div *ngIf="isSelf()" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
+    <div *ngIf="dataService.hasFeatureAccess('player', 'creatures-basestats', steamId)" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
       <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('status')}" [style.width.%]="50" (click)="activateCreaturesMode('status')">Overview / Status</button>
       <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('stats')}" [style.width.%]="50" (click)="activateCreaturesMode('stats')">Base Stats</button>
     </div>
@@ -117,7 +117,7 @@
               <td>{{creature.Latitude | number:'1.1-1'}}</td>
               <td>{{creature.Longitude | number:'1.1-1'}}</td>
               <td>
-                <span *ngIf="haveMatingCooldown(creature.NextMating)">Next mating {{toRelativeDate(creature.NextMating)}}</span>
+                <span *ngIf="haveMatingCooldown(creature)">Next mating {{toRelativeDate(creature.NextMating)}}</span>
                 <div *ngIf="creature.BabyAge != null">
                   <div>
                     <div class="w3-cell w3-cell-middle">Baby</div>
@@ -134,13 +134,13 @@
               <td>{{creature.OwnerType}}</td>
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('stats')">
-              <td>{{creature.BaseStats.Health}}</td>
-              <td>{{creature.BaseStats.Stamina}}</td>
-              <td>{{creature.BaseStats.Oxygen}}</td>
-              <td>{{creature.BaseStats.Food}}</td>
-              <td>{{creature.BaseStats.Weight}}</td>
-              <td>{{creature.BaseStats.Melee}}</td>
-              <td>{{creature.BaseStats.MovementSpeed}}</td>
+              <td>{{creature.BaseStats?.Health}}</td>
+              <td>{{creature.BaseStats?.Stamina}}</td>
+              <td>{{creature.BaseStats?.Oxygen}}</td>
+              <td>{{creature.BaseStats?.Food}}</td>
+              <td>{{creature.BaseStats?.Weight}}</td>
+              <td>{{creature.BaseStats?.Melee}}</td>
+              <td>{{creature.BaseStats?.MovementSpeed}}</td>
               <!--<td><i class="material-icons w3-medium" style="cursor: pointer;" (click)="copyCreature(creature)">content_copy</i></td>-->
             </ng-container>
           </tr>
@@ -149,7 +149,7 @@
     </div>
   </ng-container>
 </section>
-<section *ngIf="isMenuActive('breeding') &amp;&amp; player != undefined" class="w3-container">
+<section *ngIf="isMenuActive('breeding') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'breeding', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="imprint_timers"></a><h2 class="theme-text-d1 w3-left">Breeding <span class="w3-tag w3-large theme-d1">{{imprintCreatures.length}}</span></h2></div>
       <div class="w3-cell w3-cell-middle"><button class="w3-button w3-right" [ngClass]="{'theme-d1': imprintNotifications, 'theme-l2': !imprintNotifications, 'theme-hover': !imprintNotifications}" (click)="imprintNotifications = !imprintNotifications"><i *ngIf="imprintNotifications" class="material-icons" style="margin: -5px 5px -5px -5px; vertical-align: middle;">check</i>{{(imprintNotifications ? "Notifications Enabled" : "Enable Notifications")}}</button></div>
@@ -164,7 +164,8 @@
           <th>Gender</th>
           <th>Base Level</th>
           <th>Imprint</th>
-          <th>Grown</th>
+          <th>Progress</th>
+          <th>Fully Grown At</th>
           <th>Next Imprint</th>
           <th *ngIf="imprintNotifications"></th>
         </tr>
@@ -182,17 +183,18 @@
               <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
             </div>
           </td>
+          <td>{{toDate(creature.BabyFullyGrown)}}</td>
           <td><timer [time]="creature.BabyNextCuddle" [notification]="imprintNotifications" [state]="getStateForCreature(creature)"></timer></td>
           <td *ngIf="imprintNotifications"><input style="top: 0;" class="w3-check w3-right" type="checkbox" [checked]="getStateForCreature(creature).imprintNotifications" (change)="toggleImprintNotificationForCreature(creature)" /></td>
         </tr>
       </tbody>
     </table>
   </div>
-  <!--<p *ngIf="_dataService?.Servers?.Servers[serverKey]" class="w3-small">
-    Last Update {{_dataService?.Servers?.Servers[serverKey]?.LastUpdate}}, Next Update {{_dataService?.Servers?.Servers[serverKey]?.NextUpdate}}
+  <!--<p *ngIf="getCurrentServer() != undefined" class="w3-small">
+    Last Update {{getCurrentServer().LastUpdate}}, Next Update {{getCurrentServer().NextUpdate || '-'}}
   </p>-->
 </section>
-<section *ngIf="isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey]" class="w3-container">
+<section *ngIf="isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'kibbles-eggs', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="kibblesandeggs"></a><h2 class="theme-text-d1 w3-left">Kibbles and Eggs <span class="w3-tag w3-large theme-d1">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>
   </div>
@@ -224,13 +226,13 @@
     <button *ngFor="let cluster of keysGetter(player?.Clusters)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCluster(cluster)}" [style.width.%]="clusterWidth()" (click)="activateCluster(cluster)">{{cluster}}</button>
   </div>
 </section>
-<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; !haveCluster()" class="w3-container">
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; !haveCluster() &amp;&amp; dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures</h2></div>
   </div>
   <div>There are no creatures in the cloud...</div>
 </section>
-<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; haveCluster()" class="w3-container">
+<section *ngIf="isMenuActive('creatures_cloud') &amp;&amp; haveCluster() &amp;&amp; dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredClusterCreatures.length}}</span></h2></div>
   </div>
@@ -259,7 +261,7 @@
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('crop_plots') &amp;&amp; player?.Servers[serverKey]" class="w3-container">
+<section *ngIf="isMenuActive('crop_plots') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'crops', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="cropplots"></a><h2 class="theme-text-d1 w3-left">Crops</h2></div>
   </div>
@@ -296,7 +298,7 @@
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey]" class="w3-container">
+<section *ngIf="isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'generators', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="electricalgenerators"></a><h2 class="theme-text-d1 w3-left">Electrical Generators</h2></div>
   </div>
@@ -329,6 +331,30 @@
     </table>
   </div>
 </section>
+<section *ngIf="isMenuActive('tribelog') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'tribelog', steamId)" class="w3-container">
+    <div class="w3-cell-row">
+      <div class="w3-cell"><a id="tribelog"></a><h2 class="theme-text-d1 w3-left">Tribe Log</h2></div>
+    </div>
+    <div *ngIf="!(player.Servers[serverKey].TribeLog?.length > 0)">There are no tribe logs...</div>
+    <div *ngIf="player.Servers[serverKey].TribeLog?.length > 0" class="w3-card-4 w3-responsive">
+      <table class="w3-table-all border-theme">
+        <thead>
+          <tr class="theme-d1">
+            <th>Day</th>
+            <th>Time</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let eg of player.Servers[serverKey].TribeLog">
+            <td>{{eg.Day}}</td>
+            <td>{{eg.Time}}</td>
+            <td>{{eg.Message}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
   <header class="w3-container theme-d1"> 
