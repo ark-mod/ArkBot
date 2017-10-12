@@ -193,7 +193,7 @@ namespace ArkBot.ViewModel
 
         internal async Task Init()
         {
-            System.Console.WriteLine("ARK Discord Bot");
+            System.Console.WriteLine("ARK Bot");
             System.Console.WriteLine("------------------------------------------------------");
             System.Console.WriteLine();
 

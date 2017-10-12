@@ -172,6 +172,9 @@ namespace ArkBot.Ark
 
         private void Context_UpdateCompleted(IArkUpdateableContext sender, bool successful, bool cancelled)
         {
+            // Force an immediate garbage collection because it seems more effective (extraction process requires a great deal of memory)
+            GC.Collect();
+
             // When all server contexts have completed one update successfully trigger the InitializationCompleted-event.
             if (!IsFullyInitialized && Servers.All(x => x.IsInitialized) && Clusters.All(x => x.IsInitialized))
             {

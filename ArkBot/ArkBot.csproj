@@ -66,13 +66,13 @@
       <HintPath>..\packages\Accord.Statistics.3.5.0\lib\net46\Accord.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ArkSavegameToolkitNet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\external\ArkSavegameToolkitNet\$(Configuration)\ArkSavegameToolkitNet.dll</HintPath>
+    <Reference Include="ArkSavegameToolkitNet, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ArkSavegameToolkitNet.1.1.0\lib\net461\ArkSavegameToolkitNet.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="ArkSavegameToolkitNet.Domain, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\external\ArkSavegameToolkitNet\$(Configuration)\ArkSavegameToolkitNet.Domain.dll</HintPath>
+    <Reference Include="ArkSavegameToolkitNet.Domain, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ArkSavegameToolkitNet.1.1.0\lib\net461\ArkSavegameToolkitNet.Domain.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>
