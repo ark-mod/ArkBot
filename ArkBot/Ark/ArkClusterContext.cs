@@ -42,7 +42,7 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkClusterContext(ClusterConfigSection config) : base(config.SavePath)
+        public ArkClusterContext(ClusterConfigSection config) : base(config.SavePath, true)
         {
             Config = config;
         }

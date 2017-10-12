@@ -1,38 +1,39 @@
-# ARK Survival Evolved Discord Bot / Web App / Web API
+# ARK Survival Evolved Companion App / Discord Bot
 
 ![Web-app Interface](https://cloud.githubusercontent.com/assets/408350/26307865/044f849a-3ef7-11e7-930f-9ac829e58d45.png)
 
 ![Discord Bot Commands](https://cloud.githubusercontent.com/assets/408350/25876839/0a91380c-3520-11e7-9172-3a7707cd4c56.png)
 
-## NOTE
-
-### This application is in the very early stages of development.
-
-There are bugs, unfinished/missing features, unoptimized/crappy code, lack of testing and documentation.
-
-
 ## Introduction
 
-The application monitors and extracts data from any number of configured local ARK servers and exposes this data through a Discord Bot and Web API.
+An in-game companion app for players and Discord bot for server administrators.
 
-It aims to provide important functions to players: dino listings, food-status, statistics; and server admins: rcon-commands, server managing etc. It does not enable cheating or making available data that have a considerable impact on how the game is played.
+The application monitors and extracts data from any number of configured local ARK servers and exposes this data through a Web App, Web API and Discord Bot.
+
+It aims to provide important functions to players: dino listings, food-status, breeding info, statistics; and server admins: rcon-commands, server managing etc. It does not enable cheating or making available data that have a considerable impact on how the game is played.
 
 Previously the application utilized a modified version of https://github.com/Qowyn/ark-tools to extract data from savegame-files. It has since been replaced by a faster and more configurable .NET-library developed in conjunction with this application based on Qowyns work on ark-tools.
 
 The application also utilizes creature stat data sourced from Cadons excellent ARK Smart Breeding application (https://github.com/cadon/ARKStatsExtractor).
 
 ## Latest release
-Stable (currently not updated due to the extremely pre-release state of the application)
+### Stable
 
 https://github.com/tsebring/ArkBot/releases
 
-Pre-release built from latest sources (open as zip-archive, binaries under tools/)
+### Pre-release built from latest sources
+Open as zip-archive or change extension to .zip, binaries are located under tools/.
 
 https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
-## Configuration in config.json (copy defaultconfig.json template file)
+## Installation
+**For questions/problems: open a GitHub issue or contact me on Discord (Tobias#5051).**
 
-### There are many fields that are not covered below and some information may not be up-to-date. Sticking to the defaultconfig.json setup with minimal changes according to your environment is the safest bet. Open a GitHub issue or contact me on Discord (Tobias#5051) if there are any problems. 
+* Download the latest pre-built binaries (see above).
+* Copy defaultconfig.json and name it config.json.
+* Open config.json in a text editor and go through each setting and change according to your environment (settings are documented below).
+
+## Documentation
 
 **All config settings have descriptions that can be found in:**
 https://github.com/tsebring/ArkBot/blob/master/ArkBot/Config.cs.
@@ -102,31 +103,39 @@ The absolute path of a savegame-file (.ark) to watch for changes and extract dat
 
 The absolute path of the directory where cluster-files are stored. Cluster-files are extracted as part of the server update process triggered by savegame-file (.ark) to watchers.
 
+## Web App
+
+n in-game companion app built on top of the Web API and implemented in Angular (https://angular.io/). 
+
+Features server status, server details, online player listing, per server player-/tribe listings, individual player profile with character- and creature information, including food-status, mating cooldowns, baby age and cuddle timers, breeding info, generator status, crop status, tribe logs and more. 
+
+Url: `webAppListenPrefix`
+Admin url: `webAppListenPrefix`/admin/`serverKey`
 
 ## Web API
 
 RESTful API for accessing exported ARK Server save data via HTTP in JSON- or XML-format. A SignalR hub push server update notifications to connected clients in real-time.
 
-The prebuilt web-app included in this release is by default configured to call the web api on 127.0.0.1:60001. If you want to use another port for the web api you will need to reflect this change in environment.prod.ts and rebuild the web-app dist manually.
+The prebuilt web-app included in this release is by default configured to call the web api on 127.0.0.1:60001. If you want to use another port for the web api you will need to reflect this change in environment.prod.ts and rebuild the web-app dist manually using `ng build --prod --bh /`.
 
 ### Endpoints (base path is configured in `webApiListenPrefix`)
 
-/api/map/`mapName`: ARK topographic maps for (TheIsland, TheCenter and ScorchedEarth_P) sourced from ARK Survival Evolved Wiki (http://ark.gamepedia.com).
+/api/map/`mapName`: ARK topographic maps for (TheIsland, TheCenter, ScorchedEarth_P and Ragnarok) sourced from ARK Survival Evolved Wiki (http://ark.gamepedia.com).
 
 /api/player/`steamId`: Player data for player identified by `steamId` from each configured server instance.
 
 /api/server/`serverKey`: Player and tribe listing from each configured server instance.
 
-/api/adminserver/`serverKey`: Player and tribe listingwith additional creature and structure counts from each configured server instance.
+/api/adminserver/`serverKey`: Player and tribe listing with additional creature and structure counts from each configured server instance.
 
-/api/servers: Server status information including active players and statistics for each configured server instance.
+/api/structures/`serverKey`: Clustered structure data used to show the location of tribes/structures in the ARK.
+
+With [ARK-Server-Beyond-API](https://github.com/tsebring/ARK-Server-Beyond-API) and [ImprovedCommands](https://github.com/tsebring/ImprovedCommands) administrators may remotely destroy and clean-up old structures and tamed creatures in the ARK.
+
+/api/servers: User-, access control- and server status information including active players and statistics for each configured server instance.
+
+/api/administer/`...`: Rcon and other commands exposed through the web app.
+
+/api/authentication/`...`: Authenticate players using Steam.
 
 /signalr/ (hub name `ServerUpdateHub`): Server update notifications using SignalR.
-
-## Web-app (under development)
-
-A web application built on top of the Web API and implemented in Angular (https://angular.io/). 
-
-Features server status, online player listing, per server player-/tribe listings, individual player profile with character- and creature information with food-status, mating cooldowns, baby age and cuddle timers.
-
-Url: `webAppListenPrefix`/servers

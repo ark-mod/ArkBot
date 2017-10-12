@@ -6,12 +6,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ARK Discord Bot")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("ARK Bot")]
+[assembly: AssemblyDescription("ARK Survival Evolved application that monitors and extracts data from local ARK servers and exposes this data through a Web App, Web API and Discord Bot.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ArkDiscordBot")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyProduct("ArkBot")]
+[assembly: AssemblyCopyright("Copyright © 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -44,5 +44,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.69.*")]
-[assembly: AssemblyFileVersion("1.69.0.0")]
+[assembly: AssemblyVersion("1.70.*")]
+[assembly: AssemblyFileVersion("1.70.0.0")]

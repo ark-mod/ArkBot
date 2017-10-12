@@ -130,7 +130,17 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkServerContext(IConfig fullconfig, ServerConfigSection config, ArkClusterContext clusterContext, ISavedState savedState, ILifetimeScope scope) : base(config?.SaveFilePath, clusterContext, fullconfig.SavegameExtractionMaxDegreeOfParallelism)
+        public ArkServerContext(
+            IConfig fullconfig,
+            ServerConfigSection config,
+            ArkClusterContext clusterContext,
+            ISavedState savedState,
+            ILifetimeScope scope)
+            : base(
+                  config?.SaveFilePath,
+                  clusterContext,
+                  fullconfig.SavegameExtractionMaxDegreeOfParallelism,
+                  true)
         {
             Config = config;
             _clusterContext = clusterContext;

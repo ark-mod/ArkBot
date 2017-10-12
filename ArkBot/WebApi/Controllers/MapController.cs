@@ -32,20 +32,14 @@ namespace ArkBot.WebApi.Controllers
         /// <returns></returns>
         public HttpResponseMessage Get(string id)
         {
+            var notfound = new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = $@"Map ""{id}"" does not exist!" };
             Bitmap bmp = null;
+            var ms = new MemoryStream();
             try
             {
                 bmp = MapResources.ResourceManager.GetObject($"topo_map_{id}") as Bitmap;
-            }
-            catch (MissingManifestResourceException) { }
-            catch (MissingSatelliteAssemblyException) { }
+                if (bmp == null) return notfound;
 
-            if (bmp == null) return new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = $@"Map ""{id}"" does not exist!" };
-
-            var ms = new MemoryStream();
-
-            try
-            {
                 var jpegEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
                 var encParams = new EncoderParameters { Param = new[] { new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L) } };
                 if (jpegEncoder == null) return new HttpResponseMessage(HttpStatusCode.InternalServerError) { ReasonPhrase = "Could not find jpeg encoder." };
@@ -53,9 +47,11 @@ namespace ArkBot.WebApi.Controllers
                 bmp.Save(ms, jpegEncoder, encParams);
                 ms.Seek(0, SeekOrigin.Begin);
             }
+            catch (MissingManifestResourceException) { return notfound; }
+            catch (MissingSatelliteAssemblyException) { return notfound; }
             finally
             {
-                bmp.Dispose();
+                bmp?.Dispose();
             }
 
             var result = new HttpResponseMessage(HttpStatusCode.OK)
