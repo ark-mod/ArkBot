@@ -31,8 +31,13 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 ## Documentation from Wiki
 
+### What does it do?
+
+*  [More Information](https://github.com/tsebring/ArkBot/wiki)
+
 ### How to setup?
 
+* [Getting Started](https://github.com/tsebring/ArkBot/wiki/Getting-Started)
 * [Configuration](https://github.com/tsebring/ArkBot/wiki/Configuration)
 * [Port Forwarding](https://github.com/tsebring/ArkBot/wiki/Port-Forwarding)
 
