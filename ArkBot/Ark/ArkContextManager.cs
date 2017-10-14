@@ -230,6 +230,8 @@ namespace ArkBot.Ark
 
         public ArkClusterContext GetCluster(string key)
         {
+            if (key == null) return null;
+
             ArkClusterContext context = null;
             if (_clusterContexts.TryGetValue(key, out context))
             {
