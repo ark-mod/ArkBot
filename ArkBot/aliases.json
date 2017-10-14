@@ -24,6 +24,11 @@
       "MegaWyvern_Character_BP_Fire_C"
     ],
     [
+      "Alpha Leedsichthys",
+      "Alpha_Leedsichthys_Character_BP_C",
+      "Alpha Leeds"
+    ],
+    [
       "Alpha Megalodon",
       "MegaMegalodon_Character_BP_C"
     ],
@@ -578,6 +583,10 @@
       "RockGolem_Character_BP_C",
       "Rock Golem",
       "Golem"
+    ],
+    [
+      "Rubble Golem",
+      "RubbleGolem_Character_BP_C"
     ],
     [
       "Lava Elemental",
