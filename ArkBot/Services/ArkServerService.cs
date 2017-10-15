@@ -517,7 +517,7 @@ namespace ArkBot.Helpers
             var info = GetProcessStartupInfo($"{_constants.ArkServerProcessName}.exe");
             var matchingProcess = info?.Where(x =>
             {
-                var m = r_serverkey.Match(x.Item4);
+                var m = r_serverkey.Match(x.Item4 ?? "");
                 return m.Success ? m.Groups["serverkey"].Value.Equals(serverKey, StringComparison.OrdinalIgnoreCase) : false;
             }).ToArray();
 
