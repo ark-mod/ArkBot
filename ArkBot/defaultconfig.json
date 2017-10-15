@@ -1,16 +1,16 @@
 ﻿{
-  "botId": "arkdiscordbot",
-  "botName": "ARK Discord Bot",
-  "botNamespace": "http://www.arkdiscordbot.com/",
+  "botId": "arkbot",
+  "botName": "ARK Bot",
+  "botNamespace": "http://www.arkbot.com/",
   "botUrl": "",
   "appUrl": "",
   "enabledChannels": [ "bot-commands" ],
   "infoTopicChannel": "bot-commands",
   "announcementChannel":  "bot-notifications",
-  "tempFileOutputDirPath": "C:\\arkbot-temp",
+  "tempFileOutputDirPath": "C:\\ArkBot\\temp",
   "botToken": "<token from discord>",
-  "steamOpenIdRelyingServiceListenPrefix":  "http://+:<your open port>/openid/",
-  "steamOpenIdRedirectUri": "http://<your public ip or domain>:<your open port>/openid/",
+  "steamOpenIdRelyingServiceListenPrefix":  "http://+:60002/openid/",
+  "steamOpenIdRedirectUri": "http://<your public ip or domain>:60002/openid/",
   "googleApiKey": "<google api key>",
   "steamApiKey": "<steam webapi key>",
   "adminRoleName": "admin",
@@ -23,7 +23,7 @@
   	"pages": {
 		  "home": [ "guest" ],
 		  "server": [ "guest" ],
-		  "player": [ "self" ],
+		  "player": [ "self", "admin" ],
 		  "admin-server": [ "admin" ]
   	},
   	"home": {
@@ -39,34 +39,33 @@
   	},
   	"player": {
 		  "profile": [ "guest" ],
-		  "profile-detailed": [ "self" ],
+		  "profile-detailed": [ "self", "admin" ],
 		  "creatures": [ "guest" ],
-		  "creatures-basestats": [ "self" ],
+		  "creatures-basestats": [ "self", "admin" ],
 		  "creatures-cloud": [ "guest" ],
-		  "breeding": [ "self" ],
-		  "crops": [ "self" ],
-		  "generators": [ "self" ],
-		  "kibbles-eggs": [ "self" ],
-		  "tribelog": [ "self" ]
+		  "breeding": [ "self", "admin" ],
+		  "crops": [ "self", "admin" ],
+		  "generators": [ "self", "admin" ],
+		  "kibbles-eggs": [ "self", "admin" ],
+		  "tribelog": [ "self", "admin" ]
   	},
   	"admin-server": {
 	  	"players": [ "admin" ],
 	  	"tribes": [ "admin" ],
 	  	"structures": [ "admin" ],
-	  	"structures-rcon": [ "admin" ]
+	  	"structures-rcon": [ "disabled" ]
   	}
   },
   "disableDeveloperFetchSaveData" :  false,
   "backupsEnabled": false,
   "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
   "discordBotEnabled": true,
-  "webApiListenPrefix": "http://+:60001<if you use another port see readme>/",
-  "webAppListenPrefix": "http://+:<your open port>/",
+  "webApiListenPrefix": "http://+:60001/",
+  "webAppListenPrefix": "http://+:80/",
   "webAppRedirectListenPrefix": [
-    "http://+:<your open port>/"
   ],
   "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-  "useCompatibilityChangeWatcher": false,
+  "useCompatibilityChangeWatcher": true,
   "ssl": {
     "enabled":  false,
     "challengeListenPrefix": "http://+:80/",
@@ -76,8 +75,8 @@
     "domains": [
       "app.yourdomain.com"
     ],
-    "ports": [ <60001/web api port>, <web app port> ],
-    "useCompatibilityNonSNIBindings":  false
+    "ports": [ 443, 60001 ],
+    "useCompatibilityNonSNIBindings":  true
   },
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
