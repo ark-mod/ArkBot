@@ -100,79 +100,41 @@ namespace ArkBot.WebApi.Controllers
 
                     if (HasFeatureAccess("home", "online"))
                     {
-                        var players = playerinfos?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
+                        var onlineplayers = playerinfos?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
                         using (var db = _databaseContextFactory.Create())
                         {
-                            Dictionary<string, Tuple<ArkPlayer, Database.Model.User, string, long?, TimeSpan, ArkTribe>> d = null;
-                            if (context.Players != null)
+                            // Names of online players (steam does not provide ids)
+                            var onlineplayerNames = onlineplayers.Select(x => x.Name).ToArray();
+
+                            // Get the player data for each name (null when no matching name or when multiple players share the same name)
+                            var onlineplayerData = context.Players != null ? (from k in onlineplayerNames join p in context.Players on k equals p.Name into grp select grp.Count() == 1 ? grp.ElementAt(0) : null).ToArray() : new ArkPlayer[] { };
+
+                            // Parse all steam ids
+                            var parsedSteamIds = onlineplayerData.Select(x => { long steamId; return x?.SteamId != null ? long.TryParse(x.SteamId, out steamId) ? steamId : (long?)null : null; }).ToArray();
+
+                            // Get the player data for each name
+                            var databaseUsers = (from k in parsedSteamIds join u in db.Users on k equals u?.SteamId into grp select grp.FirstOrDefault()).ToArray();
+
+                            // Get the discord users
+                            var discordUsers = databaseUsers.Select(x => x != null ? _discordManager.GetDiscordUserNameById((ulong)x.DiscordId) : null).ToArray();
+
+                            int n = 0;
+                            foreach (var player in onlineplayers)
                             {
-                                var playerNames = players.Select(x => x.Name).ToArray();
-                                d = context.Players.Where(x => playerNames.Contains(x.Name, StringComparer.Ordinal)).Select(x =>
-                                {
-                                    long steamId;
-                                    return new Tuple<ArkPlayer, Database.Model.User, string, long?, TimeSpan, ArkTribe>(
-                                        x,
-                                        null,
-                                        null,
-                                        long.TryParse(x.SteamId, out steamId) ? steamId : (long?)null,
-                                        TimeSpan.Zero, null);
-                                }).ToDictionary(x => x.Item1.Name, StringComparer.OrdinalIgnoreCase);
-
-                                var ids = new List<int>();
-                                var steamIds = d.Values.Select(x => x.Item4).Where(x => x != null).ToArray();
-                                foreach (var user in db.Users.Where(y => steamIds.Contains(y.SteamId)))
-                                {
-                                    var item = d.Values.FirstOrDefault(x => x.Item4 == user.SteamId);
-                                    if (item == null) continue;
-
-                                    ids.Add(item.Item1.Id);
-
-                                    var discordUser = _discordManager.GetDiscordUserNameById((ulong)user.DiscordId); //e.User?.Client?.Servers?.Select(x => x.GetUser((ulong)user.DiscordId)).FirstOrDefault();
-                                    var playedLastSevenDays = TimeSpan.MinValue; //TimeSpan.FromSeconds(user?.Played?.OrderByDescending(x => x.Date).Take(7).Sum(x => x.TimeInSeconds) ?? 0);
-
-                                    d[item.Item1.Name] = Tuple.Create(item.Item1, user, discordUser, item.Item4, playedLastSevenDays, item.Item1.TribeId.HasValue ? context.Tribes?.FirstOrDefault(x => x.Id == item.Item1.TribeId.Value) : null);
-                                }
-
-                                var remaining = d.Values.Where(x => !ids.Contains(x.Item1.Id)).Where(x => x.Item4 != null).Select(x => x.Item4.Value).ToArray();
-                                foreach (var user in db.Played.Where(x => x.SteamId.HasValue && remaining.Contains(x.SteamId.Value))
-                                    .GroupBy(x => x.SteamId)
-                                    .Select(x => new { key = x.Key, items = x.OrderByDescending(y => y.Date).Take(7).ToList() })
-                                    .ToArray())
-                                {
-                                    var item = d.Values.FirstOrDefault(x => x.Item4 == user.key);
-                                    if (item == null) continue;
-
-                                    var playedLastSevenDays = TimeSpan.FromSeconds(user?.items?.Sum(x => x.TimeInSeconds) ?? 0);
-                                    d[item.Item1.Name] = Tuple.Create(item.Item1, item.Item2, item.Item3, item.Item4, playedLastSevenDays, item.Item1.TribeId.HasValue ? context.Tribes?.FirstOrDefault(x => x.Id == item.Item1.TribeId.Value) : null);
-                                }
-                            }
-
-                            //var playerslist = players.Select(x => {
-                            //    var extra = d.ContainsKey(x.Name) ? d[x.Name] : null;
-                            //    return new
-                            //    {
-                            //        Steam = x.Name,
-                            //        Name = extra?.Item1?.Name,
-                            //        Tribe = extra?.Item1?.TribeName,
-                            //        Discord = extra != null && extra.Item3 != null ? $"{extra.Item3.Name}#{extra.Item3.Discriminator}" : null,
-                            //        TimeOnline = x.Time.ToStringCustom(),
-                            //        PlayedLastSevenDays = extra != null && extra.Item5.TotalMinutes > 1 ? extra?.Item5.ToStringCustom() : null
-                            //    };
-                            //}).ToArray();
-
-                            foreach (var player in players)
-                            {
-                                var extra = d?.ContainsKey(player.Name) == true ? d[player.Name] : null;
+                                var extra = onlineplayerData.Length > n ? new { player = onlineplayerData[n], user = databaseUsers[n], discordName = discordUsers[n] } : null;
                                 var demoPlayerName = demoMode?.GetPlayerName();
+
                                 sr.OnlinePlayers.Add(new OnlinePlayerViewModel
                                 {
                                     SteamName = demoPlayerName ?? player.Name,
-                                    CharacterName = demoPlayerName ?? extra?.Item1?.CharacterName,
-                                    TribeName = demoMode?.GetTribeName() ?? extra?.Item6?.Name,
-                                    DiscordName = demoMode != null ? null : extra?.Item3,
+                                    CharacterName = demoPlayerName ?? extra?.player?.CharacterName,
+                                    TribeName = demoMode?.GetTribeName() ?? extra?.player?.Tribe?.Name,
+                                    DiscordName = demoMode != null ? null : extra?.discordName,
                                     TimeOnline = player.Time.ToStringCustom(),
                                     TimeOnlineSeconds = (int)Math.Round(player.Time.TotalSeconds)
                                 });
+
+                                n++;
                             }
                         }
                     }
