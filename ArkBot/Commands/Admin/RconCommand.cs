@@ -110,7 +110,7 @@ namespace ArkBot.Commands.Experimental
             
             var result = await serverContext.Steam.SendRconCommand(args.Command);
             if (result == null) sb.AppendLine("**Failed to send rcon command... :(**");
-            else sb.AppendLine(result);
+            else sb.AppendLine($"```{result}```");
 
             var msg = sb.ToString();
             if (!string.IsNullOrWhiteSpace(msg)) await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
