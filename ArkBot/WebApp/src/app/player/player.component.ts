@@ -284,4 +284,12 @@ export class PlayerComponent implements OnInit, OnDestroy {
     let server =  this.dataService.Servers.Servers.find(s => s.Key == this.serverKey);
     return server;
   }
+
+  numCreatureTabs() : number {
+    let num = 1;
+    if (this.dataService.hasFeatureAccess('player', 'creatures-basestats', this.steamId)) num += 1;
+    if (this.dataService.hasFeatureAccess('player', 'creatures-ids', this.steamId)) num += 1;
+
+    return num;
+  }
 }
