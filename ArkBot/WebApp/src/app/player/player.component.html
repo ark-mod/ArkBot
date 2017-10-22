@@ -61,9 +61,10 @@
       <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
       <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
     </div>
-    <div *ngIf="dataService.hasFeatureAccess('player', 'creatures-basestats', steamId)" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
-      <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('status')}" [style.width.%]="50" (click)="activateCreaturesMode('status')">Overview / Status</button>
-      <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('stats')}" [style.width.%]="50" (click)="activateCreaturesMode('stats')">Base Stats</button>
+    <div *ngIf="numCreatureTabs() > 1" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
+      <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('status')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('status')">Overview / Status</button>
+      <button *ngIf="dataService.hasFeatureAccess('player', 'creatures-basestats', steamId)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('stats')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('stats')">Base Stats</button>
+      <button *ngIf="dataService.hasFeatureAccess('player', 'creatures-ids', steamId)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('ids')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('ids')">IDs</button>
     </div>
     <div class="w3-card-4 w3-responsive">
       <table class="w3-table-all border-theme">
@@ -94,10 +95,14 @@
               <th>SP</th>
               <!--<th></th>-->
             </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('ids')">
+              <th>ID1</th>
+              <th>ID2</th>
+            </ng-container>
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="!(filteredCreatures?.length > 0)"><td colspan="11">No matching creatures...</td></tr>
+          <tr *ngIf="!(filteredCreatures?.length > 0)"><td [colSpan]="(activeCreaturesMode('ids') ? 6 : 11)">No matching creatures...</td></tr>
           <tr *ngFor="let creature of filteredCreatures">
             <td>{{creature.Name}}</td>
             <!--<td>{{creature.ClassName}}</td>-->
@@ -142,6 +147,10 @@
               <td>{{creature.BaseStats?.Melee}}</td>
               <td>{{creature.BaseStats?.MovementSpeed}}</td>
               <!--<td><i class="material-icons w3-medium" style="cursor: pointer;" (click)="copyCreature(creature)">content_copy</i></td>-->
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('ids')">
+              <td>{{creature.Id1}}</td>
+              <td>{{creature.Id2}}</td>
             </ng-container>
           </tr>
         </tbody>
