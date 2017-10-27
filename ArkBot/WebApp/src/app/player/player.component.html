@@ -58,8 +58,8 @@
   <div *ngIf="!(player.Servers[serverKey]?.Creatures?.length > 0)">There are no creatures...</div>
   <ng-container *ngIf="player.Servers[serverKey]?.Creatures?.length > 0">
     <div class="inner-addon right-addon">
-      <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filter();">close</i>
-      <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filter();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
+      <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filterAndSort();">close</i>
+      <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filterAndSort();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
     </div>
     <div *ngIf="numCreatureTabs() > 1" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
       <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('status')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('status')">Overview / Status</button>
@@ -70,34 +70,34 @@
       <table class="w3-table-all border-theme">
         <thead>
           <tr class="theme-d1">
-            <th>Name</th>
+            <th style="cursor: pointer;" title="Sort by Name" (click)="setCreaturesSort('name')">Name</th>
             <!--<th>ClassName</th>-->
-            <th>Species</th>
+            <th style="cursor: pointer;" title="Sort by Species" (click)="setCreaturesSort('species')">Species</th>
             <!--<th>Aliases</th>-->
-            <th>Gender</th>
-            <th>Base Level</th>
+            <th style="cursor: pointer;" title="Sort by Gender" (click)="setCreaturesSort('gender')">Gender</th>
+            <th style="cursor: pointer;" title="Sort by Base Level" (click)="setCreaturesSort('base_level')">Base Level</th>
             <ng-container *ngIf="activeCreaturesMode('status')">
-              <th>Level</th>
-              <th>Imprint</th>
-              <th>Food</th>
-              <th>Lat</th>
-              <th>Lng</th>
+              <th style="cursor: pointer;" title="Sort by Level" (click)="setCreaturesSort('level')">Level</th>
+              <th style="cursor: pointer;" title="Sort by Imprint" (click)="setCreaturesSort('imprint')">Imprint</th>
+              <th style="cursor: pointer;" title="Sort by Food" (click)="setCreaturesSort('food')">Food</th>
+              <th style="cursor: pointer;" title="Sort by Latitude" (click)="setCreaturesSort('latitude')">Lat</th>
+              <th style="cursor: pointer;" title="Sort by Longitude" (click)="setCreaturesSort('longitude')">Lng</th>
               <th>Status</th>
-              <th>Owner</th>
+              <th style="cursor: pointer;" title="Sort by Owner" (click)="setCreaturesSort('owner')">Owner</th>
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('stats')">
-              <th>HP</th>
-              <th>ST</th>
-              <th>OX</th>
-              <th>FO</th>
-              <th>WE</th>
-              <th>ME</th>
-              <th>SP</th>
+              <th style="cursor: pointer;" title="Sort by Health" (click)="setCreaturesSort('stat_health')">HP</th>
+              <th style="cursor: pointer;" title="Sort by Stamina" (click)="setCreaturesSort('stat_stamina')">ST</th>
+              <th style="cursor: pointer;" title="Sort by Oxygen" (click)="setCreaturesSort('stat_oxygen')">OX</th>
+              <th style="cursor: pointer;" title="Sort by Food" (click)="setCreaturesSort('stat_food')">FO</th>
+              <th style="cursor: pointer;" title="Sort by Weight" (click)="setCreaturesSort('stat_weight')">WE</th>
+              <th style="cursor: pointer;" title="Sort by Melee" (click)="setCreaturesSort('stat_melee')">ME</th>
+              <th style="cursor: pointer;" title="Sort by Speed" (click)="setCreaturesSort('stat_speed')">SP</th>
               <!--<th></th>-->
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('ids')">
-              <th>ID1</th>
-              <th>ID2</th>
+              <th style="cursor: pointer;" title="Sort by ID1" (click)="setCreaturesSort('id1')">ID1</th>
+              <th style="cursor: pointer;" title="Sort by ID2" (click)="setCreaturesSort('id2')">ID2</th>
             </ng-container>
           </tr>
         </thead>
