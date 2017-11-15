@@ -49,6 +49,40 @@ namespace ArkBot.Helpers
             }
         }
 
+        public static Dictionary<string, string> ExtractFilesInZipFile(string path, string[] pathsInArchive)
+        {
+            if (!File.Exists(path)) return null;
+
+            var result = new Dictionary<string, string>();
+
+            try
+            {
+                using (var zip = Ionic.Zip.ZipFile.Read(path))
+                {
+                    foreach (var entry in zip.Where(x => pathsInArchive
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Contains(x.FileName, StringComparer.OrdinalIgnoreCase)))
+                    {
+                        var outFilePath = Path.GetTempFileName();
+                        using (FileStream fs = new FileStream(outFilePath, FileMode.Truncate, FileAccess.Write))
+                        {
+                            entry.Extract(fs);
+                        }
+
+                        result.Add(entry.FileName, outFilePath);
+                    }
+                }
+            }
+            catch { }
+
+            return result;
+        }
+
+        public static string ExtractFileInZipFile(string path, string pathInArchive)
+        {
+            return ExtractFilesInZipFile(path, new[] { pathInArchive })?.Values.FirstOrDefault();
+        }
+
         public static string[] GetZipFileContents(string path)
         {
             if (!File.Exists(path)) return null;

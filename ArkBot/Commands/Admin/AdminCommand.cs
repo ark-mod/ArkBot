@@ -71,7 +71,8 @@ namespace ArkBot.Commands.Experimental
             "**countdown <minutes> <event description>**: Start a countdown on all servers without any action.",
             "**countdown <minutes> <event description> stopservers**: Start a countdown on all servers with subsequent server shutdown.",
             "**countdown <minutes> <event description> restartservers**: Start a countdown on all servers with subsequent server restart.",
-            "**countdown <minutes> <event description> updateservers**: Start a countdown on all servers with subsequent server update."
+            "**countdown <minutes> <event description> updateservers**: Start a countdown on all servers with subsequent server update.",
+            "**<server key> backups**: List backups for the server."
         };
 
         public bool DebugOnly => false;
@@ -140,7 +141,6 @@ namespace ArkBot.Commands.Experimental
                 UpdateServer = false,
                 UpdateServers = false,
                 Backups = false,
-                CloudBackups = "",
                 SteamId = 0L,
                 SaveWorld = false,
                 DestroyWildDinos = false,
@@ -202,7 +202,7 @@ namespace ArkBot.Commands.Experimental
             var sb = new StringBuilder();
 
             var isCountdown = !string.IsNullOrEmpty(args.Countdown) && _rCountdown.IsMatch(args.Countdown);
-            var isMultiServerCommand = args != null && (isCountdown || !string.IsNullOrEmpty(args.CloudBackups)
+            var isMultiServerCommand = args != null && (isCountdown
                 || args.StartServer || args.StartServers || args.StopServer || args.StopServers
                 || args.ShutdownServer || args.ShutdownServers || args.RestartServer || args.RestartServers
                 || args.UpdateServer || args.UpdateServers);
@@ -214,24 +214,8 @@ namespace ArkBot.Commands.Experimental
                 return;
             }
 
-            ArkClusterContext clusterContext = null;
-            if (args?.CloudBackups != null)
-            {
-                if ((clusterContext = _contextManager.GetCluster(args.CloudBackups)) == null)
-                {
-                    await e.Channel.SendMessage($"**The given identifier is not a valid cluster key.**");
-                    return;
-                }
-                if (!(args.SteamId > 0))
-                {
-                    await e.Channel.SendMessage($"**A valid steam id must be provided.**");
-                    return;
-                }
-            }
-
             // collection of servers that this countdown applies to
-            var serverContexts = clusterContext != null ? _contextManager.GetServersInCluster(clusterContext.Config.Key) 
-                : serverContext == null && !string.IsNullOrWhiteSpace(args.ServerKey) ? null
+            var serverContexts = serverContext == null && !string.IsNullOrWhiteSpace(args.ServerKey) ? null
                 : serverContext == null ? _contextManager.Servers.ToArray() 
                 : new ArkServerContext[] { serverContext };
 
@@ -300,26 +284,6 @@ namespace ArkBot.Commands.Experimental
 
                 sb.AppendLine($"**Countdown{(serverContext == null ? "" : $" on server {serverContext.Config.Key}")} have been initiated. Announcement will be made.**");
                 await _scheduledTasksManager.StartCountdown(serverContext, reason, delayInMinutes, react);
-            }
-            else if (!string.IsNullOrEmpty(args.CloudBackups))
-            {
-                sb.AppendLine("**Cloud backups feature is currently not operational...**");
-                //var result = _savegameBackupService.GetBackupsList(serverContexts.Select(x => x.Config.Key).ToArray(), true, (fi, be) => fi.LastWriteTime >= DateTime.Now.AddDays(-1) && be.Files);
-                //if (result?.Count > 0)
-                //{
-                //    var data = result.OrderByDescending(x => x.DateModified).Take(25).Select(x => new
-                //    {
-                //        Path = x.Path,
-                //        Age = (DateTime.Now - x.DateModified).ToStringCustom(),
-                //        FileSize = x.ByteSize.ToFileSize()
-                //    }).ToArray();
-                //    var table = FixedWidthTableHelper.ToString(data, x => x
-                //        .For(y => y.Path, header: "Backup")
-                //        .For(y => y.Age, alignment: 1)
-                //        .For(y => y.FileSize, header: "File Size", alignment: 1));
-                //    sb.Append($"```{table}```");
-                //}
-                //else sb.AppendLine("**Could not find any savegame backups...**");
             }
             else if (args.TerminateServer)
             {
@@ -417,19 +381,19 @@ namespace ArkBot.Commands.Experimental
             {
                 var result = await serverContext.Steam.SendRconCommand($"serverchat {args.ServerChat}");
                 if (result == null) sb.AppendLine("**Failed to send chat message... :(**");
-                else sb.AppendLine("**Chat message send!**");
+                else sb.AppendLine("**Chat message sent!**");
             }
             else if (args.ServerChatTo > 0 && !string.IsNullOrWhiteSpace(args.Message))
             {
                 var result = await serverContext.Steam.SendRconCommand($@"serverchatto {args.ServerChatTo} ""{args.Message}""");
                 if (result == null) sb.AppendLine("**Failed to send direct chat message... :(**");
-                else sb.AppendLine("**Direct chat message send!**");
+                else sb.AppendLine("**Direct chat message sent!**");
             }
             else if (!string.IsNullOrWhiteSpace(args.ServerChatToPlayer) && !string.IsNullOrWhiteSpace(args.Message))
             {
                 var result = await serverContext.Steam.SendRconCommand($@"serverchattoplayer ""{args.ServerChatToPlayer}"" ""{args.Message}""");
                 if (result == null) sb.AppendLine("**Failed to send direct chat message... :(**");
-                else sb.AppendLine("**Direct chat message send!**");
+                else sb.AppendLine("**Direct chat message sent!**");
             }
             else if (!string.IsNullOrWhiteSpace(args.RenamePlayer) && !string.IsNullOrWhiteSpace(args.NewName))
             {

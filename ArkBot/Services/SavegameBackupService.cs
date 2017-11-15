@@ -19,13 +19,15 @@ namespace ArkBot.Services
             _config = config;
         }
 
-        public IList<BackupListEntity> GetBackupsList(string[] serverKeys = null, bool includeContents = false, Func<FileInfo, BackupListEntity, bool> filterFunc = null)
+        /// <param name="keys">Array of server- and/or cluster key(s)</param>
+        /// <returns></returns>
+        public List<BackupListEntity> GetBackupsList(string[] keys = null, Func<FileInfo, BackupListEntity, bool> filterFunc = null)
         {
             var result = new List<BackupListEntity>();
 
-            foreach (var serverKey in serverKeys ?? new string[] { null })
+            foreach (var key in keys ?? new string[] { null })
             {
-                var backupDirPath = serverKey == null ? _config.BackupsDirectoryPath : Path.Combine(_config.BackupsDirectoryPath, serverKey);
+                var backupDirPath = key == null ? _config.BackupsDirectoryPath : Path.Combine(_config.BackupsDirectoryPath, key);
                 var backupDir = new DirectoryInfo(backupDirPath);
                 var files = backupDir.GetFiles("*.zip", SearchOption.AllDirectories);
                 if (files == null) return result;
@@ -33,15 +35,16 @@ namespace ArkBot.Services
                 foreach (var file in files)
                 {
                     var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                    var b = backupDirPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    var b = _config.BackupsDirectoryPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                     var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
 
                     var entry = new BackupListEntity
                     {
                         Path = path,
+                        FullPath = file.FullName,
                         ByteSize = file.Length,
                         DateModified = file.LastWriteTime,
-                        Files = includeContents ? FileHelper.GetZipFileContents(file.FullName) : null
+                        LazyFiles = new Lazy<string[]>(() => FileHelper.GetZipFileContents(file.FullName))
                     };
                     if (filterFunc != null && !filterFunc(file, entry)) continue;
 
@@ -50,6 +53,76 @@ namespace ArkBot.Services
             }
 
             return result;
+        }
+
+        public List<BackupListEntity> GetCloudBackupFilesForSteamId(ClusterConfigSection cluster, long steamId)
+        {
+            var result = new List<BackupListEntity>();
+
+            var backupDirPath = cluster.SavePath;
+            var backupDir = new DirectoryInfo(backupDirPath);
+            var files = backupDir.GetFiles($"{steamId}.*", SearchOption.AllDirectories).Where(x => !x.Name.Equals(steamId.ToString())).ToArray();
+            if (files == null) return result;
+
+            foreach (var file in files)
+            {
+                var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var b = backupDirPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
+
+                var entry = new FromServerBackupListEntity
+                {
+                    Path = Path.Combine("current", path),
+                    FullPath = file.FullName,
+                    ByteSize = file.Length,
+                    DateModified = DateTime.Now,
+                    Files = new[] { path }
+                };
+
+                result.Add(entry);
+            }
+
+            return result;
+        }
+
+        public StashResult StashCloudSave(ClusterConfigSection cluster, long steamId, string tagName)
+        {
+            try
+            {
+                var sourcePath = Path.Combine(cluster.SavePath, $"{steamId}");
+                var targetPath = Path.Combine(cluster.SavePath, $"{steamId}.stash_{tagName}");
+                if (!File.Exists(sourcePath)) return StashResult.SourceMissing;
+                if (File.Exists(targetPath)) return StashResult.TargetExists;
+
+                File.Move(sourcePath, targetPath);
+            }
+            catch
+            {
+                /*ignore exceptions*/
+                return StashResult.MoveFailed;
+            }
+
+            return StashResult.Successfull;
+        }
+
+        public StashResult PopCloudSave(ClusterConfigSection cluster, long steamId, string tagName)
+        {
+            try
+            {
+                var sourcePath = Path.Combine(cluster.SavePath, $"{steamId}.stash_{tagName}");
+                var targetPath = Path.Combine(cluster.SavePath, $"{steamId}");
+                if (!File.Exists(sourcePath)) return StashResult.SourceMissing;
+                if (File.Exists(targetPath)) return StashResult.TargetExists;
+
+                File.Move(sourcePath, targetPath);
+            }
+            catch
+            {
+                /*ignore exceptions*/
+                return StashResult.MoveFailed;
+            }
+
+            return StashResult.Successfull;
         }
 
         public SavegameBackupResult CreateBackup(ServerConfigSection server, ClusterConfigSection cluster)
@@ -96,6 +169,42 @@ namespace ArkBot.Services
                 ArkprofileCount = arkprofiles?.Length ?? 0,
                 ArktribeCount = arktribes?.Length ?? 0,
                 ClusterCount = clusters?.Length ?? 0
+            };
+        }
+
+        public SavegameBackupResult CreateClusterBackupForSteamId(ClusterConfigSection cluster, long steamId)
+        {
+            if (cluster == null || string.IsNullOrEmpty(cluster.SavePath) || !Directory.Exists(cluster.SavePath)) return null;
+
+            string[] clusters = null;
+            var files = new[] { new Tuple<string, string, string[]>(cluster.SavePath, "cluster", clusters = Directory.GetFiles(cluster.SavePath, $"{steamId}*", SearchOption.AllDirectories))}.ToArray();
+
+            if (!(clusters?.Length > 0)) return null;
+
+            var backupDir = Path.Combine(_config.BackupsDirectoryPath, cluster.Key, DateTime.Now.ToString("yyyy-MM"));
+
+            if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
+
+            var path = Path.Combine(backupDir, $"cluster_{steamId}_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
+            string[] results = null;
+            try
+            {
+                results = FileHelper.CreateDotNetZipArchive(files, path);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException($"Failed to create cluster backup archive for steamid {steamId}", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Ignored);
+                return null;
+            }
+
+            return new SavegameBackupResult
+            {
+                ArchivePaths = results,
+                FilesInBackup = files.SelectMany(x => x.Item3).ToArray(),
+                SaveGameCount = 0,
+                ArkprofileCount = 0,
+                ArktribeCount = 0,
+                ClusterCount = clusters.Length
             };
         }
     }
