@@ -204,6 +204,12 @@
       "Bear"
     ],
     [
+      "Dire Polar Bear",
+      "Direbear_Character_Polar_C",
+      "Direbear Polar",
+      "Dire Bear Polar"
+    ],
+    [
       "Direwolf",
       "Direwolf_Character_BP_C",
       "Dire Wolf",
@@ -558,6 +564,10 @@
     [
       "Purlovia",
       "Purlovia_Character_BP_C"
+    ],
+    [
+      "Purlovia Polar",
+      "Purlovia_Character_BP_Polar_C"
     ],
     [
       "Quetzalcoatl",
