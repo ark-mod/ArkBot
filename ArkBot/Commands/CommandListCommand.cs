@@ -5,9 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Helpers;
-using ArkBot.Extensions;
-using static System.FormattableString;
-using System.Drawing;
 using Discord;
 
 namespace ArkBot.Commands

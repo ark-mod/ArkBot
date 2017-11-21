@@ -7,23 +7,12 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Helpers;
 using ArkBot.Extensions;
-using static System.FormattableString;
-using System.Drawing;
 using System.Text.RegularExpressions;
-using QueryMaster.GameServer;
-using System.Runtime.Caching;
-using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting;
 using System.IO;
-using System.IO.Compression;
 using Autofac;
-using ArkBot.Database;
-using System.Diagnostics;
 using Discord;
 using ArkBot.Services;
 using ArkBot.Ark;
-using ArkBot.Discord;
-using ArkBot.ScheduledTasks;
 using ArkBot.Services.Data;
 using ArkSavegameToolkitNet.Domain;
 using System.Threading;
@@ -147,7 +136,8 @@ namespace ArkBot.Commands.Admin
 
                 if (result.Count > 0)
                 {
-                    OutputCloudBackupListingTable(sb, result, args.Skip);
+                    var tbl = OutputCloudBackupListingTable(result, args.Skip);
+                    sb.Append(tbl);
                 }
                 else sb.AppendLine("**Could not find any cloud save backups...**");
             }
@@ -253,15 +243,17 @@ namespace ArkBot.Commands.Admin
                     };
                 }).ToArray();
 
-                var table = FixedWidthTableHelper.ToString(data, x => x
+                var tableBackupFiles = FixedWidthTableHelper.ToString(data, x => x
                         .For(y => y.FilePath, header: "Cloud Save")
                         .For(y => y.CloudSaveHash, header: "Cloud Save Hash", alignment: 1, format: "X")
                         .For(y => y.DinoCount, header: "Dinos", alignment: 1)
                         .For(y => y.CharactersCount, header: "Characters", alignment: 1)
                         .For(y => y.ItemsCount, header: "Items", alignment: 1));
 
-                OutputCloudBackupListingTable(sb, new[] { result }, 0, 1);
-                sb.Append($"```{table}```");
+                var tableBackupEntries = OutputCloudBackupListingTable(new[] { result }, 0, 1);
+
+                sb.Append(tableBackupEntries);
+                sb.Append($"```{tableBackupFiles}```");
             }
 
             /* ---------------------------------------------------------------
@@ -325,6 +317,10 @@ namespace ArkBot.Commands.Admin
             if (!string.IsNullOrWhiteSpace(msg)) await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
         }
 
+        /// <summary>
+        /// Collect all cloud save backup file entries
+        /// </summary>
+        /// <returns></returns>
         List<BackupListEntity> GetBackupFiles(ClusterConfigSection clusterConfig, string[] serverKeys, long steamId, int? forHash = null)
         {
             // collect backup archives that have cloud saves for a given player
@@ -348,7 +344,10 @@ namespace ArkBot.Commands.Admin
             return result;
         }
 
-        void OutputCloudBackupListingTable(StringBuilder sb, IEnumerable<BackupListEntity> result, int skip, int take = 25)
+        /// <summary>
+        /// Convert backup list entries into a fixed width table
+        /// </summary>
+        string OutputCloudBackupListingTable(IEnumerable<BackupListEntity> result, int skip, int take = 25)
         {
             var data = result.OrderByDescending(x => x.DateModified).Skip(skip).Take(take).Select(x => new
             {
@@ -358,13 +357,15 @@ namespace ArkBot.Commands.Admin
                 Files = x.Files.Length,
                 FileSize = x.ByteSize.ToFileSize()
             }).ToArray();
+
             var table = FixedWidthTableHelper.ToString(data, x => x
                 .For(y => y.Path, header: "Cloud Save Backup")
                 .For(y => y.BackupHash, header: "Backup Hash", alignment: 1, format: "X")
                 .For(y => y.Age, alignment: 1)
                 .For(y => y.Files, header: "Saves", alignment: 1)
                 .For(y => y.FileSize, header: "File Size", alignment: 1));
-            sb.Append($"```{table}```");
+
+            return $"```{table}```";
         }
     }
 }

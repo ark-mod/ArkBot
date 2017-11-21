@@ -1,31 +1,18 @@
 ﻿extern alias DotNetZip;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Helpers;
-using ArkBot.Extensions;
-using static System.FormattableString;
-using System.Drawing;
-using System.Text.RegularExpressions;
-using QueryMaster.GameServer;
-using System.Runtime.Caching;
-using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.IO;
-using System.IO.Compression;
 using Autofac;
 using ArkBot.Database;
-using System.Diagnostics;
 using Discord;
 using ArkBot.Services;
 using ArkBot.Ark;
-using ArkBot.Discord;
 using ArkBot.ScheduledTasks;
 
-namespace ArkBot.Commands.Experimental
+namespace ArkBot.Commands.Admin
 {
     public class RconCommand : IRoleRestrictedCommand
     {
@@ -44,13 +31,7 @@ namespace ArkBot.Commands.Experimental
         public string[] ForRoles => new[] { _config.AdminRoleName, _config.DeveloperRoleName };
 
         private IConfig _config;
-        private IConstants _constants;
-        private EfDatabaseContextFactory _databaseContextFactory;
-        private ISavedState _savedstate;
-        private IArkServerService _arkServerService;
-        private ISavegameBackupService _savegameBackupService;
         private ArkContextManager _contextManager;
-        private ScheduledTasksManager _scheduledTasksManager;
 
         public RconCommand(
             ILifetimeScope scope,
@@ -64,13 +45,7 @@ namespace ArkBot.Commands.Experimental
             ScheduledTasksManager scheduledTasksManager)
         {
             _config = config;
-            _constants = constants;
-            _databaseContextFactory = databaseContextFactory;
-            _savedstate = savedstate;
-            _arkServerService = arkServerService;
-            _savegameBackupService = savegameBackupService;
             _contextManager = contextManager;
-            _scheduledTasksManager = scheduledTasksManager;
         }
 
         public void Register(CommandBuilder command)

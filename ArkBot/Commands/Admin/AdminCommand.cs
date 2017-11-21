@@ -1,31 +1,21 @@
 ﻿extern alias DotNetZip;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Helpers;
 using ArkBot.Extensions;
-using static System.FormattableString;
-using System.Drawing;
 using System.Text.RegularExpressions;
-using QueryMaster.GameServer;
-using System.Runtime.Caching;
-using System.Globalization;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.IO;
-using System.IO.Compression;
 using Autofac;
 using ArkBot.Database;
-using System.Diagnostics;
 using Discord;
 using ArkBot.Services;
 using ArkBot.Ark;
 using ArkBot.Discord;
 using ArkBot.ScheduledTasks;
 
-namespace ArkBot.Commands.Experimental
+namespace ArkBot.Commands.Admin
 {
     public class AdminCommand : IRoleRestrictedCommand //, IEnabledCheckCommand
     {
