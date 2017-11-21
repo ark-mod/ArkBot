@@ -181,7 +181,7 @@ namespace ArkBot.Commands.Admin
                --------------------------------------------------------------- */
             else if (args.Delete > 0)
             {
-                var targetPath = Path.Combine(clusterContext.Config.SavePath, $"{args.Restore}");
+                var targetPath = Path.Combine(clusterContext.Config.SavePath, $"{args.Delete}");
                 if (File.Exists(targetPath))
                 {
                     try
