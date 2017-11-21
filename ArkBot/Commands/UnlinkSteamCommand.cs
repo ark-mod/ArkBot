@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
-using ArkBot.Helpers;
-using ArkBot.Extensions;
-using static System.FormattableString;
-using System.Drawing;
-using System.Text.RegularExpressions;
-using QueryMaster.GameServer;
-using System.Runtime.Caching;
 using ArkBot.Database;
 using Discord;
 using Discord.Net;
@@ -28,14 +18,12 @@ namespace ArkBot.Commands
         public bool DebugOnly => false;
         public bool HideFromCommandList => false;
 
-        private IConstants _constants;
         private IConfig _config;
         private EfDatabaseContextFactory _databaseContextFactory;
         private DiscordClient _discord;
 
         public UnlinkSteamCommand(IConstants constants, IConfig config, EfDatabaseContextFactory databaseContextFactory)
         {
-            _constants = constants;
             _config = config;
             _databaseContextFactory = databaseContextFactory;
         }
@@ -72,7 +60,7 @@ namespace ArkBot.Commands
                                 var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
                                 if (duser != null && role == null) continue;
 
-                                if (duser.HasRole(role)) await duser.RemoveRoles(role);
+                                if (duser?.HasRole(role) == true) await duser.RemoveRoles(role);
                             }
                             catch(HttpException)
                             {

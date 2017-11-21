@@ -19,7 +19,7 @@
 //using Autofac;
 //using Discord;
 
-//namespace ArkBot.Commands.Experimental
+//namespace ArkBot.Commands.Admin
 //{
 //    public class AdminCheckCommand : IRoleRestrictedCommand
 //    {

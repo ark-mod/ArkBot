@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
-using ArkBot.Helpers;
-using ArkBot.Extensions;
-using static System.FormattableString;
-using System.Drawing;
-using System.Text.RegularExpressions;
-using QueryMaster.GameServer;
-using System.Runtime.Caching;
 using ArkBot.Database;
 using ArkBot.OpenID;
 using ArkBot.Services;
