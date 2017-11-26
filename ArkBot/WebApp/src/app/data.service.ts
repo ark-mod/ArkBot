@@ -9,6 +9,8 @@ import { Servers } from './servers';
 
 @Injectable()
 export class DataService {
+  _servers: BehaviorSubject<Servers> = new BehaviorSubject<Servers>(undefined);
+
   public Servers: Servers;
   public UserSteamId: string;
   public ServersUpdated$: EventEmitter<Servers>;
@@ -39,12 +41,14 @@ export class DataService {
           var user = servers ? servers.User : undefined;
           this.UserSteamId = user && user.SteamId ? user.SteamId : undefined;
 
+          this._servers.next(servers);
           this.ServersUpdated$.emit(servers);
           return true;
         })
         .catch(error => {
           this.Servers = null;
           this.UserSteamId = undefined;
+          this._servers.next(null);
           this.ServersUpdated$.emit(null);
           return false;
         });
@@ -71,5 +75,12 @@ export class DataService {
     }
 
     return false;
+  }
+
+  hasFeatureAccessObservable(featureGroup: string, featureName: string, forSteamId?: string): Observable<boolean> {
+    return this._servers.asObservable().map(v => {
+      let foo = this.hasFeatureAccess(featureGroup, featureName, forSteamId);
+      return foo;
+    });
   }
 }

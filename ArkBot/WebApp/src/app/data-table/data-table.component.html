@@ -1,0 +1,57 @@
+<div *ngIf="(numEnabledModes | async) > 1" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
+  <ng-container *ngFor="let mode of _modes; trackBy: trackByKey">
+    <button *ngIf="mode.enabled | async" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': isCurrentMode(mode.key)}" [style.width.%]="(100/(numEnabledModes | async))" (click)="setCurrentMode(mode.key)">{{mode.name}}</button>
+  </ng-container>
+</div>
+<div class="w3-card-4 w3-responsive">
+  <table class="w3-table-all border-theme">
+    <thead>
+      <tr class="theme-d1">
+        <ng-container *ngFor="let column of _columnTemplates; trackBy: trackByKey">
+          <th *ngIf="showColumn(column.key)" (click)="orderBy(column.key, $event)" title="{{column.title}}" [ngClass]="{'orderBy': column.orderBy}">
+            <ng-template
+              *ngIf="column.headerTemplate"
+              [ngTemplateOutlet]="column.headerTemplate">
+            </ng-template>
+          </th>
+        </ng-container>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of _rows$ | async | slice:_fromRow:_fromRow+_numRows;  trackBy: trackByRow">
+        <ng-container *ngFor="let column of _columnTemplates; trackBy: trackByKey">
+          <td *ngIf="showColumn(column.key)">
+            <ng-template
+              *ngIf="column.cellTemplate"
+              [ngTemplateOutlet]="column.cellTemplate"
+              [ngTemplateOutletContext]="{$implicit: row}">
+            </ng-template>
+          </td>
+        </ng-container>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="w3-cell-row w3-margin-top">
+  <div class="w3-cell w3-cell-middle">
+    <table class="w3-responsive w3-right w3-small">
+      <tr>
+        <td>
+          <div class="w3-bar w3-border border-theme">
+            <a (click)="setFirstPage()" [ngClass]="{'disabled': isFirstPage()}" class="w3-button w3-border-right border-theme">«</a>
+            <a (click)="setPrevPage()" [ngClass]="{'disabled': isFirstPage()}" class="w3-button device-tiny-show">❮</a>
+            <a (click)="setPrevPage()" [ngClass]="{'disabled': isFirstPage()}" class="w3-button w3-border-right border-theme device-tiny-hide">❮</a>
+            <span class="device-tiny-hide">&nbsp;{{_fromRow}} - {{getLastRowOffset()}} of {{_rows.length}}&nbsp;</span>
+            <a (click)="setLastPage()" [ngClass]="{'disabled': isLastPage()}" class="w3-button w3-border-left border-theme w3-right">»</a>
+            <a (click)="setNextPage()" [ngClass]="{'disabled': isLastPage()}" class="w3-button w3-border-left border-theme w3-right">❯</a>
+          </div>
+        </td>
+        <td>
+          <select [ngModel]="_numRows" (ngModelChange)="setViewLimit($event)" class="w3-select w3-border border-theme theme-l1" style="max-width: 200px; padding: 12px 5px;">
+            <option *ngFor="let opt of _viewOptions" [value]="opt.value">{{opt.text}}</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

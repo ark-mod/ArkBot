@@ -9,6 +9,8 @@ import { DataService } from '../data.service';
 import { MessageService } from '../message.service';
 import { HttpService } from '../http.service';
 
+import { floatCompare, intCompare, stringLocaleCompare, nullCompare } from '../utils'
+
 @Component({
   selector: 'app-player',
   templateUrl: './player.component.html',
@@ -39,25 +41,25 @@ export class PlayerComponent implements OnInit, OnDestroy {
   creaturesSortField: string = "food";
   creaturesAltSortFields: string = "name";
   creaturesSortFunctions: any = {
-    "food": (o1, o2, asc) => this.floatCompare(o1.FoodStatus, o2.FoodStatus, asc, 2),
-    "name": (o1, o2, asc) => this.stringLocaleCompare(o1.Name, o2.Name, asc),
-    "species": (o1, o2, asc) => this.stringLocaleCompare(o1.Species, o2.Species, asc),
-    "gender": (o1, o2, asc) => this.stringLocaleCompare(o1.Gender, o2.Gender, asc),
-    "base_level": (o1, o2, asc) => this.intCompare(o1.BaseLevel, o2.BaseLevel, !asc),
-    "level": (o1, o2, asc) => this.intCompare(o1.Level == o1.BaseLevel ? null : o1.Level, o2.Level == o2.BaseLevel ? null : o2.Level, !asc),
-    "imprint": (o1, o2, asc) => this.floatCompare(o1.Imprint, o2.Imprint, !asc, 2),
-    "latitude": (o1, o2, asc) => this.floatCompare(o1.Latitude, o2.Latitude, asc, 1),
-    "longitude": (o1, o2, asc) => this.floatCompare(o1.Longitude, o2.Longitude, asc, 1),
-    "owner": (o1, o2, asc) => this.stringLocaleCompare(o1.OwnerType, o2.OwnerType, asc),
-    "stat_health": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.Health : null, o2.BaseStats != undefined ? o2.BaseStats.Health : null, !asc),
-    "stat_stamina": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.Stamina : null, o2.BaseStats != undefined ? o2.BaseStats.Stamina : null, !asc),
-    "stat_oxygen": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.Oxygen : null, o2.BaseStats != undefined ? o2.BaseStats.Oxygen : null, !asc),
-    "stat_food": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.Food : null, o2.BaseStats != undefined ? o2.BaseStats.Food : null, !asc),
-    "stat_weight": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.Weight : null, o2.BaseStats != undefined ? o2.BaseStats.Weight : null, !asc),
-    "stat_melee": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.Melee : null, o2.BaseStats != undefined ? o2.BaseStats.Melee : null, !asc),
-    "stat_speed": (o1, o2, asc) => this.intCompare(o1.BaseStats != undefined ? o1.BaseStats.MovementSpeed : null, o2.BaseStats != undefined ? o2.BaseStats.MovementSpeed : null, !asc),
-    "id1": (o1, o2, asc) => this.intCompare(o1.Id1, o2.Id1, asc),
-    "id2": (o1, o2, asc) => this.intCompare(o1.Id1, o2.Id1, asc)
+    "food": (o1, o2, asc) => floatCompare(o1.FoodStatus, o2.FoodStatus, asc, 2),
+    "name": (o1, o2, asc) => stringLocaleCompare(o1.Name, o2.Name, asc),
+    "species": (o1, o2, asc) => stringLocaleCompare(o1.Species, o2.Species, asc),
+    "gender": (o1, o2, asc) => stringLocaleCompare(o1.Gender, o2.Gender, asc),
+    "base_level": (o1, o2, asc) => intCompare(o1.BaseLevel, o2.BaseLevel, !asc),
+    "level": (o1, o2, asc) => intCompare(o1.Level == o1.BaseLevel ? null : o1.Level, o2.Level == o2.BaseLevel ? null : o2.Level, !asc),
+    "imprint": (o1, o2, asc) => floatCompare(o1.Imprint, o2.Imprint, !asc, 2),
+    "latitude": (o1, o2, asc) => floatCompare(o1.Latitude, o2.Latitude, asc, 1),
+    "longitude": (o1, o2, asc) => floatCompare(o1.Longitude, o2.Longitude, asc, 1),
+    "owner": (o1, o2, asc) => stringLocaleCompare(o1.OwnerType, o2.OwnerType, asc),
+    "stat_health": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Health : null, o2.BaseStats != undefined ? o2.BaseStats.Health : null, !asc),
+    "stat_stamina": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Stamina : null, o2.BaseStats != undefined ? o2.BaseStats.Stamina : null, !asc),
+    "stat_oxygen": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Oxygen : null, o2.BaseStats != undefined ? o2.BaseStats.Oxygen : null, !asc),
+    "stat_food": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Food : null, o2.BaseStats != undefined ? o2.BaseStats.Food : null, !asc),
+    "stat_weight": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Weight : null, o2.BaseStats != undefined ? o2.BaseStats.Weight : null, !asc),
+    "stat_melee": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Melee : null, o2.BaseStats != undefined ? o2.BaseStats.Melee : null, !asc),
+    "stat_speed": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.MovementSpeed : null, o2.BaseStats != undefined ? o2.BaseStats.MovementSpeed : null, !asc),
+    "id1": (o1, o2, asc) => intCompare(o1.Id1, o2.Id1, asc),
+    "id2": (o1, o2, asc) => intCompare(o1.Id1, o2.Id1, asc)
   };
 
   constructor(
@@ -68,39 +70,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private notificationsService: NotificationsService,
     private ref: ChangeDetectorRef) {
-    }
-
-    floatCompare(v1 : number, v2 : number, asc: boolean, decimals?: number): number {
-      let nullCheck = this.nullCompare(v1, v2, asc);
-      if (nullCheck != undefined) return nullCheck;
-
-      let base = Math.pow(10, decimals);
-      let f1 = decimals != undefined ? Math.round(v1 * base) / base : v1;
-      let f2 = decimals != undefined ? Math.round(v2 * base) / base : v2;
-      return f1 > f2 ? (asc ? 1 : -1) : f1 < f2 ? (asc ? -1 : 1) : 0;
-    }
-
-    intCompare(v1 : number, v2 : number, asc: boolean): number {
-      let nullCheck = this.nullCompare(v1, v2, asc);
-      if (nullCheck != undefined) return nullCheck;
-
-      return v1 > v2 ? (asc ? 1 : -1) : v1 < v2 ? (asc ? -1 : 1) : 0;
-    }
-
-    stringLocaleCompare(v1: string, v2: string, asc: boolean): number {
-      let nullCheck = this.nullCompare(v1, v2, asc);
-      if (nullCheck != undefined) return nullCheck;
-
-      let r = v1.localeCompare(v2);
-      return asc ? r : (r == 1 ? -1 : r == -1 ? 1 : 0);
-    }
-
-    nullCompare(v1: any, v2: any, asc: boolean): number {
-      if (v1 == null && v2 == null) return 0;
-      else if (v1 == null) return 1; //always below
-      else if (v2 == null) return -1; //always below
-
-      return undefined;
     }
 
     getPlayer(): void {

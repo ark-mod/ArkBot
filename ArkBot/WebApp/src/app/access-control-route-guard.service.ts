@@ -24,7 +24,7 @@ export class AccessControlRouteGuardService implements CanActivate /*, CanActiva
       }).catch(() => {
           return false;
       })).map(e => {
-        if (!e) this.router.navigate(['/accessdenied']);
+        if (!e) this.router.navigateByUrl('/accessdenied', { skipLocationChange: true });
         return e;
       });
   }

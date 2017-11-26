@@ -607,7 +607,13 @@
     <Compile Include="Voting\VoteStateChangeResult.cs" />
     <Compile Include="Voting\InitiateVoteResult.cs" />
     <Compile Include="Voting\VotingManager.cs" />
+    <Compile Include="WebApi\Controllers\WildCreaturesController.cs" />
     <Compile Include="WebApi\DemoMode.cs" />
+    <Compile Include="WebApi\Model\WildCreatureSpeciesStatistics.cs" />
+    <Compile Include="WebApi\Model\WildCreatureStatistics.cs" />
+    <Compile Include="WebApi\Model\WildCreatureSpeciesViewModel.cs" />
+    <Compile Include="WebApi\Model\WildCreatureViewModel.cs" />
+    <Compile Include="WebApi\Model\WildCreaturesViewModel.cs" />
     <Compile Include="WebApi\Model\TribeLogEntryViewModel.cs" />
     <Compile Include="WebApi\PlayerIdAttribute.cs" />
     <Compile Include="WebApi\AccessControlAuthorizationFilter.cs" />

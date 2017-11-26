@@ -1,4 +1,4 @@
-<section *ngIf="loaded == false" class="w3-container">
+<section *ngIf="loaded == false || ((isMenuActive('wildcreatures') || isMenuActive('wildcreatures-statistics')) &amp;&amp; creaturesLoaded == false)" class="w3-container">
   <div class="w3-panel theme-l2">
     <h3 class="theme-text-l1-light">Loading...</h3>
   </div> 
@@ -11,51 +11,202 @@
 </section>
 <section *ngIf="isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'players')" class="w3-container">
   <h2 class="theme-text-d1">Players</h2>
-  <div class="w3-card-4 w3-responsive">
-    <table class="w3-table-all border-theme">
-      <thead>
-        <tr class="theme-d1">
-          <!--<th>Steam Id</th>-->
-          <!--<th>Steam Name</th>-->
-          <th>Character Name</th>
-          <th>Tribe Name</th>
-          <!--<th>Tribe Id</th>-->
-          <th>Last Active</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let player of filteredPlayers">
-          <!--<td><a [routerLink]="'/player/' + player.SteamId">{{player.SteamId}}</a></td>-->
-          <!--<td>{{player.SteamName}}</td>-->
-          <td><a *ngIf="dataService.hasFeatureAccess('pages', 'player', player.SteamId); else player_no_link" [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a><ng-template #player_no_link>{{player.CharacterName}}</ng-template></td>
-          <td>{{player.TribeName}}</td>
-          <!--<td>{{player.TribeId}}</td>-->
-          <td>{{toRelativeDate(player.LastActiveTime)}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <ark-data-table [rows]="filteredPlayers" trackByProp="Id" [sortFunctions]="playerSortFunctions" orderByColumn="last_active">
+    <ark-dt-mode name="Default" key="default" columnKeys="character_name,tribe_name,last_active"></ark-dt-mode>
+    <ark-dt-column key="character_name" [orderBy]="true" title="Sort by Character Name" thenSort="last_active">
+      <ng-template ark-dt-header>
+        Character Name
+      </ng-template>
+      <ng-template let-player ark-dt-cell>
+        <a *ngIf="dataService.hasFeatureAccessObservable('pages', 'player', player.SteamId) | async; else player_no_link" [routerLink]="'/player/' + player.SteamId">{{player.CharacterName}}</a><ng-template #player_no_link>{{player.CharacterName}}</ng-template>
+      </ng-template>
+    </ark-dt-column>
+    <ark-dt-column key="tribe_name" [orderBy]="true" title="Sort by Tribe Name" thenSort="character_name">
+      <ng-template ark-dt-header>
+        Tribe Name
+      </ng-template>
+      <ng-template let-player ark-dt-cell>
+        {{player.TribeName}}
+      </ng-template>
+    </ark-dt-column>
+    <ark-dt-column key="last_active" [orderBy]="true" title="Sort by Last Active" thenSort="character_name">
+      <ng-template ark-dt-header>
+        Last Active
+      </ng-template>
+      <ng-template let-player ark-dt-cell>
+        <relative-time [time]="player.LastActiveTime"></relative-time>
+      </ng-template>
+    </ark-dt-column>
+  </ark-data-table>
 </section>
 <section *ngIf="isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'tribes')" class="w3-container">
   <h2 class="theme-text-d1">Tribes</h2>
-  <div class="w3-card-4 w3-responsive">
-    <table class="w3-table-all border-theme">
-      <thead>
-        <tr class="theme-d1">
-          <th>Id</th>
-          <th>Name</th>
-          <th>Members</th>
-          <th>Last Active</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let tribe of filteredTribes">
-          <td>{{tribe.Id}}</td>
-          <td>{{tribe.Name}}</td>
-          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a *ngIf="dataService.hasFeatureAccess('pages', 'player', member); else tribe_member_no_link" [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribe_member_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf="!last">, </span></span></td>
-          <td>{{toRelativeDate(tribe.LastActiveTime)}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <ark-data-table [rows]="filteredTribes" trackByProp="Id" [sortFunctions]="tribeSortFunctions" orderByColumn="last_active">
+    <ark-dt-mode name="Default" key="default" columnKeys="tribe_name,members,last_active"></ark-dt-mode>
+    <ark-dt-column key="tribe_name" [orderBy]="true" title="Sort by Tribe Name" thenSort="last_active">
+      <ng-template ark-dt-header>
+        Tribe Name
+      </ng-template>
+      <ng-template let-tribe ark-dt-cell>
+          {{tribe.Name}}
+      </ng-template>
+    </ark-dt-column>
+    <ark-dt-column key="members">
+      <ng-template ark-dt-header>
+        Members
+      </ng-template>
+      <ng-template let-tribe ark-dt-cell>
+          <span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a *ngIf="dataService.hasFeatureAccess('pages', 'player', member); else tribe_member_no_link" [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribe_member_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf="!last">, </span></span>
+      </ng-template>
+    </ark-dt-column>
+    <ark-dt-column key="last_active" [orderBy]="true" title="Sort by Last Active" thenSort="tribe_name">
+      <ng-template ark-dt-header>
+        Last Active
+      </ng-template>
+      <ng-template let-tribe ark-dt-cell>
+        <relative-time [time]="tribe.LastActiveTime"></relative-time>
+      </ng-template>
+    </ark-dt-column>
+  </ark-data-table>
 </section>
+<section *ngIf="isMenuActive('wildcreatures-statistics') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures-statistics')" class="w3-container">
+    <h2 class="theme-text-d1">Wild Statistics <span class="w3-tag w3-large theme-d1">{{(wild.Statistics.Species?.length || 0) | number}}</span></h2>
+    <ark-data-table [rows]="wild.Statistics.Species" trackByProp="ClassName" [sortFunctions]="wildStatisticsSortFunctions" orderByColumn="species">
+        <ark-dt-mode name="Default" key="default" columnKeys="species,class_name,aliases,count,fraction"></ark-dt-mode>
+        <ark-dt-column key="species" [orderBy]="true" title="Sort by Species" thenSort="count">
+          <ng-template ark-dt-header>
+            Species
+          </ng-template>
+          <ng-template let-species ark-dt-cell>
+            {{species.Name}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="class_name" [orderBy]="true" title="Sort by Class Name" thenSort="count">
+          <ng-template ark-dt-header>
+            Class Name
+          </ng-template>
+          <ng-template let-species ark-dt-cell>
+            {{species.ClassName}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="aliases">
+          <ng-template ark-dt-header>
+            Aliases
+          </ng-template>
+          <ng-template let-species ark-dt-cell>
+            {{species.Aliases.length > 0 ? species.Aliases.join(', ') : ''}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="count" [orderBy]="true" title="Sort by Count" thenSort="species">
+          <ng-template ark-dt-header>
+            Count
+          </ng-template>
+          <ng-template let-species ark-dt-cell>
+            {{species.Count | number}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="fraction" [orderBy]="true" title="Sort by Fraction" thenSort="species">
+          <ng-template ark-dt-header>
+            Fraction
+          </ng-template>
+          <ng-template let-species ark-dt-cell>
+            {{species.Fraction | percent:'1.0-4'}}
+          </ng-template>
+        </ark-dt-column>
+      </ark-data-table>
+</section>
+<section *ngIf="isMenuActive('wildcreatures') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures')" class="w3-container">
+  <div class="w3-cell-row">
+    <div class="w3-cell"><a id="creatures"></a><h2 class="theme-text-d1 w3-left">Wild Creatures <span class="w3-tag w3-large theme-d1">{{(filteredCreatures?.length || 0) | number}}</span>&nbsp;/&nbsp;<span class="w3-tag w3-large theme-d1">{{(wild?.Statistics?.CreatureCount || 0) | number}}</span></h2></div>
+    <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
+  </div>
+  <div *ngIf="!(species?.length > 0)">There are no creatures...</div>
+  <ng-container *ngIf="species?.length > 0">
+    <select [ngModel]="selectedSpecies" (ngModelChange)="selectedSpecies = $event; filterAndSortWild();" class="w3-select w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" style="padding: 8px;">
+        <option *ngFor="let s of species" [value]="s">{{wild.Species[s].Name}}</option>
+      </select>
+    <!--<div class="inner-addon right-addon">
+      <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filterAndSortWild();">close</i>
+      <input [ngModel]="creaturesFilter" (ngModelChange)="creaturesFilter = $event; filterAndSortWild();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
+    </div>-->
+    <div *ngIf="numCreatureTabs() > 1" class="w3-bar theme-l2 w3-card-4 w3-margin-bottom">
+      <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('status')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('status')">Overview</button>
+      <button *ngIf="dataService.hasFeatureAccess('server', 'wildcreatures-basestats')" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('stats')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('stats')">Base Stats</button>
+      <button *ngIf="dataService.hasFeatureAccess('server', 'wildcreatures-ids')" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('ids')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('ids')">IDs</button>
+    </div>
+    <div class="w3-card-4 w3-responsive">
+      <table class="w3-table-all border-theme">
+        <thead>
+          <tr class="theme-d1">
+            <th style="cursor: pointer;" title="Sort by Gender" (click)="setCreaturesSort('gender')">Gender</th>
+            <th style="cursor: pointer;" title="Sort by Base Level" (click)="setCreaturesSort('base_level')">Base Level</th>
+            <th style="cursor: pointer;" title="Sort by Tameable" (click)="setCreaturesSort('tameable')">Tameable</th>
+            <ng-container *ngIf="activeCreaturesMode('status')">
+              <th style="cursor: pointer;" title="Sort by X" (click)="setCreaturesSort('x')">X</th>
+              <th style="cursor: pointer;" title="Sort by Y" (click)="setCreaturesSort('y')">Y</th>
+              <th style="cursor: pointer;" title="Sort by Z" (click)="setCreaturesSort('z')">Z</th>
+              <th style="cursor: pointer;" title="Sort by Latitude" (click)="setCreaturesSort('latitude')">Lat</th>
+              <th style="cursor: pointer;" title="Sort by Longitude" (click)="setCreaturesSort('longitude')">Lng</th>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('stats')">
+              <th style="cursor: pointer;" title="Sort by Health" (click)="setCreaturesSort('stat_health')">HP</th>
+              <th style="cursor: pointer;" title="Sort by Stamina" (click)="setCreaturesSort('stat_stamina')">ST</th>
+              <th style="cursor: pointer;" title="Sort by Oxygen" (click)="setCreaturesSort('stat_oxygen')">OX</th>
+              <th style="cursor: pointer;" title="Sort by Food" (click)="setCreaturesSort('stat_food')">FO</th>
+              <th style="cursor: pointer;" title="Sort by Weight" (click)="setCreaturesSort('stat_weight')">WE</th>
+              <th style="cursor: pointer;" title="Sort by Melee" (click)="setCreaturesSort('stat_melee')">ME</th>
+              <th style="cursor: pointer;" title="Sort by Speed" (click)="setCreaturesSort('stat_speed')">SP</th>
+              <!--<th></th>-->
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('ids')">
+              <th style="cursor: pointer;" title="Sort by ID1" (click)="setCreaturesSort('id1')">ID1</th>
+              <th style="cursor: pointer;" title="Sort by ID2" (click)="setCreaturesSort('id2')">ID2</th>
+            </ng-container>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!(filteredCreatures?.length > 0)"><td [colSpan]="activeCreaturesMode('status') ? 8 : (activeCreaturesMode('stats') ? 10 : 5)">No matching creatures...</td></tr>
+          <tr *ngFor="let creature of filteredCreatures">
+            <td>{{creature.Gender}}</td>
+            <td>{{creature.BaseLevel}}</td>
+            <td>{{(wild.Species[selectedSpecies].IsTameable &amp;&amp; creature.IsTameable == true ? "Yes" : "No")}}</td>
+            <ng-container *ngIf="activeCreaturesMode('status')">
+              <td>{{creature.X}}</td>
+              <td>{{creature.Y}}</td>
+              <td>{{creature.Z}}</td>
+              <td>{{creature.Latitude | number:'1.1-1'}}</td>
+              <td>{{creature.Longitude | number:'1.1-1'}}</td>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('stats')">
+              <td>{{creature.BaseStats?.Health}}</td>
+              <td>{{creature.BaseStats?.Stamina}}</td>
+              <td>{{creature.BaseStats?.Oxygen}}</td>
+              <td>{{creature.BaseStats?.Food}}</td>
+              <td>{{creature.BaseStats?.Weight}}</td>
+              <td>{{creature.BaseStats?.Melee}}</td>
+              <td>{{creature.BaseStats?.MovementSpeed}}</td>
+              <!--<td><i class="material-icons w3-medium" style="cursor: pointer;" (click)="copyCreature(creature)">content_copy</i></td>-->
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('ids')">
+              <td>{{creature.Id1}}</td>
+              <td>{{creature.Id2}}</td>
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</section>
+<div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
+    <header class="w3-container theme-d1"> 
+      <span (click)="showMap = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+      <h2>Map</h2>
+    </header>
+    <arkmap mapName="TheIsland" [points]="points"></arkmap>
+    <!--TODO: [mapName]="map name key from servers json (TheIsland, ScorchedEarth_P etc.)"-->
+    <!--TODO: View only one species of creatures at a time and make filtering something else-->
+    <!--TODO: Can we add a field to tell which creatures are tamable and which creatures are not?-->
+    <!--TODO: Maybe add a switch to toggle only tameable on/off-->
+    </div>
+  </div>

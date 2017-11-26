@@ -28,9 +28,12 @@ import { ServerMenuComponent } from './server-menu/server-menu.component';
 import { AdminServerMenuComponent } from './admin-server-menu/admin-server-menu.component';
 import { ArkmapStructuresComponent } from './arkmap-structures/arkmap-structures.component';
 import { TimerComponent } from './timer/timer.component';
+import { RelativeTimeComponent } from './relative-time/relative-time.component';
 import { ConfirmButtonComponent } from './confirm-button/confirm-button.component';
 import { AccessDeniedComponent } from './access-denied/access-denied.component';
 import { DeveloperComponent } from './developer/developer.component';
+
+import { DataTableModule } from './data-table/data-table.module';
 
 const appRoutes: Routes = [
   {
@@ -132,6 +135,7 @@ const appRoutes: Routes = [
     AdminServerMenuComponent,
     ArkmapStructuresComponent,
     TimerComponent,
+    RelativeTimeComponent,
     ConfirmButtonComponent,
     AccessDeniedComponent,
     DeveloperComponent
@@ -143,7 +147,8 @@ const appRoutes: Routes = [
     FormsModule,
     HttpModule,
     BrowserAnimationsModule,
-    SimpleNotificationsModule.forRoot()
+    SimpleNotificationsModule.forRoot(), 
+    DataTableModule
   ],
   providers: [
     HttpService, 

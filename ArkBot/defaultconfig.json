@@ -35,7 +35,11 @@
   	},
   	"server": {
 	  	"players": [ "guest" ],
-	  	"tribes": [ "guest" ]
+      "tribes": [ "guest" ],
+      "wildcreatures": [ "guest" ],
+      "wildcreatures-basestats": [ "guest" ],
+      "wildcreatures-ids": [ "guest" ],
+      "wildcreatures-statistics": [ "guest" ]
   	},
   	"player": {
 		  "profile": [ "guest" ],
