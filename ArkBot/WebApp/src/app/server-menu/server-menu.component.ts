@@ -18,5 +18,7 @@ export class ServerMenuComponent implements OnInit {
   ngOnInit() {
     if (this.dataService.hasFeatureAccess('server', 'players')) this.menu.activate("players");
     else if (this.dataService.hasFeatureAccess('server', 'tribes')) this.menu.activate("tribes");
+    else if (this.dataService.hasFeatureAccess('server', 'wildcreatures-statistics')) this.menu.activate("wildcreatures-statistics");
+    else if (this.dataService.hasFeatureAccess('server', 'wildcreatures')) this.menu.activate("wildcreatures");
   }
 }

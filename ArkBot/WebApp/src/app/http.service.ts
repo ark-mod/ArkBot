@@ -13,6 +13,7 @@ export class HttpService {
   private headers = new Headers({'Content-Type': 'application/json'});
   private serversUrl = '/servers';
   private serverUrl = '/server';
+  private wildCreaturesUrl = '/wildcreatures';
   private structuresUrl = '/structures';
   private adminServerUrl = '/adminserver';
   private administerUrl = '/administer';
@@ -41,6 +42,13 @@ export class HttpService {
 
   getServer(serverKey: string): Promise<any> {
     return this.http.get(`${this.getApiBaseUrl()}${this.serverUrl}/${serverKey}?t=${+new Date()}`, this.getOptions())
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
+  getWildCreatures(serverKey: string): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.wildCreaturesUrl}/${serverKey}?t=${+new Date()}`, this.getOptions())
                .toPromise()
                .then(response => response.json() as any)
                .catch(this.handleError);

@@ -1,0 +1,3 @@
+tr th.orderBy { cursor: pointer; }
+a.w3-button.disabled { color: darkgray; }
+a.w3-button.disabled:hover { color: darkgray !important; background-color: transparent !important; opacity: 1.0 !important; cursor: default; }
