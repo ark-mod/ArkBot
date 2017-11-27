@@ -84,3 +84,9 @@ https://github.com/tsebring/ArkCrossServerChat
 Used for advance imprinting/cuddle support.
 
 https://github.com/tsebring/ImprintingMod
+
+#### ARK Beyond API: Modified Spawn Level Distribution (Plugin)
+
+Used to change spawn level distribution on The Island and Scorched Earth to match the official spawn level distribution on Ragnarok and The Center.
+
+https://github.com/tsebring/ArkModifiedSpawnLevelDistribution
