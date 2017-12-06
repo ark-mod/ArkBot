@@ -22,7 +22,7 @@ namespace ArkBot.Voting.Handlers
             _vote = vote as DestroyWildDinosVote;
         }
 
-        public static async Task<InitiateVoteResult> Initiate(Channel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason)
+        public static async Task<InitiateVoteResult> Initiate(IMessageChannel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason)
         {
             var votes = db.Votes.OfType<DestroyWildDinosVote>().Where(x => x.Result == VoteResult.Undecided).ToArray();
             if (votes.Length > 0)

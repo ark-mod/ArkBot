@@ -2,25 +2,16 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Database;
+using ArkBot.Discord.Command;
 using Discord;
 using Discord.Net;
 
 namespace ArkBot.Commands
 {
-    public class UnlinkSteamCommand : ICommand
+    public class UnlinkSteamCommand : ModuleBase<SocketCommandContext>
     {
-        public string Name => "unlinksteam";
-        public string[] Aliases => null;
-        public string Description => "Unlink your Discord user from your Steam account";
-        public string SyntaxHelp => null;
-        public string[] UsageExamples => null;
-
-        public bool DebugOnly => false;
-        public bool HideFromCommandList => false;
-
         private IConfig _config;
         private EfDatabaseContextFactory _databaseContextFactory;
-        private DiscordClient _discord;
 
         public UnlinkSteamCommand(IConstants constants, IConfig config, EfDatabaseContextFactory databaseContextFactory)
         {
@@ -28,21 +19,18 @@ namespace ArkBot.Commands
             _databaseContextFactory = databaseContextFactory;
         }
 
-        public void Register(CommandBuilder command) { }
-
-        public void Init(DiscordClient client)
-        {
-            _discord = client;
-        }
-
-        public async Task Run(CommandEventArgs e)
+        [Command("unlinksteam")]
+        [Summary("Unlink your Discord user from your Steam account")]
+        [SyntaxHelp(null)]
+        [UsageExamples(null)]
+        public async Task UnlinkSteam()
         {
             using (var context = _databaseContextFactory.Create())
             {
-                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
+                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)Context.User.Id && !x.Unlinked);
                 if (user == null)
                 {
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, your user is not linked with Steam.");
+                    await Context.Channel.SendMessageAsync($"<@{Context.User.Id}>, your user is not linked with Steam.");
                 }
                 else
                 {
@@ -50,26 +38,26 @@ namespace ArkBot.Commands
                     var result = context.SaveChanges();
 
                     //remove ark role from users when they unlink
-                    if (_discord?.Servers != null)
+                    if (Context.Client?.Guilds != null)
                     {
-                        foreach (var server in _discord.Servers)
+                        foreach (var server in Context.Client.Guilds)
                         {
                             try
                             {
-                                var duser = server.GetUser(e.User.Id);
-                                var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
+                                var duser = server.GetUser(Context.User.Id);
+                                var role = server.Roles.FirstOrDefault(x => x.Name.Equals(_config.MemberRoleName));
                                 if (duser != null && role == null) continue;
 
-                                if (duser?.HasRole(role) == true) await duser.RemoveRoles(role);
+                                if (duser?.Roles.Any(x => x.Id == role.Id) == true) await duser.RemoveRoleAsync(role);
                             }
-                            catch(HttpException)
+                            catch (HttpException)
                             {
                                 //could be due to the order of roles on the server. bot role with "manage roles" permission must be higher up than the role it is trying to set
                             }
                         }
                     }
 
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, your user is no longer linked with Steam.");
+                    await Context.Channel.SendMessageAsync($"<@{Context.User.Id}>, your user is no longer linked with Steam.");
                 }
             }
         }
