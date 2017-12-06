@@ -46,6 +46,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Discord.Net.Providers.WS4Net;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace ArkBot.ViewModel
@@ -492,17 +493,9 @@ namespace ArkBot.ViewModel
                     }
                 }));
 
-            //x =>
-            //{
-            //    x.LogLevel = LogSeverity.Warning;
-            //    x.LogHandler += (s, e) => Console.AddLog(e.Message);
-            //    x.AppName = _config.BotName;
-            //    x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
-            //}
-
-
             var discord = new DiscordSocketClient(new DiscordSocketConfig
             {
+                WebSocketProvider = WS4NetProvider.Instance, //required for Win 7
                 LogLevel = LogSeverity.Warning
             });
             discord.Log += msg =>
