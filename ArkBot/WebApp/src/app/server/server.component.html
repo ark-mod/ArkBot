@@ -123,7 +123,7 @@
   <div *ngIf="!(species?.length > 0)">There are no creatures...</div>
   <ng-container *ngIf="species?.length > 0">
     <select [ngModel]="selectedSpecies" (ngModelChange)="selectedSpecies = $event; filterAndSortWild();" class="w3-select w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" style="padding: 8px;">
-        <option *ngFor="let s of species" [value]="s">{{wild.Species[s].Name}}</option>
+        <option *ngFor="let s of species" [value]="s">{{wild.Species[s].Name || s}}</option>
       </select>
     <!--<div class="inner-addon right-addon">
       <i *ngIf="creaturesFilter != null &amp;&amp; creaturesFilter != ''" class="material-icons" style="cursor: pointer;" (click)="creaturesFilter = ''; filterAndSortWild();">close</i>

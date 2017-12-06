@@ -168,18 +168,21 @@ export class ServerComponent implements OnInit, OnDestroy {
       return a;
     });
 
-    this.filteredCreatures.sort((o1, o2) => {
-      let r = sortFunc(o1, o2, asc);
-      if(r == 0) {
-        for (let alt of alts) {
-          r = alt.sortFunc(o1, o2, alt.asc);
+    if(this.filteredCreatures != undefined)
+    {
+      this.filteredCreatures.sort((o1, o2) => {
+        let r = sortFunc(o1, o2, asc);
+        if(r == 0) {
+          for (let alt of alts) {
+            r = alt.sortFunc(o1, o2, alt.asc);
 
-          if (r != 0) break;
+            if (r != 0) break;
+          }
         }
-      }
 
-      return r;
-    });
+        return r;
+      });
+    }
   }
 
   filterWild(): void {
@@ -194,11 +197,14 @@ export class ServerComponent implements OnInit, OnDestroy {
     }*/
 
     let points = [];
-    for(let creature of this.filteredCreatures) {
-      let point = {} as any;
-      point.x = creature.TopoMapX;
-      point.y = creature.TopoMapY;
-      points.push(point);
+    if(this.filteredCreatures != undefined)
+    {
+      for(let creature of this.filteredCreatures) {
+        let point = {} as any;
+        point.x = creature.TopoMapX;
+        point.y = creature.TopoMapY;
+        points.push(point);
+      }
     }
     this.points = points;
   }
