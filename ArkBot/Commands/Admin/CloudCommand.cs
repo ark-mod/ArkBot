@@ -9,6 +9,7 @@ using ArkBot.Helpers;
 using ArkBot.Extensions;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Reflection;
 using Autofac;
 using Discord;
 using ArkBot.Services;
@@ -16,37 +17,20 @@ using ArkBot.Ark;
 using ArkBot.Services.Data;
 using ArkSavegameToolkitNet.Domain;
 using System.Threading;
+using ArkBot.Discord.Command;
+using Discord.Commands.Builders;
+using RestSharp;
 
 namespace ArkBot.Commands.Admin
 {
-    public class CloudCommand : IRoleRestrictedCommand
+    public class CloudCommand : ModuleBase<SocketCommandContext>
     {
-        public string Name => "cloud";
-        public string[] Aliases => new[] { "cluster" };
-        public string Description => "Admin commands to manage the cloud/cluster.";
-        public string SyntaxHelp => null;
-        public string[] UsageExamples => new[]
-        {
-            "**<cluster key> backup <steamid>**: Creates a backup of the current cloud save for the given steamid.",
-            "**<cluster key> list <steamid> [skip <number>]**: List cloud save backups available for the given steamid.",
-            "**<cluster key> details <steamid> <backuphash>**: View detailed information for a given cloud save backup.",
-            "**<cluster key> restore <steamid> <backuphash> <cloudsavehash>**: Restore a given cloud save backup.",
-            "**<cluster key> delete <steamid>**: Delete the current cloud save for the given steamid.",
-            "**<cluster key> stash <steamid> <tag>**: Stash a players cloud save using the the given tag.",
-            "**<cluster key> pop <steamid> <tag>**: Restore a stashed cloud save with the given tag for a player.",
-        };
-
-        public bool DebugOnly => false;
-        public bool HideFromCommandList => false;
-
-        public string[] ForRoles => new[] { _config.AdminRoleName, _config.DeveloperRoleName };
-
         private IConfig _config;
         private ISavegameBackupService _savegameBackupService;
         private ArkContextManager _contextManager;
 
         public CloudCommand(
-            IConfig config, 
+            IConfig config,
             ISavegameBackupService savegameBackupService,
             ArkContextManager contextManager)
         {
@@ -55,16 +39,25 @@ namespace ArkBot.Commands.Admin
             _contextManager = contextManager;
         }
 
-        public void Register(CommandBuilder command)
+        [CommandHidden]
+        [Command("cloud")]
+        [Alias("cluster")]
+        [Summary("Admin commands to manage the cloud/cluster.")]
+        [SyntaxHelp(null)]
+        [UsageExamples(new[]
         {
-            command.Parameter("optional", ParameterType.Multiple);
-        }
-
-        public void Init(DiscordClient client) { }
-
-        public async Task Run(CommandEventArgs e)
+            "**<cluster key> backup <steamid>**: Creates a backup of the current cloud save for the given steamid.",
+            "**<cluster key> list <steamid> [skip <number>]**: List cloud save backups available for the given steamid.",
+            "**<cluster key> details <steamid> <backuphash>**: View detailed information for a given cloud save backup.",
+            "**<cluster key> restore <steamid> <backuphash> <cloudsavehash>**: Restore a given cloud save backup.",
+            "**<cluster key> delete <steamid>**: Delete the current cloud save for the given steamid.",
+            "**<cluster key> stash <steamid> <tag>**: Stash a players cloud save using the the given tag.",
+            "**<cluster key> pop <steamid> <tag>**: Restore a stashed cloud save with the given tag for a player.",
+        })]
+        [RoleRestrictedPrecondition(new[] { DiscordRole.Admin, DiscordRole.Developer })]
+        public async Task Cloud([Remainder] string arguments = null)
         {
-            var args = CommandHelper.ParseArgs(e, new
+            var args = CommandHelper.ParseArgs(arguments, new
             {
                 ClusterKey = "",
                 Backup = 0L,
@@ -107,7 +100,7 @@ namespace ArkBot.Commands.Admin
             // for stash and pop commands, check that target1 is a valid tag
             if ((args.Stash > 0 || args.Pop > 0) && !r_allowedExt.IsMatch(args.Target1))
             {
-                await e.Channel.SendMessage($"**The supplied tag is not allowed (only a-z, 0-9)!**");
+                await Context.Channel.SendMessageAsync($"**The supplied tag is not allowed (only a-z, 0-9)!**");
                 return;
             }
 
@@ -115,7 +108,7 @@ namespace ArkBot.Commands.Admin
             ArkClusterContext clusterContext = args.ClusterKey != null ? _contextManager.GetCluster(args.ClusterKey) : null;
             if (clusterContext == null)
             {
-                await e.Channel.SendMessage($"**Cloud commands need to be prefixed with a valid cluster key.**");
+                await Context.Channel.SendMessageAsync($"**Cloud commands need to be prefixed with a valid cluster key.**");
                 return;
             }
 
@@ -123,7 +116,7 @@ namespace ArkBot.Commands.Admin
             var serverContexts = _contextManager.GetServersInCluster(clusterContext.Config.Key);
             if (!(serverContexts?.Length > 0))
             {
-                await e.Channel.SendMessage($"**There are no servers in the cluster.**");
+                await Context.Channel.SendMessageAsync($"**There are no servers in the cluster.**");
                 return;
             }
 
@@ -207,10 +200,10 @@ namespace ArkBot.Commands.Admin
 
                 if (result == null)
                 {
-                    await e.Channel.SendMessage($"**Failed to find the given backup hash!**");
+                    await Context.Channel.SendMessageAsync($"**Failed to find the given backup hash!**");
                     return;
                 }
-                
+
                 var data = result.Files.Select(file =>
                 {
                     string tmpFilePath = null;
@@ -266,21 +259,21 @@ namespace ArkBot.Commands.Admin
 
                 if (result == null)
                 {
-                    await e.Channel.SendMessage($"**Failed to find the given backup hash!**");
+                    await Context.Channel.SendMessageAsync($"**Failed to find the given backup hash!**");
                     return;
                 }
 
                 var cloudSaveFile = result.Files.FirstOrDefault(x => x.GetHashCode() == cloudSaveHash.Value);
                 if (cloudSaveFile == null)
                 {
-                    await e.Channel.SendMessage($"**Failed to find the given cloud save hash!**");
+                    await Context.Channel.SendMessageAsync($"**Failed to find the given cloud save hash!**");
                     return;
                 }
 
                 var targetPath = Path.Combine(clusterContext.Config.SavePath, $"{args.Restore}");
                 if (File.Exists(targetPath))
                 {
-                    await e.Channel.SendMessage("**A cloud save already exists, please delete/stash it before restoring...**");
+                    await Context.Channel.SendMessageAsync("**A cloud save already exists, please delete/stash it before restoring...**");
                     return;
                 }
 
@@ -307,14 +300,17 @@ namespace ArkBot.Commands.Admin
             }
             else
             {
-                await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
+                var syntaxHelp = MethodBase.GetCurrentMethod().GetCustomAttribute<SyntaxHelpAttribute>()?.SyntaxHelp;
+                var name = MethodBase.GetCurrentMethod().GetCustomAttribute<CommandAttribute>()?.Text;
+
+                await Context.Channel.SendMessageAsync(string.Join(Environment.NewLine, new string[] {
                     $"**My logic circuits cannot process this command! I am just a bot after all... :(**",
-                    !string.IsNullOrWhiteSpace(SyntaxHelp) ? $"Help me by following this syntax: **!{Name}** {SyntaxHelp}" : null }.Where(x => x != null)));
+                    !string.IsNullOrWhiteSpace(syntaxHelp) ? $"Help me by following this syntax: **!{name}** {syntaxHelp}" : null }.Where(x => x != null)));
                 return;
             }
 
             var msg = sb.ToString();
-            if (!string.IsNullOrWhiteSpace(msg)) await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+            if (!string.IsNullOrWhiteSpace(msg)) await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
         }
 
         /// <summary>

@@ -4,50 +4,37 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Extensions;
 using ArkBot.Database;
+using ArkBot.Discord.Command;
 using Discord;
+using Discord.Commands.Builders;
+using Discord.Net;
 
 namespace ArkBot.Commands
 {
-    public class WhoAmICommand : ICommand
+    public class WhoAmICommand : ModuleBase<SocketCommandContext>
     {
-        public string Name => "whoami";
-        public string[] Aliases => null;
-        public string Description => "Find out what we know about you";
-        public string SyntaxHelp => null;
-        public string[] UsageExamples => null;
-
-        public bool DebugOnly => false;
-        public bool HideFromCommandList => false;
-
         private EfDatabaseContextFactory _databaseContextFactory;
-
         public WhoAmICommand(IConstants constants, EfDatabaseContextFactory databaseContextFactory)
         {
             _databaseContextFactory = databaseContextFactory;
         }
 
-        public void Register(CommandBuilder command)
-        {
-            //command.AddCheck((cmd, usr, ch) =>
-            //    {
-            //        return ch.IsPrivate;
-            //    });
-        }
-
-        public void Init(DiscordClient client) { }
-
-        public async Task Run(CommandEventArgs e)
+        [Command("whoami")]
+        [Summary("Find out what we know about you")]
+        [SyntaxHelp(null)]
+        [UsageExamples(null)]
+        public async Task Whoami()
         {
             using (var context = _databaseContextFactory.Create())
             {
-                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
+                var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)Context.User.Id && !x.Unlinked);
                 if (user == null)
                 {
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, your existence is a mystery to us! :(");
+                    await Context.Channel.SendMessageAsync($"<@{Context.User.Id}>, your existence is a mystery to us! :(");
                 }
                 else
                 {
-                    if(!e.Channel.IsPrivate) await e.Channel.SendMessage($"<@{e.User.Id}>, I will send you a private message with everything we know about you!");
+                    if (!Context.IsPrivate) await Context.Channel.SendMessageAsync($"<@{Context.User.Id}>, I will send you a private message with everything we know about you!");
 
                     var sb = new StringBuilder();
                     sb.AppendLine($"**This is what we know about you:**");
@@ -56,10 +43,10 @@ namespace ArkBot.Commands
                     if (user.SteamDisplayName != null) sb.AppendLine($"● **Steam nick:** {user.SteamDisplayName}");
                     if (user.RealName != null) sb.AppendLine($"● **Real name:** {user.RealName}");
 
-                    if (e.User.PrivateChannel == null) await e.User.CreatePMChannel();
+                    var channel = await Context.User.GetOrCreateDMChannelAsync();
                     foreach (var msg in sb.ToString().Partition(2000))
                     {
-                        await e.User.PrivateChannel.SendMessage(msg.Trim('\r', '\n'));
+                        await channel.SendMessageAsync(msg.Trim('\r', '\n'));
                     }
                 }
             }

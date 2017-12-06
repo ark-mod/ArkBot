@@ -19,6 +19,8 @@ using Certes;
 using Certes.Acme;
 using Certes.Pkcs;
 using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin;
@@ -490,12 +492,27 @@ namespace ArkBot.ViewModel
                     }
                 }));
 
-            var discord = new DiscordClient(x =>
+            //x =>
+            //{
+            //    x.LogLevel = LogSeverity.Warning;
+            //    x.LogHandler += (s, e) => Console.AddLog(e.Message);
+            //    x.AppName = _config.BotName;
+            //    x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
+            //}
+
+
+            var discord = new DiscordSocketClient(new DiscordSocketConfig
             {
-                x.LogLevel = LogSeverity.Warning;
-                x.LogHandler += (s, e) => Console.AddLog(e.Message);
-                x.AppName = _config.BotName;
-                x.AppUrl = !string.IsNullOrWhiteSpace(_config.BotUrl) ? _config.BotUrl : null;
+                LogLevel = LogSeverity.Warning
+            });
+            discord.Log += msg =>
+            {
+                Console.AddLog(msg.Message);
+                return Task.CompletedTask;
+            };
+
+            var discordCommands = new CommandService(new CommandServiceConfig
+            {
             });
 
             //setup dependency injection
@@ -506,14 +523,14 @@ namespace ArkBot.ViewModel
             if (_config.UseCompatibilityChangeWatcher) builder.RegisterType<ArkSaveFileWatcherTimer>().As<IArkSaveFileWatcher>();
             else builder.RegisterType<ArkSaveFileWatcher>().As<IArkSaveFileWatcher>();
             builder.RegisterInstance(discord).AsSelf();
+            builder.RegisterInstance(discordCommands).AsSelf();
+            builder.RegisterType<AutofacDiscordServiceProvider>().As<IServiceProvider>().SingleInstance();
             builder.RegisterType<ArkDiscordBot>();
             builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(_config as Config).As<IConfig>();
             //builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
-            builder.RegisterAssemblyTypes(thisAssembly).As<ArkBot.Commands.ICommand>().AsSelf().SingleInstance()
-                .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies);
             builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
             builder.RegisterType<EfDatabaseContext>().AsSelf().As<IEfDatabaseContext>()
                 .WithParameter(new TypedParameter(typeof(string), constants.DatabaseConnectionString));

@@ -4,6 +4,7 @@ using ArkBot.Database;
 using ArkBot.OpenID;
 using ArkBot.Extensions;
 using Discord;
+using Discord.WebSocket;
 using Discord.Commands;
 using Google.Apis.Urlshortener.v1;
 using Newtonsoft.Json;
@@ -20,16 +21,22 @@ using ArkBot.Helpers;
 using Autofac;
 using log4net;
 using System.Data.Entity.Core.Objects;
+using System.Reflection;
 using ArkBot.ViewModel;
 using ArkBot.Ark;
+using ArkBot.Discord.Command;
 using ArkBot.Voting;
-using Discord.Net;
+using Discord.WebSocket;
+using RazorEngine.Compilation.ImpromptuInterface;
+using VDS.Common.Collections.Enumerations;
 
 namespace ArkBot.Discord
 {
     public class ArkDiscordBot : IDisposable
     {
-        private DiscordClient _discord;
+        private DiscordSocketClient _discord;
+        private CommandService _commands;
+        private IServiceProvider _serviceProvider;
         private IConfig _config;
         private IConstants _constants;
         private IBarebonesSteamOpenId _openId;
@@ -42,17 +49,20 @@ namespace ArkBot.Discord
         private List<ulong> _wasRestartedServersNotified = new List<ulong>();
 
         public ArkDiscordBot(
-            DiscordClient discord,
+            DiscordSocketClient discord,
+            CommandService commands,
+            IServiceProvider serviceProvider,
             IConfig config, 
             IConstants constants, 
             IBarebonesSteamOpenId openId, 
             EfDatabaseContextFactory databaseContextFactory, 
-            IEnumerable<ICommand> commands, 
             ILifetimeScope scope,
             ArkContextManager contextManager,
             VotingManager votingManager)
         {
             _discord = discord;
+            _commands = commands;
+            _serviceProvider = serviceProvider;
             _config = config;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
@@ -64,42 +74,8 @@ namespace ArkBot.Discord
 
             //_context.Updated += _context_Updated;
 
-            _discord.UsingCommands(x =>
-            {
-                x.PrefixChar = '!';
-                x.AllowMentionPrefix = true;
-            });
-
-            _discord.ServerAvailable += _discord_ServerAvailable;
-
-            var cservice = _discord.GetService<CommandService>();
-            cservice.CommandExecuted += Commands_CommandExecuted;
-            cservice.CommandErrored += Commands_CommandErrored;
-            foreach(var command in commands)
-            {
-                //if (command.DebugOnly && !_config.Debug) continue;
-
-                var cbuilder = cservice.CreateCommand(command.Name);
-                if (command.Aliases != null && command.Aliases.Length > 0) cbuilder.Alias(command.Aliases);
-                var rrc = command as IRoleRestrictedCommand;
-                if (rrc != null && rrc.ForRoles?.Length > 0)
-                {
-                    cbuilder.AddCheck((a, b, c) => 
-                    c.Client.Servers.Any(x => 
-                    x.Roles.Any(y => y != null && rrc.ForRoles.Contains(y.Name, StringComparer.OrdinalIgnoreCase) == true && y.Members.Any(z => z.Id == b.Id))), null);
-                }
-
-                cbuilder.AddCheck((a, b, c) =>
-                {
-                    return c.IsPrivate || !(_config.EnabledChannels?.Length > 0) || (c?.Name != null && _config.EnabledChannels.Contains(c.Name, StringComparer.OrdinalIgnoreCase));
-                });
-
-                command.Init(_discord);
-                command.Register(cbuilder);
-                cbuilder.Do(command.Run);
-            }
-
-
+            _discord.GuildAvailable += DiscordOnGuildAvailable;
+            _discord.MessageReceived += HandleCommandAsync;
 
             var args = Environment.GetCommandLineArgs();
             if (args != null && args.Contains("/restart", StringComparer.OrdinalIgnoreCase))
@@ -108,22 +84,77 @@ namespace ArkBot.Discord
             }
         }
 
-        
-
-        private async void _discord_ServerAvailable(object sender, ServerEventArgs e)
+        private async Task DiscordOnGuildAvailable(SocketGuild socketGuild)
         {
-            if (_wasRestarted && e?.Server != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel) && !_wasRestartedServersNotified.Contains(e.Server.Id))
+            if (_wasRestarted && socketGuild != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel) && !_wasRestartedServersNotified.Contains(socketGuild.Id))
             {
                 try
                 {
-                    _wasRestartedServersNotified.Add(e.Server.Id);
-                    var channel = e.Server.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase));
-                    if (channel != null) await channel.SendMessage("**I have automatically restarted due to previous unexpected shutdown!**");
+                    _wasRestartedServersNotified.Add(socketGuild.Id);
+                    var channel = socketGuild.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase));
+                    if (channel != null) await channel.SendMessageAsync("**I have automatically restarted due to previous unexpected shutdown!**");
                 }
                 catch (Exception ex) { /*ignore exceptions */ }
             }
 
-            await UpdateNicknamesAndRoles(e.Server); 
+            await UpdateNicknamesAndRoles(socketGuild);
+        }
+
+        private async Task HandleCommandAsync(SocketMessage messageParam)
+        {
+            var message = messageParam as SocketUserMessage;
+            if (message == null) return;
+
+            var argPos = 0;
+            if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(_discord.CurrentUser, ref argPos))) return;
+
+            var context = new SocketCommandContext(_discord, message);
+
+            var result = _commands.Search(context, argPos);
+            if (result.IsSuccess && result.Commands.Count > 0)
+            {
+                if (result.Commands.Count > 1)
+                {
+                    Logging.Log($"Multiple commands registered for '{message.Content.Substring(argPos)}'! Skipping!", GetType(), LogLevel.WARN);
+                    return;
+                }
+
+                var cm = result.Commands.First();
+                var iCommand = cm.Command;
+                var iModule = iCommand.Module;
+                var isHidden = CommandHiddenAttribute.IsHidden(iModule.Attributes, iCommand.Attributes);
+
+                var preconditions = await cm.CheckPreconditionsAsync(context, _serviceProvider);
+                if (!preconditions.IsSuccess) return;
+
+                var parseResult = await cm.ParseAsync(context, result, preconditions, _serviceProvider);
+                if (!parseResult.IsSuccess) return;
+
+                var commandResult = await cm.ExecuteAsync(context, parseResult, _serviceProvider);
+                if (commandResult.IsSuccess)
+                {
+                    if (isHidden) return;
+
+                    var sb = new StringBuilder();
+                    sb.AppendLine($@"""!{message.Content.Substring(argPos)}"" command successful!");
+                    Logging.Log(sb.ToString(), GetType(), LogLevel.INFO);
+                }
+                else
+                {
+                    if (isHidden || (preconditions.Error.HasValue && preconditions.Error.Value == CommandError.UnmetPrecondition)) return;
+
+                    //if there is an exception log all information pertaining to it so that we can possibly fix it in the future
+                    var exception = commandResult is ExecuteResult ? ((ExecuteResult)commandResult).Exception : null;
+                    if (exception != null)
+                    { 
+                        var errorMessage = $@"""!{message.Content.Substring(argPos)}"" command error...";
+
+                        Logging.LogException(errorMessage, exception, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
+                    }
+                }
+            }
+
+            //var result = await _commands.ExecuteAsync(context, argPos, _serviceProvider);
         }
 
         /// <summary>
@@ -135,7 +166,7 @@ namespace ArkBot.Discord
             await UpdateNicknamesAndRoles();
         }
 
-        private async Task UpdateNicknamesAndRoles(Server _server = null)
+        private async Task UpdateNicknamesAndRoles(SocketGuild _socketGuild = null)
         {
             //try
             //{
@@ -236,30 +267,30 @@ namespace ArkBot.Discord
                 //});
 
                 //set ark role on users when they link
-                foreach(var server in _discord.Servers)
-                {
-                    var user = server.GetUser(e.DiscordUserId);
-                    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
-                    if (user == null || role == null) continue;
+                //foreach(var server in _discord.Servers)
+                //{
+                //    var user = server.GetUser(e.DiscordUserId);
+                //    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
+                //    if (user == null || role == null) continue;
 
-                    //try
-                    //{
-                    //    if (!user.HasRole(role)) await user.AddRoles(role);
+                //    //try
+                //    //{
+                //    //    if (!user.HasRole(role)) await user.AddRoles(role);
 
-                    //    var p = _context.Players?.FirstOrDefault(x => { ulong steamId = 0; return ulong.TryParse(x.SteamId, out steamId) ? steamId == e.SteamId : false; });
-                    //    if (p != null && !string.IsNullOrWhiteSpace(p.Name))
-                    //    {
+                //    //    var p = _context.Players?.FirstOrDefault(x => { ulong steamId = 0; return ulong.TryParse(x.SteamId, out steamId) ? steamId == e.SteamId : false; });
+                //    //    if (p != null && !string.IsNullOrWhiteSpace(p.Name))
+                //    //    {
 
-                    //        //must be less or equal to 32 characters
-                    //        await user.Edit(nickname: p.Name.Length > 32 ? p.Name.Substring(0, 32) : p.Name);
+                //    //        //must be less or equal to 32 characters
+                //    //        await user.Edit(nickname: p.Name.Length > 32 ? p.Name.Substring(0, 32) : p.Name);
 
-                    //    }
-                    //}
-                    //catch (HttpException)
-                    //{
-                    //    //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
-                    //}
-                }
+                //    //    }
+                //    //}
+                //    //catch (HttpException)
+                //    //{
+                //    //    //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
+                //    //}
+                //}
 
                 using (var context = _databaseContextFactory.Create())
                 {
@@ -285,52 +316,36 @@ namespace ArkBot.Discord
 
                     context.SaveChanges();
                 }
-                var ch = await _discord.CreatePrivateChannel(e.DiscordUserId);
-                await ch?.SendMessage($"Your Discord user is now linked with your Steam account! :)");
+
+                var ch = await _discord.GetUser(e.DiscordUserId).GetOrCreateDMChannelAsync();
+                if (ch != null) await ch.SendMessageAsync($"Your Discord user is now linked with your Steam account! :)");
             }
             else
             {
-                var ch = await _discord.CreatePrivateChannel(e.DiscordUserId);
-                await ch?.SendMessage($"Something went wrong during the linking process. Please try again later!");
+                var ch = await _discord.GetUser(e.DiscordUserId).GetOrCreateDMChannelAsync();
+                if (ch != null) await ch.SendMessageAsync($"Something went wrong during the linking process. Please try again later!");
             }
-        }
-
-        private void Commands_CommandErrored(object sender, CommandErrorEventArgs e)
-        {
-            if (e == null || e.Command == null || e.Command.IsHidden || e.ErrorType == CommandErrorType.BadPermissions) return;
-            var sb = new StringBuilder();
-            var message = $@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command error...";
-            sb.AppendLine(message);
-            if(e.Exception != null) sb.AppendLine($"Exception: {e.Exception.ToString()}");
-            sb.AppendLine();
-            //_context.Progress.Report(sb.ToString());
-
-            //if there is an exception log all information pertaining to it so that we can possibly fix it in the future
-            if (e.Exception != null) Logging.LogException(message, e.Exception, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
-        }
-
-        private void Commands_CommandExecuted(object sender, CommandEventArgs e)
-        {
-            if (e == null || e.Command == null || e.Command.IsHidden) return;
-
-            var sb = new StringBuilder();
-            sb.AppendLine($@"""!{e.Command.Text}{(e.Args.Length > 0 ? " " : "")}{string.Join(" ", e.Args)}"" command successful!");
-            Logging.Log(sb.ToString(), GetType(), LogLevel.INFO);
         }
 
         public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+
             //await _context.Initialize(token, skipExtract);
         }
 
         public async Task Start(ArkSpeciesAliases aliases = null)
         {
-            await _discord.Connect(_config.BotToken, TokenType.Bot);
+            await _discord.LoginAsync(TokenType.Bot, _config.BotToken);
+            await _discord.StartAsync();
+
+            //await _discord.Connect(_config.BotToken, TokenType.Bot);
         }
 
         public async Task Stop()
         {
-            await _discord.Disconnect();
+            await _discord.StopAsync();
+            //await _discord.Disconnect();
         }
 
         #region IDisposable Support

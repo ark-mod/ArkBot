@@ -22,7 +22,7 @@ namespace ArkBot.Voting.Handlers
             _vote = vote as UnbanVote;
         }
 
-        public static async Task<InitiateVoteResult> Initiate(Channel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason, string targetRaw)
+        public static async Task<InitiateVoteResult> Initiate(IMessageChannel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason, string targetRaw)
         {
             var _rId = new Regex(@"^\s*(id|(steam\s*id))\s*\:\s*(?<id>\d+)\s*$", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
             var m = _rId.Match(targetRaw);

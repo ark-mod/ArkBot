@@ -23,6 +23,7 @@ using CoreRCON;
 using CoreRCON.Parsers.Standard;
 using System.Net;
 using ArkBot.Ark;
+using Discord.WebSocket;
 
 namespace ArkBot.Helpers
 {
@@ -30,124 +31,124 @@ namespace ArkBot.Helpers
 
     public static class CommandHelper
     {
-        public static async Task SendAnnotatedMap(Channel channel, PointF[] points, string tempFileOutputDirPath, float pointRadius = 5f, Brush pointBrush = null, MapTemplate template = MapTemplate.Sketch)
-        {
-            //send map with locations marked
-            var templatePath = template == MapTemplate.Sketch ? @"Resources\theisland-template.png" : @"Resources\theisland-template2.png";
-            if (!File.Exists(templatePath)) return;
+        //public static async Task SendAnnotatedMap(Channel channel, PointF[] points, string tempFileOutputDirPath, float pointRadius = 5f, Brush pointBrush = null, MapTemplate template = MapTemplate.Sketch)
+        //{
+        //    //send map with locations marked
+        //    var templatePath = template == MapTemplate.Sketch ? @"Resources\theisland-template.png" : @"Resources\theisland-template2.png";
+        //    if (!File.Exists(templatePath)) return;
 
-            using (var image = Image.FromFile(templatePath))
-            {
-                using (var g = Graphics.FromImage(image))
-                {
-                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    g.SmoothingMode = SmoothingMode.HighQuality;
+        //    using (var image = Image.FromFile(templatePath))
+        //    {
+        //        using (var g = Graphics.FromImage(image))
+        //        {
+        //            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+        //            g.SmoothingMode = SmoothingMode.HighQuality;
 
-                    foreach (var loc in points)
-                    {
-                        //var rc = new Rectangle(81, 86, 568, 552);
-                        //var rcf = new RectangleF(12.1f, 7.2f, (float)(92.1 - 12.1), (float)(87.2 - 7.2)); //87.9
-                        //var x = (float)(((loc.X - rcf.Left) / rcf.Width) * rc.Width + rc.Left);
-                        //var y = (float)(((loc.Y - rcf.Top) / rcf.Height) * rc.Height + rc.Top);
+        //            foreach (var loc in points)
+        //            {
+        //                //var rc = new Rectangle(81, 86, 568, 552);
+        //                //var rcf = new RectangleF(12.1f, 7.2f, (float)(92.1 - 12.1), (float)(87.2 - 7.2)); //87.9
+        //                //var x = (float)(((loc.X - rcf.Left) / rcf.Width) * rc.Width + rc.Left);
+        //                //var y = (float)(((loc.Y - rcf.Top) / rcf.Height) * rc.Height + rc.Top);
 
-                        var x = 0f;
-                        var y = 0f;
-                        if (template == MapTemplate.Sketch)
-                        {
-                            var rc = new Rectangle(81, 86, 568, 552);
-                            var gx = rc.Width / 8f;
-                            var gy = rc.Height / 8f;
-                            x = (float)(((loc.X - 10) / 10) * gx + rc.Left);
-                            y = (float)(((loc.Y - 10) / 10) * gy + rc.Top);
-                        }
-                        else
-                        {
-                            //var rc = new Rectangle(81, 86, 568, 552);
-                            var rc = new Rectangle(0, 0, 1708, 1708);
-                            var rcf = new RectangleF(7.2f, 7.2f, (float)(92.6 - 7.2), (float)(92.6 - 7.2));
-                            var wx = rc.Width / rcf.Width;
-                            var wy = rc.Height / rcf.Height;
-                            x = (loc.X - rcf.X) * wx;
-                            y = (loc.Y - rcf.Y) * wy;
-                        }
+        //                var x = 0f;
+        //                var y = 0f;
+        //                if (template == MapTemplate.Sketch)
+        //                {
+        //                    var rc = new Rectangle(81, 86, 568, 552);
+        //                    var gx = rc.Width / 8f;
+        //                    var gy = rc.Height / 8f;
+        //                    x = (float)(((loc.X - 10) / 10) * gx + rc.Left);
+        //                    y = (float)(((loc.Y - 10) / 10) * gy + rc.Top);
+        //                }
+        //                else
+        //                {
+        //                    //var rc = new Rectangle(81, 86, 568, 552);
+        //                    var rc = new Rectangle(0, 0, 1708, 1708);
+        //                    var rcf = new RectangleF(7.2f, 7.2f, (float)(92.6 - 7.2), (float)(92.6 - 7.2));
+        //                    var wx = rc.Width / rcf.Width;
+        //                    var wy = rc.Height / rcf.Height;
+        //                    x = (loc.X - rcf.X) * wx;
+        //                    y = (loc.Y - rcf.Y) * wy;
+        //                }
 
-                        if (pointBrush != null) g.FillCircle(pointBrush, x, y, pointRadius);
-                        else
-                        {
-                            g.FillCircle(Brushes.Black, x, y, pointRadius);
-                            g.FillCircle(Brushes.Red, x, y, pointRadius * 0.75f);
-                        }
-                    }
+        //                if (pointBrush != null) g.FillCircle(pointBrush, x, y, pointRadius);
+        //                else
+        //                {
+        //                    g.FillCircle(Brushes.Black, x, y, pointRadius);
+        //                    g.FillCircle(Brushes.Red, x, y, pointRadius * 0.75f);
+        //                }
+        //            }
 
-                    var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
-                    if (je == null) return;
+        //            var je = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
+        //            if (je == null) return;
 
-                    var p = new EncoderParameters(1);
-                    p.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L);
+        //            var p = new EncoderParameters(1);
+        //            p.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L);
 
-                    var path = Path.Combine(tempFileOutputDirPath, $"{Guid.NewGuid()}.jpg");
-                    image.Save(path, je, p);
-                    await channel.SendFile(path);
-                    File.Delete(path);
-                }
-            }
-        }
+        //            var path = Path.Combine(tempFileOutputDirPath, $"{Guid.NewGuid()}.jpg");
+        //            image.Save(path, je, p);
+        //            await channel.SendFile(path);
+        //            File.Delete(path);
+        //        }
+        //    }
+        //}
 
-        public static bool AreaPlotSaveAs(DataPoint[] series, string filepath)
-        {
-            try
-            {
-                using (var ch = new Chart { Width = 400, Height = 200 })
-                {
-                    var area = new ChartArea();
-                    //area.Area3DStyle.Enable3D = true;
-                    //area.Area3DStyle.LightStyle = LightStyle.Realistic;
-                    area.AxisY.LabelStyle.Format = "{P0}";
-                    area.AxisX.LabelStyle.Enabled = false;
-                    ch.ChartAreas.Add(area);
+        //public static bool AreaPlotSaveAs(DataPoint[] series, string filepath)
+        //{
+        //    try
+        //    {
+        //        using (var ch = new Chart { Width = 400, Height = 200 })
+        //        {
+        //            var area = new ChartArea();
+        //            //area.Area3DStyle.Enable3D = true;
+        //            //area.Area3DStyle.LightStyle = LightStyle.Realistic;
+        //            area.AxisY.LabelStyle.Format = "{P0}";
+        //            area.AxisX.LabelStyle.Enabled = false;
+        //            ch.ChartAreas.Add(area);
 
-                    var s = new Series
-                    {
-                        ChartType = SeriesChartType.SplineArea
-                    };
+        //            var s = new Series
+        //            {
+        //                ChartType = SeriesChartType.SplineArea
+        //            };
 
-                    foreach (var point in series) s.Points.Add(point);
+        //            foreach (var point in series) s.Points.Add(point);
 
-                    ch.Series.Add(s);
-                    ch.SaveImage(filepath, ChartImageFormat.Jpeg);
+        //            ch.Series.Add(s);
+        //            ch.SaveImage(filepath, ChartImageFormat.Jpeg);
 
-                    return true;
-                }
-            }
-            catch { /* ignore exceptions */  }
+        //            return true;
+        //        }
+        //    }
+        //    catch { /* ignore exceptions */  }
 
-            return false;
-        }
+        //    return false;
+        //}
 
         //todo: this method does not really belong here and should be moved elsewhere
-        public static async Task<ArkSavegameToolkitNet.Domain.ArkPlayer> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, ArkServerContext serverContext)
-        {
-            using (var db = databaseContextFactory.Create())
-            {
-                var user = db.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
-                if (user == null)
-                {
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam account using **!linksteam**.");
-                    return null;
-                }
+        //public static async Task<ArkSavegameToolkitNet.Domain.ArkPlayer> GetCurrentPlayerOrSendErrorMessage(CommandEventArgs e, EfDatabaseContextFactory databaseContextFactory, ArkServerContext serverContext)
+        //{
+        //    using (var db = databaseContextFactory.Create())
+        //    {
+        //        var user = db.Users.FirstOrDefault(x => x.DiscordId == (long)e.User.Id && !x.Unlinked);
+        //        if (user == null)
+        //        {
+        //            await e.Channel.SendMessage($"<@{e.User.Id}>, this command can only be used after you link your Discord user with your Steam account using **!linksteam**.");
+        //            return null;
+        //        }
 
-                var player = serverContext.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
-                if (player == null)
-                {
-                    await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");
-                    return null;
-                }
+        //        var player = serverContext.Players.FirstOrDefault(x => x.SteamId != null && x.SteamId.Equals(user.SteamId.ToString()));
+        //        if (player == null)
+        //        {
+        //            await e.Channel.SendMessage($"<@{e.User.Id}>, we have no record of you playing in the last month.");
+        //            return null;
+        //        }
 
-                return player;
-            }
-        }
+        //        return player;
+        //    }
+        //}
 
-        public static async Task SendPartitioned(Channel channel, string message)
+        public static async Task SendPartitioned(ISocketMessageChannel channel, string message)
         {
             const int maxChars = 2000;
             var _rMarkdownTokenBegin = new Regex(@"```(?<key>[^\s]*)\s+", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -167,7 +168,7 @@ namespace ArkBot.Helpers
                     markdownTokenAddedToPrev = m.Success ? m.Groups["key"].Value : "";
                     value = value + Environment.NewLine + "```";
                 }
-                await channel.SendMessage(value);
+                await channel.SendMessageAsync(value);
             }
         }
 
@@ -239,10 +240,11 @@ namespace ArkBot.Helpers
             return result;
         }
 
-        public static T ParseArgs<T>(CommandEventArgs e, T anonymousType, Action<ParseArgsConfigurationBuilder<T>> configAction = null)
-            where T: class
+        public static T ParseArgs<T>(string arguments, T anonymousType, Action<ParseArgsConfigurationBuilder<T>> configAction = null)
+            where T : class
         {
-            return ParseArgs(e.Args, e.GetArg, anonymousType, configAction);
+            string[] args;
+            return ArkBot.Discord.CommandParser.ParseArgs(arguments, 0, out args) != null ? null : ParseArgs(args, null, anonymousType, configAction);
         }
     }
 

@@ -2,6 +2,8 @@
 
 namespace ArkBot
 {
+    public enum DiscordRole { Admin, Developer, Member }
+
     public interface IConfig
     {
         ArkMultipliersConfigSection ArkMultipliers { get; set; }
@@ -38,5 +40,6 @@ namespace ArkBot
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }
+        string TranslateDiscordRoleName(DiscordRole discordRole);
     }
 }

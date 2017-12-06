@@ -1,6 +1,7 @@
 ﻿extern alias DotNetZip;
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -13,17 +14,50 @@ using Discord;
 using ArkBot.Services;
 using ArkBot.Ark;
 using ArkBot.Discord;
+using ArkBot.Discord.Command;
 using ArkBot.ScheduledTasks;
+using Discord.Commands.Builders;
+using RestSharp;
 
 namespace ArkBot.Commands.Admin
 {
-    public class AdminCommand : IRoleRestrictedCommand //, IEnabledCheckCommand
+    public class AdminCommand : ModuleBase<SocketCommandContext>
     {
-        public string Name => "admin";
-        public string[] Aliases => null;
-        public string Description => "Admin commands to manage the ARK Server (rcon etc.)";
-        public string SyntaxHelp => null;
-        public string[] UsageExamples => new[]
+        private IConfig _config;
+        private IConstants _constants;
+        private EfDatabaseContextFactory _databaseContextFactory;
+        private ISavedState _savedstate;
+        private IArkServerService _arkServerService;
+        private ISavegameBackupService _savegameBackupService;
+        private ArkContextManager _contextManager;
+        private ScheduledTasksManager _scheduledTasksManager;
+
+        public AdminCommand(
+            ILifetimeScope scope,
+            IConfig config,
+            IConstants constants,
+            EfDatabaseContextFactory databaseContextFactory,
+            ISavedState savedstate,
+            IArkServerService arkServerService,
+            ISavegameBackupService savegameBackupService,
+            ArkContextManager contextManager,
+            ScheduledTasksManager scheduledTasksManager)
+        {
+            _config = config;
+            _constants = constants;
+            _databaseContextFactory = databaseContextFactory;
+            _savedstate = savedstate;
+            _arkServerService = arkServerService;
+            _savegameBackupService = savegameBackupService;
+            _contextManager = contextManager;
+            _scheduledTasksManager = scheduledTasksManager;
+        }
+
+        [CommandHidden]
+        [Command("admin")]
+        [Summary("Admin commands to manage the ARK Server (rcon etc.)")]
+        [SyntaxHelp(null)]
+        [UsageExamples(new[]
         {
             "**<server key> SaveWorld**: Forces the server to save the game world to disk in its current state",
             "**<server key> DestroyWildDinos**: Destroys all untamed creatures on the map (which includes all creatures that are currently being tamed)",
@@ -63,60 +97,13 @@ namespace ArkBot.Commands.Admin
             "**countdown <minutes> <event description> restartservers**: Start a countdown on all servers with subsequent server restart.",
             "**countdown <minutes> <event description> updateservers**: Start a countdown on all servers with subsequent server update.",
             "**<server key> backups**: List backups for the server."
-        };
-
-        public bool DebugOnly => false;
-        public bool HideFromCommandList => false;
-
-        public string[] ForRoles => new[] { _config.AdminRoleName, _config.DeveloperRoleName };
-
-        //public bool EnabledCheck()
-        //{
-        //    return !string.IsNullOrWhiteSpace(_config.RconPassword) && _config.RconPort > 0;
-        //}
-
-        private IConfig _config;
-        private IConstants _constants;
-        private EfDatabaseContextFactory _databaseContextFactory;
-        private ISavedState _savedstate;
-        private IArkServerService _arkServerService;
-        private ISavegameBackupService _savegameBackupService;
-        private ArkContextManager _contextManager;
-        private ScheduledTasksManager _scheduledTasksManager;
-
-        public AdminCommand(
-            ILifetimeScope scope,
-            IConfig config, 
-            IConstants constants, 
-            EfDatabaseContextFactory databaseContextFactory, 
-            ISavedState savedstate, 
-            IArkServerService arkServerService,
-            ISavegameBackupService savegameBackupService,
-            ArkContextManager contextManager,
-            ScheduledTasksManager scheduledTasksManager)
-        {
-            _config = config;
-            _constants = constants;
-            _databaseContextFactory = databaseContextFactory;
-            _savedstate = savedstate;
-            _arkServerService = arkServerService;
-            _savegameBackupService = savegameBackupService;
-            _contextManager = contextManager;
-            _scheduledTasksManager = scheduledTasksManager;
-        }
-
-        public void Register(CommandBuilder command)
-        {
-            command.Parameter("optional", ParameterType.Multiple);
-        }
-
-        public void Init(DiscordClient client) { }
-
-        public async Task Run(CommandEventArgs e)
+        })]
+        [RoleRestrictedPrecondition(new[] { DiscordRole.Admin, DiscordRole.Developer })]
+        public async Task Admin([Remainder] string arguments = null)
         {
             //if (!e.Channel.IsPrivate) return;
 
-            var args = CommandHelper.ParseArgs(e, new
+            var args = CommandHelper.ParseArgs(arguments, new
             {
                 ServerKey = "",
                 StartServer = false,
@@ -200,18 +187,18 @@ namespace ArkBot.Commands.Admin
             var serverContext = args?.ServerKey != null ? _contextManager.GetServer(args.ServerKey) : null;
             if (serverContext == null && !isMultiServerCommand)
             {
-                await e.Channel.SendMessage($"**Admin commands need to be prefixed with a valid server instance key.**");
+                await Context.Channel.SendMessageAsync($"**Admin commands need to be prefixed with a valid server instance key.**");
                 return;
             }
 
             // collection of servers that this countdown applies to
             var serverContexts = serverContext == null && !string.IsNullOrWhiteSpace(args.ServerKey) ? null
-                : serverContext == null ? _contextManager.Servers.ToArray() 
+                : serverContext == null ? _contextManager.Servers.ToArray()
                 : new ArkServerContext[] { serverContext };
 
             if (serverContexts == null)
             {
-                await e.Channel.SendMessage($"**The given server instance key is not valid.**");
+                await Context.Channel.SendMessageAsync($"**The given server instance key is not valid.**");
                 return;
             }
 
@@ -230,7 +217,7 @@ namespace ArkBot.Commands.Admin
                         var tasks = serverContexts.Select(x => Task.Run(async () =>
                         {
                             string message = null;
-                            if (!await _arkServerService.ShutdownServer(x.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }))
+                            if (!await _arkServerService.ShutdownServer(x.Config.Key, (s) => { message = s; return Task.FromResult((IUserMessage)null); }))
                             {
                                 Logging.Log($@"Countdown to shutdown server ({x.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
                             }
@@ -246,7 +233,7 @@ namespace ArkBot.Commands.Admin
                         var tasks = serverContexts.Select(x => Task.Run(async () =>
                         {
                             string message = null;
-                            if (!await _arkServerService.UpdateServer(x.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }, (s) => s.FirstCharToUpper(), 300))
+                            if (!await _arkServerService.UpdateServer(x.Config.Key, (s) => { message = s; return Task.FromResult((IUserMessage)null); }, (s) => s.FirstCharToUpper(), 300))
                             {
                                 Logging.Log($@"Countdown to update server ({x.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
                             }
@@ -262,7 +249,7 @@ namespace ArkBot.Commands.Admin
                         var tasks = serverContexts.Select(x => Task.Run(async () =>
                         {
                             string message = null;
-                            if (!await _arkServerService.RestartServer(x.Config.Key, (s) => { message = s; return Task.FromResult((Message)null); }))
+                            if (!await _arkServerService.RestartServer(x.Config.Key, (s) => { message = s; return Task.FromResult((IUserMessage)null); }))
                             {
                                 Logging.Log($@"Countdown to restart server ({x.Config.Key}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
                             }
@@ -277,14 +264,14 @@ namespace ArkBot.Commands.Admin
             }
             else if (args.TerminateServer)
             {
-                var dm = new DiscordMessage(e.Channel, e.User.Id);
+                var dm = new DiscordMessage(Context.Channel, Context.User.Id);
                 await _arkServerService.ShutdownServer(serverContext.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{serverContext.Config.Key}: {s}"), true, true);
             }
             else if (args.StartServer || args.StartServers)
             {
                 var tasks = serverContexts.Select(x => Task.Run(async () =>
                 {
-                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    var dm = new DiscordMessage(Context.Channel, Context.User.Id);
                     await _arkServerService.StartServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"));
                 })).ToArray();
 
@@ -294,7 +281,7 @@ namespace ArkBot.Commands.Admin
             {
                 var tasks = serverContexts.Select(x => Task.Run(async () =>
                 {
-                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    var dm = new DiscordMessage(Context.Channel, Context.User.Id);
                     await _arkServerService.ShutdownServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"));
                 })).ToArray();
 
@@ -304,7 +291,7 @@ namespace ArkBot.Commands.Admin
             {
                 var tasks = serverContexts.Select(x => Task.Run(async () =>
                 {
-                    var dm = new DiscordMessage(e.Channel, e.User.Id);
+                    var dm = new DiscordMessage(Context.Channel, Context.User.Id);
                     await _arkServerService.RestartServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"));
                 })).ToArray();
 
@@ -314,15 +301,15 @@ namespace ArkBot.Commands.Admin
             {
                 var tasks = serverContexts.Select(x => Task.Run(async () =>
                 {
-                    var dm = new DiscordMessage(e.Channel, e.User.Id);
-                    await _arkServerService.UpdateServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"), (s) => e.Channel.GetMessageDirectedAtText(e.User.Id, $"{x.Config.Key}: {s}"), 300);
+                    var dm = new DiscordMessage(Context.Channel, Context.User.Id);
+                    await _arkServerService.UpdateServer(x.Config.Key, (s) => dm.SendOrUpdateMessageDirectedAt($"{x.Config.Key}: {s}"), (s) => Context.Channel.GetMessageDirectedAtText(Context.User.Id, $"{x.Config.Key}: {s}"), 300);
                 })).ToArray();
 
                 await Task.WhenAll(tasks);
             }
             else if (args.SaveWorld)
             {
-                await _arkServerService.SaveWorld(serverContext.Config.Key, (s) => e.Channel.SendMessageDirectedAt(e.User.Id, s), 180);
+                await _arkServerService.SaveWorld(serverContext.Config.Key, (s) => Context.Channel.SendMessageDirectedAt(Context.User.Id, s), 180);
             }
             else if (args.Backups)
             {
@@ -431,7 +418,7 @@ namespace ArkBot.Commands.Admin
             }
             else if (args.SetVotingAllowed > 0)
             {
-                if(!(args.True || args.False))
+                if (!(args.True || args.False))
                 {
                     sb.AppendLine($"**This command requires additional arguments!**");
                 }
@@ -439,7 +426,7 @@ namespace ArkBot.Commands.Admin
                 {
                     using (var context = _databaseContextFactory.Create())
                     {
-                        var user = context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)e.User.Id);
+                        var user = context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)Context.User.Id);
                         if (user != null)
                         {
                             user.DisallowVoting = !args.True;
@@ -495,14 +482,17 @@ namespace ArkBot.Commands.Admin
             }
             else
             {
-                await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
+                var syntaxHelp = MethodBase.GetCurrentMethod().GetCustomAttribute<SyntaxHelpAttribute>()?.SyntaxHelp;
+                var name = MethodBase.GetCurrentMethod().GetCustomAttribute<CommandAttribute>()?.Text;
+
+                await Context.Channel.SendMessageAsync(string.Join(Environment.NewLine, new string[] {
                     $"**My logic circuits cannot process this command! I am just a bot after all... :(**",
-                    !string.IsNullOrWhiteSpace(SyntaxHelp) ? $"Help me by following this syntax: **!{Name}** {SyntaxHelp}" : null }.Where(x => x != null)));
+                    !string.IsNullOrWhiteSpace(syntaxHelp) ? $"Help me by following this syntax: **!{name}** {syntaxHelp}" : null }.Where(x => x != null)));
                 return;
             }
 
             var msg = sb.ToString();
-            if (!string.IsNullOrWhiteSpace(msg)) await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+            if (!string.IsNullOrWhiteSpace(msg)) await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
         }
     }
 }
