@@ -154,6 +154,17 @@ namespace ArkBot
         [JsonProperty(PropertyName = "clusters")]
         [Description("Cluster instance configurations.")]
         public ClusterConfigSection[] Clusters { get; set; }
+
+        public string TranslateDiscordRoleName(DiscordRole discordRole)
+        {
+            switch (discordRole)
+            {
+                case DiscordRole.Admin: return AdminRoleName;
+                case DiscordRole.Developer: return DeveloperRoleName;
+                case DiscordRole.Member: return MemberRoleName;
+                default: return null;
+            }
+        }
     }
 
     public class SslConfigSection

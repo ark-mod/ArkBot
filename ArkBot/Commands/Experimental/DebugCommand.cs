@@ -6,23 +6,20 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Helpers;
 using System.IO;
+using System.Reflection;
 using ArkBot.Ark;
+using ArkBot.Database;
+using ArkBot.Discord.Command;
 using Newtonsoft.Json;
 using Discord;
+using Discord.Commands.Builders;
+using Discord.Net;
+using RestSharp;
 
 namespace ArkBot.Commands.Experimental
 {
-    public class DebugCommand : ICommand
+    public class DebugCommand : ModuleBase<SocketCommandContext>
     {
-        public string Name => "debug";
-        public string[] Aliases => null;
-        public string Description => "Get debug information from bot";
-        public string SyntaxHelp => null;
-        public string[] UsageExamples => null;
-
-        public bool DebugOnly => false;
-        public bool HideFromCommandList => true;
-
         private IConfig _config;
         private IConstants _constants;
         private ArkContextManager _contextManager;
@@ -34,20 +31,17 @@ namespace ArkBot.Commands.Experimental
             _contextManager = contextManager;
         }
 
-        public void Register(CommandBuilder command)
+        [CommandHidden]
+        [Command("debug")]
+        [Summary("Get debug information from bot")]
+        [SyntaxHelp(null)]
+        [UsageExamples(null)]
+        [RoleRestrictedPrecondition(new [] { DiscordRole.Developer })]
+        public async Task Debug([Remainder] string arguments = null)
         {
-            command.AddCheck((a, b, c) => c.Client.Servers.Any(x => x.Roles.Any(y => y != null && y.Name.Equals(_config.DeveloperRoleName) && y.Members.Any(z => z.Id == b.Id))), null)
-                .Parameter("optional", ParameterType.Multiple)
-                .Hide();
-        }
+            if (!Context.IsPrivate) return;
 
-        public void Init(DiscordClient client) { }
-
-        public async Task Run(CommandEventArgs e)
-        {
-            if (!e.Channel.IsPrivate) return;
-
-            var args = CommandHelper.ParseArgs(e, new { logs = false, json = false, save = false, database = false, stats = false, clear = false, key = "", data = "" }, x =>
+            var args = CommandHelper.ParseArgs(arguments, new { logs = false, json = false, save = false, database = false, stats = false, clear = false, key = "", data = "" }, x =>
                 x.For(y => y.logs, flag: true)
                 .For(y => y.json, flag: true)
                 .For(y => y.save, flag: true)
@@ -58,9 +52,12 @@ namespace ArkBot.Commands.Experimental
                 .For(y => y.data, untilNextToken: true));
             if (args == null)
             {
-                await e.Channel.SendMessage(string.Join(Environment.NewLine, new string[] {
+                var syntaxHelp = MethodBase.GetCurrentMethod().GetCustomAttribute<SyntaxHelpAttribute>()?.SyntaxHelp;
+                var name = MethodBase.GetCurrentMethod().GetCustomAttribute<CommandAttribute>()?.Text;
+
+                await Context.Channel.SendMessageAsync(string.Join(Environment.NewLine, new string[] {
                     $"**My logic circuits cannot process this command! I am just a bot after all... :(**",
-                    !string.IsNullOrWhiteSpace(SyntaxHelp) ? $"Help me by following this syntax: **!{Name}** {SyntaxHelp}" : null }.Where(x => x != null)));
+                    !string.IsNullOrWhiteSpace(syntaxHelp) ? $"Help me by following this syntax: **!{name}** {syntaxHelp}" : null }.Where(x => x != null)));
                 return;
             }
 
@@ -70,7 +67,7 @@ namespace ArkBot.Commands.Experimental
                 sb.AppendLine("**ARK Survival Discord Bot Statistics**");
                 if (File.Exists(_constants.DatabaseFilePath)) sb.AppendLine($"● **Database size:** {FileHelper.ToFileSize(new FileInfo(_constants.DatabaseFilePath).Length)}");
 
-                await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+                await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
             }
             else if (args.logs)
             {
@@ -79,7 +76,7 @@ namespace ArkBot.Commands.Experimental
                 var files = Directory.GetFiles(".\\logs\\", pattern, SearchOption.TopDirectoryOnly);
                 if (!(files?.Length > 0))
                 {
-                    await e.Channel.SendMessage("Could not find any logs... :(");
+                    await Context.Channel.SendMessageAsync("Could not find any logs... :(");
                     return;
                 }
 
@@ -87,7 +84,7 @@ namespace ArkBot.Commands.Experimental
                 {
                     foreach (var file in files) File.Delete(file);
 
-                    await e.Channel.SendMessage("Cleared all log files!");
+                    await Context.Channel.SendMessageAsync("Cleared all log files!");
                     return;
                 }
 
@@ -95,11 +92,11 @@ namespace ArkBot.Commands.Experimental
                 try
                 {
                     FileHelper.CreateZipArchive(files, path);
-                    await e.Channel.SendFile(path);
+                    await Context.Channel.SendFileAsync(path);
                 }
                 catch
                 {
-                    await e.Channel.SendMessage("Failed to archive log files... :(");
+                    await Context.Channel.SendMessageAsync("Failed to archive log files... :(");
                     return;
                 }
                 finally
@@ -111,7 +108,7 @@ namespace ArkBot.Commands.Experimental
             {
                 if (_config.DisableDeveloperFetchSaveData)
                 {
-                    await e.Channel.SendMessage("The administrator have disabled this feature.");
+                    await Context.Channel.SendMessageAsync("The administrator have disabled this featurContext.");
                     return;
                 }
 
@@ -124,14 +121,14 @@ namespace ArkBot.Commands.Experimental
                     var server = _contextManager.GetServer(args.key);
                     if (server == null)
                     {
-                        await e.Channel.SendMessage("The key did not exist.");
+                        await Context.Channel.SendMessageAsync("The key did not exist.");
                         return;
                     }
 
                     var data = args.data?.Split(',', ';', '|');
                     if (!(data?.Length > 0))
                     {
-                        await e.Channel.SendMessage("No data items supplied.");
+                        await Context.Channel.SendMessageAsync("No data items supplied.");
                         return;
                     }
 
@@ -175,7 +172,7 @@ namespace ArkBot.Commands.Experimental
                 }
                 else
                 {
-                    await e.Channel.SendMessage($"**This command must include a valid server instance key.**");
+                    await Context.Channel.SendMessageAsync($"**This command must include a valid server instance key.**");
                     return;
                 }
 
@@ -185,11 +182,11 @@ namespace ArkBot.Commands.Experimental
                 {
                     results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>(basepath, "", files.ToArray()) }, path, 5 * 1024 * 1024);
                     tempfiles.AddRange(results);
-                    foreach (var item in results) await e.Channel.SendFile(item);
+                    foreach (var item in results) await Context.Channel.SendFileAsync(item);
                 }
                 catch
                 {
-                    await e.Channel.SendMessage("Failed to archive json files... :(");
+                    await Context.Channel.SendMessageAsync("Failed to archive json files... :(");
                     return;
                 }
                 finally
@@ -198,13 +195,13 @@ namespace ArkBot.Commands.Experimental
                 }
 
                 await Task.Delay(500);
-                await e.Channel.SendMessage($"[parts {results.Length}]");
+                await Context.Channel.SendMessageAsync($"[parts {results.Length}]");
             }
             else if (args.save)
             {
                 if (_config.DisableDeveloperFetchSaveData)
                 {
-                    await e.Channel.SendMessage("The administrator have disabled this feature.");
+                    await Context.Channel.SendMessageAsync("The administrator have disabled this featurContext.");
                     return;
                 }
 
@@ -215,7 +212,7 @@ namespace ArkBot.Commands.Experimental
                     var server = _config.Servers?.FirstOrDefault(x => x.Key.Equals(args.key, StringComparison.OrdinalIgnoreCase));
                     if (server == null)
                     {
-                        await e.Channel.SendMessage("The server instance key did not exist.");
+                        await Context.Channel.SendMessageAsync("The server instance key did not exist.");
                         return;
                     }
                     saveFilePath = server.SaveFilePath;
@@ -224,7 +221,7 @@ namespace ArkBot.Commands.Experimental
                 }
                 else
                 {
-                    await e.Channel.SendMessage($"**This command must include a valid server instance key.**");
+                    await Context.Channel.SendMessageAsync($"**This command must include a valid server instance key.**");
                     return;
                 }
 
@@ -238,7 +235,7 @@ namespace ArkBot.Commands.Experimental
                 }.Where(x => x != null && x.Item2 != null).ToArray();
                 if (files == null || !files.Any(x => x.Item2 != null && x.Item2.Length > 0))
                 {
-                    await e.Channel.SendMessage("Could not find any save files... :(");
+                    await Context.Channel.SendMessageAsync("Could not find any save files... :(");
                     return;
                 }
 
@@ -247,11 +244,11 @@ namespace ArkBot.Commands.Experimental
                 try
                 {
                     results = FileHelper.CreateDotNetZipArchive(files, path, 5 * 1024 * 1024);
-                    foreach (var item in results) await e.Channel.SendFile(item);
+                    foreach (var item in results) await Context.Channel.SendFileAsync(item);
                 }
                 catch
                 {
-                    await e.Channel.SendMessage("Failed to archive save files... :(");
+                    await Context.Channel.SendMessageAsync("Failed to archive save files... :(");
                     return;
                 }
                 finally
@@ -266,14 +263,14 @@ namespace ArkBot.Commands.Experimental
                 }
 
                 await Task.Delay(500);
-                await e.Channel.SendMessage($"[parts {results.Length}]");
+                await Context.Channel.SendMessageAsync($"[parts {results.Length}]");
             }
             else if (args.database)
             {
                 var file = File.Exists(_constants.DatabaseFilePath) ? _constants.DatabaseFilePath : null;
                 if (file == null)
                 {
-                    await e.Channel.SendMessage("Could not find the database file... :(");
+                    await Context.Channel.SendMessageAsync("Could not find the database filContext... :(");
                     return;
                 }
 
@@ -282,11 +279,11 @@ namespace ArkBot.Commands.Experimental
                 try
                 {
                     results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>("", "", new[] { file }) }, path, 5 * 1024 * 1024);
-                    foreach (var item in results) await e.Channel.SendFile(item);
+                    foreach (var item in results) await Context.Channel.SendFileAsync(item);
                 }
                 catch
                 {
-                    await e.Channel.SendMessage("Failed to archive database file... :(");
+                    await Context.Channel.SendMessageAsync("Failed to archive database filContext... :(");
                     return;
                 }
                 finally

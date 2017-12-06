@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 
 namespace ArkBot.Discord
 {
@@ -15,10 +16,10 @@ namespace ArkBot.Discord
     /// </summary>
     public class DiscordManager
     {
-        private DiscordClient _discord;
+        private DiscordSocketClient _discord;
         private IConfig _config;
 
-        public DiscordManager(DiscordClient discord, IConfig config)
+        public DiscordManager(DiscordSocketClient discord, IConfig config)
         {
             _discord = discord;
             _config = config;
@@ -26,28 +27,34 @@ namespace ArkBot.Discord
 
         public async Task SendTextMessageToChannelNameOnAllServers(string channelName, string mesage)
         {
-            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => channelName.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+            var channels = _discord.Guilds.Select(x => x.TextChannels.FirstOrDefault(y => channelName.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
             foreach (var channel in channels)
             {
-                await channel.SendMessage(mesage);
+                await channel.SendMessageAsync(mesage);
             }
         }
 
         public async Task EditChannelByNameOnAllServers(string infoTopicChannel, string name = null, string topic = null, int? position = null)
         {
-            var channels = _discord.Servers.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+            var channels = _discord.Guilds.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
             foreach (var channel in channels)
             {
-                await channel.Edit(name, topic, position);
+                await channel.ModifyAsync(g =>
+                {
+                    //name, topic, position
+                    if (name != null) g.Name = name;
+                    if (topic != null) g.Topic = topic;
+                    if (position != null) g.Position = position.Value;
+                });
             }
         }
 
         public string GetDiscordUserNameById(ulong id)
         {
-            foreach (var server in _discord.Servers)
+            foreach (var server in _discord.Guilds)
             {
                 var user = server.GetUser(id);
-                if (user != null) return $"{user.Name}#{user.Discriminator}";
+                if (user != null) return $"{user.Discriminator}";
             }
 
             return null;

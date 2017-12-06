@@ -1,34 +1,22 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Helpers;
 using System.Reflection;
-using Discord;
+using ArkBot.Discord.Command;
 
 namespace ArkBot.Commands
 {
-    public class VersionCommand : ICommand
+    public class VersionCommand : ModuleBase<SocketCommandContext>
     {
-        public string Name => "version";
-        public string[] Aliases => null;
-        public string Description => "Get the bot version number";
-        public string SyntaxHelp => null;
-        public string[] UsageExamples => null;
-
-        public bool DebugOnly => false;
-        public bool HideFromCommandList => false;
-
-        public void Register(CommandBuilder command) { }
-
-        public void Init(DiscordClient client) { }
-
-        public async Task Run(CommandEventArgs e)
+        [Command("version")]
+        [Summary("Get the bot version number")]
+        public async Task Version()
         {
             var sb = new StringBuilder();
-
             sb.AppendLine($"**My operational instructions indicate that I am version {Assembly.GetExecutingAssembly().GetName().Version}. But what does it mean?**");
-
-            await CommandHelper.SendPartitioned(e.Channel, sb.ToString());
+            await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
         }
     }
 }

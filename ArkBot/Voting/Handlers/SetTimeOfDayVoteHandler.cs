@@ -22,7 +22,7 @@ namespace ArkBot.Voting.Handlers
             _vote = vote as SetTimeOfDayVote;
         }
 
-        public static async Task<InitiateVoteResult> Initiate(Channel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason, string timeOfDayRaw)
+        public static async Task<InitiateVoteResult> Initiate(IMessageChannel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason, string timeOfDayRaw)
         {
             var _rTimeOfDay = new Regex(@"^\s*\d{2,2}\:\d{2,2}(\:\d{2,2})?\s*$", RegexOptions.Singleline | RegexOptions.IgnoreCase);
             if (!_rTimeOfDay.IsMatch(timeOfDayRaw))
