@@ -35,6 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -835,7 +836,7 @@
     <ItemGroup>
       <MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />
     </ItemGroup>
-    <Move SourceFiles="@(MoveToLibFolder)" DestinationFiles="@(MoveToLibFolder->'$(OutputPath)lib\%(RecursiveDir)%(Filename)%(Extension)')" OverwriteReadOnlyFiles="true" />
+    <Move SourceFiles="@(MoveToLibFolder)" DestinationFiles="@(MoveToLibFolder->'$(OutputPath)lib\%(RecursiveDir)%(Filename)%(Extension)')" OverwriteReadOnlyFiles="true" ContinueOnError="true" />
     <ItemGroup>
       <EmptyDirectories Include="$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*', System.IO.SearchOption.AllDirectories))" />
       <EmptyDirectories>
