@@ -831,4 +831,17 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />
+    </ItemGroup>
+    <Move SourceFiles="@(MoveToLibFolder)" DestinationFiles="@(MoveToLibFolder->'$(OutputPath)lib\%(RecursiveDir)%(Filename)%(Extension)')" OverwriteReadOnlyFiles="true" />
+    <ItemGroup>
+      <EmptyDirectories Include="$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*', System.IO.SearchOption.AllDirectories))" />
+      <EmptyDirectories>
+        <Files>$([System.IO.Directory]::GetFiles("%(EmptyDirectories.Identity)", "*", System.IO.SearchOption.AllDirectories).get_Length())</Files>
+      </EmptyDirectories>
+    </ItemGroup>
+    <RemoveDir Directories="@(EmptyDirectories)" Condition="%(Files)=='0'" />
+  </Target>
 </Project>
