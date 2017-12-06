@@ -45,7 +45,7 @@ namespace ArkBot.Helpers
             _signaller.PulseAll(Tuple.Create(sender, backupsEnabled, result));
         }
 
-        public async Task<bool> SaveWorld(string serverKey, Func<string, Task<Message>> sendMessageDirected, int timeoutSeconds = _saveWorldDefaultTimeoutSeconds, bool noUpdateForThisCall = false)
+        public async Task<bool> SaveWorld(string serverKey, Func<string, Task<IUserMessage>> sendMessageDirected, int timeoutSeconds = _saveWorldDefaultTimeoutSeconds, bool noUpdateForThisCall = false)
         {
             //todo: it would be much better is SaveWorld considered if the save request ends up in a queue or not.
 
@@ -102,7 +102,7 @@ namespace ArkBot.Helpers
             return true;
         }
 
-        public async Task<bool> ShutdownServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsNotStarted = true, bool forcedShutdown = false)
+        public async Task<bool> ShutdownServer(string serverKey, Func<string, Task<IUserMessage>> sendMessageDirected, bool warnIfServerIsNotStarted = true, bool forcedShutdown = false)
         {
             var success = false;
 
@@ -151,7 +151,7 @@ namespace ArkBot.Helpers
             else
             {
                 //save world 
-                if (!await SaveWorld(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, noUpdateForThisCall: true)) return false;
+                if (!await SaveWorld(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<IUserMessage>>)null, noUpdateForThisCall: true)) return false;
 
                 if (sendMessageDirected != null) await sendMessageDirected($"shutting down the server...");
                 var result2 = await serverContext.Steam.SendRconCommand("doexit");
@@ -188,15 +188,15 @@ namespace ArkBot.Helpers
             return success;
         }
 
-        public async Task<bool> RestartServer(string serverKey, Func<string, Task<Message>> sendMessageDirected)
+        public async Task<bool> RestartServer(string serverKey, Func<string, Task<IUserMessage>> sendMessageDirected)
         {
-            if (!await ShutdownServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, false)) return false;
-            if (!await StartServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null)) return false;
+            if (!await ShutdownServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<IUserMessage>>)null, false)) return false;
+            if (!await StartServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<IUserMessage>>)null)) return false;
 
             return true;
         }
 
-        public async Task<bool> StartServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, bool warnIfServerIsAlreadyStarted = true)
+        public async Task<bool> StartServer(string serverKey, Func<string, Task<IUserMessage>> sendMessageDirected, bool warnIfServerIsAlreadyStarted = true)
         {
             var success = false;
 
@@ -261,7 +261,7 @@ namespace ArkBot.Helpers
             return success;
         }
 
-        public async Task<bool> UpdateServer(string serverKey, Func<string, Task<Message>> sendMessageDirected, Func<string, string> getMessageDirected, int timeoutSeconds = _updateDefaultTimeoutSeconds)
+        public async Task<bool> UpdateServer(string serverKey, Func<string, Task<IUserMessage>> sendMessageDirected, Func<string, string> getMessageDirected, int timeoutSeconds = _updateDefaultTimeoutSeconds)
         {
             if (timeoutSeconds <= 0) timeoutSeconds = _updateDefaultTimeoutSeconds;
 
@@ -272,7 +272,7 @@ namespace ArkBot.Helpers
                 return false;
             }
 
-            if (!await ShutdownServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null, false)) return false;
+            if (!await ShutdownServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<IUserMessage>>)null, false)) return false;
 
             var updateMessage = sendMessageDirected != null ? await sendMessageDirected($"updating server...") : null;
             //var r = new Regex(@"(?<task>\w+),\s+progress\:\s+(?<progress>[\d\.]+)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
@@ -417,7 +417,7 @@ namespace ArkBot.Helpers
                     return false;
                 }
                 if (!serverContext.Config.UsePowershellOutputRedirect) process.BeginOutputReadLine();
-                timer = new Timer((s) =>
+                timer = new Timer(async (s) =>
                 {
                     if ((DateTime.Now - lastUpdate).TotalSeconds >= timeoutSeconds) tcs.TrySetCanceled();
                     if (lastOutput != null && updateMessage != null && getMessageDirected != null)
@@ -438,7 +438,7 @@ namespace ArkBot.Helpers
                             }
                         }
 
-                        if (message != null) updateMessage.Edit(getMessageDirected.Invoke($"updating server ({message})..."));
+                        if (message != null) await updateMessage.ModifyAsync(m => m.Content = getMessageDirected.Invoke($"updating server ({message})..."));
                     };
                 }, null, 1000, 10000);
 
@@ -455,7 +455,7 @@ namespace ArkBot.Helpers
 
                 if (sendMessageDirected != null) await sendMessageDirected($"update complete!");
 
-                if (!await StartServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<Message>>)null)) return false;
+                if (!await StartServer(serverKey, sendMessageDirected != null ? (s) => sendMessageDirected(s) : (Func<string, Task<IUserMessage>>)null)) return false;
 
                 return true;
             }

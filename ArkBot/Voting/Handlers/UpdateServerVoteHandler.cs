@@ -24,7 +24,7 @@ namespace ArkBot.Voting.Handlers
             _arkServerService = arkServerService;
         }
 
-        public static async Task<InitiateVoteResult> Initiate(Channel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason)
+        public static async Task<InitiateVoteResult> Initiate(IMessageChannel channel, ArkServerContext context, IConfig config, IEfDatabaseContext db, ulong userId, string identifier, DateTime when, string reason)
         {
             if (db.Votes.OfType<RestartServerVote>().Where(x => x.Result == VoteResult.Undecided).Any() || db.Votes.OfType<UpdateServerVote>().Where(x => x.Result == VoteResult.Undecided).Any())
             {
@@ -81,7 +81,7 @@ namespace ArkBot.Voting.Handlers
                 React = _vote.Result == VoteResult.Passed ? new Func<Task>(async () =>
                 {
                     string message = null;
-                    if (!await _arkServerService.UpdateServer(_vote.ServerKey, (s) => { message = s; return Task.FromResult((Message)null); }, (s) => s.FirstCharToUpper(), 300))
+                    if (!await _arkServerService.UpdateServer(_vote.ServerKey, (s) => { message = s; return Task.FromResult((IUserMessage)null); }, (s) => s.FirstCharToUpper(), 300))
                     {
                         Logging.Log($@"Vote to update server ({_vote.ServerKey}) execution failed (""{message ?? ""}"")", GetType(), LogLevel.DEBUG);
                     }
