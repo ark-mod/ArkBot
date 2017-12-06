@@ -576,8 +576,17 @@ namespace ArkBot.ViewModel
 
             Container = builder.Build();
 
+            var dir = Path.GetDirectoryName(constants.DatabaseFilePath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
             //update database
             System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
+
+            //create database immediately to support direct (non-ef) access in application
+            using (var db = Container.Resolve<IEfDatabaseContext>())
+            {
+                db.Database.Initialize(false);
+            }
 
             _contextManager = Container.Resolve<ArkContextManager>();
             //server/cluster contexts
@@ -862,16 +871,6 @@ namespace ArkBot.ViewModel
                 {
                     savedstate.SkipExtractNextRestart = false;
                     savedstate.Save();
-                }
-
-
-                //create database immediately to support direct (non-ef) access in application
-                using (var db = scope.Resolve<IEfDatabaseContext>())
-                {
-                    var dir = Path.GetDirectoryName(constants.DatabaseFilePath);
-                    if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-                    db.Database.Initialize(false);
                 }
 
                 var _bot = scope.Resolve<ArkDiscordBot>();
