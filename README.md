@@ -2,6 +2,13 @@
 
 ![Discord Bot Commands](https://user-images.githubusercontent.com/408350/31518648-405ee5f6-afa0-11e7-9c50-3dfd60ecdd7a.png)
 
+## Live demo
+
+* ### [Companion App (Web App)](https://tsebring.github.io/ArkBot)
+  * [Server view](https://tsebring.github.io/ArkBot/server/server1)
+  * [Player view](https://tsebring.github.io/ArkBot/player/10000000000001888)
+  * [Admin view](https://tsebring.github.io/ArkBot/admin/server1)
+
 ## Introduction
 
 An in-game companion app for players and Discord bot for server administrators.
