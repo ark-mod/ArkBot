@@ -108,7 +108,7 @@ export class ServerComponent implements OnInit, OnDestroy {
       .getWildCreatures(this.serverKey)
       .then(wild => {
         this.wild = wild;
-        this.species = Object.keys(this.wild.Species).sort((a, b) => stringLocaleCompare(this.wild.Species[a].Name, this.wild.Species[b].Name, true));
+        this.species = Object.keys(this.wild.Species).sort((a, b) => stringLocaleCompare(this.wild.Species[a].Name || a, this.wild.Species[b].Name || b, true));
         if (!this.selectedSpecies || this.species.find(k => k == this.selectedSpecies) == undefined) this.selectedSpecies = this.species.length > 0 ? this.species[0]: null;
         this.filterAndSortWild();
         this.creaturesLoaded = true;

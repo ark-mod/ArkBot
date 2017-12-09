@@ -46,6 +46,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using ArkSavegameToolkitNet.Domain;
 using Discord.Net.Providers.WS4Net;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
@@ -411,6 +412,11 @@ namespace ArkBot.ViewModel
             //    sb.AppendLine();
             //}
 
+            if (_config.AnonymizeWebApiData)
+            {
+                System.Console.WriteLine("Anonymizing all data in the WebAPI (anonymizeWebApiData=true)" + Environment.NewLine);
+            }
+
             if (string.IsNullOrWhiteSpace(_config.AdminRoleName)) _config.AdminRoleName = "admin";
             if (string.IsNullOrWhiteSpace(_config.DeveloperRoleName)) _config.DeveloperRoleName = "developer";
             if (string.IsNullOrWhiteSpace(_config.MemberRoleName)) _config.DeveloperRoleName = "ark";
@@ -508,11 +514,14 @@ namespace ArkBot.ViewModel
             {
             });
 
+            var anonymizeData = new ArkBotAnonymizeData();
+
             //setup dependency injection
             var thisAssembly = Assembly.GetExecutingAssembly();
             var builder = new ContainerBuilder();
 
             builder.RegisterType<ArkServerContext>().AsSelf();
+            builder.RegisterInstance(anonymizeData).AsSelf().As<ArkAnonymizeData>();
             if (_config.UseCompatibilityChangeWatcher) builder.RegisterType<ArkSaveFileWatcherTimer>().As<IArkSaveFileWatcher>();
             else builder.RegisterType<ArkSaveFileWatcher>().As<IArkSaveFileWatcher>();
             builder.RegisterInstance(discord).AsSelf();
@@ -587,7 +596,7 @@ namespace ArkBot.ViewModel
             {
                 foreach (var cluster in _config.Clusters)
                 {
-                    var context = new ArkClusterContext(cluster);
+                    var context = new ArkClusterContext(cluster, anonymizeData);
                     _contextManager.AddCluster(context);
                 }
             }

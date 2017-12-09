@@ -2,7 +2,7 @@
   <ng-container *ngIf="currentOwner &amp;&amp; currentArea">
     <h4 style="margin-bottom: 3px;">{{currentOwner.Name}}</h4>
     <div>Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}</div>
-    <div *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}</div>
+    <div *ngIf="currentOwner.LastActiveTime">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}</div>
     <div class="w3-margin-bottom">{{currentArea.StructureCount | number}} structures</div>
     <button *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')" class="w3-button theme-d1" style="width: 100%;" (click)="confirmDestroyCurrentArea()">Destroy this area</button>
   </ng-container>
@@ -17,7 +17,7 @@
       <div class="w3-container w3-medium theme-l2">
         <div class="w3-section">
           Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}<br />
-          <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
+          <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
           {{currentArea.StructureCount | number}} structures
         </div>
         <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="setSelectedOwner(currentOwner)">Show only areas for this team</button></div>
@@ -31,7 +31,7 @@
       </header>
       <div class="w3-container w3-medium theme-l2">
         <div class="w3-section">
-          <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
+          <ng-container *ngIf="currentOwner.LastActiveTime">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>
           {{currentOwner.AreaCount | number}} areas<br />
           {{currentOwner.StructureCount | number}} structures<br />
           {{currentOwner.CreatureCount | number}} creatures
@@ -99,7 +99,7 @@
           <td>{{owner.AreaCount}}</td>
           <td>{{owner.StructureCount}}</td>
           <td>{{owner.CreatureCount}}</td>
-          <td>{{toRelativeDate(owner.LastActiveTime)}}</td>
+          <td>{{dataService.toRelativeDate(owner.LastActiveTime)}}</td>
           <td><button class="w3-button theme-d1 w3-right" (click)="showOwnerModal($event, owner)">Options</button></td>
         </tr>
       </tbody>

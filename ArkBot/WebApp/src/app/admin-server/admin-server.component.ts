@@ -19,6 +19,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   serverUpdatedSubscription: any;
   server: any;
   loaded: boolean = false;
+  loadedStructures: boolean = false;
   serverKey: string;
   structures: any;
 
@@ -49,9 +50,11 @@ export class AdminServerComponent implements OnInit, OnDestroy {
         .getStructures(this.serverKey)
         .then(structures => {
           this.structures = structures;
+          this.loadedStructures = true;
         })
         .catch(error => {
           this.structures = undefined;
+          this.loadedStructures = true;
         });
   }
 
@@ -77,10 +80,6 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.menuOptionSubscription.unsubscribe();
     this.serverUpdatedSubscription.unsubscribe();
-  }
-
-  toRelativeDate(datejson: string): string {
-    return moment(new Date(datejson)).fromNow();
   }
 
   getTribeMember(steamId: string): string {

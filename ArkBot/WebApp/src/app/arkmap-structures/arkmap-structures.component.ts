@@ -306,7 +306,7 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
       
       var img = new Image()
       img.onload = () => this.imageLoaded(img);
-      img.src = `${this.getApiBaseUrl()}/map/${this.mapName}`
+      img.src = !environment.demo ? `${this.getApiBaseUrl()}/map/${this.mapName}` : 'assets/demo/Ragnarok.jpg';
       if (img.complete) {
         img.onload = null
         this.imageLoaded(img);
@@ -315,11 +315,6 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
 
     getApiBaseUrl(): string {
       return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
-    }
-
-    toRelativeDate(datejson: string): string {
-      if(!datejson) return "";
-      return moment(new Date(datejson)).fromNow();
     }
 
     reset() {

@@ -23,6 +23,7 @@
         Last Update {{server.LastUpdate}}, Next Update {{server.NextUpdate || '-'}}
       </p>
       <p *ngIf="dataService.hasFeatureAccess('pages', 'server')"><a [routerLink]="'/server/' + server.Key" class="" style="text-decoration: none;">View server ❯</a></p>
+      <p *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')"><a [routerLink]="'/admin/' + server.Key" class="" style="text-decoration: none;">Admin ❯</a></p>
     </div>
   </div>
 </section>
@@ -116,7 +117,7 @@
             </tr>
             <tr style="border-bottom: none;">
               <th class="theme-text-d1">Uptime</th>
-              <td>{{server.ServerStarted ? toRelativeDate(server.ServerStarted) : '-'}}</td>
+              <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>
             </tr>
           </table>
       </div>
@@ -179,7 +180,7 @@
         </tr>
         <tr>
           <th class="theme-text-d1">Uptime</th>
-          <td>{{server.ServerStarted ? toRelativeDate(server.ServerStarted) : '-'}}</td>
+          <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>
         </tr>
       </table>
     </div>-->

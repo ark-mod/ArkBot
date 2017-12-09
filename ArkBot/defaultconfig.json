@@ -88,7 +88,8 @@
     "babyMatureSpeedMultiplier": 1.0,
     "cuddleIntervalMultiplier": 1.0
   },
-  "savegameExtractionMaxDegreeOfParallelism":  null,
+  "savegameExtractionMaxDegreeOfParallelism": null,
+  "anonymizeWebApiData":  false, 
   "servers": [
     {
       "key": "server1",

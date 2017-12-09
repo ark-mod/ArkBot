@@ -29,6 +29,7 @@ namespace ArkBot.Ark
         internal ArkClusterContext _clusterContext;
         private ILifetimeScope _scope;
         private ISavedState _savedState;
+        private ArkAnonymizeData _anonymizeData;
 
         //public event UpdateTriggeredEventHandler UpdateQueued;
         public event GameDataUpdatedEventHandler GameDataUpdated;
@@ -135,6 +136,7 @@ namespace ArkBot.Ark
             ServerConfigSection config,
             ArkClusterContext clusterContext,
             ISavedState savedState,
+            ArkAnonymizeData anonymizeData,
             ILifetimeScope scope)
             : base(
                   config?.SaveFilePath,
@@ -147,6 +149,7 @@ namespace ArkBot.Ark
             _scope = scope;
             _saveFileWatcher = _scope.Resolve<IArkSaveFileWatcher>(new TypedParameter(typeof(ArkServerContext), this));
             _savedState = savedState;
+            _anonymizeData = anonymizeData;
             Steam = new SteamManager(config);
         }
 
@@ -184,7 +187,7 @@ namespace ArkBot.Ark
 
                 result = Update(ct, _savedState.PlayerLastActive.Where(x => x.ServerKey != null && x.ServerKey.Equals(Config.Key, StringComparison.OrdinalIgnoreCase)).Select(x => 
                     new ArkPlayerExternal { Id = x.Id, SteamId = x.SteamId, TribeId = x.TribeId, LastActiveTime = x.LastActiveTime, Name = x.Name, CharacterName = x.CharacterName })
-                .ToArray(), _clusterContext != null); //update and defer apply new data until cluster is updated
+                .ToArray(), _clusterContext != null, fullconfig.AnonymizeWebApiData ? _anonymizeData : null); //update and defer apply new data until cluster is updated
 
                 if (result?.Success == true)
                 {
