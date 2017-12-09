@@ -3,6 +3,7 @@ import { NotificationsService } from 'angular2-notifications';
 import { BreadcrumbService } from 'ng2-breadcrumb/ng2-breadcrumb';
 import { DataService } from './data.service';
 import { HttpService } from './http.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'body',
@@ -79,6 +80,6 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   getLogoutUrl(): string {
-    return this.httpService.getApiBaseUrl() + '/authentication/logout?returnUrl=' + this.currentUrl;
+    return !environment.demo ? this.httpService.getApiBaseUrl() + '/authentication/logout?returnUrl=' + this.currentUrl : '';
   }
 }

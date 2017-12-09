@@ -44,7 +44,7 @@
           <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.EngramPoints | number}}</td>
           <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>
           <td *ngIf="dataService.hasFeatureAccess('player', 'profile-detailed', steamId)">{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>
-          <td>{{toDate(player?.Servers[serverKey]?.SavedAt)}}</td>
+          <td>{{dataService.toDate(player?.Servers[serverKey]?.SavedAt)}}</td>
         </tr>
       </tbody>
     </table>
@@ -122,7 +122,7 @@
               <td>{{creature.Latitude | number:'1.1-1'}}</td>
               <td>{{creature.Longitude | number:'1.1-1'}}</td>
               <td>
-                <span *ngIf="haveMatingCooldown(creature)">Next mating {{toRelativeDate(creature.NextMating)}}</span>
+                <span *ngIf="haveMatingCooldown(creature)">Next mating {{dataService.toRelativeDate(creature.NextMating)}}</span>
                 <div *ngIf="creature.BabyAge != null">
                   <div>
                     <div class="w3-cell w3-cell-middle">Baby</div>
@@ -132,7 +132,7 @@
                         <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
                       </div>
                     </div>
-                    <div class="w3-cell">cuddle {{toRelativeDate(creature.BabyNextCuddle)}}</div>
+                    <div class="w3-cell">cuddle {{dataService.toRelativeDate(creature.BabyNextCuddle)}}</div>
                   </div>
                 </div>
               </td>
@@ -192,7 +192,7 @@
               <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
             </div>
           </td>
-          <td>{{toDate(creature.BabyFullyGrown)}}</td>
+          <td>{{dataService.toDate(creature.BabyFullyGrown)}}</td>
           <td><timer [time]="creature.BabyNextCuddle" [notification]="imprintNotifications" [state]="getStateForCreature(creature)"></timer></td>
           <td *ngIf="imprintNotifications"><input style="top: 0;" class="w3-check w3-right" type="checkbox" [checked]="getStateForCreature(creature).imprintNotifications" (change)="toggleImprintNotificationForCreature(creature)" /></td>
         </tr>

@@ -74,7 +74,7 @@ export class ArkMapComponent implements OnChanges {
       
       var img = new Image()
       img.onload = () => this.imageLoaded(img);
-      img.src = `${this.getApiBaseUrl()}/map/${this.mapName}`
+      img.src = !environment.demo ? `${this.getApiBaseUrl()}/map/${this.mapName}` : 'assets/demo/Ragnarok.jpg';
       if (img.complete) {
         img.onload = null
         this.imageLoaded(img);

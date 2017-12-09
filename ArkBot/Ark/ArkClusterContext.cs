@@ -16,6 +16,7 @@ namespace ArkBot.Ark
     {
         public ClusterConfigSection Config { get; private set; }
 
+        private ArkAnonymizeData _anonymizeData;
         internal ArkContextManager _contextManager;
 
         public event GameDataUpdatedEventHandler GameDataUpdated;
@@ -42,9 +43,10 @@ namespace ArkBot.Ark
             }
         }
 
-        public ArkClusterContext(ClusterConfigSection config) : base(config.SavePath, true)
+        public ArkClusterContext(ClusterConfigSection config, ArkAnonymizeData anonymizeData) : base(config.SavePath, true)
         {
             Config = config;
+            _anonymizeData = anonymizeData;
         }
 
         public bool Update(bool manualUpdate, IConfig fullconfig, ISavegameBackupService savegameBackupService, IProgress<string> progress, CancellationToken ct)
@@ -55,7 +57,7 @@ namespace ArkBot.Ark
             {
                 progress.Report($"Cluster ({Config.Key}): Update started ({DateTime.Now:HH:mm:ss.ffff})");
 
-                result = Update(ct);
+                result = Update(ct, false, fullconfig.AnonymizeWebApiData ? _anonymizeData : null);
 
                 if (result?.Success == true)
                 {

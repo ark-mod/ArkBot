@@ -19,7 +19,7 @@ export class HttpService {
   private administerUrl = '/administer';
   private playerUrl = '/player';
 
-  constructor(private http: Http) { }
+  constructor(protected http: Http) { }
 
   private getOptions(): RequestOptions {
     let demoMode = localStorage.getItem('demoMode') == 'true';
@@ -107,7 +107,7 @@ export class HttpService {
     return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
   }
 
-  private handleError(error: any): Promise<any> {
+  protected handleError(error: any): Promise<any> {
     return Promise.reject(error.message || error);
   }
 }

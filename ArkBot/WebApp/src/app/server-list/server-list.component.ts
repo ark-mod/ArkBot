@@ -83,8 +83,4 @@ export class ServerListComponent implements OnInit, OnDestroy {
   isMenuActive(menuOption: string): boolean {
     return this.menuOption == menuOption;
   }
-
-  toRelativeDate(datejson: string): string {
-    return moment(new Date(datejson)).fromNow();
-  }
 }

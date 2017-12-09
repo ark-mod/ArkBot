@@ -7,6 +7,10 @@ import { MessageService } from './message.service';
 
 import { Servers } from './servers';
 
+import { environment } from '../environments/environment';
+
+import * as moment from 'moment'
+
 @Injectable()
 export class DataService {
   _servers: BehaviorSubject<Servers> = new BehaviorSubject<Servers>(undefined);
@@ -82,5 +86,17 @@ export class DataService {
       let foo = this.hasFeatureAccess(featureGroup, featureName, forSteamId);
       return foo;
     });
+  }
+
+  toDate(datejson: string): string {
+    //todo: fix locale
+    return new Date(datejson).toLocaleString('sv-SE');
+  }
+
+  toRelativeDate(datejson: string): string {
+    if(!datejson) return "";
+
+    if (!environment.demo) return moment(new Date(datejson)).fromNow();
+    else return moment(new Date(datejson)).from(new Date(environment.demoDate));
   }
 }

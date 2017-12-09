@@ -1,9 +1,9 @@
-<section *ngIf="loaded == false" class="w3-container">
+<section *ngIf="(loaded == false &amp;&amp; !isMenuActive('structures')) || loadedStructures == false &amp;&amp; isMenuActive('structures')" class="w3-container">
   <div class="w3-panel theme-l2">
     <h3 class="theme-text-l1-light">Loading...</h3>
   </div> 
 </section>
-<section *ngIf="loaded == true &amp;&amp; server == null" class="w3-container">
+<section *ngIf="(loaded == true &amp;&amp; server == null &amp;&amp; !isMenuActive('structures')) || (loadedStructures == true &amp;&amp; structures == null &amp;&amp; isMenuActive('structures'))" class="w3-container">
   <div class="w3-panel w3-red">
     <h3>Error!</h3>
     <p>No data could be loaded for the given server key.</p>
@@ -36,7 +36,7 @@
           <td>{{player.TribeId}}</td>
           <td>{{player.StructureCount}}</td>
           <td>{{player.CreatureCount}}</td>
-          <td>{{toRelativeDate(player.LastActiveTime)}}</td>
+          <td>{{dataService.toRelativeDate(player.LastActiveTime)}}</td>
         </tr>
       </tbody>
     </table>
@@ -63,12 +63,12 @@
           <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a *ngIf="dataService.hasFeatureAccess('pages', 'player', member); else tribes_player_no_link" [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribes_player_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf="!last">, </span></span></td>
           <td>{{tribe.StructureCount}}</td>
           <td>{{tribe.CreatureCount}}</td>
-          <td>{{toRelativeDate(tribe.LastActiveTime)}}</td>
+          <td>{{dataService.toRelativeDate(tribe.LastActiveTime)}}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('structures') &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
+<section *ngIf="isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
