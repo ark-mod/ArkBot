@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, OnDestroy, Input } from '@angular/core';
 import { Observable, Subscription } from 'rxjs/Rx';
 import { BehaviorSubject } from "rxjs/Rx";
+import { environment } from '../../environments/environment';
 import * as moment from 'moment'
 
 @Component({
@@ -17,6 +18,7 @@ export class TimerComponent implements OnInit, OnDestroy {
     private _counter: Observable<number>;
     private _counterSubscription: Subscription;
     private _str: string;
+    private _loadedAt: any;
 
     @Input() state: any;
 
@@ -43,19 +45,22 @@ export class TimerComponent implements OnInit, OnDestroy {
     }
 
     constructor() {
+        this._loadedAt = moment();
     }
 
     updateDiff(initialTime) {
       //console.log("initialTime: " + initialTime);
       if (initialTime) {
-        this._wasExpired = moment(new Date(initialTime)).diff(moment()) <= 0;
+        if (!environment.demo) this._wasExpired = moment(new Date(initialTime)).diff(moment()) <= 0;
+        else this._wasExpired = moment(new Date(initialTime)).diff(moment(new Date(environment.demoDate))) - moment().diff(this._loadedAt) <= 0;
         this._notificationSent = false;
         this._str = undefined;
         this._ready = this._wasExpired;
         if (!this._wasExpired && this.state._completed == true) this.state._completed = false;
       }
 
-      this._diff = initialTime || this.time ? moment.duration(moment(new Date(initialTime || this.time)).diff(moment())) : undefined;
+      if (!environment.demo) this._diff = initialTime || this.time ? moment.duration(moment(new Date(initialTime || this.time)).diff(moment())) : undefined;
+      else this._diff = initialTime || this.time ? moment.duration(moment(new Date(initialTime || this.time)).diff(moment(new Date(environment.demoDate))) - moment().diff(this._loadedAt)) : undefined;
     }
     
     update() {

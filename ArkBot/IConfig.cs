@@ -37,6 +37,7 @@ namespace ArkBot
         bool UseCompatibilityChangeWatcher { get; set; }
         SslConfigSection Ssl { get; set; }
         int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
+        bool AnonymizeWebApiData { get; set; }
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }

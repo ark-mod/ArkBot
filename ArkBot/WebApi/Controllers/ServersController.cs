@@ -25,24 +25,53 @@ namespace ArkBot.WebApi.Controllers
         private ArkContextManager _contextManager;
         private Discord.DiscordManager _discordManager;
         private IArkServerService _serverService;
+        private ArkBotAnonymizeData _anonymizeData;
 
         public ServersController(
             IConfig config,
             EfDatabaseContextFactory databaseContextFactory,  
             ArkContextManager contextManager, 
             Discord.DiscordManager discordManager,
-            IArkServerService serverService) : base(config)
+            IArkServerService serverService,
+            ArkBotAnonymizeData anonymizeData) : base(config)
         {
             _databaseContextFactory = databaseContextFactory;
             _contextManager = contextManager;
             _discordManager = discordManager;
             _serverService = serverService;
+            _anonymizeData = anonymizeData;
         }
 
         public async Task<ServerStatusAllViewModel> Get()
         {
             var demoMode = IsDemoMode() ? new DemoMode() : null;
-            var result = new ServerStatusAllViewModel { User = WebApiHelper.GetUser(Request, _config), AccessControl = BuildViewModelForAccessControl(_config) };
+
+            var anonymize = _config.AnonymizeWebApiData;
+            var user = WebApiHelper.GetUser(Request, _config);
+            if (anonymize)
+            {
+                var serverContext = _contextManager.Servers.FirstOrDefault();
+                var player = serverContext?.Players.Where(x =>
+                        x.Tribe != null
+                        && x.Tribe.Creatures.Any(y => y.IsBaby)
+                        && x.Tribe.Structures.OfType<ArkStructureCropPlot>().Any()
+                        && x.Tribe.Structures.OfType<ArkStructureElectricGenerator>().Any()
+                    ).OrderByDescending(x => x.Creatures.Length).FirstOrDefault();
+
+                if (player == null) user = null;
+                else
+                {
+                    user.Name = player.Name;
+                    user.SteamId = player.SteamId;
+                    user.Roles = _config.AccessControl.SelectMany(x => x.Value.Values)
+                        .SelectMany(x => x)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(x => x)
+                        .ToArray();
+                }
+            }
+
+            var result = new ServerStatusAllViewModel { User = user, AccessControl = BuildViewModelForAccessControl(_config) };
 
             foreach (var context in _contextManager.Servers)
             {
@@ -58,7 +87,7 @@ namespace ArkBot.WebApi.Controllers
                     var rules = status.Item2;
                     var playerinfos = status.Item3;
 
-                    var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name);
+                    var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)?$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name);
                     var name = m.Success ? m.Groups["name"].Value : info.Name;
                     var version = m.Success ? m.Groups["version"] : null;
                     var currentTime = rules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
@@ -77,12 +106,13 @@ namespace ArkBot.WebApi.Controllers
                     var lastUpdate = context.LastUpdate;
                     var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
 
+                    var anonymizedServer = anonymize ? _anonymizeData.GetServer(context.Config.Key) : null;
                     var sr = new ServerStatusViewModel
                     {
-                        Key = context.Config.Key,
-                        Name = name,
-                        Address = context.Config.DisplayAddress ?? info.Address,
-                        Version = version.ToString(),
+                        Key = anonymizedServer?.Key ?? context.Config.Key,
+                        Name = anonymizedServer?.Name ?? name,
+                        Address = anonymizedServer?.Address ?? context.Config.DisplayAddress ?? info.Address,
+                        Version = version?.ToString(),
                         OnlinePlayerCount = info.Players,
                         OnlinePlayerMax = info.MaxPlayers,
                         MapName = info.Map,
@@ -101,40 +131,61 @@ namespace ArkBot.WebApi.Controllers
                     if (HasFeatureAccess("home", "online"))
                     {
                         var onlineplayers = playerinfos?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
-                        using (var db = _databaseContextFactory.Create())
+                        if (anonymize)
                         {
-                            // Names of online players (steam does not provide ids)
-                            var onlineplayerNames = onlineplayers.Select(x => x.Name).ToArray();
-
-                            // Get the player data for each name (null when no matching name or when multiple players share the same name)
-                            var onlineplayerData = context.Players != null ? (from k in onlineplayerNames join p in context.Players on k equals p.Name into grp select grp.Count() == 1 ? grp.ElementAt(0) : null).ToArray() : new ArkPlayer[] { };
-
-                            // Parse all steam ids
-                            var parsedSteamIds = onlineplayerData.Select(x => { long steamId; return x?.SteamId != null ? long.TryParse(x.SteamId, out steamId) ? steamId : (long?)null : null; }).ToArray();
-
-                            // Get the player data for each name
-                            var databaseUsers = (from k in parsedSteamIds join u in db.Users on k equals u?.SteamId into grp select grp.FirstOrDefault()).ToArray();
-
-                            // Get the discord users
-                            var discordUsers = databaseUsers.Select(x => x != null ? _discordManager.GetDiscordUserNameById((ulong)x.DiscordId) : null).ToArray();
-
                             int n = 0;
-                            foreach (var player in onlineplayers)
+                            foreach (var player in context.Players.OrderByDescending(x => x.LastActiveTime).Take(onlineplayers.Length))
                             {
-                                var extra = onlineplayerData.Length > n ? new { player = onlineplayerData[n], user = databaseUsers[n], discordName = discordUsers[n] } : null;
-                                var demoPlayerName = demoMode?.GetPlayerName();
-
                                 sr.OnlinePlayers.Add(new OnlinePlayerViewModel
                                 {
-                                    SteamName = demoPlayerName ?? player.Name,
-                                    CharacterName = demoPlayerName ?? extra?.player?.CharacterName,
-                                    TribeName = demoMode?.GetTribeName() ?? extra?.player?.Tribe?.Name,
-                                    DiscordName = demoMode != null ? null : extra?.discordName,
-                                    TimeOnline = player.Time.ToStringCustom(),
-                                    TimeOnlineSeconds = (int)Math.Round(player.Time.TotalSeconds)
+                                    SteamName = player.Name,
+                                    CharacterName = player.CharacterName,
+                                    TribeName = player.Tribe?.Name,
+                                    DiscordName = null,
+                                    TimeOnline = onlineplayers[n].Time.ToStringCustom(),
+                                    TimeOnlineSeconds = (int)Math.Round(onlineplayers[n].Time.TotalSeconds)
                                 });
 
                                 n++;
+                            }
+                        }
+                        else
+                        {
+                            using (var db = _databaseContextFactory.Create())
+                            {
+                                // Names of online players (steam does not provide ids)
+                                var onlineplayerNames = onlineplayers.Select(x => x.Name).ToArray();
+
+                                // Get the player data for each name (null when no matching name or when multiple players share the same name)
+                                var onlineplayerData = context.Players != null ? (from k in onlineplayerNames join p in context.Players on k equals p.Name into grp select grp.Count() == 1 ? grp.ElementAt(0) : null).ToArray() : new ArkPlayer[] { };
+
+                                // Parse all steam ids
+                                var parsedSteamIds = onlineplayerData.Select(x => { long steamId; return x?.SteamId != null ? long.TryParse(x.SteamId, out steamId) ? steamId : (long?)null : null; }).ToArray();
+
+                                // Get the player data for each name
+                                var databaseUsers = (from k in parsedSteamIds join u in db.Users on k equals u?.SteamId into grp select grp.FirstOrDefault()).ToArray();
+
+                                // Get the discord users
+                                var discordUsers = databaseUsers.Select(x => x != null ? _discordManager.GetDiscordUserNameById((ulong)x.DiscordId) : null).ToArray();
+
+                                int n = 0;
+                                foreach (var player in onlineplayers)
+                                {
+                                    var extra = onlineplayerData.Length > n ? new { player = onlineplayerData[n], user = databaseUsers[n], discordName = discordUsers[n] } : null;
+                                    var demoPlayerName = demoMode?.GetPlayerName();
+
+                                    sr.OnlinePlayers.Add(new OnlinePlayerViewModel
+                                    {
+                                        SteamName = demoPlayerName ?? player.Name,
+                                        CharacterName = demoPlayerName ?? extra?.player?.CharacterName,
+                                        TribeName = demoMode?.GetTribeName() ?? extra?.player?.Tribe?.Name,
+                                        DiscordName = demoMode != null ? null : extra?.discordName,
+                                        TimeOnline = player.Time.ToStringCustom(),
+                                        TimeOnlineSeconds = (int)Math.Round(player.Time.TotalSeconds)
+                                    });
+
+                                    n++;
+                                }
                             }
                         }
                     }

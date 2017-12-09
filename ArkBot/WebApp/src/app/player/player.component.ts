@@ -118,15 +118,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return creature.NextMating != null ? new Date(creature.NextMating) > new Date() : false;
   }
 
-  toDate(datejson: string): string {
-    //todo: fix locale
-    return new Date(datejson).toLocaleString('sv-SE');
-  }
-
-  toRelativeDate(datejson: string): string {
-    return moment(new Date(datejson)).fromNow();
-  }
-
   active(serverKey: string): boolean {
     return this.serverKey == serverKey;
   }

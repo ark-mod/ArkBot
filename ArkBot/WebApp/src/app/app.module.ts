@@ -16,6 +16,7 @@ import { AdminServerComponent } from './admin-server/admin-server.component';
 
 import { ArkMapComponent } from './arkmap.component';
 import { HttpService } from './http.service';
+import { DemoHttpService } from './demo.http.service';
 import { MessageService } from './message.service';
 import { DataService } from './data.service';
 import { DataServiceResolver } from './data-resolver.service';
@@ -34,6 +35,7 @@ import { AccessDeniedComponent } from './access-denied/access-denied.component';
 import { DeveloperComponent } from './developer/developer.component';
 
 import { DataTableModule } from './data-table/data-table.module';
+import { environment } from '../environments/environment';
 
 const appRoutes: Routes = [
   {
@@ -151,7 +153,7 @@ const appRoutes: Routes = [
     DataTableModule
   ],
   providers: [
-    HttpService, 
+    [{ provide: HttpService, useClass: !environment.demo ? HttpService : DemoHttpService }], 
     MessageService, 
     DataService,
     DataServiceResolver,

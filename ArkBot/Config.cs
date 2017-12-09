@@ -147,6 +147,10 @@ namespace ArkBot
         [Description("Max degree of parallelism to use for savegame extraction. Change only if experiencing out of memory exceptions.")]
         public int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
 
+        [JsonProperty(PropertyName = "anonymizeWebApiData")]
+        [Description("Anonymize all data in the WebAPI. Used to create data dumps for demoing the web-app.")]
+        public bool AnonymizeWebApiData { get; set; }
+
         [JsonProperty(PropertyName = "servers")]
         [Description("Server instance configurations.")]
         public ServerConfigSection[] Servers { get; set; }
