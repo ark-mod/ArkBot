@@ -252,8 +252,8 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
 
     imageLoaded(img: HTMLImageElement): void {
       this.img = img;
-      this.width = img.naturalWidth;
-      this.height = img.naturalHeight;
+      this.width = img ? img.naturalWidth : 1024;
+      this.height = img ? img.naturalHeight : 1024;
 
       //d3.select(this.canvasRef.nativeElement).call(this.zoom.on("zoom", () => this.zoomed()));
 
@@ -296,7 +296,7 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
       ctx.translate(transform.x, transform.y);
       ctx.scale(transform.k, transform.k);
       
-      ctx.drawImage(this.img, 0, 0);
+      if (this.img) ctx.drawImage(this.img, 0, 0);
 
       this.prevTransformK = transform.k;
     }
@@ -306,9 +306,11 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
       
       var img = new Image()
       img.onload = () => this.imageLoaded(img);
+      img.onerror = () => this.imageLoaded(undefined);
       img.src = !environment.demo ? `${this.getApiBaseUrl()}/map/${this.mapName}` : 'assets/demo/Ragnarok.jpg';
       if (img.complete) {
-        img.onload = null
+        img.onload = null;
+        img.onerror = null;
         this.imageLoaded(img);
       }
     }

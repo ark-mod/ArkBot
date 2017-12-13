@@ -362,9 +362,6 @@
       "Kentro"
     ],
     [
-      "Lamprey"
-    ],
-    [
       "Leech",
       "Leech_Character_C"
     ],
@@ -800,6 +797,284 @@
       "ZombieDodo_Character_BP_C",
       "Zombie Dodo",
       "Zombiedodo"
+    ],
+    [
+      "Aberrant Achatina",
+      "Achatina_Character_BP_Aberrant_C",
+      "Aberrant Snail",
+      "Aberrant Acha"
+    ],
+    [
+      "Aberrant Angler",
+      "Angler_Character_BP_Aberrant_C",
+      "Aberrant Anglerfish"
+    ],
+    [
+      "Aberrant Ankylosaurus",
+      "Ankylo_Character_BP_Aberrant_C",
+      "Aberrant Ankylo",
+      "Aberrant Anky"
+    ],
+    [
+      "Aberrant Arthropluera",
+      "Arthro_Character_BP_Aberrant_C",
+      "Aberrant Arthro",
+      "Aberrant Centipede"
+    ],
+    [
+      "Aberrant Baryonyx",
+      "Baryonyx_Character_BP_Aberrant_C",
+      "Aberrant Bary"
+    ],
+    [
+      "Basilisk",
+      "Basilisk_Character_BP_C"
+    ],
+    [
+      "Aberrant Titanoboa",
+      "BoaFrill_Character_BP_Aberrant_C",
+      "Aberrant Boa",
+      "Aberrant Snake"
+    ],
+    [
+      "Aberrant Carnotaurus",
+      "Carno_Character_BP_Aberrant_C",
+      "Aberrant Carno"
+    ],
+    [
+      "Cave Wolf",
+      "CaveWolf_Character_BP_C"
+    ],
+    [
+      "Chupa Cabra",
+      "ChupaCabra_Character_BP_C"
+    ],
+    [
+      "Chupa Cabra Surface",
+      "ChupaCabra_Character_BP_Surface_C"
+    ],
+    [
+      "Aberrant Cnidaria",
+      "Cnidaria_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Coelacanth",
+      "Coel_Character_BP_Aberrant_C",
+      "Aberrant Coel"
+    ],
+    [
+      "Crab",
+      "Crab_Character_BP_C"
+    ],
+    [
+      "Aberrant Dimetrodon",
+      "Dimetro_Character_BP_Aberrant_C",
+      "Aberrant Dimetro"
+    ],
+    [
+      "Aberrant Diplocaulus",
+      "Diplocaulus_Character_BP_Aberrant_C",
+      "Aberrant Newt"
+    ],
+    [
+      "Aberrant Diplodocus",
+      "Diplodocus_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Dodo",
+      "Dodo_Character_BP_Aberrant_C",
+      "Aberrant Chicken"
+    ],
+    [
+      "Aberrant Doedicurus",
+      "Doed_Character_BP_Aberrant_C",
+      "Aberrant Doed"
+    ],
+    [
+      "Aberrant Dragonfly",
+      "Dragonfly_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Dung Beetle",
+      "DungBeetle_Character_BP_Aberrant_C",
+      "Aberrant Beetle"
+    ],
+    [
+      "Aberrant Electrophorus",
+      "Eel_Character_BP_Aberrant_C",
+      "Aberrant Eel",
+      "Aberrant Electro"
+    ],
+    [
+      "Aberrant Equus",
+      "Equus_Character_BP_Aberrant_C",
+      "Aberrant Horse"
+    ],
+    [
+      "Aberrant Iguanodon",
+      "Iguanodon_Character_BP_Aberrant_C",
+      "Aberrant Iguan"
+    ],
+    [
+      "Lamprey",
+      "Lamprey_Character_C"
+    ],
+    [
+      "Lantern Bird",
+      "LanternBird_Character_BP_C"
+    ],
+    [
+      "Lantern Goat",
+      "LanternGoat_Character_BP_C"
+    ],
+    [
+      "Lantern Lizard",
+      "LanternLizard_Character_BP_C"
+    ],
+    [
+      "Lantern Pug",
+      "LanternPug_Character_BP_C"
+    ],
+    [
+      "Lightbug",
+      "Lightbug_Character_BaseBP_C"
+    ],
+    [
+      "Aberrant Lystrosaurus",
+      "Lystro_Character_BP_Aberrant_C",
+      "Aberrant Lystro"
+    ],
+    [
+      "Aberrant Manta",
+      "Manta_Character_BP_Aberrant_C"
+    ],
+    [
+      "Mega Basilisk",
+      "MegaBasilisk_Character_BP_C"
+    ],
+    [
+      "Mega Crab",
+      "MegaCrab_Character_BP_C"
+    ],
+    [
+      "Aberrant Megalosaurus",
+      "Megalosaurus_Character_BP_Aberrant_C",
+      "Aberrant Megalos",
+      "Aberrant Sleeping Raptor"
+    ],
+    [
+      "Mega Xenomorph Male",
+      "MegaXenomorph_Character_BP_Male_Surface_C"
+    ],
+    [
+      "Mole Rat",
+      "MoleRat_Character_BP_C"
+    ],
+    [
+      "Aberrant Moschops",
+      "Moschops_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Otter",
+      "Otter_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Parasaur",
+      "Para_Character_BP_Aberrant_C",
+      "Aberrant Para"
+    ],
+    [
+      "Aberrant Paracer",
+      "Paracer_Character_BP_Aberrant_C",
+      "Aberrant Paraceratherium"
+    ],
+    [
+      "Aberrant Piranha",
+      "Piranha_Character_BP_Aberrant_C",
+      "Aberrant Megapiranha"
+    ],
+    [
+      "Pteroteuthis",
+      "Pteroteuthis_Char_BP_C"
+    ],
+    [
+      "Pteroteuthis Surface",
+      "Pteroteuthis_Char_BP_Surface_C"
+    ],
+    [
+      "Aberrant Purlovia",
+      "Purlovia_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Raptor",
+      "Raptor_Character_BP_Aberrant_C"
+    ],
+    [
+      "Rock Drake",
+      "RockDrake_Character_BP_C"
+    ],
+    [
+      "Aberrant Sabertooth Salmon",
+      "Salmon_Character_Aberrant_C",
+      "Aberrant Salmon"
+    ],
+    [
+      "Aberrant Sarcosuchus",
+      "Sarco_Character_BP_Aberrant_C",
+      "Aberrant Sarco",
+      "Aberrant Crocodile"
+    ],
+    [
+      "Aberrant Pulmonoscorpius",
+      "Scorpion_Character_BP_Aberrant_C",
+      "Aberrant Scorpion",
+      "Aberrant Scorpius",
+      "Aberrant Pulmono",
+      "Aberrant Scorp",
+      "Aberrant Pulminoscorpius"
+    ],
+    [
+      "Aberrant Ovis",
+      "Sheep_Character_BP_Aberrant_C",
+      "Aberrant Sheep"
+    ],
+    [
+      "Aberrant Spinosaur",
+      "Spino_Character_BP_Aberrant_C",
+      "Aberrant Spinosaurus",
+      "Aberrant Spino"
+    ],
+    [
+      "Aberrant Stegosaurus",
+      "Stego_Character_BP_Aberrant_C",
+      "Aberrant Stego"
+    ],
+    [
+      "Aberrant Beelzebufo",
+      "Toad_Character_BP_Aberrant_C",
+      "Aberrant Toad"
+    ],
+    [
+      "Aberrant Triceratops",
+      "Trike_Character_BP_Aberrant_C",
+      "Aberrant Trike"
+    ],
+    [
+      "Aberrant Trilobite",
+      "Trilobite_Character_Aberrant_C"
+    ],
+    [
+      "Aberrant Carbonemys",
+      "Turtle_Character_BP_Aberrant_C",
+      "Aberrant Turtle"
+    ],
+    [
+      "Xenomorph Female",
+      "Xenomorph_Character_BP_Female_C"
+    ],
+    [
+      "Xenomorph Male Surface",
+      "Xenomorph_Character_BP_Male_Surface_C"
     ]
   ]
 }
