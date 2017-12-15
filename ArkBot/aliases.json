@@ -842,16 +842,19 @@
       "Aberrant Carno"
     ],
     [
-      "Cave Wolf",
-      "CaveWolf_Character_BP_C"
+      "Ravager",
+      "CaveWolf_Character_BP_C",
+      "CaveWolf"
     ],
     [
-      "Chupa Cabra",
-      "ChupaCabra_Character_BP_C"
+      "Nameless",
+      "ChupaCabra_Character_BP_C",
+      "Chupa Cabra"
     ],
     [
-      "Chupa Cabra Surface",
-      "ChupaCabra_Character_BP_Surface_C"
+      "Nameless Surface",
+      "ChupaCabra_Character_BP_Surface_C",
+      "Chupa Cabra Surface"
     ],
     [
       "Aberrant Cnidaria",
@@ -863,8 +866,9 @@
       "Aberrant Coel"
     ],
     [
-      "Crab",
-      "Crab_Character_BP_C"
+      "Karkinos",
+      "Crab_Character_BP_C",
+      "Crab"
     ],
     [
       "Aberrant Dimetrodon",
@@ -920,24 +924,29 @@
       "Lamprey_Character_C"
     ],
     [
-      "Lantern Bird",
-      "LanternBird_Character_BP_C"
+      "Featherlight",
+      "LanternBird_Character_BP_C",
+      "Lantern Bird"
     ],
     [
-      "Lantern Goat",
-      "LanternGoat_Character_BP_C"
+      "Shinehorn",
+      "LanternGoat_Character_BP_C",
+      "Lantern Goat"
     ],
     [
-      "Lantern Lizard",
-      "LanternLizard_Character_BP_C"
+      "Glowtail",
+      "LanternLizard_Character_BP_C",
+      "Lantern Lizard"
     ],
     [
-      "Lantern Pug",
-      "LanternPug_Character_BP_C"
+      "Bulbdog",
+      "LanternPug_Character_BP_C",
+      "Lantern Pug"
     ],
     [
-      "Lightbug",
-      "Lightbug_Character_BaseBP_C"
+      "Glowbug",
+      "Lightbug_Character_BaseBP_C",
+      "Lightbug"
     ],
     [
       "Aberrant Lystrosaurus",
@@ -949,12 +958,13 @@
       "Manta_Character_BP_Aberrant_C"
     ],
     [
-      "Mega Basilisk",
+      "Alpha Basilisk",
       "MegaBasilisk_Character_BP_C"
     ],
     [
-      "Mega Crab",
-      "MegaCrab_Character_BP_C"
+      "Alpha Karkinos",
+      "MegaCrab_Character_BP_C",
+      "Mega Crab"
     ],
     [
       "Aberrant Megalosaurus",
@@ -963,12 +973,14 @@
       "Aberrant Sleeping Raptor"
     ],
     [
-      "Mega Xenomorph Male",
-      "MegaXenomorph_Character_BP_Male_Surface_C"
+      "Alpha Surface Reaper King",
+      "MegaXenomorph_Character_BP_Male_Surface_C",
+      "Mega Xenomorph Male"
     ],
     [
-      "Mole Rat",
-      "MoleRat_Character_BP_C"
+      "Roll Rat",
+      "MoleRat_Character_BP_C",
+      "Mole Rat"
     ],
     [
       "Aberrant Moschops",
@@ -994,12 +1006,14 @@
       "Aberrant Megapiranha"
     ],
     [
-      "Pteroteuthis",
-      "Pteroteuthis_Char_BP_C"
+      "Seeker",
+      "Pteroteuthis_Char_BP_C",
+      "Pteroteuthis"
     ],
     [
-      "Pteroteuthis Surface",
-      "Pteroteuthis_Char_BP_Surface_C"
+      "Seeker Surface",
+      "Pteroteuthis_Char_BP_Surface_C",
+      "Pteroteuthis Surface"
     ],
     [
       "Aberrant Purlovia",
@@ -1069,12 +1083,14 @@
       "Aberrant Turtle"
     ],
     [
-      "Xenomorph Female",
-      "Xenomorph_Character_BP_Female_C"
+      "Reaper Queen",
+      "Xenomorph_Character_BP_Female_C",
+      "Xenomorph Female"
     ],
     [
-      "Xenomorph Male Surface",
-      "Xenomorph_Character_BP_Male_Surface_C"
+      "Surface Reaper King",
+      "Xenomorph_Character_BP_Male_Surface_C",
+      "Xenomorph Male Surface"
     ]
   ]
 }
