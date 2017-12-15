@@ -1,4 +1,4 @@
-﻿{
+{
   "Aliases": [
     [
       "Achatina",
@@ -844,7 +844,7 @@
     [
       "Ravager",
       "CaveWolf_Character_BP_C",
-      "CaveWolf"
+      "Cave Wolf"
     ],
     [
       "Nameless",
@@ -1091,6 +1091,22 @@
       "Surface Reaper King",
       "Xenomorph_Character_BP_Male_Surface_C",
       "Xenomorph Male Surface"
+    ],
+    [
+      "Elemental Reaper King",
+      "Xenomorph_Character_BP_Male_Minion_C"
+    ],
+    [
+      "Subterranean Reaper King",
+      "Xenomorph_Character_BP_Male_Chupa_C"
+    ],
+    [
+      "Nameless Queen",
+      "Xenomorph_Character_BP_C"
+    ],
+    [
+      "Rockwell",
+      "Rockwell_Character_BP_C"
     ]
   ]
 }
