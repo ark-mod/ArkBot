@@ -23,6 +23,7 @@ namespace ArkBot.Commands
         [Summary("Find out what we know about you")]
         [SyntaxHelp(null)]
         [UsageExamples(null)]
+        [RoleRestrictedPrecondition("whoami")]
         public async Task Whoami()
         {
             using (var context = _databaseContextFactory.Create())

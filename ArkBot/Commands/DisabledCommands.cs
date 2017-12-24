@@ -29,6 +29,7 @@ namespace ArkBot.Commands
         [Summary("Unlink your Discord user from your Steam account")]
         [SyntaxHelp(null)]
         [UsageExamples(null)]
+        [RoleRestrictedPrecondition("disabled")]
         public async Task Disabled([Remainder] string arguments = null)
         {
             var sb = new StringBuilder();

@@ -102,59 +102,118 @@ namespace ArkBot.Discord
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
-            var message = messageParam as SocketUserMessage;
-            if (message == null) return;
-
-            var argPos = 0;
-            if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(_discord.CurrentUser, ref argPos))) return;
-
-            var context = new SocketCommandContext(_discord, message);
-
-            var result = _commands.Search(context, argPos);
-            if (result.IsSuccess && result.Commands.Count > 0)
+            try
             {
-                if (result.Commands.Count > 1)
-                {
-                    Logging.Log($"Multiple commands registered for '{message.Content.Substring(argPos)}'! Skipping!", GetType(), LogLevel.WARN);
+                var message = messageParam as SocketUserMessage;
+                if (message == null) return;
+
+                var argPos = 0;
+                if (!(message.HasCharPrefix('!', ref argPos) ||
+                      message.HasMentionPrefix(_discord.CurrentUser, ref argPos)))
                     return;
-                }
 
-                var cm = result.Commands.First();
-                var iCommand = cm.Command;
-                var iModule = iCommand.Module;
-                var isHidden = CommandHiddenAttribute.IsHidden(iModule.Attributes, iCommand.Attributes);
+                var context = new SocketCommandContext(_discord, message);
 
-                var preconditions = await cm.CheckPreconditionsAsync(context, _serviceProvider);
-                if (!preconditions.IsSuccess) return;
-
-                var parseResult = await cm.ParseAsync(context, result, preconditions, _serviceProvider);
-                if (!parseResult.IsSuccess) return;
-
-                var commandResult = await cm.ExecuteAsync(context, parseResult, _serviceProvider);
-                if (commandResult.IsSuccess)
+                var result = _commands.Search(context, argPos);
+                if (result.IsSuccess && result.Commands.Count > 0)
                 {
-                    if (isHidden) return;
+                    if (result.Commands.Count > 1)
+                    {
+                        Logging.Log(
+                            $"Multiple commands registered for '{message.Content.Substring(argPos)}'! Skipping!",
+                            GetType(), LogLevel.WARN);
+                        return;
+                    }
 
-                    var sb = new StringBuilder();
-                    sb.AppendLine($@"""!{message.Content.Substring(argPos)}"" command successful!");
-                    Logging.Log(sb.ToString(), GetType(), LogLevel.INFO);
-                }
-                else
-                {
-                    if (isHidden || (preconditions.Error.HasValue && preconditions.Error.Value == CommandError.UnmetPrecondition)) return;
+                    var cm = result.Commands.First();
+                    var iCommand = cm.Command;
+                    var iModule = iCommand.Module;
+                    var isHidden = CommandHiddenAttribute.IsHidden(iModule.Attributes, iCommand.Attributes);
 
-                    //if there is an exception log all information pertaining to it so that we can possibly fix it in the future
-                    var exception = commandResult is ExecuteResult ? ((ExecuteResult)commandResult).Exception : null;
-                    if (exception != null)
-                    { 
-                        var errorMessage = $@"""!{message.Content.Substring(argPos)}"" command error...";
+                    //check if command is allowed in this channel
+                    if(!(context.Channel is ISocketPrivateChannel) 
+                        && _config.EnabledChannels?.Length > 0 
+                        && !_config.EnabledChannels.Contains(context.Channel.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
 
-                        Logging.LogException(errorMessage, exception, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
+                    var preconditions = await cm.CheckPreconditionsAsync(context, _serviceProvider);
+                    if (!preconditions.IsSuccess)
+                    {
+                        Logging.Log(
+                            $"Command precondition(s) failed [command name: {iCommand.Name}, preconditions error: {preconditions.ErrorReason}]", 
+                            GetType(), LogLevel.DEBUG);
+
+                        await messageParam.Channel.SendMessageAsync("**The specified command is not available to your role or may not be used in this channel.**");
+
+                        return;
+                    }
+
+                    var parseResult = await cm.ParseAsync(context, result, preconditions, _serviceProvider);
+                    if (!parseResult.IsSuccess)
+                    {
+                        Logging.Log(
+                            $"Command parsing failed [command name: {iCommand.Name}, parseResult error: {parseResult.ErrorReason}]",
+                            GetType(), LogLevel.DEBUG);
+
+                        var syntaxHelp = iCommand.Attributes.OfType<SyntaxHelpAttribute>().FirstOrDefault()?.SyntaxHelp;
+                        var name = iCommand.Attributes.OfType<CommandAttribute>().FirstOrDefault()?.Text;
+
+                        await messageParam.Channel.SendMessageAsync(string.Join(Environment.NewLine, new string[] {
+                            $"**My logic circuits cannot process this command! I am just a bot after all... :(**",
+                            !string.IsNullOrWhiteSpace(syntaxHelp) ? $"Help me by following this syntax: **!{name}** {syntaxHelp}" : null }.Where(x => x != null)));
+
+                        return;
+                    }
+
+                    var commandResult = await cm.ExecuteAsync(context, parseResult, _serviceProvider);
+                    if (commandResult.IsSuccess)
+                    {
+                        if (isHidden) return;
+
+                        var sb = new StringBuilder();
+                        sb.AppendLine($@"""!{message.Content.Substring(argPos)}"" command successful!");
+                        Logging.Log(sb.ToString(), GetType(), LogLevel.INFO);
+                    }
+                    else
+                    {
+                        if (isHidden || (preconditions.Error.HasValue &&
+                                         preconditions.Error.Value == CommandError.UnmetPrecondition))
+                        {
+                            if (!isHidden)
+                                Logging.Log(
+                                    $"Command unmet precondition(s) [command name: {iCommand.Name}, preconditions error: {preconditions.ErrorReason}]",
+                                    GetType(), LogLevel.DEBUG);
+                            return;
+                        }
+
+                        //if there is an exception log all information pertaining to it so that we can possibly fix it in the future
+                        var exception = commandResult is ExecuteResult
+                            ? ((ExecuteResult) commandResult).Exception
+                            : null;
+                        if (exception != null)
+                        {
+                            var errorMessage = $@"""!{message.Content.Substring(argPos)}"" command error...";
+
+                            Logging.LogException(errorMessage, exception, GetType(), LogLevel.ERROR,
+                                ExceptionLevel.Unhandled);
+                        }
+
+                        Logging.Log(
+                            $"Command execution failed [command name: {iCommand.Name}, command error: {commandResult.ErrorReason}]",
+                            GetType(), LogLevel.DEBUG);
                     }
                 }
-            }
 
-            //var result = await _commands.ExecuteAsync(context, argPos, _serviceProvider);
+                //var result = await _commands.ExecuteAsync(context, argPos, _serviceProvider);
+            }
+            catch (Exception ex)
+            {
+                Logging.Log(
+                    $"Command handler unhandled exception [message: {ex.Message}]",
+                    GetType(), LogLevel.DEBUG);
+            }
         }
 
         /// <summary>

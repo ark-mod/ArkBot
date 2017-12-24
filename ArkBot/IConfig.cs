@@ -2,8 +2,6 @@
 
 namespace ArkBot
 {
-    public enum DiscordRole { Admin, Developer, Member }
-
     public interface IConfig
     {
         ArkMultipliersConfigSection ArkMultipliers { get; set; }
@@ -19,9 +17,8 @@ namespace ArkBot
         string SteamOpenIdRelyingServiceListenPrefix { get; set; }
         string TempFileOutputDirPath { get; set; }
         bool DisableDeveloperFetchSaveData { get; set; }
-        string AdminRoleName { get; set; }
-        string DeveloperRoleName { get; set; }
         string MemberRoleName { get; set; }
+        DiscordConfigSection Discord { get; set; }
         Dictionary<string, string[]> UserRoles { get; set; }
         Dictionary<string, Dictionary<string, string[]>> AccessControl { get; set; }
         string[] EnabledChannels { get; set; }
@@ -41,6 +38,5 @@ namespace ArkBot
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }
-        string TranslateDiscordRoleName(DiscordRole discordRole);
     }
 }

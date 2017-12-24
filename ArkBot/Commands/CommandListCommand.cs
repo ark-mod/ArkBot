@@ -33,6 +33,7 @@ namespace ArkBot.Commands
         [CommandHiddenAttribute]
         [Command("command")]
         [Alias("commands", "help")]
+        [RoleRestrictedPrecondition("commands")]
         public async Task Commands(string _name = null)
         {
             var name = _name?.TrimStart('!').ToLower();
