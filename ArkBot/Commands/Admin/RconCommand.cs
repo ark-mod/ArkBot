@@ -46,7 +46,7 @@ namespace ArkBot.Commands.Admin
         {
             "**<server key> '<command>'**: Sends a custom rcon command to the server instance",
         })]
-        [RoleRestrictedPrecondition(new[] { DiscordRole.Admin, DiscordRole.Developer })]
+        [RoleRestrictedPrecondition("rcon")]
         public async Task Rcon([Remainder] string arguments = null)
         {
             var args = CommandHelper.ParseArgs(arguments, new

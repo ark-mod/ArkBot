@@ -32,6 +32,7 @@ namespace ArkBot.Commands
         [Summary("Link your Discord user with your Steam account")]
         [SyntaxHelp(null)]
         [UsageExamples(null)]
+        [RoleRestrictedPrecondition("linksteam")]
         public async Task LinkSteam()
         {
             using (var context = _databaseContextFactory.Create())

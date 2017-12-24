@@ -36,11 +36,9 @@ namespace ArkBot.Commands.Experimental
         [Summary("Get debug information from bot")]
         [SyntaxHelp(null)]
         [UsageExamples(null)]
-        [RoleRestrictedPrecondition(new [] { DiscordRole.Developer })]
+        [RoleRestrictedPrecondition("debug")]
         public async Task Debug([Remainder] string arguments = null)
         {
-            if (!Context.IsPrivate) return;
-
             var args = CommandHelper.ParseArgs(arguments, new { logs = false, json = false, save = false, database = false, stats = false, clear = false, key = "", data = "" }, x =>
                 x.For(y => y.logs, flag: true)
                 .For(y => y.json, flag: true)

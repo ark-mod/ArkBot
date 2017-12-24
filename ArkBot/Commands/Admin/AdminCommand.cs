@@ -98,7 +98,7 @@ namespace ArkBot.Commands.Admin
             "**countdown <minutes> <event description> updateservers**: Start a countdown on all servers with subsequent server update.",
             "**<server key> backups**: List backups for the server."
         })]
-        [RoleRestrictedPrecondition(new[] { DiscordRole.Admin, DiscordRole.Developer })]
+        [RoleRestrictedPrecondition("admin")]
         public async Task Admin([Remainder] string arguments = null)
         {
             //if (!e.Channel.IsPrivate) return;

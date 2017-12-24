@@ -12,6 +12,7 @@ namespace ArkBot.Commands
     {
         [Command("version")]
         [Summary("Get the bot version number")]
+        [RoleRestrictedPrecondition("version")]
         public async Task Version()
         {
             var sb = new StringBuilder();

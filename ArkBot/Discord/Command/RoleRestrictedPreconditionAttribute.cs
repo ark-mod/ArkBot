@@ -10,36 +10,77 @@ namespace ArkBot.Discord.Command
 {
     public class RoleRestrictedPreconditionAttribute : PreconditionAttribute
     {
-        public DiscordRole[] ForRoles { get; set; }
+        public string AccessControlName { get; set; }
 
-        public RoleRestrictedPreconditionAttribute(DiscordRole[] forRoles)
+        public RoleRestrictedPreconditionAttribute(string accessControlName)
         {
-            ForRoles = forRoles;
+            AccessControlName = accessControlName;
         }
 
         // Override the CheckPermissions method
         public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            if (!(context.Channel is ISocketPrivateChannel)) return PreconditionResult.FromError("Role restricted commands must be sent in private!");
-            if (!(ForRoles?.Length > 0)) return PreconditionResult.FromSuccess();
-
-            var config = (IConfig)services.GetService(typeof(IConfig));
-            var forRoles = ForRoles.Select(x => config.TranslateDiscordRoleName(x)).ToArray();
-
-            var guilds = await context.Client.GetGuildsAsync();
-
-            foreach (var guild in guilds)
+            try
             {
-                foreach (var role in guild.Roles)
+                var config = (IConfig) services.GetService(typeof(IConfig));
+
+                var roles = new List<string>();
+                if (context.Channel is ISocketPrivateChannel)
                 {
-                    if (role == null || !forRoles.Contains(role.Name, StringComparer.OrdinalIgnoreCase)) continue;
-
-                    var user = await guild.GetUserAsync(context.User.Id);
-                    if (user.RoleIds.Contains(role.Id)) return PreconditionResult.FromSuccess();
+                    var guilds = await context.Client.GetGuildsAsync();
+                    foreach (var guild in guilds)
+                    {
+                        var user = await guild.GetUserAsync(context.User.Id);
+                        roles.AddRange(guild.Roles.Where(x => user.RoleIds.Contains(x.Id)).Select(x => x.Name));
+                    }
                 }
-            }
+                else
+                {
+                    var user = await context.Guild.GetUserAsync(context.User.Id);
+                    roles.AddRange(context.Guild.Roles.Where(x => user.RoleIds.Contains(x.Id)).Select(x => x.Name));
+                }
 
-            return PreconditionResult.FromError("The user does not have access to this command!");
+                roles = roles.Distinct().ToList();
+
+                var hasFeatureAccess =
+                    HasFeatureAccess(config, "commands", AccessControlName, roles.ToArray());
+                if (!hasFeatureAccess)
+                    return PreconditionResult.FromError("The user does not have access to this command!");
+
+                var croles = GetFeatureRoles(config, "commands", AccessControlName)?.Intersect(roles).ToArray() ??
+                             new string[] { };
+                var proles =
+                    GetFeatureRoles(config, "channels",
+                        context.Channel is ISocketPrivateChannel ? "private" : "public") ?? new string[] { };
+
+                return proles.Intersect(croles).Any()
+                    ? PreconditionResult.FromSuccess()
+                    : PreconditionResult.FromError(
+                        $"The user must send this command in {(context.Channel is ISocketPrivateChannel ? "private" : "public")}!");
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException("Exception when checking command permissions", ex, GetType(), LogLevel.ERROR, ExceptionLevel.Unhandled);
+                return PreconditionResult.FromError($"Permission check failed with exception: {ex.Message}");
+            }
+        }
+
+        private bool HasFeatureAccess(IConfig config, string featureGroup, string featureName, string[] roles)
+        {
+            var rf = GetFeatureRoles(config, featureGroup, featureName);
+            return rf != null && rf.Intersect(roles, StringComparer.OrdinalIgnoreCase).Any();
+        }
+
+        private string[] GetFeatureRoles(IConfig config, string featureGroup, string featureName)
+        {
+            if (featureGroup == null) return null;
+            if (featureName == null) return null;
+
+            var accessControl = config.Discord?.AccessControl;
+            if (accessControl == null) return null;
+            if (!accessControl.TryGetValue(featureGroup, out var fg)) return null;
+
+            return !fg.TryGetValue(featureName, out var rf) ? null : rf;
         }
     }
 }

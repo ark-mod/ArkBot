@@ -54,7 +54,7 @@ namespace ArkBot.Commands.Admin
             "**<cluster key> stash <steamid> <tag>**: Stash a players cloud save using the the given tag.",
             "**<cluster key> pop <steamid> <tag>**: Restore a stashed cloud save with the given tag for a player.",
         })]
-        [RoleRestrictedPrecondition(new[] { DiscordRole.Admin, DiscordRole.Developer })]
+        [RoleRestrictedPrecondition("cloud")]
         public async Task Cloud([Remainder] string arguments = null)
         {
             var args = CommandHelper.ParseArgs(arguments, new

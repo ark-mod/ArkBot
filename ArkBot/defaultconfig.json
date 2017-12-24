@@ -13,9 +13,28 @@
   "steamOpenIdRedirectUri": "http://<your public ip or domain>:60002/openid/",
   "googleApiKey": "<google api key>",
   "steamApiKey": "<steam webapi key>",
-  "adminRoleName": "admin",
-  "developerRoleName": "developer",
   "memberRoleName": "ark",
+  "discord": {
+    "accessControl": {
+      "channels": {
+        "public": [ "@everyone", "admin", "developer" ],
+        "private": [ "@everyone", "admin", "developer" ]
+      },
+      "commands": {
+        "admin": [ "admin", "developer" ],
+        "cloud": [ "admin", "developer" ],
+        "rcon": [ "admin", "developer" ],
+        "debug": [ "developer" ],
+        "commands": [ "@everyone" ],
+        "version": [ "@everyone" ],
+        "servers": [ "@everyone" ],
+        "linksteam": [ "@everyone" ],
+        "unlinksteam": [ "@everyone" ],
+        "whoami": [ "@everyone" ],
+        "disabled": [ "@everyone" ]
+      }
+    }
+  },
   "userRoles": {
     "admin": [ ]
   },

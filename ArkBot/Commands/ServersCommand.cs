@@ -27,6 +27,7 @@ namespace ArkBot.Commands
         [Summary("List the available servers")]
         [SyntaxHelp(null)]
         [UsageExamples(null)]
+        [RoleRestrictedPrecondition("servers")]
         public async Task Servers([Remainder] string arguments = null)
         {
             var args = CommandHelper.ParseArgs(arguments, new { cluster = false, clusters = false }, x =>
