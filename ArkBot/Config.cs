@@ -21,6 +21,7 @@ namespace ArkBot
             DiscordBotEnabled = true;
             WebAppRedirectListenPrefix = new string[] { };
             AccessControl = new Dictionary<string, Dictionary<string, string[]>>();
+            Discord = new DiscordConfigSection();
         }
 
         [JsonProperty(PropertyName = "botId")]
@@ -75,17 +76,13 @@ namespace ArkBot
         [Description("Diable users in \"developer\"-role fetching json or save file data.")]
         public bool DisableDeveloperFetchSaveData { get; set; }
 
-        [JsonProperty(PropertyName = "adminRoleName")]
-        [Description("The name of the admin role in Discord.")]
-        public string AdminRoleName { get; set; }
-
-        [JsonProperty(PropertyName = "developerRoleName")]
-        [Description("The name of the developer role in Discord.")]
-        public string DeveloperRoleName { get; set; }
-
         [JsonProperty(PropertyName = "memberRoleName")]
         [Description("The name of the member role in Discord.")]
         public string MemberRoleName { get; set; }
+
+        [JsonProperty(PropertyName = "discord")]
+        [Description("Discord bot settings.")]
+        public DiscordConfigSection Discord { get; set; }
 
         [JsonProperty(PropertyName = "userRoles")]
         [Description("Explicit steam user role assignment.")]
@@ -158,17 +155,18 @@ namespace ArkBot
         [JsonProperty(PropertyName = "clusters")]
         [Description("Cluster instance configurations.")]
         public ClusterConfigSection[] Clusters { get; set; }
+    }
 
-        public string TranslateDiscordRoleName(DiscordRole discordRole)
+    public class DiscordConfigSection
+    {
+        public DiscordConfigSection()
         {
-            switch (discordRole)
-            {
-                case DiscordRole.Admin: return AdminRoleName;
-                case DiscordRole.Developer: return DeveloperRoleName;
-                case DiscordRole.Member: return MemberRoleName;
-                default: return null;
-            }
+            AccessControl = new Dictionary<string, Dictionary<string, string[]>>();
         }
+
+        [JsonProperty(PropertyName = "accessControl")]
+        [Description("Per-feature role based access control configuration.")]
+        public Dictionary<string, Dictionary<string, string[]>> AccessControl { get; set; }
     }
 
     public class SslConfigSection

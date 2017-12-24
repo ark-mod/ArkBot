@@ -188,6 +188,7 @@ namespace ArkBot.ViewModel
             //reload partial configuration
             _config.AccessControl = config.AccessControl;
             _config.UserRoles = config.UserRoles;
+            _config.Discord.AccessControl = config.Discord.AccessControl;
         }
 
         static void WriteAndWaitForKey(params string[] msgs)
@@ -417,9 +418,7 @@ namespace ArkBot.ViewModel
                 System.Console.WriteLine("Anonymizing all data in the WebAPI (anonymizeWebApiData=true)" + Environment.NewLine);
             }
 
-            if (string.IsNullOrWhiteSpace(_config.AdminRoleName)) _config.AdminRoleName = "admin";
-            if (string.IsNullOrWhiteSpace(_config.DeveloperRoleName)) _config.DeveloperRoleName = "developer";
-            if (string.IsNullOrWhiteSpace(_config.MemberRoleName)) _config.DeveloperRoleName = "ark";
+            if (string.IsNullOrWhiteSpace(_config.MemberRoleName)) _config.MemberRoleName = "ark";
 
             //load aliases and check integrity
             var aliases = ArkSpeciesAliases.Instance;

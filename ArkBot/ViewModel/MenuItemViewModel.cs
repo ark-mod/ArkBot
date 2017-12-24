@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace ArkBot.ViewModel
 {
-    [ImplementPropertyChanged]
+    [AddINotifyPropertyChangedInterface]
     public class MenuItemViewModel
     {
         public string Header { get; set; }

@@ -23,6 +23,7 @@ namespace ArkBot.Commands
         [Summary("Unlink your Discord user from your Steam account")]
         [SyntaxHelp(null)]
         [UsageExamples(null)]
+        [RoleRestrictedPrecondition("unlinksteam")]
         public async Task UnlinkSteam()
         {
             using (var context = _databaseContextFactory.Create())
