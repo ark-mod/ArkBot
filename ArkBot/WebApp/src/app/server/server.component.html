@@ -203,10 +203,6 @@
       <span (click)="showMap = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
       <h2>Map</h2>
     </header>
-    <arkmap mapName="TheIsland" [points]="points"></arkmap>
-    <!--TODO: [mapName]="map name key from servers json (TheIsland, ScorchedEarth_P etc.)"-->
-    <!--TODO: View only one species of creatures at a time and make filtering something else-->
-    <!--TODO: Can we add a field to tell which creatures are tamable and which creatures are not?-->
-    <!--TODO: Maybe add a switch to toggle only tameable on/off-->
+    <arkmap [mapName]="server?.MapName" [points]="points"></arkmap>
     </div>
   </div>

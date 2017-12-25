@@ -14,18 +14,19 @@ export class AccessControlRouteGuardService implements CanActivate /*, CanActiva
   constructor(private dataService: DataService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    return Observable.fromPromise(this.dataService.getServers().then(e => {
+    return Observable.fromPromise<string>(this.dataService.getServers().then(e => {
         if (e) {
           let pid = route.params['playerid'];
-          return this.dataService.hasFeatureAccess("pages", route.data.name, pid);
+          return this.dataService.hasFeatureAccess("pages", route.data.name, pid) ? "access" : "noaccess";
         }
 
-        return false;
+        return "connectionerror";
       }).catch(() => {
-          return false;
+          return "connectionerror";
       })).map(e => {
-        if (!e) this.router.navigateByUrl('/accessdenied', { skipLocationChange: true });
-        return e;
+        if (e == "noaccess") this.router.navigateByUrl('/accessdenied', { skipLocationChange: true });
+        else if (e == "connectionerror") this.router.navigateByUrl('/connectionerror', { skipLocationChange: true });
+        return e == "access";
       });
   }
 }

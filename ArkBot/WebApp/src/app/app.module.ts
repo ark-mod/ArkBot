@@ -32,6 +32,7 @@ import { TimerComponent } from './timer/timer.component';
 import { RelativeTimeComponent } from './relative-time/relative-time.component';
 import { ConfirmButtonComponent } from './confirm-button/confirm-button.component';
 import { AccessDeniedComponent } from './access-denied/access-denied.component';
+import { ConnectionErrorComponent } from './connection-error/connection-error.component';
 import { DeveloperComponent } from './developer/developer.component';
 
 import { DataTableModule } from './data-table/data-table.module';
@@ -114,6 +115,10 @@ const appRoutes: Routes = [
     path: 'accessdenied',
     component: AccessDeniedComponent
   },
+  {
+    path: 'connectionerror',
+    component: ConnectionErrorComponent
+  },
   { path: '',
     redirectTo: '/servers',
     pathMatch: 'full'
@@ -140,6 +145,7 @@ const appRoutes: Routes = [
     RelativeTimeComponent,
     ConfirmButtonComponent,
     AccessDeniedComponent,
+    ConnectionErrorComponent,
     DeveloperComponent
   ],
   imports: [
