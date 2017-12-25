@@ -15,5 +15,6 @@ namespace ArkBot.WebApi.Model
         }
         public List<PlayerReferenceViewModel> Players { get; set; }
         public List<TribeReferenceViewModel> Tribes { get; set; }
+        public string MapName { get; set; }
     }
 }

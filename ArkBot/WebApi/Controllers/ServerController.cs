@@ -35,6 +35,7 @@ namespace ArkBot.WebApi.Controllers
             var demoMode = IsDemoMode() ? new DemoMode() : null;
             var result = new ServerViewModel
             {
+                MapName = context.SaveState?.MapName
             };
 
             if (HasFeatureAccess("server", "players") && context.Players != null)

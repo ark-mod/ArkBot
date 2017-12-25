@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, Event as RouterEvent, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { NotificationsService } from 'angular2-notifications';
 import { BreadcrumbService } from 'ng2-breadcrumb/ng2-breadcrumb';
 import { DataService } from './data.service';
@@ -21,13 +22,17 @@ export class AppComponent implements OnInit, OnDestroy {
   public currentUrl: string = "/";
   private serversUpdatedSubscription: any;
   private serversUpdatedBefore: boolean = false;
+  private routerEventsSubscription: any;
+  private loading: boolean = true;
 
   constructor(
     public dataService: DataService,
     private httpService: HttpService,
     private breadcrumbService: BreadcrumbService,
-    private notificationsService: NotificationsService) { 
+    private notificationsService: NotificationsService,
+    private router: Router) { 
       breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
+      breadcrumbService.addFriendlyNameForRoute('/connectionerror', 'Connection error');
       breadcrumbService.hideRoute('/player');
       breadcrumbService.hideRoute('/servers');
       breadcrumbService.hideRoute('/server');
@@ -36,6 +41,10 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
   ngOnInit(): void {
+    this.routerEventsSubscription = this.router.events.subscribe((event: RouterEvent) => {
+      this.navigationInterceptor(event);
+    });
+
     this.currentUrl = window.location.href || '/'
     this.serversUpdatedSubscription = this.dataService.ServersUpdated$.subscribe(servers => {
       if (!this.serversUpdatedBefore) {
@@ -49,7 +58,15 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routerEventsSubscription.unsubscribe();
     this.serversUpdatedSubscription.unsubscribe();
+  }
+
+  navigationInterceptor(event: RouterEvent): void {
+    if (event instanceof NavigationStart) this.loading = true;
+    else if (event instanceof NavigationEnd) this.loading = false;
+    else if (event instanceof NavigationCancel) this.loading = false;
+    else if (event instanceof NavigationError) this.loading = false;
   }
 
   getNameForPlayer(id:string):string {
