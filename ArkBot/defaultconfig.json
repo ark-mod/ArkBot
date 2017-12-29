@@ -1,20 +1,18 @@
 ﻿{
-  "botId": "arkbot",
   "botName": "ARK Bot",
-  "botNamespace": "http://www.arkbot.com/",
   "botUrl": "",
   "appUrl": "",
-  "enabledChannels": [ "bot-commands" ],
-  "infoTopicChannel": "bot-commands",
-  "announcementChannel":  "bot-notifications",
   "tempFileOutputDirPath": "C:\\ArkBot\\temp",
-  "botToken": "<token from discord>",
-  "steamOpenIdRelyingServiceListenPrefix":  "http://+:60002/openid/",
-  "steamOpenIdRedirectUri": "http://<your public ip or domain>:60002/openid/",
   "googleApiKey": "<google api key>",
   "steamApiKey": "<steam webapi key>",
-  "memberRoleName": "ark",
   "discord": {
+    "discordBotEnabled": true,
+    "botToken": "<token from discord>",
+    "enabledChannels": [ "bot-commands" ],
+    "infoTopicChannel": "bot-commands",
+    "announcementChannel": "bot-notifications",
+    "memberRoleName": "ark",
+    "disableDeveloperFetchSaveData": false,
     "accessControl": {
       "channels": {
         "public": [ "@everyone", "admin", "developer" ],
@@ -33,7 +31,9 @@
         "whoami": [ "@everyone" ],
         "disabled": [ "@everyone" ]
       }
-    }
+    },
+    "steamOpenIdRelyingServiceListenPrefix": "http://+:60002/openid/",
+    "steamOpenIdRedirectUri": "http://<your public ip or domain>:60002/openid/"
   },
   "userRoles": {
     "admin": [ ]
@@ -80,10 +80,8 @@
       "structures-rcon": [ "disabled" ]
     }
   },
-  "disableDeveloperFetchSaveData" :  false,
   "backupsEnabled": false,
   "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
-  "discordBotEnabled": true,
   "webApiListenPrefix": "http://+:60001/",
   "webAppListenPrefix": "http://+:80/",
   "webAppRedirectListenPrefix": [
@@ -116,7 +114,7 @@
       "saveFilePath": "C:\\ARK Servers\\server1\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
       "displayAddress": "myarkserver.domain.com:27015",
       "ip": "127.0.0.1",
-      "port": 27015,
+      "queryPort": 27015,
       "rconPort": 27020,
       "rconPassword":  "password",
       "serverExecutablePath": "C:\\ARK Servers\\server1\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
@@ -128,15 +126,15 @@
     },
     {
       "key": "server2",
-      "cluster" :  "cluster1",
+      "cluster": "cluster1",
       "saveFilePath": "C:\\ARK Servers\\server2\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
       "displayAddress": "myarkserver.domain.com:27016",
       "ip": "127.0.0.1",
-      "port": 27016,
+      "queryPort": 27016,
       "rconPort": 27021,
-      "rconPassword":  "password",
+      "rconPassword": "password",
       "serverExecutablePath": "C:\\ARK Servers\\server2\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
-      "serverExecutableArguments":  "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
+      "serverExecutableArguments": "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server2",
       "usePowershellOutputRedirect": false,

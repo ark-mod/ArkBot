@@ -104,7 +104,7 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.json)
             {
-                if (_config.DisableDeveloperFetchSaveData)
+                if (_config.Discord.DisableDeveloperFetchSaveData)
                 {
                     await Context.Channel.SendMessageAsync("The administrator have disabled this featurContext.");
                     return;
@@ -197,7 +197,7 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.save)
             {
-                if (_config.DisableDeveloperFetchSaveData)
+                if (_config.Discord.DisableDeveloperFetchSaveData)
                 {
                     await Context.Channel.SendMessageAsync("The administrator have disabled this featurContext.");
                     return;

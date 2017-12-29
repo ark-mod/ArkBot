@@ -10,6 +10,8 @@ namespace ArkBot.Discord.Command
 {
     public class RoleRestrictedPreconditionAttribute : PreconditionAttribute
     {
+        internal const string CommandDisabledErrorString = "Command disabled";
+
         public string AccessControlName { get; set; }
 
         public RoleRestrictedPreconditionAttribute(string accessControlName)
@@ -42,12 +44,12 @@ namespace ArkBot.Discord.Command
 
                 roles = roles.Distinct().ToList();
 
-                var hasFeatureAccess =
-                    HasFeatureAccess(config, "commands", AccessControlName, roles.ToArray());
-                if (!hasFeatureAccess)
+                var froles = GetFeatureRoles(config, "commands", AccessControlName);
+                if (!(froles?.Length > 0)) return PreconditionResult.FromError(CommandDisabledErrorString);
+                if (!HasFeatureAccess(froles, roles.ToArray()))
                     return PreconditionResult.FromError("The user does not have access to this command!");
 
-                var croles = GetFeatureRoles(config, "commands", AccessControlName)?.Intersect(roles).ToArray() ??
+                var croles = froles?.Intersect(roles).ToArray() ??
                              new string[] { };
                 var proles =
                     GetFeatureRoles(config, "channels",
@@ -65,10 +67,9 @@ namespace ArkBot.Discord.Command
             }
         }
 
-        private bool HasFeatureAccess(IConfig config, string featureGroup, string featureName, string[] roles)
+        private bool HasFeatureAccess(string[] featureRoles, string[] userRoles)
         {
-            var rf = GetFeatureRoles(config, featureGroup, featureName);
-            return rf != null && rf.Intersect(roles, StringComparer.OrdinalIgnoreCase).Any();
+            return featureRoles != null && featureRoles.Intersect(userRoles, StringComparer.OrdinalIgnoreCase).Any();
         }
 
         private string[] GetFeatureRoles(IConfig config, string featureGroup, string featureName)

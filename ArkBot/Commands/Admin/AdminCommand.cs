@@ -65,8 +65,8 @@ namespace ArkBot.Commands.Admin
             "**<server key> BanPlayer <steamid>**: Ban a player",
             "**<server key> UnbanPlayer <steamid>**: Unban a player",
             "**<server key> KillPlayer <player id>**: Kill a player",
-            "**<server key> SetVotingAllowed <steamid> true/false**: Set voting allowed/disallowed for a player",
-            "**<server key> EnableVoting true/false**: Enable voting system",
+            //"**<server key> SetVotingAllowed <steamid> true/false**: Set voting allowed/disallowed for a player",
+            //"**<server key> EnableVoting true/false**: Enable voting system",
             "**<server key> DoExit**: Shutdown server",
             "**<server key> Broadcast <message>**: Broadcast a message to all players on the server",
             "**<server key> ListPlayers**: List all connected players and their SteamIDs",
@@ -121,8 +121,8 @@ namespace ArkBot.Commands.Admin
                 SteamId = 0L,
                 SaveWorld = false,
                 DestroyWildDinos = false,
-                EnableVoting = false,
-                SetVotingAllowed = 0L, //steam id
+                //EnableVoting = false,
+                //SetVotingAllowed = 0L, //steam id
                 KickPlayer = 0L, //steam id
                 BanPlayer = 0L, //steam id
                 UnbanPlayer = 0L, //steam id
@@ -160,7 +160,7 @@ namespace ArkBot.Commands.Admin
                 .For(y => y.Backups, flag: true)
                 .For(y => y.SaveWorld, flag: true)
                 .For(y => y.DestroyWildDinos, flag: true)
-                .For(y => y.EnableVoting, flag: true)
+                //.For(y => y.EnableVoting, flag: true)
                 .For(y => y.DoExit, flag: true)
                 .For(y => y.ListPlayers, flag: true)
                 .For(y => y.Broadcast, untilNextToken: true)
@@ -396,54 +396,54 @@ namespace ArkBot.Commands.Admin
                 if (result == null) sb.AppendLine($"**Failed to kick player with steamid {args.KickPlayer}... :(**");
                 else sb.AppendLine($"**Kicked player with steamid {args.KickPlayer}!**");
             }
-            else if (args.EnableVoting)
-            {
-                if (!(args.True || args.False))
-                {
-                    sb.AppendLine($"**This command requires additional arguments!**");
-                }
-                else
-                {
-                    using (var context = _databaseContextFactory.Create())
-                    {
-                        _savedstate.VotingDisabled = !args.True;
-                        _savedstate.Save();
-                        sb.AppendLine($"**Voting system is now {(_savedstate.VotingDisabled ? "disabled" : "enabled")}!**");
-                    }
-                }
+            //else if (args.EnableVoting)
+            //{
+            //    if (!(args.True || args.False))
+            //    {
+            //        sb.AppendLine($"**This command requires additional arguments!**");
+            //    }
+            //    else
+            //    {
+            //        using (var context = _databaseContextFactory.Create())
+            //        {
+            //            _savedstate.VotingDisabled = !args.True;
+            //            _savedstate.Save();
+            //            sb.AppendLine($"**Voting system is now {(_savedstate.VotingDisabled ? "disabled" : "enabled")}!**");
+            //        }
+            //    }
 
-                //var result = await CommandHelper.SendRconCommand(_config, $"kickplayer {args.KickPlayer}");
-                //if (result == null) sb.AppendLine($"**Failed to kick player with steamid {args.KickPlayer}... :(**");
-                //else sb.AppendLine($"**Kicked player with steamid {args.KickPlayer}!**");
-            }
-            else if (args.SetVotingAllowed > 0)
-            {
-                if (!(args.True || args.False))
-                {
-                    sb.AppendLine($"**This command requires additional arguments!**");
-                }
-                else
-                {
-                    using (var context = _databaseContextFactory.Create())
-                    {
-                        var user = context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)Context.User.Id);
-                        if (user != null)
-                        {
-                            user.DisallowVoting = !args.True;
-                            context.SaveChanges();
-                            sb.AppendLine($"**The user is now {(user.DisallowVoting ? "unable" : "allowed")} to vote!**");
-                        }
-                        else
-                        {
-                            sb.AppendLine($"**The user is not linked!**");
-                        }
-                    }
-                }
+            //    //var result = await CommandHelper.SendRconCommand(_config, $"kickplayer {args.KickPlayer}");
+            //    //if (result == null) sb.AppendLine($"**Failed to kick player with steamid {args.KickPlayer}... :(**");
+            //    //else sb.AppendLine($"**Kicked player with steamid {args.KickPlayer}!**");
+            //}
+            //else if (args.SetVotingAllowed > 0)
+            //{
+            //    if (!(args.True || args.False))
+            //    {
+            //        sb.AppendLine($"**This command requires additional arguments!**");
+            //    }
+            //    else
+            //    {
+            //        using (var context = _databaseContextFactory.Create())
+            //        {
+            //            var user = context.Users.FirstOrDefault(x => x != null && x.DiscordId == (long)Context.User.Id);
+            //            if (user != null)
+            //            {
+            //                user.DisallowVoting = !args.True;
+            //                context.SaveChanges();
+            //                sb.AppendLine($"**The user is now {(user.DisallowVoting ? "unable" : "allowed")} to vote!**");
+            //            }
+            //            else
+            //            {
+            //                sb.AppendLine($"**The user is not linked!**");
+            //            }
+            //        }
+            //    }
 
-                //var result = await CommandHelper.SendRconCommand(_config, $"kickplayer {args.KickPlayer}");
-                //if (result == null) sb.AppendLine($"**Failed to kick player with steamid {args.KickPlayer}... :(**");
-                //else sb.AppendLine($"**Kicked player with steamid {args.KickPlayer}!**");
-            }
+            //    //var result = await CommandHelper.SendRconCommand(_config, $"kickplayer {args.KickPlayer}");
+            //    //if (result == null) sb.AppendLine($"**Failed to kick player with steamid {args.KickPlayer}... :(**");
+            //    //else sb.AppendLine($"**Kicked player with steamid {args.KickPlayer}!**");
+            //}
             else if (args.BanPlayer > 0)
             {
                 var result = await serverContext.Steam.SendRconCommand($"ban {args.BanPlayer}");

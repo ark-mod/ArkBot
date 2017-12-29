@@ -36,7 +36,7 @@ namespace ArkBot.Discord
 
         public async Task EditChannelByNameOnAllServers(string infoTopicChannel, string name = null, string topic = null, int? position = null)
         {
-            var channels = _discord.Guilds.Select(x => x.TextChannels.FirstOrDefault(y => _config.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
+            var channels = _discord.Guilds.Select(x => x.TextChannels.FirstOrDefault(y => _config.Discord.InfoTopicChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase))).Where(x => x != null);
             foreach (var channel in channels)
             {
                 await channel.ModifyAsync(g =>

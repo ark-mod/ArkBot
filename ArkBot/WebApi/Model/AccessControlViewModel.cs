@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ArkBot.WebApi.Model
 {
-    public class AccessControlViewModel : Dictionary<string, Dictionary<string, string[]>>
+    public class AccessControlViewModel : Dictionary<string, Dictionary<string, List<string>>>
     {
         public AccessControlViewModel()
         {

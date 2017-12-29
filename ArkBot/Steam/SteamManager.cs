@@ -81,14 +81,14 @@ namespace ArkBot.Steam
                             _sourceServer?.Dispose();
                             _sourceServer = null;
 
-                            _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.Port, false, 2000, 5000, 1, true);
+                            _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.QueryPort, false, 2000, 5000, 1, true);
                         }
                         catch (Exception ex)
                         {
                             _sourceServer?.Dispose();
                             _sourceServer = null;
 
-                            Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.Port})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                            Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.QueryPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
                         }
                     });
                 }
@@ -158,21 +158,21 @@ namespace ArkBot.Steam
         public ServerInfo GetServerInfoCached()
         {
             var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerInfo)}_{_config.Ip}_{_config.Port}";
+            var cacheKey = $"{nameof(GetServerInfo)}_{_config.Ip}_{_config.QueryPort}";
             return cache[cacheKey] as ServerInfo;
         }
 
         public QueryMaster.QueryMasterCollection<Rule> GetServerRulesCached()
         {
             var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerRules)}_{_config.Ip}_{_config.Port}";
+            var cacheKey = $"{nameof(GetServerRules)}_{_config.Ip}_{_config.QueryPort}";
             return cache[cacheKey] as QueryMaster.QueryMasterCollection<Rule>;
         }
 
         public QueryMaster.QueryMasterCollection<PlayerInfo> GetServerPlayersCached()
         {
             var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerPlayers)}_{_config.Ip}_{_config.Port}";
+            var cacheKey = $"{nameof(GetServerPlayers)}_{_config.Ip}_{_config.QueryPort}";
             return cache[cacheKey] as QueryMaster.QueryMasterCollection<PlayerInfo>;
         }
 
@@ -188,7 +188,7 @@ namespace ArkBot.Steam
         public async Task<ServerInfo> GetServerInfo()
         {
             var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerInfo)}_{_config.Ip}_{_config.Port}";
+            var cacheKey = $"{nameof(GetServerInfo)}_{_config.Ip}_{_config.QueryPort}";
             var info = cache[cacheKey] as ServerInfo;
 
             if ((DateTime.Now - _lastServerInfo) > TimeSpan.FromMinutes(1))
@@ -234,7 +234,7 @@ namespace ArkBot.Steam
         public async Task<QueryMaster.QueryMasterCollection<Rule>> GetServerRules()
         {
             var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerRules)}_{_config.Ip}_{_config.Port}";
+            var cacheKey = $"{nameof(GetServerRules)}_{_config.Ip}_{_config.QueryPort}";
             var rules = cache[cacheKey] as QueryMaster.QueryMasterCollection<Rule>;
 
             if ((DateTime.Now - _lastServerRules) > TimeSpan.FromMinutes(1))
@@ -280,7 +280,7 @@ namespace ArkBot.Steam
         public async Task<QueryMaster.QueryMasterCollection<PlayerInfo>> GetServerPlayers()
         {
             var cache = MemoryCache.Default;
-            var cacheKey = $"{nameof(GetServerPlayers)}_{_config.Ip}_{_config.Port}";
+            var cacheKey = $"{nameof(GetServerPlayers)}_{_config.Ip}_{_config.QueryPort}";
             var players = cache[cacheKey] as QueryMaster.QueryMasterCollection<PlayerInfo>;
 
             if ((DateTime.Now - _lastServerPlayers) > TimeSpan.FromMinutes(1))

@@ -220,7 +220,7 @@ namespace ArkBot.WebApi.Controllers
             {
                 foreach (var fg in config.AccessControl)
                 {
-                    var acfg = new Dictionary<string, string[]>();
+                    var acfg = new Dictionary<string, List<string>>();
                     ac[fg.Key] = acfg;
 
                     if (fg.Value == null) continue;

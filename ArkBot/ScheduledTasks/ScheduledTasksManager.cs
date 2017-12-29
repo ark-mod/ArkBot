@@ -67,9 +67,9 @@ namespace ArkBot.ScheduledTasks
             var serverContexts = serverContext == null ? _contextManager.Servers.Where(x => !x.Config.DisableChatNotificationOnGlobalCountdown).ToArray() : new ArkServerContext[] { serverContext };
 
             foreach (var sc in serverContexts) await sc.Steam.SendRconCommand($"serverchat Countdown started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...");
-            if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+            if (!string.IsNullOrWhiteSpace(_config.Discord.AnnouncementChannel))
             {
-                await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, $"**Countdown{(serverContext == null ? "" : $" on server {serverContext.Config.Key}")} started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...**");
+                await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.Discord.AnnouncementChannel, $"**Countdown{(serverContext == null ? "" : $" on server {serverContext.Config.Key}")} started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...**");
             }
 
             foreach (var min in Enumerable.Range(1, delayInMinutes))
@@ -81,9 +81,9 @@ namespace ArkBot.ScheduledTasks
                     {
                         var countdown = delayInMinutes - min;
                         foreach (var sc in serverContexts) await sc.Steam.SendRconCommand(countdown > 0 ? $"serverchat {reason} in {countdown} minute{(countdown > 1 ? "s" : "")}..." : $"serverchat {reason}...");
-                        if (!string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                        if (!string.IsNullOrWhiteSpace(_config.Discord.AnnouncementChannel))
                         {
-                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, countdown > 0 ? $"**{(serverContext == null ? "" : $"{serverContext.Config.Key}: ")}{reason} in {countdown} minute{(countdown > 1 ? "s" : "")}...**" : $"**{(serverContext == null ? "" : $"{serverContext.Config.Key}: ")}{reason}...**");
+                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.Discord.AnnouncementChannel, countdown > 0 ? $"**{(serverContext == null ? "" : $"{serverContext.Config.Key}: ")}{reason} in {countdown} minute{(countdown > 1 ? "s" : "")}...**" : $"**{(serverContext == null ? "" : $"{serverContext.Config.Key}: ")}{reason}...**");
                         }
                         if (countdown <= 0 && react != null) await react();
                     })
@@ -114,7 +114,7 @@ namespace ArkBot.ScheduledTasks
                     var fireAndForget = Task.Run(task.Callback); //fire and forget
                 }
 
-                if (_config.InfoTopicChannel != null)
+                if (_config.Discord.InfoTopicChannel != null)
                 {
                     if (DateTime.Now - _prevTopicUpdate > TimeSpan.FromSeconds(60))
                     {
@@ -139,7 +139,11 @@ namespace ArkBot.ScheduledTasks
 
                             try
                             {
-                                await _discordManager.EditChannelByNameOnAllServers(_config.InfoTopicChannel, topic: sb.ToString());
+                                await _discordManager.EditChannelByNameOnAllServers(_config.Discord.InfoTopicChannel, topic: sb.ToString());
+                            }
+                            catch (System.Net.Http.HttpRequestException ex) when (ex.Message.IndexOf("Error while copying content to a stream", StringComparison.Ordinal) != -1)
+                            {
+                                Logging.Log("Error when attempting to change bot info channel topic", GetType());
                             }
                             catch (Exception ex)
                             {

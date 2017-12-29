@@ -63,11 +63,14 @@ namespace ArkBot.ViewModel
         public static Workspace Instance => _instance ?? (_instance = new Workspace());
         private static Workspace _instance;
 
-        public IEnumerable<PaneViewModel> Panes => _panes ?? (_panes = new PaneViewModel[] { Console });
+        public IEnumerable<PaneViewModel> Panes => _panes ?? (_panes = new PaneViewModel[] { Console, Configuration });
         private PaneViewModel[] _panes;
 
         public ConsoleViewModel Console => _console ?? (_console = new ConsoleViewModel());
         private ConsoleViewModel _console;
+        
+        public ConfigurationViewModel Configuration => _configuration ?? (_configuration = new ConfigurationViewModel());
+        private ConfigurationViewModel _configuration;
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
 
@@ -222,6 +225,7 @@ namespace ArkBot.ViewModel
             try
             {
                 _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Constants.ConfigFilePath));
+                if (_config.Discord == null) _config.Discord = new DiscordConfigSection();
             }
             catch (Exception ex)
             {
@@ -236,46 +240,16 @@ namespace ArkBot.ViewModel
             }
 
             var sb = new StringBuilder();
-            if (string.IsNullOrWhiteSpace(_config.BotId) || !new Regex(@"^[a-z0-9]+$", RegexOptions.IgnoreCase | RegexOptions.Singleline).IsMatch(_config.BotId))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.BotId)} is not a valid id.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotId))}");
-                sb.AppendLine();
-            }
             if (string.IsNullOrWhiteSpace(_config.BotName))
             {
                 sb.AppendLine($@"Error: {nameof(_config.BotName)} is not set.");
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotName))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(_config.BotNamespace) || !Uri.IsWellFormedUriString(_config.BotNamespace, UriKind.Absolute))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.BotNamespace)} is not set or not a valid url.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotNamespace))}");
-                sb.AppendLine();
-            }
             if (string.IsNullOrWhiteSpace(_config.TempFileOutputDirPath) || !Directory.Exists(_config.TempFileOutputDirPath))
             {
                 sb.AppendLine($@"Error: {nameof(_config.TempFileOutputDirPath)} is not a valid directory path.");
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.TempFileOutputDirPath))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.BotToken))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.BotToken)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotToken))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.SteamOpenIdRedirectUri))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.SteamOpenIdRedirectUri)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamOpenIdRedirectUri))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.SteamOpenIdRelyingServiceListenPrefix))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.SteamOpenIdRelyingServiceListenPrefix)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamOpenIdRelyingServiceListenPrefix))}");
                 sb.AppendLine();
             }
             if (string.IsNullOrWhiteSpace(_config.GoogleApiKey))
@@ -341,6 +315,37 @@ namespace ArkBot.ViewModel
                     sb.AppendLine();
                 }
             }
+            if (_config.Discord.DiscordBotEnabled)
+            {
+                if (string.IsNullOrWhiteSpace(_config.Discord.BotToken))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Discord)}.{nameof(_config.Discord.BotToken)} is not set.");
+                    sb.AppendLine($@"Expected value: {
+                            ValidationHelper.GetDescriptionForMember(_config.Discord, nameof(_config.Discord.BotToken))
+                        }");
+                    sb.AppendLine();
+                }
+                if (string.IsNullOrWhiteSpace(_config.Discord.SteamOpenIdRedirectUri))
+                {
+                    sb.AppendLine($@"Error: {nameof(_config.Discord)}.{nameof(_config.Discord.SteamOpenIdRedirectUri)} is not set.");
+                    sb.AppendLine($@"Expected value: {
+                            ValidationHelper.GetDescriptionForMember(_config.Discord,
+                                nameof(_config.Discord.SteamOpenIdRedirectUri))
+                        }");
+                    sb.AppendLine();
+                }
+                if (string.IsNullOrWhiteSpace(_config.Discord.SteamOpenIdRelyingServiceListenPrefix))
+                {
+                    sb.AppendLine(
+                        $@"Error: {nameof(_config.Discord)}.{nameof(_config.Discord.SteamOpenIdRelyingServiceListenPrefix)} is not set.");
+                    sb.AppendLine($@"Expected value: {
+                            ValidationHelper.GetDescriptionForMember(_config.Discord,
+                                nameof(_config.Discord.SteamOpenIdRelyingServiceListenPrefix))
+                        }");
+                    sb.AppendLine();
+                }
+                if (string.IsNullOrWhiteSpace(_config.Discord.MemberRoleName)) _config.Discord.MemberRoleName = "ark";
+            }
 
             var clusterkeys = _config.Clusters?.Select(x => x.Key).ToArray();
             var serverkeys = _config.Servers?.Select(x => x.Key).ToArray();
@@ -378,10 +383,10 @@ namespace ArkBot.ViewModel
                         sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Ip))}");
                         sb.AppendLine();
                     }
-                    if (server.Port <= 0)
+                    if (server.QueryPort <= 0)
                     {
-                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(server.Port)} is not valid for server instance ""{server.Key}"".");
-                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.Port))}");
+                        sb.AppendLine($@"Error: {nameof(_config.Servers)}.{nameof(server.QueryPort)} is not valid for server instance ""{server.Key}"".");
+                        sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(server, nameof(server.QueryPort))}");
                         sb.AppendLine();
                     }
                     //if (server.RconPort <= 0)
@@ -405,6 +410,10 @@ namespace ArkBot.ViewModel
                 }
             }
 
+            Configuration.Config = _config as Config;
+
+            return;
+
             //todo: for now this section is not really needed unless !imprintcheck is used
             //if (config.ArkMultipliers == null)
             //{
@@ -417,8 +426,6 @@ namespace ArkBot.ViewModel
             {
                 System.Console.WriteLine("Anonymizing all data in the WebAPI (anonymizeWebApiData=true)" + Environment.NewLine);
             }
-
-            if (string.IsNullOrWhiteSpace(_config.MemberRoleName)) _config.MemberRoleName = "ark";
 
             //load aliases and check integrity
             var aliases = ArkSpeciesAliases.Instance;
@@ -477,26 +484,31 @@ namespace ArkBot.ViewModel
 
             //var playedTimeWatcher = new PlayedTimeWatcher(_config);
 
-            var options = new SteamOpenIdOptions
+            BarebonesSteamOpenId openId = null;
+            if (_config.Discord.DiscordBotEnabled)
             {
-                ListenPrefixes = new[] { _config.SteamOpenIdRelyingServiceListenPrefix },
-                RedirectUri = _config.SteamOpenIdRedirectUri,
-            };
-            var openId = new BarebonesSteamOpenId(options,
-                new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
+                var options = new SteamOpenIdOptions
                 {
-                    var razorConfig = new TemplateServiceConfiguration
+                    ListenPrefixes = new[] {_config.Discord.SteamOpenIdRelyingServiceListenPrefix},
+                    RedirectUri = _config.Discord.SteamOpenIdRedirectUri,
+                };
+                openId = new BarebonesSteamOpenId(options,
+                    new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
                     {
-                        DisableTempFileLocking = true,
-                        CachingProvider = new DefaultCachingProvider(t => { })
-                    };
+                        var razorConfig = new TemplateServiceConfiguration
+                        {
+                            DisableTempFileLocking = true,
+                            CachingProvider = new DefaultCachingProvider(t => { })
+                        };
 
-                    using (var service = RazorEngineService.Create(razorConfig))
-                    {
-                        var html = await FileHelper.ReadAllTextTaskAsync(constants.OpenidresponsetemplatePath);
-                        return service.RunCompile(html, constants.OpenidresponsetemplatePath, null, new { Success = success, botName = _config.BotName, botUrl = _config.BotUrl });
-                    }
-                }));
+                        using (var service = RazorEngineService.Create(razorConfig))
+                        {
+                            var html = await FileHelper.ReadAllTextTaskAsync(constants.OpenidresponsetemplatePath);
+                            return service.RunCompile(html, constants.OpenidresponsetemplatePath, null,
+                                new {Success = success, botName = _config.BotName, botUrl = _config.BotUrl});
+                        }
+                    }));
+            }
 
             var discord = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -532,7 +544,7 @@ namespace ArkBot.ViewModel
             builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(_config as Config).As<IConfig>();
             //builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
-            builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
+            if (openId != null) builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
             builder.RegisterType<EfDatabaseContext>().AsSelf().As<IEfDatabaseContext>()
                 .WithParameter(new TypedParameter(typeof(string), constants.DatabaseConnectionString));
             builder.RegisterType<EfDatabaseContextFactory>();
@@ -645,7 +657,7 @@ namespace ArkBot.ViewModel
             }
 
             //run the discord bot
-            if (_config.DiscordBotEnabled)
+            if (_config.Discord.DiscordBotEnabled)
             {
                 _runDiscordBotCts = new CancellationTokenSource();
                 _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);

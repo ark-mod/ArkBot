@@ -83,6 +83,11 @@
                             <controls:Console ConsoleOutput="{Binding Model}"  Margin="3" />
                         </DataTemplate>
                     </layout:PaneTemplateSelector.ConsoleTemplate>
+                    <layout:PaneTemplateSelector.ConfigurationTemplate>
+                        <DataTemplate>
+                            <controls:Configuration Model="{Binding Model}" Margin="3" />
+                        </DataTemplate>
+                    </layout:PaneTemplateSelector.ConfigurationTemplate>
                 </layout:PaneTemplateSelector>
             </xcad:DockingManager.LayoutItemTemplateSelector>
             <xcad:DockingManager.LayoutItemContainerStyleSelector>
@@ -100,6 +105,19 @@
                             <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
                         </Style>
                     </layout:PaneStyleSelector.ConsoleStyle>
+                    <layout:PaneStyleSelector.ConfigurationStyle>
+                        <Style TargetType="{x:Type xcad:LayoutItem}">
+                            <Setter Property="Title" Value="{Binding Model.Title}"/>
+                            <Setter Property="Visibility" Value="{Binding Model.IsVisible, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Hidden}}"/>
+                            <Setter Property="ContentId" Value="{Binding Model.ContentId}"/>
+                            <Setter Property="IsSelected" Value="{Binding Model.IsSelected, Mode=TwoWay}"/>
+                            <Setter Property="IsActive" Value="{Binding Model.IsActive, Mode=TwoWay}"/>
+                            <Setter Property="CanClose" Value="False" />
+                            <!--<Setter Property="ToolTip" Value="{Binding Model.FilePath}"/>-->
+                            <!--<Setter Property="CloseCommand" Value="{Binding Model.CloseCommand}"/>-->
+                            <!--<Setter Property="IconSource" Value="{Binding Model.IconSource}"/>-->
+                        </Style>
+                    </layout:PaneStyleSelector.ConfigurationStyle>
                 </layout:PaneStyleSelector>
             </xcad:DockingManager.LayoutItemContainerStyleSelector>
             <xcad:DockingManager.LayoutUpdateStrategy>

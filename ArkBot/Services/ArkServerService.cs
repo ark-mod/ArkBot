@@ -216,7 +216,7 @@ namespace ArkBot.Helpers
 
             if (sendMessageDirected != null) await sendMessageDirected($"starting the server...");
 
-            //start ShooterGameServer "TheIsland?listen?Port=7006?QueryPort=27003?RCONEnabled=True?RCONPort=32333?SessionName=ARKSverige.se - PvE Lowrate [Cluster]?ServerAdminPassword=?SpectatorPassword=?AllowCrateSpawnsOnTopOfStructures=true?AllowAnyoneBabyImprintCuddle=true?ForceAllowCaveFlyers=True?PvEAllowStructuresAtSupplyDrops=True?PreventDownloadSurvivors=False?PreventDownloadItems=False?PreventDownloadDinos=False?PreventUploadSurvivors=False?PreventUploadItems=False?PreventUploadDinos=False"  -server -log -servergamelog -culture=en -StasisKeepControllers -NoTransferFromFiltering -servergamelogincludetribelogs -ClusterDirOverride=D:\servers\arksverige\pve -clusterid=pvelowrate
+            //start ShooterGameServer "TheIsland?listen?QueryPort=7006?QueryPort=27003?RCONEnabled=True?RCONPort=32333?SessionName=ARKSverige.se - PvE Lowrate [Cluster]?ServerAdminPassword=?SpectatorPassword=?AllowCrateSpawnsOnTopOfStructures=true?AllowAnyoneBabyImprintCuddle=true?ForceAllowCaveFlyers=True?PvEAllowStructuresAtSupplyDrops=True?PreventDownloadSurvivors=False?PreventDownloadItems=False?PreventDownloadDinos=False?PreventUploadSurvivors=False?PreventUploadItems=False?PreventUploadDinos=False"  -server -log -servergamelog -culture=en -StasisKeepControllers -NoTransferFromFiltering -servergamelogincludetribelogs -ClusterDirOverride=D:\servers\arksverige\pve -clusterid=pvelowrate
             try
             {
                 var si = new ProcessStartInfo
