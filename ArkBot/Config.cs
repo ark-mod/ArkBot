@@ -14,23 +14,38 @@ using Microsoft.IdentityModel;
 using PropertyChanged;
 using Validar;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
+using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace ArkBot
 {
     internal static class ConfigurationCategory
     {
         /// <summary>
-        /// Settings that must be changed
+        /// Settings that must be changed (environment specific)
         /// </summary>
-        internal const string UserSettings = "User Settings";
+        internal const string Required = "Required";
         /// <summary>
         /// Settings that are either optional or may be left at default
         /// </summary>
         internal const string Optional = "Optional";
+
+        /// <summary>
+        /// Optional settings for advanced configurations
+        /// </summary>
+        internal const string Advanced = "Advanced";
+
+        /// <summary>
+        /// Optional setting for debugging, logging etc.
+        /// </summary>
+        internal const string Debug = "Debug";
     }
 
     [AddINotifyPropertyChangedInterface]
     [InjectValidation]
+    [CategoryOrder(ConfigurationCategory.Required, 0)]
+    [CategoryOrder(ConfigurationCategory.Optional, 1)]
+    [CategoryOrder(ConfigurationCategory.Advanced, 2)]
+    [CategoryOrder(ConfigurationCategory.Debug, 3)]
     public class Config : IConfig
     {
         public Config()
@@ -44,7 +59,54 @@ namespace ArkBot
             WebAppRedirectListenPrefix = new string[] { };
             AccessControl = new AccessControlConfigSection();
             Discord = new DiscordConfigSection();
+            Backups = new BackupsConfigSection();
         }
+
+        // Required
+
+        [JsonProperty(PropertyName = "googleApiKey")]
+        [DisplayName("Google API Key")]
+        [Description("Google API Key used for url-shortening services")]
+        [Category(ConfigurationCategory.Required)]
+        [PropertyOrder(0)]
+        [MinLength(1, ErrorMessage = "{0} is not set")]
+        //todo: validate google api key with google
+        public string GoogleApiKey { get; set; }
+
+        [JsonProperty(PropertyName = "steamApiKey")]
+        [DisplayName("Steam API Key")]
+        [Description("Steam API Key used for fetching user information")]
+        [Category(ConfigurationCategory.Required)]
+        [PropertyOrder(1)]
+        [MinLength(1, ErrorMessage = "{0} is not set")]
+        //todo: validate steam api key with steam
+        public string SteamApiKey { get; set; }
+
+        [JsonProperty(PropertyName = "tempFileOutputDirPath")]
+        [DisplayName("Temporary Files Directory")]
+        [Description("An existing directory path where temporary binary files can be stored (zip-files etc.)")]
+        [Category(ConfigurationCategory.Required)]
+        [PropertyOrder(2)]
+        [Editor(typeof(DirectoryPathEditor), typeof(DirectoryPathEditor))]
+        [DirectoryExists(ErrorMessage = "{0} is not set or the directory path does not exist")]
+        public string TempFileOutputDirPath { get; set; }
+
+        [JsonProperty(PropertyName = "servers")]
+        [DisplayName("Servers")]
+        [Description("Server instance configurations")]
+        [Category(ConfigurationCategory.Required)]
+        [PropertyOrder(3)]
+        [Required(ErrorMessage = "{0} is not set")]
+        public ServerConfigSection[] Servers { get; set; }
+
+        [JsonProperty(PropertyName = "clusters")]
+        [DisplayName("Clusters")]
+        [Description("Cluster instance configurations")]
+        [Category(ConfigurationCategory.Required)]
+        [PropertyOrder(4)]
+        [Required(ErrorMessage = "{0} is not set")]
+        public ClusterConfigSection[] Clusters { get; set; }
+
 
         // Optional
 
@@ -77,6 +139,7 @@ namespace ArkBot
         [Description("Server specific multipliers")]
         [Category(ConfigurationCategory.Optional)]
         [PropertyOrder(3)]
+        [ExpandableObject]
         [Required(ErrorMessage = "{0} is not set")]
         public ArkMultipliersConfigSection ArkMultipliers { get; set; }
 
@@ -105,92 +168,174 @@ namespace ArkBot
         [Required(ErrorMessage = "{0} is not set")]
         public AccessControlConfigSection AccessControl { get; set; }
 
+        [JsonProperty(PropertyName = "backups")]
+        [DisplayName("Backups")]
+        [Description("Savegame backups")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(7)]
+        [ExpandableObject]
+        [Required(ErrorMessage = "{0} is not set")]
+        public BackupsConfigSection Backups { get; set; }
+
+        [JsonProperty(PropertyName = "webAppRedirectListenPrefix")]
+        [DisplayName("Web App Redirect Listen Prefix(es)")]
+        [Description("Http listen prefix(es) that are redirected to BotUrl")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(8)]
+        [MinLength(1, ErrorMessage = "{0} is not set")]
+        //todo: validate this listen prefix
+        public string[] WebAppRedirectListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "powershellFilePath")]
+        [DisplayName("Powershell Executable Path")]
+        [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect)")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(9)]
+        [Editor(typeof(OpenFilePathEditor), typeof(OpenFilePathEditor))]
+        [OpenFilePathEditor(Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*")]
+        [FileExists(ErrorMessage = "{0} is not set or the file path does not exist")]
+        public string PowershellFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "ssl")]
+        [DisplayName("SSL")]
+        [Description("Configure Web App and WebAPI to use SSL with a free certificate from Lets Encrypt")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(10)]
+        [ExpandableObject]
+        [Required(ErrorMessage = "{0} is not set")]
+        public SslConfigSection Ssl { get; set; }
+
+        [JsonProperty(PropertyName = "webApiListenPrefix")]
+        [DisplayName("Web API Listen Prefix")]
+        [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections) [The prebuilt web-app included in this release is by default configured to call the web api on 127.0.0.1:60001. If you want to use another port for the web api you will need to reflect this change in environment.prod.ts and rebuild the web-app dist manually.]")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(11)]
+        [MinLength(1, ErrorMessage = "{0} is not set")]
+        //todo: validate this listen prefix
+        public string WebApiListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "webAppListenPrefix")]
+        [DisplayName("Web App Listen Prefix")]
+        [Description("Http listen prefix for Web App (requires a port that is open to external connections)")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(12)]
+        [MinLength(1, ErrorMessage = "{0} is not set")]
+        //todo: validate this listen prefix
+        public string WebAppListenPrefix { get; set; }
+
+
+        // Optional Advanced
+
+        [JsonProperty(PropertyName = "savegameExtractionMaxDegreeOfParallelism")]
+        [DisplayName("Savegame Extraction Max Degree Of Parallelism")]
+        [Description("Max degree of parallelism to use for savegame extraction. Change only if experiencing out of memory exceptions")]
+        [Category(ConfigurationCategory.Advanced)]
+        [PropertyOrder(0)]
+        [RangeOptional(1, 32, Optional = true)]
+        public int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
+
+        [JsonProperty(PropertyName = "useCompatibilityChangeWatcher")]
+        [DisplayName("Use Compatibility Change Watcher")]
+        [Description("Use timer based .ark save file watcher rather than the default (based on FileSystemWatcher)")]
+        [Category(ConfigurationCategory.Advanced)]
+        [PropertyOrder(1)]
+        public bool UseCompatibilityChangeWatcher { get; set; }
+
+
+        // Debugging, Logging etc.
+
+        [JsonProperty(PropertyName = "discordLogLevel")]
+        [DisplayName("Discord Log Level")]
+        [Description("Log level for Discord.NET")]
+        [Category(ConfigurationCategory.Debug)]
+        [PropertyOrder(0)]
+        public LogSeverity DiscordLogLevel { get; set; }
+
+        [JsonProperty(PropertyName = "anonymizeWebApiData")]
+        [DisplayName("Anonymize Web API Data")]
+        [Description("Anonymize all data in the WebAPI. Used to create data dumps for demoing the web-app")]
+        [Category(ConfigurationCategory.Debug)]
+        [PropertyOrder(1)]
+        public bool AnonymizeWebApiData { get; set; }
+    }
+
+    [AddINotifyPropertyChangedInterface]
+    [InjectValidation]
+    public class DiscordConfigSection
+    {
+        public DiscordConfigSection()
+        {
+            DiscordBotEnabled = true;
+            AccessControl = new AccessControlConfigSection();
+        }
+
+        [JsonProperty(PropertyName = "discordBotEnabled")]
+        [DisplayName("Discord Bot Enabled")]
+        [Description("Option to enable/disable the discord bot component")]
+        public bool DiscordBotEnabled { get; set; }
+
+        [JsonProperty(PropertyName = "botToken")]
+        [DisplayName("Bot Token")]
+        [Description("Bot authentication token from https://discordapp.com/developers")]
+        public string BotToken { get; set; }
+
+        [JsonProperty(PropertyName = "enabledChannels")]
+        [DisplayName("Enabled Channels")]
+        [Description("A list of channels where the bot will listen to and answer commands")]
+        public string[] EnabledChannels { get; set; }
+
+        [JsonProperty(PropertyName = "infoTopicChannel")]
+        [DisplayName("Info Topic Channel")]
+        [Description("Channel where topic is set to display information about last update, next update and how to use bot commands")]
+        public string InfoTopicChannel { get; set; }
+
+        [JsonProperty(PropertyName = "announcementChannel")]
+        [DisplayName("Announcement Channel")]
+        [Description("Channel where announcements are made (votes etc.)")]
+        public string AnnouncementChannel { get; set; }
+
+        [JsonProperty(PropertyName = "memberRoleName")]
+        [DisplayName("Member Role Name")]
+        [Description("The name of the member role in Discord")]
+        public string MemberRoleName { get; set; }
+
+        [JsonProperty(PropertyName = "disableDeveloperFetchSaveData")]
+        [DisplayName("Disable Developer Fetch Save Data")]
+        [Description("Diable users in \"developer\"-role fetching json or save file data")]
+        public bool DisableDeveloperFetchSaveData { get; set; }
+
+        [JsonProperty(PropertyName = "accessControl")]
+        [DisplayName("Access Control")]
+        [Description("Per-feature role based access control configuration")]
+        public AccessControlConfigSection AccessControl { get; set; }
+
+        [JsonProperty(PropertyName = "steamOpenIdRelyingServiceListenPrefix")]
+        [DisplayName("Steam Open ID Relying Server Listen Prefix")]
+        [Description("Http listen prefix for Steam OpenID Relying Party webservice (requires a port that is open to external connections)")]
+        public string SteamOpenIdRelyingServiceListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "steamOpenIdRedirectUri")]
+        [DisplayName("Steam Open ID Redirect URL")]
+        [Description("Publicly accessible url for incoming Steam OpenID Relying Party webservice connections (requires a port that is open to external connections)")]
+        public string SteamOpenIdRedirectUri { get; set; }
+    }
+
+    [AddINotifyPropertyChangedInterface]
+    [InjectValidation]
+    public class BackupsConfigSection
+    {
         [JsonProperty(PropertyName = "backupsEnabled")]
         [DisplayName("Backups Enabled")]
         [Description("Option to enable savegame backups")]
-        [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(7)]
+        [PropertyOrder(0)]
         public bool BackupsEnabled { get; set; }
 
         [JsonProperty(PropertyName = "backupsDirectoryPath")]
         [DisplayName("Backups Directory Path")]
         [Description("Directory path where savegame backups are stored")]
-        [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(8)]
+        [PropertyOrder(1)]
         [DirectoryExists(IfMethod = nameof(IsBackupsEnabled), ErrorMessage = "{0} directory path does not exist")]
         public string BackupsDirectoryPath { get; set; }
-
-        [JsonProperty(PropertyName = "webApiListenPrefix")]
-        [Description("Http listen prefix for WebAPI service (requires a port that is open to external connections) [The prebuilt web-app included in this release is by default configured to call the web api on 127.0.0.1:60001. If you want to use another port for the web api you will need to reflect this change in environment.prod.ts and rebuild the web-app dist manually.]")]
-        public string WebApiListenPrefix { get; set; }
-
-        [JsonProperty(PropertyName = "webAppListenPrefix")]
-        [Description("Http listen prefix for Web App (requires a port that is open to external connections)")]
-        public string WebAppListenPrefix { get; set; }
-
-        [JsonProperty(PropertyName = "webAppRedirectListenPrefix")]
-        [Description("Http listen prefix(es) that are redirected to BotUrl.")]
-        public string[] WebAppRedirectListenPrefix { get; set; }
-
-        [JsonProperty(PropertyName = "powershellFilePath")]
-        [Description("Absolute file path of the powershell executable (only used with Server.UsePowershellOutputRedirect)")]
-        public string PowershellFilePath { get; set; }
-
-        [JsonProperty(PropertyName = "useCompatibilityChangeWatcher")]
-        [Description("Use timer based .ark save file watcher rather than the default (based on FileSystemWatcher)")]
-        public bool UseCompatibilityChangeWatcher { get; set; }
-
-        [JsonProperty(PropertyName = "ssl")]
-        [Description("Configure Web App and WebAPI to use SSL with a free certificate from Lets Encrypt")]
-        [ExpandableObject]
-        public SslConfigSection Ssl { get; set; }
-
-        [JsonProperty(PropertyName = "savegameExtractionMaxDegreeOfParallelism")]
-        [Description("Max degree of parallelism to use for savegame extraction. Change only if experiencing out of memory exceptions.")]
-        public int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
-
-        [JsonProperty(PropertyName = "anonymizeWebApiData")]
-        [Description("Anonymize all data in the WebAPI. Used to create data dumps for demoing the web-app.")]
-        public bool AnonymizeWebApiData { get; set; }
-
-        [JsonProperty(PropertyName = "servers")]
-        [Description("Server instance configurations.")]
-        public ServerConfigSection[] Servers { get; set; }
-
-        [JsonProperty(PropertyName = "clusters")]
-        [Description("Cluster instance configurations.")]
-        public ClusterConfigSection[] Clusters { get; set; }
-
-
-        // Required
-
-        [JsonProperty(PropertyName = "tempFileOutputDirPath")]
-        [DisplayName("Temporary file output directory path")]
-        [Description("An existing directory path where temporary binary files can be stored (map-images etc.)")]
-        [Category(ConfigurationCategory.UserSettings)]
-        [PropertyOrder(0)]
-        [Editor(typeof(DirectoryPathEditor), typeof(DirectoryPathEditor))]
-        [DirectoryExists(ErrorMessage = "{0} is not set or the directory path does not exist")]
-        public string TempFileOutputDirPath { get; set; }
-
-        [JsonProperty(PropertyName = "googleApiKey")]
-        [DisplayName("Google API Key")]
-        [Description("Google API Key used for url-shortening services")]
-        [Category(ConfigurationCategory.UserSettings)]
-        [PropertyOrder(1)]
-        [MinLength(1, ErrorMessage = "{0} is not set")]
-        //todo: validate google api key with google
-        public string GoogleApiKey { get; set; }
-
-        [JsonProperty(PropertyName = "steamApiKey")]
-        [DisplayName("Steam API Key")]
-        [Description("Steam API Key used for fetching user information")]
-        [Category(ConfigurationCategory.UserSettings)]
-        [PropertyOrder(2)]
-        [MinLength(1, ErrorMessage = "{0} is not set")]
-        //todo: validate steam api key with steam
-        public string SteamApiKey { get; set; }
-
 
         // Validation methods
 
@@ -201,56 +346,7 @@ namespace ArkBot
     }
 
     [AddINotifyPropertyChangedInterface]
-    public class DiscordConfigSection
-    {
-        public DiscordConfigSection()
-        {
-            DiscordBotEnabled = true;
-            AccessControl = new Dictionary<string, Dictionary<string, string[]>>();
-        }
-
-        [JsonProperty(PropertyName = "discordBotEnabled")]
-        [Description("Option to enable/disable the discord bot component.")]
-        public bool DiscordBotEnabled { get; set; }
-
-        [JsonProperty(PropertyName = "botToken")]
-        [Description("Bot authentication token from https://discordapp.com/developers")]
-        public string BotToken { get; set; }
-
-        [JsonProperty(PropertyName = "enabledChannels")]
-        [Description("A list of channels where the bot will listen to and answer commands.")]
-        public string[] EnabledChannels { get; set; }
-
-        [JsonProperty(PropertyName = "infoTopicChannel")]
-        [Description("Channel where topic is set to display information about last update, next update and how to use bot commands.")]
-        public string InfoTopicChannel { get; set; }
-
-        [JsonProperty(PropertyName = "announcementChannel")]
-        [Description("Channel where announcements are made (votes etc.)")]
-        public string AnnouncementChannel { get; set; }
-
-        [JsonProperty(PropertyName = "memberRoleName")]
-        [Description("The name of the member role in Discord.")]
-        public string MemberRoleName { get; set; }
-
-        [JsonProperty(PropertyName = "disableDeveloperFetchSaveData")]
-        [Description("Diable users in \"developer\"-role fetching json or save file data.")]
-        public bool DisableDeveloperFetchSaveData { get; set; }
-
-        [JsonProperty(PropertyName = "accessControl")]
-        [Description("Per-feature role based access control configuration.")]
-        public Dictionary<string, Dictionary<string, string[]>> AccessControl { get; set; }
-
-        [JsonProperty(PropertyName = "steamOpenIdRelyingServiceListenPrefix")]
-        [Description("Http listen prefix for Steam OpenID Relying Party webservice (requires a port that is open to external connections)")]
-        public string SteamOpenIdRelyingServiceListenPrefix { get; set; }
-
-        [JsonProperty(PropertyName = "steamOpenIdRedirectUri")]
-        [Description("Publicly accessible url for incoming Steam OpenID Relying Party webservice connections (requires a port that is open to external connections)")]
-        public string SteamOpenIdRedirectUri { get; set; }
-    }
-
-    [AddINotifyPropertyChangedInterface]
+    [InjectValidation]
     public class SslConfigSection
     {
         public SslConfigSection()
@@ -259,39 +355,48 @@ namespace ArkBot
         }
 
         [JsonProperty(PropertyName = "enabled")]
+        [DisplayName("Enabled")]
         [Description("Toggle ssl.")]
         public bool Enabled { get; set; }
 
         [JsonProperty(PropertyName = "challengeListenPrefix")]
+        [DisplayName("Challenge Listen Prefix")]
         [Description("Http listen prefix for ssl challenge request (external port must be 80)")]
         public string ChallengeListenPrefix { get; set; }
 
         [JsonProperty(PropertyName = "name")]
-        [Description("Friendly name of the certificate.")]
+        [DisplayName("Name")]
+        [Description("Friendly name of the certificate")]
         public string Name { get; set; }
 
         [JsonProperty(PropertyName = "password")]
-        [Description("Private password.")]
+        [DisplayName("Password")]
+        [Description("Private password")]
         public string Password { get; set; }
 
         [JsonProperty(PropertyName = "email")]
-        [Description("Registration contact email.")]
+        [DisplayName("Email")]
+        [Description("Registration contact email")]
         public string Email { get; set; }
 
         [JsonProperty(PropertyName = "domains")]
-        [Description("Domain name(s) to issue the certificate for.")]
+        [DisplayName("Domain name(s)")]
+        [Description("Domain name(s) to issue the certificate for")]
         public string[] Domains { get; set; }
 
         [JsonProperty(PropertyName = "ports")]
-        [Description("Ports to bind the ssl certificate to.")]
+        [DisplayName("Ports")]
+        [Description("Ports to bind the ssl certificate to")]
         public int[] Ports { get; set; }
 
         [JsonProperty(PropertyName = "useCompatibilityNonSNIBindings")]
+        [DisplayName("Use Compatibility non-SNI Bindings")]
         [Description("Use non SNI SSL bindings for previous Windows OS (before Windows 8/2012)")]
         public bool UseCompatibilityNonSNIBindings { get; set; }
     }
 
     [AddINotifyPropertyChangedInterface]
+    [InjectValidation]
     public class ArkMultipliersConfigSection
     {
         public ArkMultipliersConfigSection()
@@ -302,19 +407,23 @@ namespace ArkBot
         }
 
         [JsonProperty(PropertyName = "eggHatchSpeedMultiplier")]
-        [Description("Pregnancy/incubation time multiplier.")]
+        [DisplayName("Egg Hatch Speed Multiplier")]
+        [Description("Pregnancy/incubation time multiplier")]
         public double EggHatchSpeedMultiplier { get; set; }
 
         [JsonProperty(PropertyName = "babyMatureSpeedMultiplier")]
-        [Description("Baby mature time multiplier.")]
+        [DisplayName("Baby Mature Speed Multiplier")]
+        [Description("Baby mature time multiplier")]
         public double BabyMatureSpeedMultiplier { get; set; }
 
         [JsonProperty(PropertyName = "cuddleIntervalMultiplier")]
-        [Description("Multiplier for duration between cuddles.")]
+        [DisplayName("Cuddle Interval Multiplier")]
+        [Description("Multiplier for duration between cuddles")]
         public double CuddleIntervalMultiplier { get; set; }
     }
 
     [AddINotifyPropertyChangedInterface]
+    [InjectValidation]
     public class ServerConfigSection
     {
         public ServerConfigSection()
@@ -322,72 +431,87 @@ namespace ArkBot
         }
 
         [JsonProperty(PropertyName = "key")]
-        [Description("Unique key/name for this server instance.")]
+        [DisplayName("Key")]
+        [Description("Unique key/name for this server instance")]
         public string Key { get; set; }
 
         [JsonProperty(PropertyName = "cluster")]
-        [Description("Optional key for the cluster instance this server is part of.")]
+        [DisplayName("Cluster")]
+        [Description("Optional key for the cluster instance this server is part of")]
         public string Cluster { get; set; }
 
         [JsonProperty(PropertyName = "saveFilePath")]
-        [Description("Absolute file path of the .ark save file to monitor/extract data from.")]
+        [DisplayName("Save File Path")]
+        [Description("Absolute file path of the .ark save file to monitor/extract data from")]
         public string SaveFilePath { get; set; }
 
         [JsonProperty(PropertyName = "displayAddress")]
-        [Description("Public server address visible to players.")]
+        [DisplayName("Display Address")]
+        [Description("Public server address visible to players")]
         public string DisplayAddress { get; set; }
 
         [JsonProperty(PropertyName = "ip")]
-        [Description("The IP address used to connect to this server instance.")]
+        [DisplayName("IP")]
+        [Description("The IP address used to connect to this server instance")]
         public string Ip { get; set; }
 
         [JsonProperty(PropertyName = "queryPort")]
-        [Description("The port used to query to this server instance.")]
+        [DisplayName("Query Port")]
+        [Description("The port used to query to this server instance")]
         public int QueryPort { get; set; }
 
         [JsonProperty(PropertyName = "rconPort")]
-        [Description("The port used to connect to this server instance over rcon.")]
+        [DisplayName("RCON Port")]
+        [Description("The port used to connect to this server instance over rcon")]
         public int RconPort { get; set; }
 
         [JsonProperty(PropertyName = "rconPassword")]
-        [Description("The password used to connect to this server instance via rcon.")]
+        [DisplayName("RCON Password")]
+        [Description("The password used to connect to this server instance via rcon")]
         public string RconPassword { get; set; }
 
         //[JsonProperty(PropertyName = "updateBatchFilePath")]
-        //[Description("Absolute file path of a batch file to run in order to update the server.")]
+        //[Description("Absolute file path of a batch file to run in order to update the server")]
         //public string UpdateBatchFilePath { get; set; }
 
         //[JsonProperty(PropertyName = "startBatchFilePath")]
-        //[Description("Absolute file path of a batch file to run in order to start the server.")]
+        //[Description("Absolute file path of a batch file to run in order to start the server")]
         //public string StartBatchFilePath { get; set; }
 
         [JsonProperty(PropertyName = "serverExecutablePath")]
-        [Description("Absolute file path of the server instance executable.")]
+        [DisplayName("Server Executable Path")]
+        [Description("Absolute file path of the server instance executable")]
         public string ServerExecutablePath { get; set; }
 
         [JsonProperty(PropertyName = "serverExecutableArguments")]
-        [Description("Command line arguments used when starting the server instance.")]
+        [DisplayName("Server Executable Arguments")]
+        [Description("Command line arguments used when starting the server instance")]
         public string ServerExecutableArguments { get; set; }
 
         [JsonProperty(PropertyName = "steamCmdExecutablePath")]
-        [Description("Absolute file path of the steamcmd executable.")]
+        [DisplayName("Steam Cmd Executable Path")]
+        [Description("Absolute file path of the steamcmd executable")]
         public string SteamCmdExecutablePath { get; set; }
 
         [JsonProperty(PropertyName = "serverInstallDirPath")]
-        [Description("The directory path to force steamcmd updates to.")]
+        [DisplayName("Server Install Directory Path")]
+        [Description("The directory path to force steamcmd updates to")]
         public string ServerInstallDirPath { get; set; }
 
         [JsonProperty(PropertyName = "usePowershellOutputRedirect")]
-        [Description("Use alternative powershell/file based output redirect for update progress notifications.")]
+        [DisplayName("Use Powershell Output Redirect")]
+        [Description("Use alternative powershell/file based output redirect for update progress notifications")]
         public bool UsePowershellOutputRedirect { get; set; }
 
         [JsonProperty(PropertyName = "disableChatNotificationOnGlobalCountdown")]
-        [Description("Disable chat notifications for this server instance when trigged by admin multiple server countdown (feature is used for compatibility with cross server chat).")]
+        [DisplayName("Disable Chat Notification On Global Countdown")]
+        [Description("Disable chat notifications for this server instance when trigged by admin multiple server countdown (feature is used for compatibility with cross server chat)")]
         public bool DisableChatNotificationOnGlobalCountdown { get; set; }
         
     }
 
     [AddINotifyPropertyChangedInterface]
+    [InjectValidation]
     public class ClusterConfigSection
     {
         public ClusterConfigSection()
@@ -395,11 +519,13 @@ namespace ArkBot
         }
 
         [JsonProperty(PropertyName = "key")]
-        [Description("Unique key/name for this cluster instance.")]
+        [DisplayName("Key")]
+        [Description("Unique key/name for this cluster instance")]
         public string Key { get; set; }
 
         [JsonProperty(PropertyName = "savePath")]
-        [Description("The directory path where cluster save data is stored.")]
+        [DisplayName("Save Path")]
+        [Description("The directory path where cluster save data is stored")]
         public string SavePath { get; set; }
     }
 }

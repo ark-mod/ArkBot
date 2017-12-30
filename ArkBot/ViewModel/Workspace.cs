@@ -264,10 +264,10 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.SteamApiKey))}");
                 sb.AppendLine();
             }
-            if (_config.BackupsEnabled && (string.IsNullOrWhiteSpace(_config.BackupsDirectoryPath) || !FileHelper.IsValidDirectoryPath(_config.BackupsDirectoryPath)))
+            if (_config.Backups.BackupsEnabled && (string.IsNullOrWhiteSpace(_config.Backups.BackupsDirectoryPath) || !FileHelper.IsValidDirectoryPath(_config.Backups.BackupsDirectoryPath)))
             {
-                sb.AppendLine($@"Error: {nameof(_config.BackupsDirectoryPath)} is not a valid directory path.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BackupsDirectoryPath))}");
+                sb.AppendLine($@"Error: {nameof(_config.Backups.BackupsDirectoryPath)} is not a valid directory path.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.Backups.BackupsDirectoryPath))}");
                 sb.AppendLine();
             }
             if (string.IsNullOrWhiteSpace(_config.WebApiListenPrefix))
@@ -513,7 +513,7 @@ namespace ArkBot.ViewModel
             var discord = new DiscordSocketClient(new DiscordSocketConfig
             {
                 WebSocketProvider = WS4NetProvider.Instance, //required for Win 7
-                LogLevel = LogSeverity.Warning
+                LogLevel = _config.DiscordLogLevel
             });
             discord.Log += msg =>
             {

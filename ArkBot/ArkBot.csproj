@@ -532,7 +532,11 @@
     <Compile Include="Commands\WhoAmICommand.cs" />
     <Compile Include="Commands\WildCommand.cs" />
     <Compile Include="Configuration\DirectoryPathEditor.cs" />
+    <Compile Include="Configuration\OpenFilePathEditor.cs" />
     <Compile Include="Configuration\MyCustomTypeDescriptor.cs" />
+    <Compile Include="Configuration\Validation\FileExistsAttribute.cs" />
+    <Compile Include="Configuration\Validation\IfValidationAttribute.cs" />
+    <Compile Include="Configuration\Validation\RangeOptionalAttribute.cs" />
     <Compile Include="Configuration\Validation\ValidUrlAttribute.cs" />
     <Compile Include="Configuration\Validation\DirectoryExistsAttribute.cs" />
     <Compile Include="Configuration\Validation\ValidationTemplate.cs" />

@@ -166,7 +166,7 @@ namespace ArkBot.Ark
                 SavegameBackupResult bresult = null;
                 try
                 {
-                    if (fullconfig.BackupsEnabled)
+                    if (fullconfig.Backups.BackupsEnabled)
                     {
                         bresult = savegameBackupService.CreateBackup(Config, _contextManager?.GetCluster(Config.Cluster)?.Config);
                         if (bresult != null && bresult.ArchivePaths != null) progress.Report($@"Server ({Config.Key}): Backup successfull ({(string.Join(", ", bresult.ArchivePaths.Select(x => $@"""{x}""")))})!");
@@ -174,7 +174,7 @@ namespace ArkBot.Ark
                     }
                 }
                 catch (Exception ex) { Logging.LogException($"Server ({Config.Key}): Backup failed", ex, typeof(ArkServerContext), LogLevel.ERROR, ExceptionLevel.Ignored); }
-                BackupCompleted?.Invoke(this, fullconfig.BackupsEnabled, bresult);
+                BackupCompleted?.Invoke(this, fullconfig.Backups.BackupsEnabled, bresult);
             }
 
 

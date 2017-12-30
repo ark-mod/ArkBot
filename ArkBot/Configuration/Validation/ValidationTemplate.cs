@@ -27,17 +27,12 @@ namespace ArkBot.Configuration.Validation
 
         void Validate(object sender, PropertyChangedEventArgs e)
         {
-            var oldErrors = new HashSet<string>(_validationResults.SelectMany(x => x.MemberNames));
             _validationResults.Clear();
             Validator.TryValidateObject(_target, _validationContext, _validationResults, true);
             var hashSet = new HashSet<string>(_validationResults.SelectMany(x => x.MemberNames));
             foreach (var error in hashSet)
             {
                 RaiseErrorsChanged(error);
-            }
-            foreach (var noerror in oldErrors.Except(hashSet))
-            {
-                RaiseErrorsChanged(noerror);
             }
         }
 
@@ -74,7 +69,6 @@ namespace ArkBot.Configuration.Validation
 
         void RaiseErrorsChanged(string propertyName)
         {
-            Debug.WriteLine($"Errors changed raised for '{propertyName}'");
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
         }
     }

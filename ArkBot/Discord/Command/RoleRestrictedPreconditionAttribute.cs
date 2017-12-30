@@ -81,7 +81,7 @@ namespace ArkBot.Discord.Command
             if (accessControl == null) return null;
             if (!accessControl.TryGetValue(featureGroup, out var fg)) return null;
 
-            return !fg.TryGetValue(featureName, out var rf) ? null : rf;
+            return !fg.TryGetValue(featureName, out var rf) ? null : rf.ToArray();
         }
     }
 }

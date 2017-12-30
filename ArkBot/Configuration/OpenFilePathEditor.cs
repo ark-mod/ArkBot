@@ -19,18 +19,19 @@ using TextBox = System.Windows.Controls.TextBox;
 namespace ArkBot.Configuration
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
-    public sealed class DirectoryPathEditorAttribute : Attribute
+    public sealed class OpenFilePathEditorAttribute : Attribute
     {
+        public string Filter { get; set; }
         public string Title { get; set; }
     }
 
-    public class DirectoryPathEditor : ITypeEditor
+    public class OpenFilePathEditor : ITypeEditor
     {
-        private DirectoryPathEditorAttribute _attr;
+        private OpenFilePathEditorAttribute _attr;
 
         public FrameworkElement ResolveEditor(PropertyItem propertyItem)
         {
-            _attr = propertyItem.PropertyDescriptor.Attributes.OfType<DirectoryPathEditorAttribute>()
+            _attr = propertyItem.PropertyDescriptor.Attributes.OfType<OpenFilePathEditorAttribute>()
                 .FirstOrDefault();
 
             Grid panel = new Grid();
@@ -65,18 +66,20 @@ namespace ArkBot.Configuration
             if (null == item) return;
 
             var path = item.Value as string;
-            var di = !string.IsNullOrEmpty(path) && Directory.Exists(path) ? new DirectoryInfo(path) : null;
+            var fi = !string.IsNullOrEmpty(path) && File.Exists(path) ? new FileInfo(path) : null;
 
-            using (var dialog = new System.Windows.Forms.FolderBrowserDialog
+            using (var dialog = new System.Windows.Forms.OpenFileDialog
             {
-                SelectedPath = di?.FullName,
-                ShowNewFolderButton = true,
-                Description = String.Format(CultureInfo.CurrentCulture, _attr?.Title ?? "Select {0}", item.DisplayName)
+                FileName = fi?.Name,
+                InitialDirectory = fi?.DirectoryName,
+                CheckFileExists = true,
+                Filter = _attr?.Filter,
+                Title = String.Format(CultureInfo.CurrentCulture, _attr?.Title ?? "Select {0}", item.DisplayName)
             })
             {
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    item.Value = dialog.SelectedPath;
+                    item.Value = dialog.FileName;
                 }
             }
         }

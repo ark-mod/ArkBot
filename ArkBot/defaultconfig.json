@@ -36,7 +36,7 @@
     "steamOpenIdRedirectUri": "http://<your public ip or domain>:60002/openid/"
   },
   "userRoles": {
-    "admin": [ ]
+    "admin": []
   },
   "accessControl": {
     "pages": {
@@ -80,8 +80,10 @@
       "structures-rcon": [ "disabled" ]
     }
   },
-  "backupsEnabled": false,
-  "backupsDirectoryPath": "C:\\ARK Servers\\Backups",
+  "backups": {
+    "backupsEnabled": false,
+    "backupsDirectoryPath": "C:\\ARK Servers\\Backups"
+  },
   "webApiListenPrefix": "http://+:60001/",
   "webAppListenPrefix": "http://+:80/",
   "webAppRedirectListenPrefix": [
@@ -89,7 +91,7 @@
   "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
   "useCompatibilityChangeWatcher": true,
   "ssl": {
-    "enabled":  false,
+    "enabled": false,
     "challengeListenPrefix": "http://+:80/",
     "name": "ark-bot-ssl",
     "password": "secret123",
@@ -98,7 +100,7 @@
       "app.yourdomain.com"
     ],
     "ports": [ 443, 60001 ],
-    "useCompatibilityNonSNIBindings":  true
+    "useCompatibilityNonSNIBindings": true
   },
   "arkMultipliers": {
     "eggHatchSpeedMultiplier": 1.0,
@@ -106,7 +108,8 @@
     "cuddleIntervalMultiplier": 1.0
   },
   "savegameExtractionMaxDegreeOfParallelism": null,
-  "anonymizeWebApiData":  false, 
+  "anonymizeWebApiData": false,
+  "discordLogLevel": "Warning",
   "servers": [
     {
       "key": "server1",
@@ -116,9 +119,9 @@
       "ip": "127.0.0.1",
       "queryPort": 27015,
       "rconPort": 27020,
-      "rconPassword":  "password",
+      "rconPassword": "password",
       "serverExecutablePath": "C:\\ARK Servers\\server1\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
-      "serverExecutableArguments":  "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
+      "serverExecutableArguments": "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
       "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
       "serverInstallDirPath": "C:\\ARK Servers\\server1",
       "usePowershellOutputRedirect": false,

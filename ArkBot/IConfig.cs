@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ArkBot.Configuration;
+using Discord;
 
 namespace ArkBot
 {
@@ -15,8 +16,7 @@ namespace ArkBot
         DiscordConfigSection Discord { get; set; }
         Dictionary<string, string[]> UserRoles { get; set; }
         AccessControlConfigSection AccessControl { get; set; }
-        bool BackupsEnabled { get; set; }
-        string BackupsDirectoryPath { get; set; }
+        BackupsConfigSection Backups { get; set; }
         string WebApiListenPrefix { get; set; }
         string WebAppListenPrefix { get; set; }
         string[] WebAppRedirectListenPrefix { get; set; }
@@ -25,6 +25,7 @@ namespace ArkBot
         SslConfigSection Ssl { get; set; }
         int? SavegameExtractionMaxDegreeOfParallelism { get; set; }
         bool AnonymizeWebApiData { get; set; }
+        LogSeverity DiscordLogLevel { get; set; }
 
         ServerConfigSection[] Servers { get; set; }
         ClusterConfigSection[] Clusters { get; set; }

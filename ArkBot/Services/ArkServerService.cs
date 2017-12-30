@@ -84,7 +84,7 @@ namespace ArkBot.Helpers
                     {
                         continue;
                     }
-                    if (_config.BackupsEnabled && !(state?.Item3?.ArchivePaths?.Length >= 1))
+                    if (_config.Backups.BackupsEnabled && !(state?.Item3?.ArchivePaths?.Length >= 1))
                     {
                         if (sendMessageDirected != null) await sendMessageDirected($"savegame backup failed...");
                         return false;
