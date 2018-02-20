@@ -1101,12 +1101,26 @@
       "Xenomorph_Character_BP_Male_Chupa_C"
     ],
     [
-      "Nameless Queen",
+      "Reaper",
       "Xenomorph_Character_BP_C"
+    ],
+    [
+      "Reaper King",
+      "Xenomorph_Character_BP_Male_Tamed_C"
     ],
     [
       "Rockwell",
       "Rockwell_Character_BP_C"
+    ],
+    [
+      "Aberrant Gigantopithecus",
+      "Bigfoot_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Direbear",
+      "Direbear_Character_BP_Aberrant_C",
+      "Aberrant Dire Bear",
+      "Aberrant Bear"
     ]
   ]
 }
