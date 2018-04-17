@@ -28,7 +28,6 @@ Open as zip-archive or change extension to .zip, binaries are located under tool
 https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
 ## Installation
-**For questions/problems: open a GitHub issue or contact me on Discord (Tobias#5051).**
 
 * Download the latest pre-built binaries (see above).
 * Copy defaultconfig.json and name it config.json.
