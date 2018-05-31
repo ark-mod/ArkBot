@@ -2,7 +2,7 @@
 using ArkBot.Configuration;
 using Discord;
 
-namespace ArkBot
+namespace ArkBot.Configuration.Model
 {
     public interface IConfig
     {
@@ -14,7 +14,7 @@ namespace ArkBot
         string SteamApiKey { get; set; }
         string TempFileOutputDirPath { get; set; }
         DiscordConfigSection Discord { get; set; }
-        Dictionary<string, string[]> UserRoles { get; set; }
+        UserRolesConfigSection UserRoles { get; set; }
         AccessControlConfigSection AccessControl { get; set; }
         BackupsConfigSection Backups { get; set; }
         string WebApiListenPrefix { get; set; }
@@ -27,7 +27,9 @@ namespace ArkBot
         bool AnonymizeWebApiData { get; set; }
         LogSeverity DiscordLogLevel { get; set; }
 
-        ServerConfigSection[] Servers { get; set; }
-        ClusterConfigSection[] Clusters { get; set; }
+        ServersConfigSection Servers { get; set; }
+        ClustersConfigSection Clusters { get; set; }
+
+        //Test1ConfigSection Test { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ArkBot.Ark;
+using ArkBot.Configuration.Model;
 using ArkBot.Data;
 using ArkBot.Database;
 using ArkBot.Extensions;

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ArkBot.Helpers;
 using ArkBot.Services.Data;
 using ArkBot.Extensions;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Services
 {

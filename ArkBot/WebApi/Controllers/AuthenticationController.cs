@@ -1,4 +1,5 @@
-﻿using ArkBot.Helpers;
+﻿using ArkBot.Configuration.Model;
+using ArkBot.Helpers;
 using Microsoft.Owin.Security;
 using System;
 using System.Collections.Generic;
@@ -57,7 +58,11 @@ namespace ArkBot.WebApi.Controllers
             claims.Add(new Claim(ClaimTypes.AuthenticationMethod, "Steam"));
 
             var steamId = claims?.FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", StringComparison.OrdinalIgnoreCase))?.Value;
-            if (steamId != null) steamId = steamId.Replace("http://steamcommunity.com/openid/id/", "");
+            if (steamId != null)
+            {
+                steamId = steamId.Replace("http://steamcommunity.com/openid/id/", "");
+                steamId = steamId.Replace("https://steamcommunity.com/openid/id/", "");
+            }
             if (!string.IsNullOrEmpty(steamId))
             {
                 var roles = WebApiHelper.GetRolesForUser(_config, steamId);

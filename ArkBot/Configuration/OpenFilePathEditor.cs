@@ -41,14 +41,14 @@ namespace ArkBot.Configuration
                 Width = GridLength.Auto
             });
 
-            TextBox textBox = new TextBox();
+            TextBox textBox = new TextBox { BorderThickness = new Thickness(0), Padding = new Thickness(3) };
             textBox.HorizontalAlignment = HorizontalAlignment.Stretch;
             Binding binding = new Binding("Value"); //bind to the Value property of the PropertyItem
             binding.Source = propertyItem;
             binding.Mode = BindingMode.TwoWay;
             BindingOperations.SetBinding(textBox, TextBox.TextProperty, binding);
 
-            Button button = new Button();
+            Button button = new Button { MinWidth = 19 };
             button.Content = "...";
             button.Tag = propertyItem;
             button.Click += button_Click;
@@ -66,6 +66,8 @@ namespace ArkBot.Configuration
             if (null == item) return;
 
             var path = item.Value as string;
+            if (path != null) path = Environment.ExpandEnvironmentVariables(path);
+
             var fi = !string.IsNullOrEmpty(path) && File.Exists(path) ? new FileInfo(path) : null;
 
             using (var dialog = new System.Windows.Forms.OpenFileDialog

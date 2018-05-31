@@ -1,4 +1,5 @@
 ﻿using ArkBot.Ark;
+using ArkBot.Configuration.Model;
 using ArkBot.Services.Data;
 using ArkBot.Threading;
 using Discord;
@@ -221,9 +222,9 @@ namespace ArkBot.Helpers
             {
                 var si = new ProcessStartInfo
                 {
-                    FileName = serverContext.Config.ServerExecutablePath,
-                    Arguments = serverContext.Config.ServerExecutableArguments,
-                    WorkingDirectory = Path.GetDirectoryName(serverContext.Config.ServerExecutablePath),
+                    FileName = serverContext.Config.ServerManagement.ServerExecutablePath,
+                    Arguments = serverContext.Config.ServerManagement.ServerExecutableArguments,
+                    WorkingDirectory = Path.GetDirectoryName(serverContext.Config.ServerManagement.ServerExecutablePath),
                     Verb = "runas",
                     UseShellExecute = false
                 };
@@ -326,27 +327,27 @@ namespace ArkBot.Helpers
                 var lastUpdate = DateTime.Now;
                 var r = new Regex(@"(?<task>\w+),\s+progress\:\s+(?<progress>[\d\.]+)", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
                 tmpFilePathToSteamCmdScript = Path.GetTempFileName();
-                File.WriteAllText(tmpFilePathToSteamCmdScript, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{serverContext.Config.ServerInstallDirPath}\"{Environment.NewLine}app_update 376030{Environment.NewLine}quit");
+                File.WriteAllText(tmpFilePathToSteamCmdScript, $"@ShutdownOnFailedCommand 1{Environment.NewLine}@NoPromptForPassword 1{Environment.NewLine}login anonymous{Environment.NewLine}force_install_dir \"{serverContext.Config.ServerManagement.ServerInstallDirPath}\"{Environment.NewLine}app_update 376030{Environment.NewLine}quit");
                 var si = new ProcessStartInfo
                 {
-                    FileName = serverContext.Config.SteamCmdExecutablePath,
+                    FileName = serverContext.Config.ServerManagement.SteamCmdExecutablePath,
                     Arguments = $@"+runscript {tmpFilePathToSteamCmdScript}",
-                    WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
+                    WorkingDirectory = Path.GetDirectoryName(serverContext.Config.ServerManagement.SteamCmdExecutablePath),
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     CreateNoWindow = true
                 };
 
-                if (serverContext.Config.UsePowershellOutputRedirect)
+                if (serverContext.Config.ServerManagement.UsePowershellOutputRedirect)
                 {
                     var debugNoExit = false;
                     tmpFilePathToPowershellOutput = Path.GetTempFileName();
                     si = new ProcessStartInfo
                     {
                         FileName = _config.PowershellFilePath,
-                        Arguments = $@"{(debugNoExit ? "-NoExit " : "")}& '{Path.GetFullPath(serverContext.Config.SteamCmdExecutablePath)}' +runscript {tmpFilePathToSteamCmdScript} | tee {tmpFilePathToPowershellOutput}",
-                        WorkingDirectory = Path.GetDirectoryName(serverContext.Config.SteamCmdExecutablePath),
+                        Arguments = $@"{(debugNoExit ? "-NoExit " : "")}& '{Path.GetFullPath(serverContext.Config.ServerManagement.SteamCmdExecutablePath)}' +runscript {tmpFilePathToSteamCmdScript} | tee {tmpFilePathToPowershellOutput}",
+                        WorkingDirectory = Path.GetDirectoryName(serverContext.Config.ServerManagement.SteamCmdExecutablePath),
                         Verb = "runas",
                         UseShellExecute = true,
                         WindowStyle = ProcessWindowStyle.Hidden
@@ -359,7 +360,7 @@ namespace ArkBot.Helpers
                     StartInfo = si,
                     EnableRaisingEvents = true
                 };
-                if (!serverContext.Config.UsePowershellOutputRedirect)
+                if (!serverContext.Config.ServerManagement.UsePowershellOutputRedirect)
                 {
                     process.OutputDataReceived += (s, e) =>
                     {
@@ -416,7 +417,7 @@ namespace ArkBot.Helpers
                     if (sendMessageDirected != null) await sendMessageDirected($"failed to update the server (check the configuration).");
                     return false;
                 }
-                if (!serverContext.Config.UsePowershellOutputRedirect) process.BeginOutputReadLine();
+                if (!serverContext.Config.ServerManagement.UsePowershellOutputRedirect) process.BeginOutputReadLine();
                 timer = new Timer(async (s) =>
                 {
                     if ((DateTime.Now - lastUpdate).TotalSeconds >= timeoutSeconds) tcs.TrySetCanceled();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ArkBot.Configuration.Model;
 using Discord.Commands;
 using Discord.WebSocket;
 

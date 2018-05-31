@@ -24,27 +24,33 @@ namespace ArkBot
     {
         public MainWindow()
         {
-            InitializeComponent();
+            Initialized += MainWindow_Initialized;
 
-            DataContext = Workspace.Instance;
+            InitializeComponent();
 
             Loaded += new RoutedEventHandler(MainWindow_Loaded);
             Unloaded += new RoutedEventHandler(MainWindow_Unloaded);
         }
 
-        async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Initialized(object sender, EventArgs e)
         {
-            if (File.Exists(Workspace.Constants.LayoutFilePath))
+            DataContext = await Workspace.AsyncInstance;
+        }
+
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
             {
-                var serializer = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockManager);
-                //serializer.LayoutSerializationCallback += (s, args) =>
-                //{
-                //};
+                if (File.Exists(Workspace.Constants.LayoutFilePath))
+                {
+                    var serializer = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockManager);
+                    //serializer.LayoutSerializationCallback += (s, args) =>
+                    //{
+                    //};
 
-                serializer.Deserialize(Workspace.Constants.LayoutFilePath);
-            }
-
-            await Workspace.Instance.Init();
+                    serializer.Deserialize(Workspace.Constants.LayoutFilePath);
+                }
+            } catch (Exception ex) { /*do nothing*/ }
         }
 
         void MainWindow_Unloaded(object sender, RoutedEventArgs e)

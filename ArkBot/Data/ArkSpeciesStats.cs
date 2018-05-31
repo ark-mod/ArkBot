@@ -1,4 +1,5 @@
-﻿using ArkBot.Helpers;
+﻿using ArkBot.Configuration.Model;
+using ArkBot.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

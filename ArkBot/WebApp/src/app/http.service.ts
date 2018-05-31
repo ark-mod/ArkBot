@@ -7,6 +7,8 @@ import { environment } from '../environments/environment';
 import { Servers } from './servers';
 import { Player } from './player';
 
+declare var config: any;
+
 @Injectable()
 export class HttpService {
 
@@ -104,7 +106,10 @@ export class HttpService {
   }
 
   getApiBaseUrl(): string {
-    return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
+    return environment.apiBaseUrl
+      .replace(/\<protocol\>/gi, window.location.protocol)
+      .replace(/\<hostname\>/gi, window.location.hostname)
+      .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
   }
 
   protected handleError(error: any): Promise<any> {

@@ -1,4 +1,5 @@
-﻿using QueryMaster.GameServer;
+﻿using ArkBot.Configuration.Model;
+using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;

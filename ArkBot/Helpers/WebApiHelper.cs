@@ -1,4 +1,5 @@
-﻿using ArkBot.WebApi.Model;
+﻿using ArkBot.Configuration.Model;
+using ArkBot.WebApi.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,11 @@ namespace ArkBot.Helpers
         {
             var name = authuser?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
             var steamId = authuser?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            if (steamId != null) steamId = steamId.Replace("http://steamcommunity.com/openid/id/", "");
+            if (steamId != null)
+            {
+                steamId = steamId.Replace("http://steamcommunity.com/openid/id/", "");
+                steamId = steamId.Replace("https://steamcommunity.com/openid/id/", "");
+            }
 
             if (authuser != null)
             {
@@ -47,7 +52,7 @@ namespace ArkBot.Helpers
 
         public static string[] GetRolesForUser(IConfig config, string steamId)
         {
-            var roles = (!string.IsNullOrEmpty(steamId) ? config.UserRoles?.Where(x => x.Value?.Contains(steamId) == true).Select(x => x.Key).ToList() : null) ?? new List<string>();
+            var roles = (!string.IsNullOrEmpty(steamId) ? config.UserRoles?.Where(x => x.SteamIds?.Contains(steamId) == true).Select(x => x.Role).ToList() : null) ?? new List<string>();
 
             //default roles
             roles.Add("guest");

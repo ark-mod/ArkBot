@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using ArkBot.Discord.Command;
 using Discord.Commands.Builders;
 using Discord.Net;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands
 {
@@ -53,7 +54,7 @@ namespace ArkBot.Commands
 
                     var address = server.DisplayAddress ?? $"{server.Ip}:{server.QueryPort}";
 
-                    var cluster = args.cluster || args.clusters ? $" (cluster **`{server.Cluster}`**)" : "";
+                    var cluster = args.cluster || args.clusters ? $" (cluster **`{server.ClusterKey}`**)" : "";
 
                     embed.AddInlineField($"{ name ?? address}", $"steam://connect/{address} (key: `{server.Key}`){cluster}");
                 }

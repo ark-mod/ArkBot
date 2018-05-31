@@ -1,4 +1,4 @@
-﻿using ArkBot.ViewModel;
+using ArkBot.ViewModel;
 using Autofac;
 using Autofac.Core;
 using Autofac.Integration.SignalR;
@@ -20,6 +20,10 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Nancy.Conventions;
 using System.IO;
+using Nancy.Bootstrappers.Autofac;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.WebApp
 {
@@ -35,7 +39,7 @@ namespace ArkBot.WebApp
             appBuilder.UseCors(CorsOptions.AllowAll);
             appBuilder.UseNancy(new Nancy.Owin.NancyOptions
             {
-                Bootstrapper = new CustomBootstrapper()
+                Bootstrapper = new CustomBootstrapper(container)
             });
             //appBuilder.UseFileServer(new FileServerOptions
             //{
@@ -45,8 +49,20 @@ namespace ArkBot.WebApp
         }
     }
 
-    public class CustomBootstrapper : DefaultNancyBootstrapper, IRootPathProvider
+    public class CustomBootstrapper : AutofacNancyBootstrapper, IRootPathProvider
     {
+        private IContainer _container;
+
+        public CustomBootstrapper(IContainer container)
+        {
+            _container = container;
+        }
+
+        protected override ILifetimeScope GetApplicationContainer()
+        {
+            return _container;
+        }
+      
         protected override void ConfigureConventions(NancyConventions nancyConventions)
         {
             base.ConfigureConventions(nancyConventions);
@@ -69,14 +85,25 @@ namespace ArkBot.WebApp
 
     public class SinglePageApplicationModule : NancyModule
     {
-        public SinglePageApplicationModule()
+        private IConfig _config;
+
+        public SinglePageApplicationModule(IConfig config)
         {
+            _config = config;
+
             Get[""] = _ =>
             {
                 return Response.AsFile(@"index.html");
             };
             Get[@"^(?<path>.*)$"] = parameters =>
             {
+                if (parameters["path"].Value.Equals("config.js"))
+                {
+                    var portStr = new Regex(@":(?<port>\d+)(?:/|$)").Match(_config.WebApiListenPrefix)?.Groups["port"].Value;
+                    var success = int.TryParse(portStr, out var port);
+                    var js = $"var config = {JsonConvert.SerializeObject(new { webapi = new { port = success ? port : (int?)null } }, Formatting.None)};";
+                    return Response.AsText(js, "application/javascript");
+                }
                 if (File.Exists(Path.Combine(Response.RootPath, parameters["path"].Value))) return Response.AsFile((string)parameters["path"].Value);
                 return Response.AsFile(@"index.html");
             };

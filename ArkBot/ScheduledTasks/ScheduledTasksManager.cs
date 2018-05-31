@@ -1,4 +1,5 @@
 ﻿using ArkBot.Ark;
+using ArkBot.Configuration.Model;
 using ArkBot.Discord;
 using ArkBot.Extensions;
 using ArkBot.Voting;
@@ -64,7 +65,7 @@ namespace ArkBot.ScheduledTasks
         public async Task StartCountdown(ArkServerContext serverContext, string reason, int delayInMinutes, Func<Task> react = null)
         {
             // collection of servers that should receive notifications via rcon for this countdown event
-            var serverContexts = serverContext == null ? _contextManager.Servers.Where(x => !x.Config.DisableChatNotificationOnGlobalCountdown).ToArray() : new ArkServerContext[] { serverContext };
+            var serverContexts = serverContext == null ? _contextManager.Servers.Where(x => !x.Config.DisableChatNotifications).ToArray() : new ArkServerContext[] { serverContext };
 
             foreach (var sc in serverContexts) await sc.Steam.SendRconCommand($"serverchat Countdown started: {reason} in {delayInMinutes} minute{(delayInMinutes > 1 ? "s" : "")}...");
             if (!string.IsNullOrWhiteSpace(_config.Discord.AnnouncementChannel))

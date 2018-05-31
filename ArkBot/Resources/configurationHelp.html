@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <style type="text/css">
+        body { background-color: white; } /* resolve grey outline on text when background is transparent */
+        html, body, a {
+            padding: 0px;
+            font-size: 14px;
+            font-family: "Segoe UI", Arial;
+        }
+        .container { display: flex; }
+        .left-half {
+            flex: 2;
+            padding-right: 1rem;
+        }
+        .right-half {
+            flex: 1;
+            padding-left: 1rem;
+        }
+        a { color: green; }
+        h1 { font-size: 20px; color: green; margin: 7px 0px; }
+        h1.name, .validation h3.title { margin-top: 0px; }
+        .validation h3.title { color:#a94442 }
+        h2, h3, h4 { color: green; margin: 15px 0px 7px 0px }
+        .btn {
+            padding: 5px 10px;
+            display: inline-block;
+            border-radius: 5px;
+            background-color: green;
+            font-size: 14px;
+            font-weight: normal;
+            color: white;
+            text-decoration: none;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
+        .btn.restore-default-value {
+            background-color: purple;
+            margin-left: 10px;
+        }
+        .validation {
+            color: #a94442;
+            background-color: #f2dede;
+            padding: 15px;
+            border: 1px solid #ebccd1;
+            border-radius: 5px;
+        }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-half">
+            <h1 class="name">@Model.displayName</h1>
+            @if (!string.IsNullOrEmpty(Model.description)){
+            <div>@Model.description.</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.remarks))
+            {
+            <h3>Remarks</h3>
+            <div>@Raw(Model.remarks)</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.instructions))
+            {
+            <h3>Instructions</h3>
+            <div>@Raw(Model.instructions)</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.defaultValue))
+            {
+            <h3>Default Value<a class="btn restore-default-value" href="navigate://restore-default-value">Restore</a></h3>
+            <div><code>@Model.defaultValue</code></div>
+            }
+            @if (!string.IsNullOrEmpty(Model.example))
+            {
+            <h3>Example</h3>
+            <div>@Raw(Model.example)</div>
+            }
+        </div>
+        <div class="right-half">
+            @if (!string.IsNullOrEmpty(Model.validationError))
+            {
+            <div class="validation">
+                <h3 class="title">Validation Error</h3>
+                <div>@Raw(Model.validationError)</div>
+            </div>
+            }
+        </div>
+    </div>
+</body>
+</html>

@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props" Condition="Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props')" />
+  <Import Project="..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props" Condition="Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props')" />
   <Import Project="WebAppFiles.props" Condition="Exists('WebAppFiles.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -45,6 +47,27 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>basket_empty.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accord, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
@@ -184,6 +207,9 @@
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Markdig, Version=0.14.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Markdig.0.14.8\lib\net40\Markdig.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
       <Private>True</Private>
@@ -263,6 +289,9 @@
     <Reference Include="Nancy, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nancy.1.4.1\lib\net40\Nancy.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Nancy.Bootstrappers.Autofac, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.Bootstrappers.Autofac.1.4.1\lib\net40\Nancy.Bootstrappers.Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Nancy.Owin, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nancy.Owin.1.4.1\lib\net40\Nancy.Owin.dll</HintPath>
@@ -508,6 +537,23 @@
     <Compile Include="ArkSaveFileWatcherTimer.cs" />
     <Compile Include="Ark\ArkBotAnonymizeData.cs" />
     <Compile Include="Ark\IArkUpdateableContext.cs" />
+    <Compile Include="Browser\Behaviours\HoverLinkBehaviour.cs" />
+    <Compile Include="Browser\EventArgs\BaseRequestEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\GetAuthCredentialsEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\GetResourceResponseFilterEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnBeforeBrowseEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnBeforeResourceLoadEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnCertificateErrorEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnOpenUrlFromTabEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnPluginCrashedEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnProtocolExecutionEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnQuotaRequestEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnRenderProcessTerminatedEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnRenderViewReadyEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnResourceLoadCompleteEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnResourceRedirectEventArgs.cs" />
+    <Compile Include="Browser\EventArgs\OnResourceResponseEventArgs.cs" />
+    <Compile Include="Browser\RequestEventHandler.cs" />
     <Compile Include="Commands\Admin\AdminCheckCommand.cs" />
     <Compile Include="Commands\Admin\AdminCommand.cs" />
     <Compile Include="Commands\Admin\CloudCommand.cs" />
@@ -531,15 +577,47 @@
     <Compile Include="Commands\VoteCommand.cs" />
     <Compile Include="Commands\WhoAmICommand.cs" />
     <Compile Include="Commands\WildCommand.cs" />
+    <Compile Include="Configuration\Model\UsersInRoleConfig.cs" />
+    <Compile Include="Configuration\Model\UserRolesConfigSection.cs" />
+    <Compile Include="Configuration\Model\BackupsConfigSection.cs" />
+    <Compile Include="Configuration\Model\AccessControlConfigSection.cs" />
+    <Compile Include="Configuration\Model\AccessControlFeatureGroup.cs" />
+    <Compile Include="Configuration\Model\ArkMultipliersConfigSection.cs" />
+    <Compile Include="Configuration\Model\ClustersConfigSection.cs" />
+    <Compile Include="Configuration\Model\ClusterConfigSection.cs" />
+    <Compile Include="Configuration\Model\ServerManagementConfigSection.cs" />
+    <Compile Include="Configuration\Model\ServersConfigSection.cs" />
+    <Compile Include="Configuration\Model\ServerConfigSection.cs" />
+    <Compile Include="Configuration\Model\AccessControlFeatureRoles.cs" />
+    <Compile Include="Configuration\Model\SslConfigSection.cs" />
+    <Compile Include="Configuration\Model\DiscordConfigSection.cs" />
+    <Compile Include="Configuration\Model\ConfigurationCategories.cs" />
+    <Compile Include="Configuration\Model\_temp_test.cs" />
+    <Compile Include="Configuration\TypeToDisplayNameConverter.cs" />
+    <Compile Include="Configuration\CustomCollectionEditor.cs" />
+    <Compile Include="Configuration\ConfigurationHelpAttribute.cs" />
     <Compile Include="Configuration\DirectoryPathEditor.cs" />
+    <Compile Include="Configuration\AccessControlFeatureGroupPropertyDescriptor.cs" />
+    <Compile Include="Configuration\AccessControlFeatureGroupConverter.cs" />
+    <Compile Include="Configuration\AccessControlFeaturePropertyDescriptor.cs" />
+    <Compile Include="Configuration\AccessControlConfigSectionConverter.cs" />
+    <Compile Include="Configuration\StringArrayEditorWithPreview.cs" />
     <Compile Include="Configuration\OpenFilePathEditor.cs" />
-    <Compile Include="Configuration\MyCustomTypeDescriptor.cs" />
+    <Compile Include="Configuration\PrimitiveTypeCollectionControlWithPreview.cs" />
+    <Compile Include="Configuration\Validation\DirectoryPathIsValidAttribute.cs" />
     <Compile Include="Configuration\Validation\FileExistsAttribute.cs" />
     <Compile Include="Configuration\Validation\IfValidationAttribute.cs" />
+    <Compile Include="Configuration\Validation\MinLengthOptionalAttribute.cs" />
+    <Compile Include="Configuration\Validation\RegularExpressionCustomAttribute.cs" />
+    <Compile Include="Configuration\Validation\ValidateExpandableAttribute.cs" />
+    <Compile Include="Configuration\Validation\ValidateCollectionAttribute.cs" />
     <Compile Include="Configuration\Validation\RangeOptionalAttribute.cs" />
     <Compile Include="Configuration\Validation\ValidUrlAttribute.cs" />
     <Compile Include="Configuration\Validation\DirectoryExistsAttribute.cs" />
     <Compile Include="Configuration\Validation\ValidationTemplate.cs" />
+    <Compile Include="Controls\About.xaml.cs">
+      <DependentUpon>About.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\Configuration.xaml.cs">
       <DependentUpon>Configuration.xaml</DependentUpon>
     </Compile>
@@ -576,12 +654,14 @@
     <Compile Include="Discord\DiscordMessage.cs" />
     <Compile Include="Extensions\DiscordChannelExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Extensions\DependencyObjectExtensions.cs" />
     <Compile Include="Extensions\NumberExtensions.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Helpers\ArkDataHelper.cs" />
     <Compile Include="Helpers\ProcessHelper.cs" />
     <Compile Include="Helpers\WebApiHelper.cs" />
     <Compile Include="Interop\Kernel32.cs" />
+    <Compile Include="OpenID\SteamOpenIdOwin_temp.cs" />
     <Compile Include="PlayerLastActiveSavedState.cs" />
     <Compile Include="Layout\LayoutInitializer.cs" />
     <Compile Include="Layout\PaneStyleSelector.cs" />
@@ -613,7 +693,7 @@
       <DependentUpon>201703262316086_Voting.cs</DependentUpon>
     </Compile>
     <Compile Include="SavedState.cs" />
-    <Compile Include="Config.cs" />
+    <Compile Include="Configuration\Model\Config.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Database\EfDatabaseContext.cs" />
     <Compile Include="Database\IEfDatabaseContext.cs" />
@@ -647,7 +727,7 @@
     <Compile Include="Helpers\StatisticsHelper.cs" />
     <Compile Include="Helpers\ValidationHelper.cs" />
     <Compile Include="IArkContext.cs" />
-    <Compile Include="IConfig.cs" />
+    <Compile Include="Configuration\Model\IConfig.cs" />
     <Compile Include="IConstants.cs" />
     <Compile Include="Migrations\201702251216156_InitialCreate.cs" />
     <Compile Include="Migrations\201702251216156_InitialCreate.Designer.cs">
@@ -676,6 +756,7 @@
     <Compile Include="Threading\Signaler.cs" />
     <Compile Include="TimedTask.cs" />
     <Compile Include="ContextUpdatingEventArgs.cs" />
+    <Compile Include="ViewModel\AboutViewModel.cs" />
     <Compile Include="ViewModel\ConfigurationViewModel.cs" />
     <Compile Include="ViewModel\MenuItemViewModel.cs" />
     <Compile Include="ViewModel\PaneViewModel.cs" />
@@ -776,6 +857,12 @@
     <Content Include="ExternalBin\Newtonsoft.Json.xml" />-->
     <Content Include="ExternalBin\Ionic.BZip2.dll" />
     <None Include="FodyWeavers.xml" />
+    <Content Include="Resources\about.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\configurationHelp.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\openidresponse.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -812,6 +899,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\About.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Controls\Configuration.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -824,9 +915,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Themes\CollectionControlDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <CefSharpTargetDir>$(TargetDir)\lib</CefSharpTargetDir>
+  </PropertyGroup>
   <Import Project="WebAppFiles.targets" Condition="Exists('WebAppFiles.targets')" />
   <PropertyGroup>
     <PostBuildEvent>
@@ -842,6 +940,12 @@
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
     <Error Condition="!Exists('..\packages\Accord.3.5.0\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.5.0\build\Accord.targets'))" />
     <Error Condition="!Exists('..\packages\Fody.2.2.1.0\build\net452\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.2.1.0\build\net452\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets'))" />
+    <Error Condition="!Exists('..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets'))" />
+    <Error Condition="!Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props'))" />
+    <Error Condition="!Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets'))" />
+    <Error Condition="!Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props'))" />
+    <Error Condition="!Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Import Project="..\packages\Accord.3.5.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.5.0\build\Accord.targets')" />
@@ -855,6 +959,7 @@
   <Target Name="AfterBuild">
     <ItemGroup>
       <MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />
+      <!--<MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\*.pak ; $(OutputPath)**\*.dat ; $(OutputPath)**\*.bin ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt ; $(OutputPath)**\CefSharp.BrowserSubprocess.exe" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />-->
     </ItemGroup>
     <Move SourceFiles="@(MoveToLibFolder)" DestinationFiles="@(MoveToLibFolder->'$(OutputPath)lib\%(RecursiveDir)%(Filename)%(Extension)')" OverwriteReadOnlyFiles="true" ContinueOnError="true" />
     <ItemGroup>
@@ -866,4 +971,8 @@
     <RemoveDir Directories="@(EmptyDirectories)" Condition="%(Files)=='0'" />
   </Target>
   <Import Project="..\packages\Fody.2.2.1.0\build\net452\Fody.targets" Condition="Exists('..\packages\Fody.2.2.1.0\build\net452\Fody.targets')" />
+  <Import Project="..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets" Condition="Exists('..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets')" />
+  <Import Project="..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets" Condition="Exists('..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets')" />
+  <Import Project="..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets')" />
+  <Import Project="..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets" Condition="Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets')" />
 </Project>

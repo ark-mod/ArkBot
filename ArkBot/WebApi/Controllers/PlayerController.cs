@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -130,6 +131,7 @@ namespace ArkBot.WebApi.Controllers
             //there will be no player profile so most data cannot be set
             //a tribe where the player is a member may exist tho
 
+            //note: potentially there could be multiple tribes with the same player, which player.Tribe protects us against. here we just select the first one which is not optimal
             var tribe = context.Tribes?.FirstOrDefault(x => playerIds.Any(y => x.MemberIds.Contains((int)y)));
             if (tribe == null) return null;
             var playerId = playerIds.First(x => tribe.MemberIds.Contains((int)x));
@@ -169,7 +171,7 @@ namespace ArkBot.WebApi.Controllers
             bool incKibblesEggs,
             bool incTribeLog)
         {
-            var tribe = player.TribeId.HasValue ? context.Tribes.FirstOrDefault(x => x.Id == player.TribeId.Value) : null;
+            var tribe = player.Tribe;
             var vm = new PlayerServerViewModel
             {
                 ClusterKey = context.Config.Key,
@@ -210,8 +212,9 @@ namespace ArkBot.WebApi.Controllers
             var result = new List<TamedCreatureViewModel>();
             if (context.TamedCreatures != null)
             {
+                var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
                 var playercreatures = context.NoRafts.Where(x => x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && x.OwningPlayerId == playerId)).ToArray();
-                var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains((int)playerId));
+                var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains((int)playerId));
                 var tribecreatures = tribe != null ? context.NoRafts.Where(x => x.TargetingTeam == tribe.Id && !playercreatures.Any(y => y.Id == x.Id)).ToArray() : new ArkTamedCreature[] { };
                 foreach (var item in playercreatures.Select(x => new { c = x, o = "player" }).Concat(tribecreatures.Select(x => new { c = x, o = "tribe" })))
                 {
@@ -324,7 +327,7 @@ namespace ArkBot.WebApi.Controllers
         internal static List<KibbleAndEggViewModel> BuildKibblesAndEggsViewModelsForPlayerId(ArkServerContext context, int playerId)
         {
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
-            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+            var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
 
             //PrimalItemConsumable_Egg_Kaprosuchus_C, PrimalItemConsumable_Egg_Kaprosuchus_Fertilized_C, PrimalItemConsumable_Egg_Wyvern_Fertilized_Lightning_C
             var _rEgg = new Regex(@"^PrimalItemConsumable_Egg_(?<name>.+?)_C$", RegexOptions.Singleline);
@@ -374,7 +377,7 @@ namespace ArkBot.WebApi.Controllers
         internal static List<CropPlotViewModel> BuildCropPlotViewModelsForPlayerId(ArkServerContext context, int playerId)
         {
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
-            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+            var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
 
             var cropPlots = new[] { player?.Structures, tribe?.Structures }.Where(x => x != null).SelectMany(x => x).OfType<ArkStructureCropPlot>().Where(x => x.PlantedCropClassName != null).ToArray();
             
@@ -422,7 +425,7 @@ namespace ArkBot.WebApi.Controllers
         internal static List<ElectricalGeneratorViewModel> BuildElectricalGeneratorViewModelsForPlayerId(ArkServerContext context, int playerId)
         {
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
-            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+            var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
 
             var electricalGenerators = new[] { player?.Structures, tribe?.Structures }.Where(x => x != null).SelectMany(x => x).OfType<ArkStructureElectricGenerator>().ToArray();
 
@@ -442,7 +445,7 @@ namespace ArkBot.WebApi.Controllers
         internal static List<TribeLogEntryViewModel> BuildTribeLogViewModelsForPlayerId(ArkServerContext context, int playerId, int? limit = null)
         {
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
-            var tribe = context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
+            var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
 
             var tribelogs = tribe?.Logs?.Reverse().Take(limit ?? tribe.Logs.Length).Select(x => Data.TribeLog.FromLog(x)).ToArray() ?? new TribeLog[] { };
             var results = tribelogs.Select(x =>

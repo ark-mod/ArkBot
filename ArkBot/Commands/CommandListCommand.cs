@@ -11,6 +11,7 @@ using Discord;
 using Discord.Commands.Builders;
 using Discord.WebSocket;
 using RestSharp;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands
 {

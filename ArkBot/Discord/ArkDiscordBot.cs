@@ -29,6 +29,7 @@ using ArkBot.Voting;
 using Discord.WebSocket;
 using RazorEngine.Compilation.ImpromptuInterface;
 using VDS.Common.Collections.Enumerations;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Discord
 {

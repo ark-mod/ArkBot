@@ -5,6 +5,7 @@ using ArkBot.Database;
 using ArkBot.Discord.Command;
 using Discord;
 using Discord.Net;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands
 {

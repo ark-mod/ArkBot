@@ -9,6 +9,8 @@ import { environment } from '../../environments/environment';
 import * as d3 from "d3";
 import * as moment from 'moment'
 
+declare var config: any;
+
 @Component({
   selector: 'arkmap-structures',
   templateUrl: './arkmap-structures.component.html',
@@ -316,7 +318,10 @@ export class ArkmapStructuresComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     getApiBaseUrl(): string {
-      return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
+      return environment.apiBaseUrl
+        .replace(/\<protocol\>/gi, window.location.protocol)
+        .replace(/\<hostname\>/gi, window.location.hostname)
+        .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
     }
 
     reset() {

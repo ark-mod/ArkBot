@@ -2,6 +2,6 @@ export const environment = {
   production: true,
   demo: false,
   demoDate: null,
-  apiBaseUrl: "<protocol>//<hostname>:60001/api",
-  signalrBaseUrl: "<protocol>//<hostname>:60001/signalr"
+  apiBaseUrl: "<protocol>//<hostname>:<webapi_port>/api",
+  signalrBaseUrl: "<protocol>//<hostname>:<webapi_port>/signalr"
 };

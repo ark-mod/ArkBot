@@ -15,13 +15,12 @@ namespace ArkBot.Configuration.Validation
     {
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            var result = base.IfMethodValid(value, validationContext);
-            if (result != null) return result;
-
-            return !string.IsNullOrWhiteSpace(value as string) && Directory.Exists((string) value)
+            var result = IfMethodValid(value, validationContext);
+            if (result.Item1 != IfValidResult.ContinueValidation) return result.Item2;
+            return !string.IsNullOrWhiteSpace(value as string) && Directory.Exists(Environment.ExpandEnvironmentVariables((string) value))
                 ? ValidationResult.Success
                 : new ValidationResult(String.Format(CultureInfo.CurrentCulture, ErrorMessageString,
-                    validationContext.MemberName), new [] { validationContext.MemberName });
+                    validationContext.DisplayName ?? validationContext.MemberName), new [] { validationContext.MemberName });
         }
     }
 }

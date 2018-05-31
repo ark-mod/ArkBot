@@ -1,4 +1,5 @@
-﻿using ArkBot.Services;
+﻿using ArkBot.Configuration.Model;
+using ArkBot.Services;
 using ArkBot.Services.Data;
 using ArkBot.Threading;
 using ArkSavegameToolkitNet;
@@ -89,7 +90,7 @@ namespace ArkBot.Ark
         {
             QueueServerUpdate(serverContext);
 
-            var clusterContext = GetCluster(serverContext.Config.Cluster);
+            var clusterContext = GetCluster(serverContext.Config.ClusterKey);
             if (clusterContext == null) return;
             QueueClusterUpdate(clusterContext);
         }
@@ -225,7 +226,7 @@ namespace ArkBot.Ark
         {
             if (key == null) return null;
 
-            return Servers.Where(x => x.Config.Cluster.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
+            return Servers.Where(x => x.Config.ClusterKey.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
         }
 
         public ArkClusterContext GetCluster(string key)

@@ -1088,6 +1088,16 @@
       "Xenomorph Female"
     ],
     [
+      "Reaper King",
+      "Xenomorph_Character_BP_Male_Tamed_C",
+      "Xenomorph Male"
+    ],
+    [
+      "Reaper King (Wild)",
+      "Xenomorph_Character_BP_Male_C",
+      "Xenomorph Male (Wild)"
+    ],
+    [
       "Surface Reaper King",
       "Xenomorph_Character_BP_Male_Surface_C",
       "Xenomorph Male Surface"

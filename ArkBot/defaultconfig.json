@@ -2,12 +2,12 @@
   "botName": "ARK Bot",
   "botUrl": "",
   "appUrl": "",
-  "tempFileOutputDirPath": "C:\\ArkBot\\temp",
-  "googleApiKey": "<google api key>",
-  "steamApiKey": "<steam webapi key>",
+  "tempFileOutputDirPath": "",
+  "googleApiKey": "",
+  "steamApiKey": "",
   "discord": {
     "discordBotEnabled": true,
-    "botToken": "<token from discord>",
+    "botToken": "",
     "enabledChannels": [ "bot-commands" ],
     "infoTopicChannel": "bot-commands",
     "announcementChannel": "bot-notifications",
@@ -33,11 +33,15 @@
       }
     },
     "steamOpenIdRelyingServiceListenPrefix": "http://+:60002/openid/",
-    "steamOpenIdRedirectUri": "http://<your public ip or domain>:60002/openid/"
+    "steamOpenIdRedirectUri": ""
   },
-  "userRoles": {
-    "admin": []
-  },
+  "userRoles": [
+    {
+      "role": "admin",
+      "steamIds": [
+      ]
+    }
+  ],
   "accessControl": {
     "pages": {
       "home": [ "guest" ],
@@ -82,7 +86,7 @@
   },
   "backups": {
     "backupsEnabled": false,
-    "backupsDirectoryPath": "C:\\ARK Servers\\Backups"
+    "backupsDirectoryPath": ""
   },
   "webApiListenPrefix": "http://+:60001/",
   "webAppListenPrefix": "http://+:80/",
@@ -94,10 +98,9 @@
     "enabled": false,
     "challengeListenPrefix": "http://+:80/",
     "name": "ark-bot-ssl",
-    "password": "secret123",
-    "email": "youremail@yourdomain.com",
+    "password": "",
+    "email": "",
     "domains": [
-      "app.yourdomain.com"
     ],
     "ports": [ 443, 60001 ],
     "useCompatibilityNonSNIBindings": true
@@ -113,41 +116,47 @@
   "servers": [
     {
       "key": "server1",
-      "cluster": "cluster1",
-      "saveFilePath": "C:\\ARK Servers\\server1\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
-      "displayAddress": "myarkserver.domain.com:27015",
+      "clusterKey": "cluster1",
+      "saveFilePath": "",
+      "displayAddress": "",
       "ip": "127.0.0.1",
       "queryPort": 27015,
       "rconPort": 27020,
-      "rconPassword": "password",
-      "serverExecutablePath": "C:\\ARK Servers\\server1\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
-      "serverExecutableArguments": "TheIsland?listen?Port=7777?QueryPort=27015?RCONPort=27020?RCONEnabled=True?SessionName=Server1?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server1",
-      "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
-      "serverInstallDirPath": "C:\\ARK Servers\\server1",
-      "usePowershellOutputRedirect": false,
-      "disableChatNotificationOnGlobalCountdown": false
+      "rconPassword": "",
+      "serverManagement": {
+        "enabled":  true,
+        "serverExecutablePath": "",
+        "serverExecutableArguments": "",
+        "steamCmdExecutablePath": "",
+        "serverInstallDirPath": "",
+        "usePowershellOutputRedirect": false
+      },
+      "disableChatNotifications": false
     },
     {
       "key": "server2",
-      "cluster": "cluster1",
-      "saveFilePath": "C:\\ARK Servers\\server2\\ShooterGame\\Saved\\SavedArks\\TheIsland.ark",
-      "displayAddress": "myarkserver.domain.com:27016",
+      "clusterKey": "cluster1",
+      "saveFilePath": "",
+      "displayAddress": "",
       "ip": "127.0.0.1",
       "queryPort": 27016,
       "rconPort": 27021,
-      "rconPassword": "password",
-      "serverExecutablePath": "C:\\ARK Servers\\server2\\ShooterGame\\Binaries\\Win64\\ShooterGameServer.exe",
-      "serverExecutableArguments": "TheIsland?listen?Port=7779?QueryPort=27016?RCONPort=27021?RCONEnabled=True?SessionName=Server2?ServerPassword=?ServerAdminPassword=password?SpectatorPassword=password?MaxPlayers=5 -culture=en -nosteamclient -clusterid=cluster1 -ClusterDirOverride=\"C:\\ARK Servers\\cluster1\" -serverkey=server2",
-      "steamCmdExecutablePath": "C:\\SteamCmd\\steamcmd.exe",
-      "serverInstallDirPath": "C:\\ARK Servers\\server2",
-      "usePowershellOutputRedirect": false,
-      "disableChatNotificationOnGlobalCountdown": false
+      "rconPassword": "",
+      "serverManagement": {
+        "enabled": true,
+        "serverExecutablePath": "",
+        "serverExecutableArguments": "",
+        "steamCmdExecutablePath": "",
+        "serverInstallDirPath": "",
+        "usePowershellOutputRedirect": false
+      },
+      "disableChatNotifications": false
     }
   ],
   "clusters": [
     {
       "key": "cluster1",
-      "savePath": "C:\\ARK Servers\\cluster1"
+      "savePath": ""
     }
   ]
 }

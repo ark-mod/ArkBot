@@ -22,13 +22,19 @@ namespace ArkBot.Configuration.Validation
             _validationContext = new ValidationContext(target, null, null);
             _validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(target, _validationContext, _validationResults, true);
-            target.PropertyChanged += Validate;
+            target.PropertyChanged += target_PropertyChanged;
         }
 
-        void Validate(object sender, PropertyChangedEventArgs e)
+        void target_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Validate();
+        }
+
+        public void Validate()
         {
             _validationResults.Clear();
             Validator.TryValidateObject(_target, _validationContext, _validationResults, true);
+
             var hashSet = new HashSet<string>(_validationResults.SelectMany(x => x.MemberNames));
             foreach (var error in hashSet)
             {
