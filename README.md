@@ -1,3 +1,18 @@
+# Project status
+
+#### Development
+This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. There are currently no other developers contributing code to the project.
+
+#### Support
+Users are encouraged to support each other with issues and requests for help. Personal support request directed my way are no longer answered due to lack of time.
+
+Read the [wiki](https://github.com/tsebring/ArkBot/wiki) for help getting started.
+
+#### Suggestions/improvments/bugs
+If you think something is wrong with the project - help improve it. If you find a bug - help fix it. Don't know how to program? Start learning. This is the way of open source!
+
+---
+
 ![Web-app Interface](https://user-images.githubusercontent.com/408350/31540442-f0cb204c-b00b-11e7-8d40-f15b445cdcd2.png)
 
 ![Discord Bot Commands](https://user-images.githubusercontent.com/408350/31518648-405ee5f6-afa0-11e7-9c50-3dfd60ecdd7a.png)
@@ -28,7 +43,6 @@ Open as zip-archive or change extension to .zip, binaries are located under tool
 https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
 
 ## Installation
-**For questions/problems: open a GitHub issue or contact me on Discord (Tobias#5051).**
 
 * Download the latest pre-built binaries (see above).
 * Copy defaultconfig.json and name it config.json.
