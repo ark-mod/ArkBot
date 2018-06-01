@@ -40,7 +40,7 @@ https://github.com/tsebring/ArkBot/releases
 ### Pre-release built from latest sources
 Open as zip-archive or change extension to .zip, binaries are located under tools/.
 
-https://www.myget.org/F/tsebring/api/v2/package/ArkDiscordBot
+https://www.myget.org/F/arkbot-beta/api/v2/package/ArkBot
 
 ## Installation
 
