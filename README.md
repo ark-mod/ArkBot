@@ -3,6 +3,8 @@
 #### Development
 This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. There are currently no other developers contributing code to the project.
 
+The active development branch is currently [beta](https://github.com/tsebring/ArkBot/tree/beta).
+
 #### Support
 Users are encouraged to support each other with issues and requests for help. Personal support request directed my way are no longer answered due to lack of time.
 
