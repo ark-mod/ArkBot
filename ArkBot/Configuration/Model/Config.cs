@@ -44,18 +44,6 @@ namespace ArkBot.Configuration.Model
 
         // Required
 
-        [JsonProperty(PropertyName = "bitlyApiKey")]
-        [Display(Name = "Google API Key", Description = "API Key from Google used for url-shortening services")]
-        [ConfigurationHelp(instructions: new[] {
-            @"1. Go to [Googe APIs & Services](https://console.developers.google.com/apis/credentials) and create a credential of type ""API Key"".",
-            @"2. Go to [URL Shortener API](https://console.developers.google.com/apis/api/urlshortener.googleapis.com) and enable it." },
-            Example = "`AIzaSyBukSL8pbCjkyR__f6kvL0XW_2OcP5Mrfo`")]
-        [Category(ConfigurationCategory.Required)]
-        [PropertyOrder(0)]
-        [MinLength(1, ErrorMessage = "{0} is not set")]
-        //todo: validate google api key with google
-        public string BitlyApiKey { get; set; }
-
         [JsonProperty(PropertyName = "steamApiKey")]
         [Display(Name = "Steam API Key", Description = "API Key from Steam used for fetching server and user details from the Steam API")]
         [ConfigurationHelp(instructions: new[] {
