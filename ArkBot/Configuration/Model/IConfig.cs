@@ -10,7 +10,7 @@ namespace ArkBot.Configuration.Model
         string BotName { get; set; }
         string BotUrl { get; set; }
         string AppUrl { get; set; }
-        string GoogleApiKey { get; set; }
+        string BitlyApiKey { get; set; }
         string SteamApiKey { get; set; }
         string TempFileOutputDirPath { get; set; }
         DiscordConfigSection Discord { get; set; }

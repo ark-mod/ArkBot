@@ -723,10 +723,10 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.TempFileOutputDirPath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(_config.GoogleApiKey))
+            if (string.IsNullOrWhiteSpace(_config.BitlyApiKey))
             {
-                sb.AppendLine($@"Error: {nameof(_config.GoogleApiKey)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.GoogleApiKey))}");
+                sb.AppendLine($@"Error: {nameof(_config.BitlyApiKey)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BitlyApiKey))}");
                 sb.AppendLine();
             }
             if (string.IsNullOrWhiteSpace(_config.SteamApiKey))
