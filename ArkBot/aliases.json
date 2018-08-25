@@ -1,40 +1,363 @@
 {
   "Aliases": [
     [
-      "Achatina",
-      "Achatina_Character_BP_C",
-      "Snail",
-      "Acha"
+      "Alpha Basilisk",
+      "MegaBasilisk_Character_BP_C"
     ],
     [
-      "Allosaurus",
-      "Allo_Character_BP_C",
-      "Allo"
+      "Alpha Karkinos",
+      "MegaCrab_Character_BP_C",
+      "Alpha Crab"
     ],
     [
-      "Alpha Carno",
-      "MegaCarno_Character_BP_C"
+      "Alpha Reaper King (Surface)",
+      "MegaXenomorph_Character_BP_Male_Surface_C"
     ],
     [
-      "Alpha Deathworm",
-      "MegaDeathworm_Character_BP_C"
+      "Aberrant Dodo",
+      "Dodo_Character_BP_Aberrant_C"
     ],
     [
-      "Alpha Fire Wyvern",
-      "MegaWyvern_Character_BP_Fire_C"
+      "Featherlight",
+      "LanternBird_Character_BP_C"
     ],
     [
-      "Alpha Leedsichthys",
-      "Alpha_Leedsichthys_Character_BP_C",
-      "Alpha Leeds"
+      "Edmund Rockwell (Base)",
+      "Rockwell_Character_BP_C",
+      "Rockwell (Base)"
+    ],
+    [
+      "Edmund Rockwell (Alpha)",
+      "Rockwell_Character_BP_Hard_C",
+      "Rockwell (Alpha)"
+    ],
+    [
+      "Edmund Rockwell (Beta)",
+      "Rockwell_Character_BP_Medium_C",
+      "Rockwell (Beta)"
+    ],
+    [
+      "Edmund Rockwell (Gamma)",
+      "Rockwell_Character_BP_Easy_C",
+      "Rockwell (Gamma)"
+    ],
+    [
+      "Rockwell Tentacle (Base)",
+      "RockwellTentacle_Character_BP_C",
+      "Tentacle (Base)"
+    ],
+    [
+      "Rockwell Tentacle (Alpha)",
+      "RockwellTentacle_Character_BP_Alpha_C",
+      "Tentacle (Alpha)"
+    ],
+    [
+      "Rockwell Tentacle (Beta)",
+      "RockwellTentacle_Character_BP_Beta_C",
+      "Tentacle (Beta)"
+    ],
+    [
+      "Rockwell Tentacle (Gamma)",
+      "RockwellTentacle_Character_BP_Gamma_C",
+      "Tentacle (Gamma)"
+    ],
+    [
+      "Aberrant Ankylosaurus",
+      "Ankylo_Character_BP_Aberrant_C",
+      "Aberrant Ankylo"
+    ],
+    [
+      "Aberrant Baryonyx",
+      "Baryonyx_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Carno",
+      "Carno_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Dimorphodon",
+      "Dimorph_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Diplodocus",
+      "Diplodocus_Character_BP_Aberrant_C",
+      "Aberrant Diplo"
+    ],
+    [
+      "Aberrant Iguanodon",
+      "Iguanodon_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Megalosaurus",
+      "Megalosaurus_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Parasaurolophus",
+      "Para_Character_BP_Aberrant_C",
+      "Aberrant Parasaur"
+    ],
+    [
+      "Aberrant Raptor",
+      "Raptor_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Spinosaurus",
+      "Spino_Character_BP_Aberrant_C",
+      "Aberrant Spino"
+    ],
+    [
+      "Aberrant Stegosaurus",
+      "Stego_Character_BP_Aberrant_C",
+      "Aberrant Stego"
+    ],
+    [
+      "Aberrant Triceratops",
+      "Trike_Character_BP_Aberrant_C",
+      "Aberrant Trike"
+    ],
+    [
+      "Elemental Reaper King",
+      "Xenomorph_Character_BP_Male_Minion_C"
+    ],
+    [
+      "Nameless",
+      "ChupaCabra_Character_BP_C"
+    ],
+    [
+      "Nameless (Minion)",
+      "ChupaCabra_Character_BP_Minion_C"
+    ],
+    [
+      "Nameless (Surface)",
+      "ChupaCabra_Character_BP_Surface_C"
+    ],
+    [
+      "Reaper King",
+      "Xenomorph_Character_BP_Male_Tamed_C"
+    ],
+    [
+      "Reaper Queen",
+      "Xenomorph_Character_BP_Female_C"
+    ],
+    [
+      "Subterranian Reaper King",
+      "Xenomorph_Character_BP_Male_Chupa_C"
+    ],
+    [
+      "Surface Reaper King",
+      "Xenomorph_Character_BP_Male_Surface_C"
+    ],
+    [
+      "Aberrant Angler",
+      "Angler_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Coelacanth",
+      "Coel_Character_BP_Aberrant_C",
+      "Aberrant Coel"
+    ],
+    [
+      "Aberrant Electrophorus",
+      "Eel_Character_BP_Aberrant_C",
+      "Aberrant Eel"
+    ],
+    [
+      "Lamprey",
+      "Lamprey_Character_C"
+    ],
+    [
+      "Aberrant Manta",
+      "Manta_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Piranha",
+      "Piranha_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Sabertooth Salmon",
+      "Salmon_Character_Aberrant_C",
+      "Aberrant Salmon"
+    ],
+    [
+      "Aberrant Achatina",
+      "Achatina_Character_BP_Aberrant_C",
+      "Aberrant Snail"
+    ],
+    [
+      "Aberrant Araneo",
+      "SpiderS_Character_BP_Aberrant_C",
+      "Aberrant Spider"
+    ],
+    [
+      "Aberrant Arthropluera",
+      "Arthro_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Cnidaria",
+      "Cnidaria_Character_BP_Aberrant_C",
+      "Aberrant Jellyfish"
+    ],
+    [
+      "Aberrant Dung Beetle",
+      "DungBeetle_Character_BP_Aberrant_C"
+    ],
+    [
+      "Glowbug",
+      "Lightbug_Character_BaseBP_C"
+    ],
+    [
+      "Karkinos",
+      "Crab_Character_BP_C",
+      "Crab"
+    ],
+    [
+      "Aberrant Meganeura",
+      "Dragonfly_Character_BP_Aberrant_C",
+      "Aberrant Dragonfly"
+    ],
+    [
+      "Aberrant Pulminoscorpius",
+      "Scorpion_Character_BP_Aberrant_C",
+      "Aberrant Scorpion"
+    ],
+    [
+      "Aberrant Trillobyte",
+      "Trilobite_Character_Aberrant_C"
+    ],
+    [
+      "Bulbdog",
+      "LanternPug_Character_BP_C"
+    ],
+    [
+      "Aberrant Direbear",
+      "Direbear_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Doedicurus",
+      "Doed_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Equus",
+      "Equus_Character_BP_Aberrant_C",
+      "Aberrant Horse"
+    ],
+    [
+      "Aberrant Gigantopithecus",
+      "Bigfoot_Character_BP_Aberrant_C",
+      "Aberrant Bigfoot"
+    ],
+    [
+      "Aberrant Otter",
+      "Otter_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Ovis",
+      "Sheep_Character_BP_Aberrant_C",
+      "Aberrant Sheep"
+    ],
+    [
+      "Aberrant Paracer",
+      "Paracer_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Purlovia",
+      "Purlovia_Character_BP_Aberrant_C"
+    ],
+    [
+      "Ravager",
+      "CaveWolf_Character_BP_C"
+    ],
+    [
+      "Roll Rat",
+      "MoleRat_Character_BP_C",
+      "Mole"
+    ],
+    [
+      "Shinehorn",
+      "LanternGoat_Character_BP_C"
+    ],
+    [
+      "Basilisk",
+      "Basilisk_Character_BP_C"
+    ],
+    [
+      "Aberrant Beelzebufo",
+      "Toad_Character_BP_Aberrant_C",
+      "Aberrant Frog"
+    ],
+    [
+      "Aberrant Carbonemys",
+      "Turtle_Character_BP_Aberrant_C",
+      "Aberrant Turtle"
+    ],
+    [
+      "Aberrant Dimetrodon",
+      "Dimetro_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Diplocaulus",
+      "Diplocaulus_Character_BP_Aberrant_C"
+    ],
+    [
+      "Glowtail",
+      "LanternLizard_Character_BP_C"
+    ],
+    [
+      "Aberrant Lystrosaurus",
+      "Lystro_Character_BP_Aberrant_C",
+      "Aberrant Lystro"
+    ],
+    [
+      "Aberrant Megalania",
+      "Megalania_Character_BP_Aberrant_C"
+    ],
+    [
+      "Aberrant Moschops",
+      "Moschops_Character_BP_Aberrant_C"
+    ],
+    [
+      "Rock Drake",
+      "RockDrake_Character_BP_C"
+    ],
+    [
+      "Aberrant Sarcosuchus",
+      "Sarco_Character_BP_Aberrant_C",
+      "Aberrant Sarco"
+    ],
+    [
+      "Seeker",
+      "Pteroteuthis_Char_BP_C"
+    ],
+    [
+      "Seeker (Surface)",
+      "Pteroteuthis_Char_BP_Surface_C"
+    ],
+    [
+      "Aberrant Titanoboa",
+      "BoaFrill_Character_BP_Aberrant_C"
+    ],
+    [
+      "Albino Leedsichthys",
+      "Alpha_Leedsichthys_Character_BP_C"
+    ],
+    [
+      "Alpha Carnotaurus",
+      "MegaCarno_Character_BP_C",
+      "Alpha Carno"
     ],
     [
       "Alpha Megalodon",
       "MegaMegalodon_Character_BP_C"
     ],
     [
-      "Alpha Mosasaurus",
-      "Mosa_Character_BP_Mega_C"
+      "Alpha Mosasaur",
+      "Mosa_Character_BP_Mega_C",
+      "Alpha Mosa"
+    ],
+    [
+      "Alpha Mosasaur (Cave)",
+      "Mosa_Character_BP_Mega_Cave_C",
+      "Alpha Mosa (Cave)"
     ],
     [
       "Alpha Raptor",
@@ -46,283 +369,34 @@
     ],
     [
       "Alpha Tusoteuthis",
-      "Mega_Tusoteuthis_Character_BP_C"
+      "Mega_Tusoteuthis_Character_BP_C",
+      "Alpha Squid"
     ],
     [
-      "Ammonite",
-      "Ammonite_Character_C"
+      "Giganotosaurus (Base)",
+      "Gigant_Character_BP_Base_C",
+      "Giga (Base)"
     ],
     [
-      "Angler",
-      "Angler_Character_BP_C",
-      "Anglerfish"
+      "Tusoteuthis (Cave Base)",
+      "Tusoteuthis_Character_BP_CaveBase_C",
+      "Squid (Cave Base)"
     ],
     [
-      "Ankylosaurus",
-      "Ankylo_Character_BP_C",
-      "Ankylo",
-      "Anky"
-    ],
-    [
-      "Araneo",
-      "SpiderS_Character_BP_C",
-      "Spider"
-    ],
-    [
-      "Archaeopteryx",
-      "Archa_Character_BP_C",
-      "Archa"
+      "Archaeopterix",
+      "Archa_Character_BP_C"
     ],
     [
       "Argentavis",
-      "Argent_Character_BP_C",
-      "Argent",
-      "Argi"
-    ],
-    [
-      "Arthropluera",
-      "Arthro_Character_BP_C",
-      "Arthro",
-      "Centipede"
-    ],
-    [
-      "Baryonyx",
-      "Baryonyx_Character_BP_C",
-      "Bary"
-    ],
-    [
-      "Basilosaurus",
-      "Basilosaurus_Character_BP_C",
-      "Basilo"
-    ],
-    [
-      "Beelzebufo",
-      "Toad_Character_BP_C",
-      "Toad"
-    ],
-    [
-      "Bone Fire Wyvern",
-      "Bone_MegaWyvern_Character_BP_Fire_C"
-    ],
-    [
-      "Brontosaurus",
-      "Sauropod_Character_BP_C",
-      "Bronto"
-    ],
-    [
-      "Broodmother Lysrix",
-      "SpiderL_Character_BP_C"
-    ],
-    [
-      "BunnyDodo",
-      "Dodo_Character_BP_Bunny",
-      "Bunny Dodo"
-    ],
-    [
-      "BunnyOviraptor",
-      "BunnyOviRaptor_Character_BP",
-      "Bunny Oviraptor"
-    ],
-    [
-      "Carbonemys",
-      "Turtle_Character_BP_C",
-      "Turtle"
-    ],
-    [
-      "Carnotaurus",
-      "Carno_Character_BP_C",
-      "Carno"
-    ],
-    [
-      "Castoroides",
-      "Beaver_Character_BP_C",
-      "Beaver"
-    ],
-    [
-      "Chalicotherium",
-      "Chalico_Character_BP_C",
-      "Chalico",
-      "Cow"
-    ],
-    [
-      "Cnidaria",
-      "Cnidaria_Character_BP_C"
-    ],
-    [
-      "Coelacanth",
-      "Coel_Character_BP_C",
-      "Coel"
-    ],
-    [
-      "Ocean Coelacanth",
-      "Coel_Character_BP_Ocean_C",
-      "Ocean Coel"
-    ],
-    [
-      "Compsognathus",
-      "Compy_Character_BP_C",
-      "Compy"
-    ],
-    [
-      "Daeodon",
-      "Daeodon_Character_BP_C",
-      "Hell Pig"
-    ],
-    [
-      "Deathworm",
-      "Deathworm_Character_BP_C"
-    ],
-    [
-      "Dilophosaur",
-      "Dilo_Character_BP_C",
-      "Dilo"
-    ],
-    [
-      "Dimetrodon",
-      "Dimetro_Character_BP_C",
-      "Dimetro"
-    ],
-    [
-      "Dimorphodon",
-      "Dimorph_Character_BP_C",
-      "Dimorph",
-      "Dimo"
-    ],
-    [
-      "Diplocaulus",
-      "Diplocaulus_Character_BP_C",
-      "Newt"
-    ],
-    [
-      "Diplodocus",
-      "Diplodocus_Character_BP_C"
-    ],
-    [
-      "Direbear",
-      "Direbear_Character_BP_C",
-      "Dire Bear",
-      "Bear"
-    ],
-    [
-      "Dire Polar Bear",
-      "Direbear_Character_Polar_C",
-      "Direbear Polar",
-      "Dire Bear Polar"
-    ],
-    [
-      "Direwolf",
-      "Direwolf_Character_BP_C",
-      "Dire Wolf",
-      "Wolf"
+      "Argent_Character_BP_C"
     ],
     [
       "Dodo",
-      "Dodo_Character_BP_C",
-      "Chicken"
-    ],
-    [
-      "Dodo Wyvern",
-      "DodoWyvern_Character_BP_C"
-    ],
-    [
-      "DodoRex",
-      "DodoRex_Character_BP_C",
-      "Dodo Rex"
-    ],
-    [
-      "Doedicurus",
-      "Doed_Character_BP_C",
-      "Doed"
-    ],
-    [
-      "Dragon",
-      "Dragon_Character_BP_Boss_C"
-    ],
-    [
-      "Dragonfly",
-      "Dragonfly_Character_BP_C"
-    ],
-    [
-      "Dung Beetle",
-      "DungBeetle_Character_BP_C",
-      "Beetle"
-    ],
-    [
-      "Dunkleosteus",
-      "Dunkle_Character_BP_C",
-      "Dunkle"
-    ],
-    [
-      "Electrophorus",
-      "Eel_Character_BP_C",
-      "Eel",
-      "Electro"
-    ],
-    [
-      "Equus",
-      "Equus_Character_BP_C",
-      "Horse"
-    ],
-    [
-      "Unicorn",
-      "Equus_Character_BP_Unicorn_C"
-    ],
-    [
-      "Eurypterid",
-      "Euryp_Character_C",
-      "Euryp"
-    ],
-    [
-      "Gallimimus",
-      "Galli_Character_BP_C",
-      "Galli"
-    ],
-    [
-      "Giant Bee",
-      "Bee_Queen_Character_BP_C",
-      "Bee Queen",
-      "Bee"
-    ],
-    [
-      "Giganotosaurus",
-      "Gigant_Character_BP_C",
-      "Giga"
-    ],
-    [
-      "Gigantopithecus",
-      "Bigfoot_Character_BP_C"
-    ],
-    [
-      "Griffin",
-      "Griffin_Character_BP_C",
-      "Gryphon"
+      "Dodo_Character_BP_C"
     ],
     [
       "Hesperornis",
-      "Hesperornis_Character_BP_C",
-      "Duck"
-    ],
-    [
-      "Human"
-    ],
-    [
-      "Hyaenodon",
-      "Hyaenodon_Character_BP_C",
-      "Hyena"
-    ],
-    [
-      "Ice Worm Queen",
-      "Iceworm_Queen_Character_BP_C"
-    ],
-    [
-      "Ice Worm",
-      "Iceworm_Character_Minion_BP_Smaller_C"
-    ],
-    [
-      "Ichthy",
-      "Dolphin_Character_BP_C",
-      "Ichthyosaurus",
-      "Dolphin"
+      "Hesperornis_Character_BP_C"
     ],
     [
       "Ichthyornis",
@@ -330,31 +404,319 @@
       "Seagull"
     ],
     [
-      "Iguanodon",
-      "Iguanodon_Character_BP_C",
-      "Iguan"
-    ],
-    [
-      "Jerboa",
-      "Jerboa_Character_BP_C"
-    ],
-    [
-      "Jug Bug",
-      "Jugbug_Character_BaseBP_C",
-      "Jugbug_Oil_Character_BP_C",
-      "Jugbug_Water_Character_BP_C"
-    ],
-    [
       "Kairuku",
       "Kairuku_Character_BP_C",
       "Penguin"
     ],
     [
-      "Kaprosuchus",
-      "Kaprosuchus_Character_BP_C",
-      "Kapro",
-      "Gator",
-      "Jumping Crocodile"
+      "Pelagornis",
+      "Pela_Character_BP_C"
+    ],
+    [
+      "Terror Bird",
+      "TerrorBird_Character_BP_C"
+    ],
+    [
+      "Araneo (Boss Minion) (Alpha)",
+      "SpiderS_Character_BP_Aggressive_Hard_C",
+      "Spider (Boss Minion) (Alpha)"
+    ],
+    [
+      "Araneo (Boss Minion) (Beta)",
+      "SpiderS_Character_BP_Aggressive_Med_C",
+      "Spider (Boss Minion) (Beta)"
+    ],
+    [
+      "Araneo (Boss Minion) (Gamma)",
+      "SpiderS_Character_BP_Aggressive_C",
+      "Spider (Boss Minion) (Gamma)"
+    ],
+    [
+      "Broodmother (Alpha)",
+      "SpiderL_Character_BP_Hard_C"
+    ],
+    [
+      "Broodmother (Alpha) (The Center)",
+      "SpiderL_Character_BP_TheCenterHard_C"
+    ],
+    [
+      "Broodmother (Beta)",
+      "SpiderL_Character_BP_Medium_C"
+    ],
+    [
+      "Broodmother (Beta) (The Center)",
+      "SpiderL_Character_BP_TheCenterMedium_C"
+    ],
+    [
+      "Broodmother (Gamma)",
+      "SpiderL_Character_BP_Easy_C"
+    ],
+    [
+      "Broodmother (Gamma) (The Center)",
+      "SpiderL_Character_BP_TheCenter_C"
+    ],
+    [
+      "Broodmother (Base)",
+      "SpiderL_Character_BP_C"
+    ],
+    [
+      "Dimorphodon (Boss Minion) (Alpha)",
+      "Dimorph_Character_BP_Aggressive_DragonBoss_Hard_C"
+    ],
+    [
+      "Dimorphodon (Boss Minion) (Bets)",
+      "Dimorph_Character_BP_Aggressive_DragonBoss_Med_C"
+    ],
+    [
+      "Dimorphodon (Boss Minion) (Gamma)",
+      "Dimorph_Character_BP_Aggressive_DragonBoss_C"
+    ],
+    [
+      "Dimorphodon (Boss Minion) (Base)",
+      "Dimorph_Character_BP_Aggressive_C"
+    ],
+    [
+      "Dragon (Alpha)",
+      "Dragon_Character_BP_Boss_Hard_C"
+    ],
+    [
+      "Dragon (Beta)",
+      "Dragon_Character_BP_Boss_Medium_C"
+    ],
+    [
+      "Dragon (Gamma)",
+      "Dragon_Character_BP_Boss_Easy_C"
+    ],
+    [
+      "Dragon (Base)",
+      "Dragon_Character_BP_Boss_C"
+    ],
+    [
+      "Dragon (Old)",
+      "Dragon_Character_BP_C"
+    ],
+    [
+      "End Boss Drone (Alpha)",
+      "EndDrone_Character_BP_Hard_C"
+    ],
+    [
+      "End Boss Drone (Beta)",
+      "EndDrone_Character_BP_Med_C"
+    ],
+    [
+      "End Boss Drone (Gamma)",
+      "EndDrone_Character_BP_C"
+    ],
+    [
+      "End Boss Tank (Alpha)",
+      "EndTank_Character_BP_Hard_C"
+    ],
+    [
+      "End Boss Tank (Beta)",
+      "EndTank_Character_BP_Med_C"
+    ],
+    [
+      "End Boss Tank (Gamma)",
+      "EndTank_Character_BP_C"
+    ],
+    [
+      "Gigantopithecus (Boss Minion) (Alpha)",
+      "Bigfoot_Character_BP_Aggressive_Hard_C",
+      "Bigfoot (Boss Minion) (Alpha)"
+    ],
+    [
+      "Gigantopithecus (Boss Minion) (Beta)",
+      "Bigfoot_Character_BP_Aggressive_Med_C",
+      "Bigfoot (Boss Minion) (Beta)"
+    ],
+    [
+      "Gigantopithecus (Boss Minion) (Gamma)",
+      "Bigfoot_Character_BP_Aggressive_C",
+      "Bigfoot (Boss Minion) (Gamma)"
+    ],
+    [
+      "Megapithecus (Alpha)",
+      "Gorilla_Character_BP_Hard_C"
+    ],
+    [
+      "Megapithecus (Alpha) (The Center)",
+      "Gorilla_Character_BP_TheCenter_Hard_C"
+    ],
+    [
+      "Megapithecus (Beta)",
+      "Gorilla_Character_BP_Medium_C"
+    ],
+    [
+      "Megapithecus (Beta) (The Center)",
+      "Gorilla_Character_BP_TheCenter_Medium_C"
+    ],
+    [
+      "Megapithecus (Gamma)",
+      "Gorilla_Character_BP_Easy_C"
+    ],
+    [
+      "Megapithecus (Gamma) (The Center)",
+      "Gorilla_Character_BP_TheCenter_C"
+    ],
+    [
+      "Megapithecus (Base)",
+      "Gorila_Character_BP_C"
+    ],
+    [
+      "Mesopithecus (Boss Minion) (Alpha)",
+      "Monkey_Character_BP_Aggressive_Hard_C",
+      "Monkey (Boss Minion) (Alpha)"
+    ],
+    [
+      "Mesopithecus (Boss Minion) (Beta)",
+      "Monkey_Character_BP_Aggressive_Med_C",
+      "Monkey (Boss Minion) (Beta)"
+    ],
+    [
+      "Mesopithecus (Boss Minion) (Gamma)",
+      "Monkey_Character_BP_Aggressive_C",
+      "Monkey (Boss Minion) (Gamma)"
+    ],
+    [
+      "Overseer (Base)",
+      "EndBoss_Character_C"
+    ],
+    [
+      "Overseer (Alpha)",
+      "EndBoss_Character_Hard_C"
+    ],
+    [
+      "Overseer (Beta)",
+      "EndBoss_Character_Medium_C"
+    ],
+    [
+      "Overseer (Gamma)",
+      "EndBoss_Character_Easy_C"
+    ],
+    [
+      "Overseer (Gorilla Form) (Base)",
+      "EndBossGorilla_Character_BP_C"
+    ],
+    [
+      "Overseer (Gorilla Form) (Alpha)",
+      "EndBossGorilla_Character_BP_Hard_C"
+    ],
+    [
+      "Overseer (Gorilla Form) (Beta)",
+      "EndBossGorilla_Character_BP_Medium_C"
+    ],
+    [
+      "Overseer (Gorilla Form) (Gamma)",
+      "EndBossGorilla_Character_BP_Easy_C"
+    ],
+    [
+      "Overseer (Dragon Form) (Base)",
+      "EndBossDragon_Character_BP_C"
+    ],
+    [
+      "Overseer (Dragon Form) (Alpha)",
+      "EndBossDragon_Character_BP_Hard_C"
+    ],
+    [
+      "Overseer (Dragon Form) (Beta)",
+      "EndBossDragon_Character_BP_Medium_C"
+    ],
+    [
+      "Overseer (Dragon Form) (Gamma)",
+      "EndBossDragon_Character_BP_Easy_C"
+    ],
+    [
+      "Overseer (Spider Form) (Base)",
+      "EndBossSpiderL_Character_BP_C"
+    ],
+    [
+      "Overseer (Spider Form) (Alpha)",
+      "EndBossSpiderL_Character_BP_Hard_C"
+    ],
+    [
+      "Overseer (Spider Form) (Beta)",
+      "EndBossSpiderL_Character_BP_Medium_C"
+    ],
+    [
+      "Overseer (Spider Form) (Gamma)",
+      "EndBossSpiderL_Character_BP_Easy_C"
+    ],
+    [
+      "Pteranodon (Boss Minion) (Alpha)",
+      "Ptero_Minion_Character_Hard_C"
+    ],
+    [
+      "Pteranodon (Boss Minion) (Beta)",
+      "Ptero_Minion_Character_Med_C"
+    ],
+    [
+      "Pteranodon (Boss Minion) (Gamma)",
+      "Ptero_Minion_Character_BP_C"
+    ],
+    [
+      "Allosaurus",
+      "Allo_Character_BP_C",
+      "Allo"
+    ],
+    [
+      "Ankylosaurus",
+      "Ankylo_Character_BP_C",
+      "Ankylo"
+    ],
+    [
+      "Baryonyx",
+      "Baryonyx_Character_BP_C"
+    ],
+    [
+      "Brontosaurus",
+      "Sauropod_Character_BP_C",
+      "Bronto"
+    ],
+    [
+      "Carnotaurus",
+      "Carno_Character_BP_C",
+      "Carno"
+    ],
+    [
+      "Compsognathus",
+      "Compy_Character_BP_C",
+      "Compy"
+    ],
+    [
+      "Dilophosaurus",
+      "Dilo_Character_BP_C",
+      "Dilo"
+    ],
+    [
+      "Dimorphodon",
+      "Dimorph_Character_BP_C"
+    ],
+    [
+      "Diplodocus",
+      "Diplodocus_Character_BP_C",
+      "Diplo"
+    ],
+    [
+      "Gallimimus",
+      "Galli_Character_BP_C"
+    ],
+    [
+      "Megalania",
+      "Megalania_Character_BP_C"
+    ],
+    [
+      "Giganotosaurus",
+      "Gigant_Character_BP_C",
+      "Giga"
+    ],
+    [
+      "Giganotosaurus (Tek Cave)",
+      "Gigant_Character_BP_TekCave_C",
+      "Giga (Tek Cave)"
+    ],
+    [
+      "Iguanodon",
+      "Iguanodon_Character_BP_C"
     ],
     [
       "Kentrosaurus",
@@ -362,80 +724,292 @@
       "Kentro"
     ],
     [
-      "Leech",
-      "Leech_Character_C"
+      "Megalosaurus",
+      "Megalosaurus_Character_BP_C"
     ],
     [
-      "Leech Diseased",
-      "Leech_Character_Diseased_C",
-      "Diseased Leech"
+      "Megalosaurus (Tek Cave)",
+      "Megalosaurus_Character_BP_TekCave_C"
+    ],
+    [
+      "Microraptor",
+      "Microraptor_Character_BP_C"
+    ],
+    [
+      "Oviraptor",
+      "OviRaptor_Character_BP_C"
+    ],
+    [
+      "Pachycephalosaurus",
+      "Pachy_Character_BP_C",
+      "Pachy"
+    ],
+    [
+      "Pachyrhinosaurus",
+      "Pachyrhino_Character_BP_C",
+      "Pachy Rhino"
+    ],
+    [
+      "Motorboat",
+      "MotorRaft_BP_C"
+    ],
+    [
+      "Parasaurolophus",
+      "Para_Character_BP_C",
+      "Parasaur"
+    ],
+    [
+      "Raptor",
+      "Raptor_Character_BP_C"
+    ],
+    [
+      "Rex",
+      "Rex_Character_BP_C"
+    ],
+    [
+      "Spinosaurus",
+      "Spino_Character_BP_C",
+      "Spino"
+    ],
+    [
+      "Stegosaurus",
+      "Stego_Character_BP_C",
+      "Stego"
+    ],
+    [
+      "Therizinosaurus",
+      "Therizino_Character_BP_C",
+      "Therizino"
+    ],
+    [
+      "Titanosaur",
+      "Titanosaur_Character_BP_C",
+      "Titan"
+    ],
+    [
+      "Triceratops",
+      "Trike_Character_BP_C",
+      "Trike"
+    ],
+    [
+      "Troodon",
+      "Troodon_Character_BP_C"
+    ],
+    [
+      "Yutyrannus",
+      "Yutyrannus_Character_BP_C",
+      "Yuty"
+    ],
+    [
+      "Tek Rex",
+      "BionicRex_Character_BP_C"
+    ],
+    [
+      "Zombie Dodo",
+      "ZombieDodo_Character_BP_C"
+    ],
+    [
+      "Unicorn",
+      "Equus_Character_BP_Unicorn_C"
+    ],
+    [
+      "Yeti",
+      "Yeti_Character_BP_C"
+    ],
+    [
+      "Angler",
+      "Angler_Character_BP_C"
+    ],
+    [
+      "Coelacanth",
+      "Coel_Character_BP_C",
+      "Coel"
+    ],
+    [
+      "Coelacanth (Deep Sea)",
+      "Coel_Character_BP_Ocean_C",
+      "Coel (Deep Sea)"
+    ],
+    [
+      "Dunkleosteus",
+      "Dunkle_Character_BP_C",
+      "Dunkleo"
+    ],
+    [
+      "Electrophorus",
+      "Eel_Character_BP_C",
+      "Eel"
     ],
     [
       "Leedsichthys",
-      "Leedsichthys_Character_BP_C",
-      "Leeds"
-    ],
-    [
-      "Liopleurodon",
-      "Liopleurodon_Character_BP_C",
-      "Lio"
-    ],
-    [
-      "Lymantria",
-      "Moth_Character_BP_C",
-      "Moth",
-      "Desert Moth"
-    ],
-    [
-      "Lystrosaurus",
-      "Lystro_Character_BP_C",
-      "Lystro"
-    ],
-    [
-      "Mammoth",
-      "Mammoth_Character_BP_C"
+      "Leedsichthys_Character_BP_C"
     ],
     [
       "Manta",
       "Manta_Character_BP_C"
     ],
     [
-      "Manticore",
-      "Manticore_Character_BP_C"
+      "Raft",
+      "Raft_BP_C"
     ],
     [
-      "Mantis",
-      "Mantis_Character_BP_C"
+      "Megalodon",
+      "Megalodon_Character_BP_C"
     ],
     [
-      "Megalania",
-      "Megalania_Character_BP_C"
+      "Piranha",
+      "Piranha_Character_BP_C"
+    ],
+    [
+      "Sabertooth Salmon",
+      "Salmon_Character_BP_C"
+    ],
+    [
+      "Achatina",
+      "Achatina_Character_BP_C",
+      "Snail"
+    ],
+    [
+      "Ammonite",
+      "Ammonite_Character_C"
+    ],
+    [
+      "Araneo",
+      "SpiderS_Character_BP_C",
+      "Spider"
+    ],
+    [
+      "Arthropluera",
+      "Arthro_Character_BP_C"
+    ],
+    [
+      "Cnidaria",
+      "Cnidaria_Character_BP_C",
+      "Jellyfish"
+    ],
+    [
+      "Diseased Leech",
+      "Leech_Character_Diseased_C"
+    ],
+    [
+      "Dung Beetle",
+      "DungBeetle_Character_BP_C"
+    ],
+    [
+      "Eurypterid",
+      "Euryp_Character_C",
+      "Sea Scorpion"
+    ],
+    [
+      "Giant Bee Drone",
+      "Bee_Character_BP_C"
+    ],
+    [
+      "Giant Bee Queen",
+      "Bee_Queen_Character_BP_C"
+    ],
+    [
+      "Leech",
+      "Leech_Character_C"
+    ],
+    [
+      "Skeletal Rex",
+      "Bone_MegaRex_Character_BP_C",
+      "Skele Rex"
+    ],
+    [
+      "Meganeura",
+      "Dragonfly_Character_BP_C",
+      "Dragonfly"
+    ],
+    [
+      "Pulminoscorpius",
+      "Scorpion_Character_BP_C",
+      "Scorpion"
+    ],
+    [
+      "Titanomyrma",
+      "Ant_Character_BP_C",
+      "Ant"
+    ],
+    [
+      "Titanomyrma (Flying)",
+      "FlyingAnt_Character_BP_C",
+      "Flying Ant"
+    ],
+    [
+      "Trilobyte",
+      "Trilobite_Character_C"
+    ],
+    [
+      "Tusoteuthis",
+      "Tusoteuthis_Character_BP_C",
+      "Squid"
+    ],
+    [
+      "Tusoteuthis (Cave)",
+      "Tusoteuthis_Character_BP_Caves_C",
+      "Squid (Cave)"
+    ],
+    [
+      "Basilosaurus",
+      "Basilosaurus_Character_BP_C",
+      "Basilo"
+    ],
+    [
+      "Castroides",
+      "Beaver_Character_BP_C",
+      "Giant Beaver"
+    ],
+    [
+      "Chalicotherium",
+      "Chalico_Character_BP_C",
+      "Chalico"
+    ],
+    [
+      "Daeodon",
+      "Daeodon_Character_BP_C"
+    ],
+    [
+      "Direbear",
+      "Direbear_Character_BP_C"
+    ],
+    [
+      "Direwolf",
+      "Direwolf_Character_BP_C"
+    ],
+    [
+      "Doedicurus",
+      "Doed_Character_BP_C",
+      "Doedic"
+    ],
+    [
+      "Equus",
+      "Equus_Character_BP_C",
+      "Horse"
+    ],
+    [
+      "Gigantopithecus",
+      "BigFoot_Character_BP_C",
+      "Bigfoot"
+    ],
+    [
+      "Hyaenodon",
+      "Hyaenodon_Character_BP_C"
+    ],
+    [
+      "Mammoth",
+      "Mammoth_Character_BP_C"
     ],
     [
       "Megaloceros",
       "Stag_Character_BP_C",
-      "Megaloc",
-      "Stag",
       "Deer"
     ],
     [
-      "Megalodon",
-      "Megalodon_Character_BP_C",
-      "Shark"
-    ],
-    [
-      "Megalosaurus",
-      "Megalosaurus_Character_BP_C",
-      "Megalos",
-      "Sleeping Raptor"
-    ],
-    [
-      "Megapithecus",
-      "Gorilla_Character_BP_C"
-    ],
-    [
       "Megatherium",
-      "Megatherium_Character_BP_C"
+      "Megatherium_Character_BP_C",
+      "Sloth"
     ],
     [
       "Mesopithecus",
@@ -443,13 +1017,97 @@
       "Monkey"
     ],
     [
-      "Microraptor",
-      "Microraptor_Character_BP_C"
+      "Onychonycteris",
+      "Bat_Character_BP_C",
+      "Onyc",
+      "Bat"
     ],
     [
-      "Morellatops",
-      "camelsaurus_Character_BP_C",
-      "Camelsaurus"
+      "Otter",
+      "Otter_Character_BP_C"
+    ],
+    [
+      "Ovis",
+      "Sheep_Character_BP_C",
+      "Sheep"
+    ],
+    [
+      "Paracer",
+      "Paracer_Character_BP_C"
+    ],
+    [
+      "Phiomia",
+      "Phiomia_Character_BP_C"
+    ],
+    [
+      "Polar Bear (Island)",
+      "Direbear_Character_Polar_C"
+    ],
+    [
+      "Procoptodon",
+      "Procoptodon_Character_BP_C",
+      "Kangaroo"
+    ],
+    [
+      "Purlovia",
+      "Purlovia_Character_BP_C"
+    ],
+    [
+      "Purlovia (Polar)",
+      "Purlovia_Character_BP_Polar_C"
+    ],
+    [
+      "Sabertooth",
+      "Saber_Character_BP_C"
+    ],
+    [
+      "Thylacoleo",
+      "Thylacoleo_Character_BP_C",
+      "Thyla"
+    ],
+    [
+      "Wooly Rhino",
+      "Rhino_Character_BP_C"
+    ],
+    [
+      "Beelzebufo",
+      "Toad_Character_BP_C",
+      "Frog"
+    ],
+    [
+      "Carbonemys",
+      "Turtle_Character_BP_C",
+      "Turtle"
+    ],
+    [
+      "Dimetrodon",
+      "Dimetro_Character_BP_C"
+    ],
+    [
+      "Diplocaulus",
+      "Diplocaulus_Character_BP_C"
+    ],
+    [
+      "Ichthyosaurus",
+      "Dolphin_Character_BP_C"
+    ],
+    [
+      "Kaprosuchus",
+      "Kaprosuchus_Character_BP_C"
+    ],
+    [
+      "Liopleurodon",
+      "Liopleurodon_Character_BP_C"
+    ],
+    [
+      "Lystrosaurus",
+      "Lystro_Character_BP_C",
+      "Lystro"
+    ],
+    [
+      "Mosasaurus (Cave)",
+      "Mosa_Character_BP_Cave_C",
+      "Mosa (Cave)"
     ],
     [
       "Mosasaurus",
@@ -461,300 +1119,187 @@
       "Moschops_Character_BP_C"
     ],
     [
-      "Motorboat",
-      "MotorRaft_BP_C"
-    ],
-    [
-      "Onyc",
-      "Bat_Character_BP_C",
-      "Bat"
-    ],
-    [
-      "Otter",
-      "Otter_Character_BP_C"
-    ],
-    [
-      "Oviraptor",
-      "Oviraptor_Character_BP_C"
-    ],
-    [
-      "Ovis",
-      "Sheep_Character_BP_C",
-      "Sheep"
-    ],
-    [
-      "Pachycephalosaurus",
-      "Pachy_Character_BP_C",
-      "Pachy"
-    ],
-    [
-      "Pachyrhinosaurus",
-      "Pachyrhino_Character_BP_C",
-      "Pachyrhino"
-    ],
-    [
-      "Paracer",
-      "Paracer_Character_BP_C",
-      "Paraceratherium"
-    ],
-    [
-      "Parasaur",
-      "Para_Character_BP_C",
-      "Para"
-    ],
-    [
       "Pegomastax",
       "Pegomastax_Character_BP_C",
-      "Pego",
-      "Thief"
-    ],
-    [
-      "Pelagornis",
-      "Pela_Character_BP_C",
-      "Pela",
-      "Stork",
-      "Pelican"
-    ],
-    [
-      "Phiomia",
-      "Phiomia_Character_BP_C",
-      "Pig"
-    ],
-    [
-      "Phoenix",
-      "Phoenix_Character_BP_C",
-      "Firebird"
-    ],
-    [
-      "Polar Bear",
-      "Polar_Bear_C"
-    ],
-    [
-      "Piranha",
-      "Piranha_Character_BP_C",
-      "Megapiranha"
+      "Pego"
     ],
     [
       "Plesiosaur",
       "Plesiosaur_Character_BP_C",
-      "Plesi"
-    ],
-    [
-      "Procoptodon",
-      "Procoptodon_Character_BP_C"
+      "Plesio"
     ],
     [
       "Pteranodon",
       "Ptero_Character_BP_C",
-      "Ptero",
       "Ptera"
     ],
     [
-      "Pulmonoscorpius",
-      "Scorpion_Character_BP_C",
-      "Scorpion",
-      "Scorpius",
-      "Pulmono",
-      "Scorp",
-      "Pulminoscorpius"
-    ],
-    [
-      "Purlovia",
-      "Purlovia_Character_BP_C"
-    ],
-    [
-      "Purlovia Polar",
-      "Purlovia_Character_BP_Polar_C"
-    ],
-    [
-      "Quetzalcoatl",
+      "Quetzalcoatlus",
       "Quetz_Character_BP_C",
-      "Quetzal",
       "Quetz"
-    ],
-    [
-      "Raft",
-      "Raft_BP_C"
-    ],
-    [
-      "Raptor",
-      "Raptor_Character_BP_C"
-    ],
-    [
-      "Tyrannosaurus",
-      "Rex_Character_BP_C",
-      "Rex"
-    ],
-    [
-      "Rock Elemental",
-      "RockGolem_Character_BP_C",
-      "Rock Golem",
-      "Golem"
-    ],
-    [
-      "Rubble Golem",
-      "RubbleGolem_Character_BP_C"
-    ],
-    [
-      "Lava Elemental",
-      "LavaGolem_Character_BP_C",
-      "Lava Golem"
-    ],
-    [
-      "Sabertooth",
-      "Saber_Character_BP_C",
-      "Saber"
-    ],
-    [
-      "Sabertooth Salmon",
-      "Salmon_Character_BP_C",
-      "Salmon"
     ],
     [
       "Sarcosuchus",
       "Sarco_Character_BP_C",
-      "Sarco",
-      "Crocodile"
-    ],
-    [
-      "Skeletal Bronto",
-      "Bone_Sauropod_Character_BP_C",
-      "Skele Bronto"
-    ],
-    [
-      "Skeletal Carnotaurus",
-      "Bone_MegaCarno_Character_BP_C",
-      "Skele Carno"
-    ],
-    [
-      "Skeletal Giganotosaurus",
-      "Bone_Gigant_Character_BP_C",
-      "Skele Giga"
-    ],
-    [
-      "Skeletal Jerboa",
-      "Bone_Jerboa_Character_BP_C",
-      "Skele Jerboa"
-    ],
-    [
-      "Skeletal Quetzal",
-      "Bone_Quetz_Character_BP_C",
-      "Skeletal Quetz",
-      "Skele Quetzal",
-      "Skele Quetz"
-    ],
-    [
-      "Skeletal Raptor",
-      "Bone_MegaRaptor_Character_BP_C",
-      "Skele Raptor"
-    ],
-    [
-      "Skeletal Rex",
-      "Bone_MegaRex_Character_BP_C",
-      "Skele Rex"
-    ],
-    [
-      "Skeletal Stego",
-      "Bone_Stego_Character_BP_C",
-      "Skele Stego"
-    ],
-    [
-      "Skeletal Trike",
-      "Bone_Trike_Character_BP_C",
-      "Skele Trike"
-    ],
-    [
-      "Spinosaur",
-      "Spino_Character_BP_C",
-      "Spinosaurus",
-      "Spino"
-    ],
-    [
-      "Stegosaurus",
-      "Stego_Character_BP_C",
-      "Stego"
+      "Sarco"
     ],
     [
       "Tapejara",
       "Tapejara_Character_BP_C"
     ],
     [
-      "Terror Bird",
-      "TerrorBird_Character_BP_C",
-      "Terrorbird"
-    ],
-    [
-      "Therizinosaur",
-      "Therizino_Character_BP_C",
-      "Therizinosaurus",
-      "Therizino",
-      "Theriz"
-    ],
-    [
-      "Thorny Dragon",
-      "SpineyLizard_Character_BP_C",
-      "Spiney Lizard"
-    ],
-    [
-      "Thylacoleo",
-      "Thylacoleo_Character_BP_C",
-      "Thyla"
-    ],
-    [
       "Titanoboa",
-      "BoaFrill_Character_BP_C",
-      "Boa",
-      "Snake"
+      "BoaFrill_Character_BP_C"
     ],
     [
-      "Flying Titanomyrma",
-      "FlyingAnt_Character_BP_C",
-      "Flying Giant Ant",
-      "Flying Ant"
+      "Tek ATV",
+      "VH_Buggy_C"
     ],
     [
-      "Titanomyrma",
-      "Ant_Character_BP_C",
-      "Giant Ant",
-      "Ant"
+      "Dragon (Alpha) (Ragnarok)",
+      "Dragon_Character_BP_Boss_Hard_Ragnarok_C"
     ],
     [
-      "Titanosaur",
-      "Titanosaur_Character_BP",
-      "Titan"
+      "Dragon (Beta) (Ragnarok)",
+      "Dragon_Character_BP_Boss_Medium_Ragnarok_C"
     ],
     [
-      "Triceratops",
-      "Trike_Character_BP_C",
-      "Trike"
+      "Dragon (Gamma) (Ragnarok)",
+      "Dragon_Character_BP_Boss_Easy_Ragnarok_C"
     ],
     [
-      "Trilobite",
-      "Trilobite_Character_C"
+      "Griffin (Boss Minion)",
+      "Griffin_Character_Minion_BP_C"
     ],
     [
-      "Troodon",
-      "Troodon_Character_BP_C"
+      "Ice Worm Queen",
+      "Iceworm_Queen_Character_BP_C"
     ],
     [
-      "Turkey",
-      "Turkey_Character_BP_C"
+      "Lava Elemental",
+      "LavaGolem_Character_BP_C"
     ],
     [
-      "Tusoteuthis",
-      "Tusoteuthis_Character_BP_C",
-      "Giant Squid",
-      "Squid"
+      "Manticore (Alpha) (Ragnarok)",
+      "Manticore_Character_BP_Hard_Ragnarok_C"
+    ],
+    [
+      "Manticore (Beta) (Ragnarok)",
+      "Manticore_Character_BP_Medium_Ragnarok_C"
+    ],
+    [
+      "Manticore (Gamma) (Ragnarok)",
+      "Manticore_Character_BP_Easy_Ragnarok_C"
+    ],
+    [
+      "Direbear (Lifes Labyrinth)",
+      "Direbear_LL_Character_BP_C"
+    ],
+    [
+      "Direwolf (Lifes Labyrinth)",
+      "Direwolf_LL_Character_BP_C"
+    ],
+    [
+      "Griffin",
+      "Griffin_Character_BP_C"
+    ],
+    [
+      "Iceworm Male",
+      "Iceworm_Character_Minion_BP_smaller_C"
+    ],
+    [
+      "Megaloceros (Lifes Labyrinth)",
+	  "Stag_LL_Character_BP_C",
+      "Deer (Lifes Labyrinth)"
+    ],
+    [
+      "Fire Wyvern (Ragnarok)",
+      "Ragnarok_Wyvern_Override_C"
+    ],
+    [
+      "Ice Wyvern",
+      "Ragnarok_Wyvern_Override_Ice_C"
+    ],
+    [
+      "Dire Polar Bear (Ragnarok)",
+      "Polar_Bear_C"
+    ],
+    [
+      "Alpha Deathworm",
+      "MegaDeathworm_Character_BP_C"
+    ],
+    [
+      "Alpha Wyvern",
+      "MegaWyvern_Character_BP_Fire_C"
+    ],
+    [
+      "Wyvern (Base)",
+      "Wyvern_Character_BP_Base_C"
+    ],
+    [
+      "Zombie Wyvern (Base)",
+      "Wyvern_Character_BP_ZombieBase"
     ],
     [
       "Vulture",
       "Vulture_Character_BP_C"
     ],
     [
-      "Woolly Rhino",
-      "Rhino_Character_BP_C",
-      "Woolly Rhinoceros",
-      "Rhino"
+      "Deathworm (Boss Minion)",
+      "Deathworm_Character_Minion_BP_C"
+    ],
+    [
+      "Manticore (Alpha)",
+      "Manticore_Character_BP_Hard_C"
+    ],
+    [
+      "Manticore (Beta)",
+      "Manticore_Character_BP_Medium_C"
+    ],
+    [
+      "Manticore (Gamma)",
+      "Manticore_Character_BP_Easy_C"
+    ],
+    [
+      "Manticore (Base)",
+      "Manticore_Character_BP_C"
+    ],
+    [
+      "Rock Golem (Boss Minion)",
+      "RockGolem_Character_Minion_BP_C"
+    ],
+    [
+      "Morellatops",
+      "Camelsaurus_Character_BP_C"
+    ],
+    [
+      "Zombie Wyvern (Fire)",
+      "Wyvern_Character_BP_ZombieFire_c"
+      
+    ],
+    [
+      "Zombie Wyvern (Lightning)",
+      "Wyvern_Character_BP_ZombieLightning_c"
+    ],
+    [
+      "Zombie Wyvern (Poison)",
+      "Wyvern_Character_BP_ZombiePoison_C"
+    ],
+    [
+      "Deathworm",
+      "Deathworm_Character_BP_C"
+    ],
+    [
+      "Phoenix",
+      "Phoenix_Character_BP_C"
+    ],
+    [
+      "Rock Golem",
+      "RockGolem_Character_BP_C"
+    ],
+    [
+      "Rubble Golem",
+      "RubbleGolem_Character_BP_C"
     ],
     [
       "Fire Wyvern",
@@ -769,368 +1314,431 @@
       "Wyvern_Character_BP_Poison_C"
     ],
     [
-      "Ice Wyvern",
-      "Ragnarok_Wyvern_Override_Ice_C"
+      "Jugbug",
+      "JugBug_Character_BaseBP_C"
     ],
     [
-      "Yeti",
-      "Yeti_Character_BP_C"
+      "Jugbug (Oil)",
+      "Jugbug_Oil_Character_BP_C"
     ],
     [
-      "Yutyrannus",
-      "Yutyrannus_Character_BP_C"
+      "Jugbug (Water)",
+      "Jugbug_Water_Character_BP_C"
     ],
     [
-      "Zombie Fire Wyvern",
-      "Wyvern_Character_BP_ZombieFire_C"
+      "Lymantria",
+      "Moth_Character_BP_C",
+      "Moth"
     ],
     [
-      "Zombie Lightning Wyvern",
-      "Wyvern_Character_BP_ZombieLightning_C"
+      "Mantis",
+      "Mantis_Character_BP_C"
     ],
     [
-      "Zombie Poison Wyvern",
-      "Wyvern_Character_BP_ZombiePoison_C"
+      "Jerboa",
+      "Jerboa_Character_BP_C"
     ],
     [
-      "Zomdodo",
-      "ZombieDodo_Character_BP_C",
-      "Zombie Dodo",
-      "Zombiedodo"
+      "Thorny Dragon",
+      "SpineyLizard_Character_BP_C"
     ],
     [
-      "Aberrant Achatina",
-      "Achatina_Character_BP_Aberrant_C",
-      "Aberrant Snail",
-      "Aberrant Acha"
+      "Tek Stegosaurus",
+      "BionicStego_Character_BP_C",
+      "Tek Stego"
     ],
     [
-      "Aberrant Angler",
-      "Angler_Character_BP_Aberrant_C",
-      "Aberrant Anglerfish"
+      "Tek Raptor",
+      "BionicRaptor_Character_BP_C"
     ],
     [
-      "Aberrant Ankylosaurus",
-      "Ankylo_Character_BP_Aberrant_C",
-      "Aberrant Ankylo",
-      "Aberrant Anky"
+      "Giant Worker Bee",
+      "HoneyBee_Character_BP_C"
     ],
     [
-      "Aberrant Arthropluera",
-      "Arthro_Character_BP_Aberrant_C",
-      "Aberrant Arthro",
-      "Aberrant Centipede"
+      "Zombie Wyvern (Base) (Crystal Isles)",
+      "ZombieWyvern_Character_BP_Base_C"
     ],
     [
-      "Aberrant Baryonyx",
-      "Baryonyx_Character_BP_Aberrant_C",
-      "Aberrant Bary"
+      "Zombie Wyvern (Base Zombie) (Crystal Isles)",
+      "ZombieWyvern_Character_BP_BaseZombie_C"
     ],
     [
-      "Basilisk",
-      "Basilisk_Character_BP_C"
+      "Zombie Wyvern (Fire) (Crystal Isles)",
+      "ZombieWyvern_Character_BP_Fire_C"
     ],
     [
-      "Aberrant Titanoboa",
-      "BoaFrill_Character_BP_Aberrant_C",
-      "Aberrant Boa",
-      "Aberrant Snake"
+      "Zombie Wyvern (Lightning) (Crystal Isles)",
+      "ZombieWyvern_Character_BP_Lightning_C"
     ],
     [
-      "Aberrant Carnotaurus",
-      "Carno_Character_BP_Aberrant_C",
-      "Aberrant Carno"
+      "Zombie Wyvern (Poison) (Crystal Isles)",
+      "ZombieWyvern_Character_BP_Poison_C"
     ],
     [
-      "Ravager",
-      "CaveWolf_Character_BP_C",
-      "Cave Wolf"
+      "Tusoteuthis (Tiny)",
+      "TinyTuso_Character_BP_C",
+      "Tuso (Tiny)"
     ],
     [
-      "Nameless",
-      "ChupaCabra_Character_BP_C",
-      "Chupa Cabra"
+      "Liquefied Brontosaurus",
+      "LiquefiedBronto_Sauropod_Character_BP_C",
+      "Liquefied Bronto"
     ],
     [
-      "Nameless Surface",
-      "ChupaCabra_Character_BP_Surface_C",
-      "Chupa Cabra Surface"
+      "Liquefied Giganotosaurus",
+      "Liquefied_Gigant_Character_BP_C",
+      "Liquefied Giga"
     ],
     [
-      "Aberrant Cnidaria",
-      "Cnidaria_Character_BP_Aberrant_C"
+      "Liquefied Jerboa",
+      "LiquefiedJerboa_Character_BP_C"
     ],
     [
-      "Aberrant Coelacanth",
-      "Coel_Character_BP_Aberrant_C",
-      "Aberrant Coel"
+      "Liquefied Quetzalcoatlus",
+      "LiquefiedQuetz_Character_BP_C",
+      "Liquefied Quetz"
     ],
     [
-      "Karkinos",
-      "Crab_Character_BP_C",
-      "Crab"
+      "Liquefied Raptor",
+      "LiquefiedRaptor_Character_BP_C"
     ],
     [
-      "Aberrant Dimetrodon",
-      "Dimetro_Character_BP_Aberrant_C",
-      "Aberrant Dimetro"
+      "Liquefied Rex",
+      "LiquefiedRex_Character_BP_C"
     ],
     [
-      "Aberrant Diplocaulus",
-      "Diplocaulus_Character_BP_Aberrant_C",
-      "Aberrant Newt"
+      "Liquefied Stegosaurus",
+      "LiquefiedStego_Character_BP_C",
+      "Liquefied Stego"
     ],
     [
-      "Aberrant Diplodocus",
-      "Diplodocus_Character_BP_Aberrant_C"
+      "Liquefied Triceratops",
+      "LiquefiedTrike_Character_BP_C",
+      "Liquefied Trike"
     ],
     [
-      "Aberrant Dodo",
-      "Dodo_Character_BP_Aberrant_C",
-      "Aberrant Chicken"
+      "Liquefied Wyvern",
+      "LiquefiedWyvern_Character_BP_C"
     ],
     [
-      "Aberrant Doedicurus",
-      "Doed_Character_BP_Aberrant_C",
-      "Aberrant Doed"
+      "Alpha Liquefied Wyvern",
+      "LiquefiedMegaWyvern_Character_BP_C"
     ],
     [
-      "Aberrant Dragonfly",
-      "Dragonfly_Character_BP_Aberrant_C"
+      "Grand Embertross",
+      "GrandEmbertross_Character_BP_C"
     ],
     [
-      "Aberrant Dung Beetle",
-      "DungBeetle_Character_BP_Aberrant_C",
-      "Aberrant Beetle"
+      "Crystal Griffin",
+      "CrystalGriffin_Character_BP_C"
     ],
     [
-      "Aberrant Electrophorus",
-      "Eel_Character_BP_Aberrant_C",
-      "Aberrant Eel",
-      "Aberrant Electro"
+      "Blood Crystal Wyvern",
+      "CrystalWyvern_Character_BP_Blood_C"
     ],
     [
-      "Aberrant Equus",
-      "Equus_Character_BP_Aberrant_C",
-      "Aberrant Horse"
+      "Ember Crystal Wyvern",
+      "CrystalWyvern_Character_BP_Ember_C"
     ],
     [
-      "Aberrant Iguanodon",
-      "Iguanodon_Character_BP_Aberrant_C",
-      "Aberrant Iguan"
+      "Tropical Crystal Wyvern",
+      "CrystalWyvern_Character_BP_WS_C"
     ],
     [
-      "Lamprey",
-      "Lamprey_Character_C"
+      "Alpha Fire Wyvern (Crystal Isles)",
+      "MegaCrystalWyvern_Character_BP_C"
     ],
     [
-      "Featherlight",
-      "LanternBird_Character_BP_C",
-      "Lantern Bird"
+      "Crystal Wyvern (Base)",
+      "CrystalWyvern_Character_BP_Base_C"
     ],
     [
-      "Shinehorn",
-      "LanternGoat_Character_BP_C",
-      "Lantern Goat"
+      "Female Argentavis",
+      "Female_Argent_Character_BP_C"
     ],
     [
-      "Glowtail",
-      "LanternLizard_Character_BP_C",
-      "Lantern Lizard"
+      "Baby Ankylosaurus",
+      "Ankylo_Character_BP_Child_C",
+      "Baby Anky"
     ],
     [
-      "Bulbdog",
-      "LanternPug_Character_BP_C",
-      "Lantern Pug"
+      "Alpha Ovis",
+      "AlphaSheep_Character_BP_C",
+      "Alpha Sheep"
     ],
     [
-      "Glowbug",
-      "Lightbug_Character_BaseBP_C",
-      "Lightbug"
+      "Baby Allosaurus",
+      "Allo_Character_BP_Child_C",
+      "Baby Allo"
     ],
     [
-      "Aberrant Lystrosaurus",
-      "Lystro_Character_BP_Aberrant_C",
-      "Aberrant Lystro"
+      "Baby Carbonemys",
+      "Turtle_Character_BP_Child_C",
+      "Baby Turtle"
     ],
     [
-      "Aberrant Manta",
-      "Manta_Character_BP_Aberrant_C"
+      "Baby Triceratops",
+      "Trike_Character_BP_Child_C",
+      "Baby Trike"
     ],
     [
-      "Alpha Basilisk",
-      "MegaBasilisk_Character_BP_C"
+      "Baby Thylacoleo",
+      "Thylacoleo_Character_BP_Child_C"
     ],
     [
-      "Alpha Karkinos",
-      "MegaCrab_Character_BP_C",
-      "Mega Crab"
+      "Baby Therizinosaurus",
+      "Therizino_Character_BP_Child_C",
+      "Baby Therizino"
     ],
     [
-      "Aberrant Megalosaurus",
-      "Megalosaurus_Character_BP_Aberrant_C",
-      "Aberrant Megalos",
-      "Aberrant Sleeping Raptor"
+      "Baby Terror Bird",
+      "TerrorBird_Character_BP_Child_C"
     ],
     [
-      "Alpha Surface Reaper King",
-      "MegaXenomorph_Character_BP_Male_Surface_C",
-      "Mega Xenomorph Male"
+      "Baby Tapejara",
+      "Tapejara_Character_BP_Child_C"
     ],
     [
-      "Roll Rat",
-      "MoleRat_Character_BP_C",
-      "Mole Rat"
+      "Baby Stegosaurus",
+      "Stego_Character_BP_Child_C",
+      "Baby Stego"
     ],
     [
-      "Aberrant Moschops",
-      "Moschops_Character_BP_Aberrant_C"
+      "Baby Megaloceros",
+      "Stag_Character_BP_Child_C",
+      "Baby Deer"
     ],
     [
-      "Aberrant Otter",
-      "Otter_Character_BP_Aberrant_C"
+      "Baby Thorny Dragon",
+      "SpineyLizard_Character_BP_Child_C"
     ],
     [
-      "Aberrant Parasaur",
-      "Para_Character_BP_Aberrant_C",
-      "Aberrant Para"
+      "Snow Rock Golem",
+      "SnowRockGolem_Character_BP_C"
     ],
     [
-      "Aberrant Paracer",
-      "Paracer_Character_BP_Aberrant_C",
-      "Aberrant Paraceratherium"
+      "Baby Brontosaurus",
+      "Sauropod_Character_BP_Child_C",
+      "Baby Bronto"
     ],
     [
-      "Aberrant Piranha",
-      "Piranha_Character_BP_Aberrant_C",
-      "Aberrant Megapiranha"
+      "Baby Sarcosuchus",
+      "Sarco_Character_BP_Child_C",
+      "Baby Sarco"
     ],
     [
-      "Seeker",
-      "Pteroteuthis_Char_BP_C",
-      "Pteroteuthis"
+      "Baby Sabertooth",
+      "Saber_Character_BP_Child_C"
     ],
     [
-      "Seeker Surface",
-      "Pteroteuthis_Char_BP_Surface_C",
-      "Pteroteuthis Surface"
+      "Baby Wooly Rhino",
+      "Rhino_Character_BP_Child_C"
     ],
     [
-      "Aberrant Purlovia",
-      "Purlovia_Character_BP_Aberrant_C"
+      "Baby Rex",
+      "Rex_Character_BP_Child_C"
     ],
     [
-      "Aberrant Raptor",
-      "Raptor_Character_BP_Aberrant_C"
+      "Redwood Rock Golem",
+      "RedwoodRockGolem_Character_BP_C"
     ],
     [
-      "Rock Drake",
-      "RockDrake_Character_BP_C"
+      "Baby Raptor",
+      "Raptor_Character_BP_Child_C"
     ],
     [
-      "Aberrant Sabertooth Salmon",
-      "Salmon_Character_Aberrant_C",
-      "Aberrant Salmon"
+      "Baby Purlovia",
+      "Purlovia_Character_BP_Child_C"
     ],
     [
-      "Aberrant Sarcosuchus",
-      "Sarco_Character_BP_Aberrant_C",
-      "Aberrant Sarco",
-      "Aberrant Crocodile"
+      "Baby Pteranodon",
+      "Ptero_Character_BP_Child_C"
     ],
     [
-      "Aberrant Pulmonoscorpius",
-      "Scorpion_Character_BP_Aberrant_C",
-      "Aberrant Scorpion",
-      "Aberrant Scorpius",
-      "Aberrant Pulmono",
-      "Aberrant Scorp",
-      "Aberrant Pulminoscorpius"
+      "Baby Procoptodon",
+      "Procoptodon_Character_BP_Child_C",
+      "Baby Kangaroo"
     ],
     [
-      "Aberrant Ovis",
-      "Sheep_Character_BP_Aberrant_C",
-      "Aberrant Sheep"
+      "Baby Plesiosaur",
+      "Plesiosaur_Character_BP_Child_C",
+      "Baby Plesio"
     ],
     [
-      "Aberrant Spinosaur",
-      "Spino_Character_BP_Aberrant_C",
-      "Aberrant Spinosaurus",
-      "Aberrant Spino"
+      "Baby Phiomia",
+      "Phiomia_Character_BP_Child_C"
     ],
     [
-      "Aberrant Stegosaurus",
-      "Stego_Character_BP_Aberrant_C",
-      "Aberrant Stego"
+      "Baby Pegomastax",
+      "Pegomastax_Character_BP_Child_C",
+      "Baby Pego"
     ],
     [
-      "Aberrant Beelzebufo",
-      "Toad_Character_BP_Aberrant_C",
-      "Aberrant Toad"
+      "Baby Parasaurolophus",
+      "Para_Character_BP_Child_C",
+      "Baby Parasaur"
     ],
     [
-      "Aberrant Triceratops",
-      "Trike_Character_BP_Aberrant_C",
-      "Aberrant Trike"
+      "Baby Paracer",
+      "Paracer_Character_BP_Child_C"
     ],
     [
-      "Aberrant Trilobite",
-      "Trilobite_Character_Aberrant_C"
+      "Baby Pachycephalosaurus",
+      "Pachy_Character_BP_Child_C",
+      "Baby Pachy"
     ],
     [
-      "Aberrant Carbonemys",
-      "Turtle_Character_BP_Aberrant_C",
-      "Aberrant Turtle"
+      "Baby Pachyrhinosaurus",
+      "Pachyrhino_Character_BP_Child_C",
+      "Baby Pachyrhino"
     ],
     [
-      "Reaper Queen",
-      "Xenomorph_Character_BP_Female_C",
-      "Xenomorph Female"
+      "Baby Oviraptor",
+      "Oviraptor_Character_BP_Child_C"
     ],
     [
-      "Reaper King",
-      "Xenomorph_Character_BP_Male_Tamed_C",
-      "Xenomorph Male"
+      "Baby Moschops",
+      "Moschops_Character_BP_Child_C"
     ],
     [
-      "Reaper King (Wild)",
-      "Xenomorph_Character_BP_Male_C",
-      "Xenomorph Male (Wild)"
+      "Baby Mosasaurus",
+      "Mosa_Character_BP_Child_C",
+      "Baby Mosa"
     ],
     [
-      "Surface Reaper King",
-      "Xenomorph_Character_BP_Male_Surface_C",
-      "Xenomorph Male Surface"
+      "Baby Mesopithecus",
+      "Monkey_Character_BP_Child_C",
+      "Baby Monkey"
     ],
     [
-      "Elemental Reaper King",
-      "Xenomorph_Character_BP_Male_Minion_C"
+      "Baby Megalodon",
+      "Megalodon_Character_BP_Child_C"
     ],
     [
-      "Subterranean Reaper King",
-      "Xenomorph_Character_BP_Male_Chupa_C"
+      "Baby Manta",
+      "Manta_Character_BP_Child_C"
     ],
     [
-      "Reaper",
-      "Xenomorph_Character_BP_C"
+      "Baby Mammoth",
+      "Mammoth_Character_BP_Child_C"
     ],
     [
-      "Reaper King",
-      "Xenomorph_Character_BP_Male_Tamed_C"
+      "Baby Lystrosaurus",
+      "Lystro_Character_BP_Child_C",
+      "Baby Lystro"
     ],
     [
-      "Rockwell",
-      "Rockwell_Character_BP_C"
+      "Lava Rock Golem",
+      "LavaRockGolem_Character_BP_C"
     ],
     [
-      "Aberrant Gigantopithecus",
-      "Bigfoot_Character_BP_Aberrant_C"
+      "Baby Kentrosaurus",
+      "Kentro_Character_BP_Child_C",
+      "Baby Kentro"
     ],
     [
-      "Aberrant Direbear",
-      "Direbear_Character_BP_Aberrant_C",
-      "Aberrant Dire Bear",
-      "Aberrant Bear"
+      "Baby Kaprosuchus",
+      "Kaprosuchus_Character_BP_Child_C",
+      "Baby Kapro"
+    ],
+    [
+      "Jungle Rock Golem",
+      "JungleRockGolem_Character_BP_C"
+    ],
+    [
+      "Baby Iguanodon",
+      "Iguanodon_Character_BP_Child_C"
+    ],
+    [
+      "Baby Ichthyornis",
+      "Ichthyornis_Character_BP_Child_C",
+      "Baby Seagull"
+    ],
+    [
+      "Ice Wyvern (The Volcano)",
+      "Wyvern_Character_BP_Ice_C"
+    ],
+    [
+      "Baby Gallimimus",
+      "Galli_Character_BP_Child_C",
+      "Baby Galli"
+    ],
+    [
+      "Baby Equus",
+      "Equus_Character_BP_Child_C",
+      "Baby Horse"
+    ],
+    [
+      "Baby Ichthyosaurus",
+      "Dolphin_Character_BP_Child_C",
+      "Baby Dolphin"
+    ],
+    [
+      "Baby Doedicurus",
+      "Doed_Character_BP_Child_C",
+      "Baby Doed"
+    ],
+    [
+      "Baby Dodo",
+      "Dodo_Character_BP_Child_C"
+    ],
+    [
+      "Baby Direwolf",
+      "Direwolf_Character_BP_Child_C"
+    ],
+    [
+      "Baby Direbear",
+      "Direbear_Character_BP_Child_C"
+    ],
+    [
+      "Baby Diplodocus",
+      "Diplodocus_Character_BP_Child_C",
+      "Baby Diplo"
+    ],
+    [
+      "Baby Dilophosaurus",
+      "Dilo_Character_BP_Child_C",
+      "Baby Dilo"
+    ],
+    [
+      "Desert Rock Golem",
+      "DesertRockGolem_Character_BP_C"
+    ],
+    [
+      "Baby Daeodon",
+      "Daeodon_Character_BP_Child_C"
+    ],
+    [
+      "Baby Compsognathus",
+      "Compy_Character_BP_Child_C",
+      "Baby Compy"
+    ],
+    [
+      "Baby Chalicotherium",
+      "Chalico_Character_BP_Child_C",
+      "Baby Chalico"
+    ],
+    [
+      "Baby Carnotaurus",
+      "Carno_Character_BP_Child_C",
+      "Baby Carno"
+    ],
+    [
+      "Baby Morallatops",
+      "camelsaurus_Character_BP_Child_C"
+    ],
+    [
+      "Baby Basilosaurus",
+      "Basilosaurus_Character_BP_Child_C"
+    ],
+    [
+      "Baby Baryonyx",
+      "Baryonyx_Character_BP_Child_C"
+    ],
+    [
+      "Baby Argentavis",
+      "Argent_Character_BP_Child_C"
     ]
   ]
 }
