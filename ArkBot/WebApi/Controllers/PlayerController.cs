@@ -434,7 +434,7 @@ namespace ArkBot.WebApi.Controllers
                 return new ElectricalGeneratorViewModel(x.Location)
                 {
                     Activated = x.Activated,
-                    //FuelTime = x.FuelTime,
+                    //FuelTime = x.FuelTime, PrimalItemResource_Gasoline_C , PrimalItemResource_Gasoline_JStacks_C
                     GasolineQuantity = (int)(x.Inventory?.Where(y => y.ClassName.Equals("PrimalItemResource_Gasoline_C", StringComparison.Ordinal)).Sum(y => y.Quantity) ?? 0)
                 };
             }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();

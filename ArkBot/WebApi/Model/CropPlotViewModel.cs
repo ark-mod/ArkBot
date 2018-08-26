@@ -21,14 +21,32 @@ namespace ArkBot.WebApi.Model
             { "PrimalItemConsumable_Seed_Tintoberry_C", "Tintoberry" },
             { "PrimalItemConsumable_Seed_Mejoberry_C", "Mejoberry" },
             { "PrimalItemConsumable_Seed_Stimberry_C", "Stimberry" },
-            { "PrimalItemConsumable_Seed_Narcoberry_C", "Narcoberry" }
+            { "PrimalItemConsumable_Seed_Narcoberry_C", "Narcoberry" },
+            { "PrimalItemConsumable_Seed_PlantSpeciesZ_C", "Plant Species Z" },
+            { "PrimalItemConsumable_Seed_Amarberry_JStacks_C", "Amarberry" },
+            { "PrimalItemConsumable_Seed_Azulberry_JStacks_C", "Azulberry" },
+            { "PrimalItemConsumable_Seed_Citronal_JStacks_C", "Citronal" },
+            { "PrimalItemConsumable_Seed_DefensePlant_JStacks_C", "Plant Species X" },
+            { "PrimalItemConsumable_Seed_Longrass_JStacks_C", "Longrass" },
+            { "PrimalItemConsumable_Seed_Mejoberry_JStacks_C", "Mejoberry" },
+            { "PrimalItemConsumable_Seed_Narcoberry_JStacks_C", "Narcoberry" },
+            { "PrimalItemConsumable_Seed_Rockarrot_JStacks_C", "Rockarrot" },
+            { "PrimalItemConsumable_Seed_Savoroot_JStacks_C", "Savoroot" },
+            { "PrimalItemConsumable_Seed_Stimberry_JStacks_C", "Stimberry" },
+            { "PrimalItemConsumable_Seed_Tintoberry_JStacks_C", "Tintoberry" },
+            { "PrimalItemConsumable_Seed_PlantSpeciesY_JStacks_C", "Plant Species Y" },
+            { "PrimalItemConsumable_Seed_PlantSpeciesZ_JStacks_C", "Plant Species Z" }
+
         };
 
         static readonly private Dictionary<string, string> _sizes = new Dictionary<string, string>
         {
             { "CropPlotSmall_SM_C", "Small" },
             { "CropPlotMedium_SM_C", "Medium" },
-            { "CropPlotLarge_SM_C", "Large" }
+            { "CropPlotLarge_SM_C", "Large" },
+            { "BP_CropPlot_Small_C", "Small" },
+            { "BP_CropPlot_Medium_C", "Medium" },
+            { "BP_CropPlot_Large_C", "Large" }
         };
 
         public CropPlotViewModel(ArkSavegameToolkitNet.Domain.ArkLocation location) : base(location)
@@ -38,7 +56,7 @@ namespace ArkBot.WebApi.Model
         public string ClassName { get; set; }
         //public float FertilizerAmount { get; set; }
         public int FertilizerQuantity { get; set; }
-        public int FertilizerMax => 54000 * 10;
+        public int FertilizerMax => 54000 * 30;
         public float WaterAmount { get; set; }
         public string PlantedCropClassName { get; set; }
         public string PlantedCropName
