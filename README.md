@@ -3,6 +3,8 @@
 #### Development
 This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. Jefferson-1 has taken over maintenance of the project with Tsebring's permission. Contributors are welcome.
 
+Important note: This release relies upon the Lewimaron pull of ArkSavegameToolkitNet found here: https://github.com/Lewimaron/ArkSavegameToolkitNet
+
 The active development branch is currently [beta](https://github.com/tsebring/ArkBot/tree/beta).
 
 #### Support
