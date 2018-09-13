@@ -1,7 +1,7 @@
 # Project status
 
 #### Development
-This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. There are currently no other developers contributing code to the project.
+This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. Jefferson-1 has taken over maintenance of the project with Tsebring's permission. Contributors are welcome.
 
 The active development branch is currently [beta](https://github.com/tsebring/ArkBot/tree/beta).
 
