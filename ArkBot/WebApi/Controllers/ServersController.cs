@@ -1,4 +1,5 @@
 ﻿using ArkBot.Ark;
+using ArkBot.Configuration.Model;
 using ArkBot.Database;
 using ArkBot.Extensions;
 using ArkBot.Helpers;
@@ -77,20 +78,20 @@ namespace ArkBot.WebApi.Controllers
             {
                 var serverContext = _contextManager.GetServer(context.Config.Key);
                 var status = serverContext.Steam.GetServerStatusCached();
-                if (status == null || status.Item1 == null || status.Item2 == null)
-                {
-                    //Server status is currently unavailable
-                }
-                else
-                {
-                    var info = status.Item1;
-                    var rules = status.Item2;
-                    var playerinfos = status.Item3;
+                //if (status == null || status.Item1 == null || status.Item2 == null)
+                //{
+                //    //Server status is currently unavailable
+                //}
+                //else
+                //{
+                    var info = status?.Item1;
+                    var rules = status?.Item2;
+                    var playerinfos = status?.Item3;
 
-                    var m = new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)?$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name);
-                    var name = m.Success ? m.Groups["name"].Value : info.Name;
-                    var version = m.Success ? m.Groups["version"] : null;
-                    var currentTime = rules.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
+                    var m = info != null ? new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)?$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name) : null;
+                    var name = m?.Success == true ? m.Groups["name"].Value : (info?.Name ?? context.Config.Key);
+                    var version = m?.Success == true ? m.Groups["version"] : null;
+                    var currentTime = rules?.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
                     var tamedDinosCount = context.TamedCreatures?.Count();
                     var uploadedDinosCount = context.CloudCreatures?.Count();
                     var wildDinosCount = context.WildCreatures?.Count();
@@ -111,11 +112,11 @@ namespace ArkBot.WebApi.Controllers
                     {
                         Key = anonymizedServer?.Key ?? context.Config.Key,
                         Name = anonymizedServer?.Name ?? name,
-                        Address = anonymizedServer?.Address ?? context.Config.DisplayAddress ?? info.Address,
+                        Address = anonymizedServer?.Address ?? context.Config.DisplayAddress ?? info?.Address,
                         Version = version?.ToString(),
-                        OnlinePlayerCount = info.Players,
-                        OnlinePlayerMax = info.MaxPlayers,
-                        MapName = info.Map,
+                        OnlinePlayerCount = info?.Players ?? 0,
+                        OnlinePlayerMax = info?.MaxPlayers ?? 0,
+                        MapName = info?.Map,
                         InGameTime = currentTime,
                         TamedCreatureCount = tamedDinosCount ?? 0,
                         CloudCreatureCount = uploadedDinosCount ?? 0,
@@ -195,7 +196,7 @@ namespace ArkBot.WebApi.Controllers
                     }
 
                     result.Servers.Add(sr);
-                }
+                //}
             }
 
             foreach (var context in _contextManager.Clusters)
@@ -204,7 +205,7 @@ namespace ArkBot.WebApi.Controllers
                 {
                     Key = context.Config.Key,
                     ServerKeys = _contextManager.Servers
-                        .Where(x => x.Config.Cluster.Equals(context.Config.Key, StringComparison.OrdinalIgnoreCase))
+                        .Where(x => x.Config.ClusterKey.Equals(context.Config.Key, StringComparison.OrdinalIgnoreCase))
                         .Select(x => x.Config.Key).ToArray()
                 };
                 result.Clusters.Add(cc);
@@ -220,7 +221,7 @@ namespace ArkBot.WebApi.Controllers
             {
                 foreach (var fg in config.AccessControl)
                 {
-                    var acfg = new Dictionary<string, string[]>();
+                    var acfg = new Dictionary<string, List<string>>();
                     ac[fg.Key] = acfg;
 
                     if (fg.Value == null) continue;

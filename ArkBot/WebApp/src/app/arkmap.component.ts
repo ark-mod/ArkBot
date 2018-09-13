@@ -3,6 +3,8 @@ import { Component, Input, ViewChild, OnChanges, SimpleChanges, ElementRef, Host
 import { environment } from '../environments/environment';
 import * as d3 from "d3";
 
+declare var config: any;
+
 @Component({
   selector: 'arkmap',
   template: `<canvas #myCanvas [width]="width" [height]="height" style="width: 100%;"></canvas>`
@@ -82,6 +84,9 @@ export class ArkMapComponent implements OnChanges {
     }
 
     getApiBaseUrl(): string {
-      return environment.apiBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
+      return environment.apiBaseUrl
+        .replace(/\<protocol\>/gi, window.location.protocol)
+        .replace(/\<hostname\>/gi, window.location.hostname)
+        .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
     }
 }

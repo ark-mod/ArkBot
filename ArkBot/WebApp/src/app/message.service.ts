@@ -4,6 +4,7 @@ import { environment } from '../environments/environment';
 //import 'ms-signalr-client'; //problem: does not appear to work with typescript
 //import {SignalR} from 'signalr'; //problem: 'signalr' is not a module
 declare var $: any;
+declare var config: any;
 
 @Injectable()
 export class MessageService {
@@ -32,6 +33,9 @@ export class MessageService {
     }
 
     getSignalRBaseUrl(): string {
-        return environment.signalrBaseUrl.replace(/\<protocol\>/gi, window.location.protocol).replace(/\<hostname\>/gi, window.location.hostname);
+        return environment.signalrBaseUrl
+            .replace(/\<protocol\>/gi, window.location.protocol)
+            .replace(/\<hostname\>/gi, window.location.hostname)
+            .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
     }
 }

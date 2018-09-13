@@ -16,7 +16,7 @@
   <h3 class="theme-text-d1">Servers</h3>
   <div *ngFor="let server of dataService.Servers.Servers" class="w3-card-4 w3-margin-bottom">
     <header class="w3-container theme-d1">
-      <h3><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else server_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.MapName}} - {{server.Key}}</a><ng-template #server_no_link>{{server.MapName}} - {{server.Key}}</ng-template></h3>
+      <h3><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else server_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;"><ng-container *ngIf="server.MapName">{{server.MapName}} - </ng-container>{{server.Key}}</a><ng-template #server_no_link><ng-container *ngIf="server.MapName">{{server.MapName}} - </ng-container>{{server.Key}}</ng-template></h3>
     </header>
     <div class="w3-container theme-l1">
       <p class="w3-small">

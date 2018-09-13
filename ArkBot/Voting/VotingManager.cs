@@ -1,4 +1,5 @@
 ﻿using ArkBot.Ark;
+using ArkBot.Configuration.Model;
 using ArkBot.Database;
 using ArkBot.Database.Model;
 using ArkBot.Discord;
@@ -157,9 +158,9 @@ namespace ArkBot.Voting
                         if (result == null) return;
 
                         if (result.MessageRcon != null) await serverContext.Steam.SendRconCommand($"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
-                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.Discord.AnnouncementChannel))
                         {
-                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, result.MessageAnnouncement);
+                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.Discord.AnnouncementChannel, result.MessageAnnouncement);
                         }
                     })
                 });
@@ -204,9 +205,9 @@ namespace ArkBot.Voting
                     if (!noAnnouncement && result != null)
                     {
                         if (result.MessageRcon != null) await serverContext.Steam.SendRconCommand($"serverchat {result.MessageRcon.ReplaceRconSpecialChars()}");
-                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel))
+                        if (result.MessageAnnouncement != null && !string.IsNullOrWhiteSpace(_config.Discord.AnnouncementChannel))
                         {
-                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.AnnouncementChannel, result.MessageAnnouncement);
+                            await _discordManager.SendTextMessageToChannelNameOnAllServers(_config.Discord.AnnouncementChannel, result.MessageAnnouncement);
                         }
                     }
                 }

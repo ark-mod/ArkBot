@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>ArkDiscordBot</id>
+        <id>ArkBot</id>
         <version>$version$</version>
-        <title>ARK Survival Evolved Discord Bot</title>
+        <title>ARK Bot</title>
         <authors>tsebring</authors>
         <licenseUrl>https://raw.githubusercontent.com/tsebring/ArkBot/master/LICENSE.txt</licenseUrl>
         <projectUrl>https://github.com/tsebring/ArkBot/</projectUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <description>A Discord bot for ARK Survival Evolved utilizing https://github.com/arktools to extract data from savegame-files on your server.</description>
-        <tags>arksurvivalevolved discord-bot</tags>
+        <description>ARK Survival Evolved application that monitors and extracts data from local ARK servers and exposes this data through a Web App, Web API and Discord Bot.</description>
+        <tags>arksurvivalevolved ark game-ark game webapi discord-bot community server-management administration web-app</tags>
     </metadata>
     <files>
-        <file src="bin\Release\**\*" target="tools" />
+        <file src="bin\x64\Release\**\*" target="tools" />
     </files>
 </package>

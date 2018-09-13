@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using ArkBot.Configuration;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -40,9 +42,9 @@ namespace ArkBot.WebApi.Controllers
 
             var accessControl = _config.AccessControl;
             if (accessControl == null) return false;
-            var fg = (Dictionary<string, string[]>)null;
+            var fg = (AccessControlFeatureGroup)null;
             if (!accessControl.TryGetValue(featureGroup, out fg)) return false;
-            var rf = (string[])null;
+            var rf = (AccessControlFeatureRoles)null;
             if (!fg.TryGetValue(featureName, out rf)) return false;
 
             var user = WebApiHelper.GetUser(Request, _config);

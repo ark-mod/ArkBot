@@ -8,6 +8,7 @@ using Discord;
 using Discord.Commands.Builders;
 using Discord.Net;
 using RestSharp;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands
 {

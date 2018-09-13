@@ -6,9 +6,11 @@ using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using CefSharp;
 
 namespace ArkBot
 {
@@ -23,6 +25,15 @@ namespace ArkBot
             Console.SetOut(new WpfConsoleWriter());
 
             Kernel32.RegisterApplicationRestart("/restart", (int)RestartRestrictions.None);
+
+            var settings = new CefSettings()
+            {
+                //LogSeverity = LogSeverity.Verbose,
+                LogFile = "logs\\cefsharp.log",
+                BrowserSubprocessPath = "lib\\CefSharp.BrowserSubprocess.exe",
+            };
+
+            Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

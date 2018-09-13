@@ -16,15 +16,13 @@ namespace ArkBot.Commands
     {
         private IConstants _constants;
         private IBarebonesSteamOpenId _openId;
-        private IUrlShortenerService _urlShortenerService;
         private EfDatabaseContextFactory _databaseContextFactory;
 
         public LinkSteamCommand(IConstants constants, IBarebonesSteamOpenId openId,
-            IUrlShortenerService urlShortenerService, EfDatabaseContextFactory databaseContextFactory)
+            EfDatabaseContextFactory databaseContextFactory)
         {
             _constants = constants;
             _openId = openId;
-            _urlShortenerService = urlShortenerService;
             _databaseContextFactory = databaseContextFactory;
         }
 
@@ -54,12 +52,17 @@ namespace ArkBot.Commands
                 return;
             }
 
-            var sb = new StringBuilder();
-            sb.AppendLine($"**Proceed to link your Discord user with your Steam account by following this link:**");
-            sb.AppendLine($"{(await _urlShortenerService?.ShortenUrl(state.StartUrl)) ?? state.StartUrl}");
+            EmbedBuilder builder = new EmbedBuilder()
+            {
+                Title = "Steam Account Link",
+                Description = $"Proceed to link your Discord user with your Steam account by [Logging into Steam]({state.StartUrl})",
+                Url = state.StartUrl,
+                Color = Color.Green
+
+            };
 
             var channel = await Context.User.GetOrCreateDMChannelAsync();
-            var msg = await channel.SendMessageAsync(sb.ToString().Trim('\r', '\n'));
+            var msg = await channel.SendMessageAsync("", false, builder.Build());
 
             if (Context.IsPrivate) return;
 

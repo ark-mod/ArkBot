@@ -6,7 +6,6 @@ using ArkBot.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
-using Google.Apis.Urlshortener.v1;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -26,9 +25,9 @@ using ArkBot.ViewModel;
 using ArkBot.Ark;
 using ArkBot.Discord.Command;
 using ArkBot.Voting;
-using Discord.WebSocket;
 using RazorEngine.Compilation.ImpromptuInterface;
 using VDS.Common.Collections.Enumerations;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Discord
 {
@@ -86,12 +85,12 @@ namespace ArkBot.Discord
 
         private async Task DiscordOnGuildAvailable(SocketGuild socketGuild)
         {
-            if (_wasRestarted && socketGuild != null && !string.IsNullOrWhiteSpace(_config.AnnouncementChannel) && !_wasRestartedServersNotified.Contains(socketGuild.Id))
+            if (_wasRestarted && socketGuild != null && !string.IsNullOrWhiteSpace(_config.Discord.AnnouncementChannel) && !_wasRestartedServersNotified.Contains(socketGuild.Id))
             {
                 try
                 {
                     _wasRestartedServersNotified.Add(socketGuild.Id);
-                    var channel = socketGuild.TextChannels.FirstOrDefault(y => _config.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase));
+                    var channel = socketGuild.TextChannels.FirstOrDefault(y => _config.Discord.AnnouncementChannel.Equals(y.Name, StringComparison.OrdinalIgnoreCase));
                     if (channel != null) await channel.SendMessageAsync("**I have automatically restarted due to previous unexpected shutdown!**");
                 }
                 catch (Exception ex) { /*ignore exceptions */ }
@@ -132,8 +131,8 @@ namespace ArkBot.Discord
 
                     //check if command is allowed in this channel
                     if(!(context.Channel is ISocketPrivateChannel) 
-                        && _config.EnabledChannels?.Length > 0 
-                        && !_config.EnabledChannels.Contains(context.Channel.Name, StringComparer.OrdinalIgnoreCase))
+                        && _config.Discord.EnabledChannels?.Length > 0 
+                        && !_config.Discord.EnabledChannels.Contains(context.Channel.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return;
                     }
@@ -141,6 +140,8 @@ namespace ArkBot.Discord
                     var preconditions = await cm.CheckPreconditionsAsync(context, _serviceProvider);
                     if (!preconditions.IsSuccess)
                     {
+                        if (preconditions.ErrorReason?.Equals(RoleRestrictedPreconditionAttribute.CommandDisabledErrorString) == true) return;
+
                         Logging.Log(
                             $"Command precondition(s) failed [command name: {iCommand.Name}, preconditions error: {preconditions.ErrorReason}]", 
                             GetType(), LogLevel.DEBUG);
@@ -395,7 +396,7 @@ namespace ArkBot.Discord
 
         public async Task Start(ArkSpeciesAliases aliases = null)
         {
-            await _discord.LoginAsync(TokenType.Bot, _config.BotToken);
+            await _discord.LoginAsync(TokenType.Bot, _config.Discord.BotToken);
             await _discord.StartAsync();
 
             //await _discord.Connect(_config.BotToken, TokenType.Bot);

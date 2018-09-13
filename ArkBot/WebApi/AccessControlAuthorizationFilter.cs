@@ -1,4 +1,5 @@
-﻿using ArkBot.Helpers;
+﻿using ArkBot.Configuration.Model;
+using ArkBot.Helpers;
 using ArkBot.WebApi.Controllers;
 using Autofac.Integration.WebApi;
 using System;

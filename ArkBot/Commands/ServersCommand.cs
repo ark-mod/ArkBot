@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using ArkBot.Discord.Command;
 using Discord.Commands.Builders;
 using Discord.Net;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands
 {
@@ -36,8 +37,8 @@ namespace ArkBot.Commands
 
             if (_config.Servers != null)
             {
-                var sb = new StringBuilder();
-                sb.AppendLine("**Server List**");
+                var embed = new EmbedBuilder();
+                embed.WithTitle("Server List");
 
                 foreach (var server in _config.Servers)
                 {
@@ -51,15 +52,14 @@ namespace ArkBot.Commands
                         name = m.Success ? m.Groups["name"].Value : info.Name;
                     }
 
-                    var address = $"{server.Ip}:{server.Port}";
+                    var address = server.DisplayAddress ?? $"{server.Ip}:{server.QueryPort}";
 
-                    var cluster = args.cluster || args.clusters ? $" (cluster **{server.Cluster}**)" : "";
+                    var cluster = args.cluster || args.clusters ? $" (cluster **`{server.ClusterKey}`**)" : "";
 
-                    sb.AppendLine(
-                        $"● **{name ?? address}**{(name != null ? $" ({address})" : "")} (key: **{server.Key}**){cluster}");
+                    embed.AddInlineField($"{ name ?? address}", $"steam://connect/{address} (key: `{server.Key}`){cluster}");
                 }
 
-                await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
             }
             else
             {

@@ -5,6 +5,7 @@ using ArkBot.Database;
 using ArkBot.Discord.Command;
 using Discord;
 using Discord.Net;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands
 {
@@ -46,7 +47,7 @@ namespace ArkBot.Commands
                             try
                             {
                                 var duser = server.GetUser(Context.User.Id);
-                                var role = server.Roles.FirstOrDefault(x => x.Name.Equals(_config.MemberRoleName));
+                                var role = server.Roles.FirstOrDefault(x => x.Name.Equals(_config.Discord.MemberRoleName));
                                 if (duser != null && role == null) continue;
 
                                 if (duser?.Roles.Any(x => x.Id == role.Id) == true) await duser.RemoveRoleAsync(role);

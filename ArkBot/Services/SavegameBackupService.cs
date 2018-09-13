@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ArkBot.Helpers;
 using ArkBot.Services.Data;
 using ArkBot.Extensions;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Services
 {
@@ -27,7 +28,7 @@ namespace ArkBot.Services
 
             foreach (var key in keys ?? new string[] { null })
             {
-                var backupDirPath = key == null ? _config.BackupsDirectoryPath : Path.Combine(_config.BackupsDirectoryPath, key);
+                var backupDirPath = key == null ? _config.Backups.BackupsDirectoryPath : Path.Combine(_config.Backups.BackupsDirectoryPath, key);
                 var backupDir = new DirectoryInfo(backupDirPath);
                 var files = backupDir.GetFiles("*.zip", SearchOption.AllDirectories);
                 if (files == null) return result;
@@ -35,7 +36,7 @@ namespace ArkBot.Services
                 foreach (var file in files)
                 {
                     var a = file.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                    var b = _config.BackupsDirectoryPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    var b = _config.Backups.BackupsDirectoryPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
                     var path = Path.Combine(a.Merge(b, (_a, _b) => new { a = _a, b = _b }).SkipWhile(x => x.a.Equals(x.b, StringComparison.OrdinalIgnoreCase)).Select(x => x.a).ToArray());
 
                     var entry = new BackupListEntity
@@ -145,7 +146,7 @@ namespace ArkBot.Services
                     cluster != null ? new Tuple<string, string, string[]>(cluster.SavePath, "cluster", clusters = Directory.GetFiles(cluster.SavePath, "*", SearchOption.AllDirectories)) : null
                 }.Where(x => x != null && x.Item2 != null).ToArray();
 
-            var backupDir = Path.Combine(_config.BackupsDirectoryPath, server.Key, DateTime.Now.ToString("yyyy-MM"));
+            var backupDir = Path.Combine(_config.Backups.BackupsDirectoryPath, server.Key, DateTime.Now.ToString("yyyy-MM"));
 
             if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
 
@@ -181,7 +182,7 @@ namespace ArkBot.Services
 
             if (!(clusters?.Length > 0)) return null;
 
-            var backupDir = Path.Combine(_config.BackupsDirectoryPath, cluster.Key, DateTime.Now.ToString("yyyy-MM"));
+            var backupDir = Path.Combine(_config.Backups.BackupsDirectoryPath, cluster.Key, DateTime.Now.ToString("yyyy-MM"));
 
             if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
 

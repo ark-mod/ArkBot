@@ -4,6 +4,7 @@ using ArkBot.Database;
 using ArkBot.Database.Model;
 using Discord;
 using ArkBot.Ark;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Voting.Handlers
 {

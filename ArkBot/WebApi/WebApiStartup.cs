@@ -25,6 +25,8 @@ using System.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.Owin.Security.Jwt;
 using Microsoft.Owin.Security.Cookies;
+using ArkBot.Configuration.Model;
+using ArkBot.OpenID;
 
 namespace ArkBot.WebApi
 {
@@ -77,7 +79,7 @@ namespace ArkBot.WebApi
                 AuthenticationMode = Microsoft.Owin.Security.AuthenticationMode.Passive,
             });
 
-            appBuilder.UseSteamAuthentication(applicationKey: _config.SteamApiKey);
+            appBuilder.UseSteamAuthenticationNew(applicationKey: _config.SteamApiKey);
 
             appBuilder.UseWebApi(config);
             appBuilder.MapSignalR(hubConfig);

@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="ArkBot.Controls.About"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:local="clr-namespace:ArkBot.Controls"
+             xmlns:extensions="clr-namespace:ArkBot.Extensions"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+             xmlns:cef="clr-namespace:CefSharp;assembly=CefSharp.Core"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
+             xmlns:behaviours="clr-namespace:ArkBot.Browser.Behaviours"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <wpf:ChromiumWebBrowser x:Name="AboutBrowser" Grid.Row="0" Margin="0 0 0 0">
+            <i:Interaction.Behaviors>
+                <behaviours:HoverLinkBehaviour x:Name="HoverLinkBehaviour"/>
+            </i:Interaction.Behaviors>
+        </wpf:ChromiumWebBrowser>
+        <StatusBarItem Grid.Row="1">
+            <TextBlock Text="{Binding HoverLink, ElementName=HoverLinkBehaviour}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        </StatusBarItem>
+    </Grid>
+</UserControl>

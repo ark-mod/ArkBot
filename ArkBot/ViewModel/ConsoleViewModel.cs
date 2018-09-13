@@ -2,6 +2,7 @@
 using ArkBot.Helpers;
 using Newtonsoft.Json;
 using Prism.Commands;
+using PropertyChanged;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,17 +18,30 @@ using System.Windows.Media.Imaging;
 
 namespace ArkBot.ViewModel
 {
-    public class ConsoleViewModel : TabViewModel
+    public sealed class ConsoleViewModel : TabViewModel
     {
         public ObservableCollection<string> ConsoleOutput { get; set; }
 
-        public ConsoleViewModel() : base("Console", "Console")
+        private ConsoleViewModel() : base("Console", "Console")
         {
             ConsoleOutput = new ObservableCollection<string>();
         }
 
+        private async Task<ConsoleViewModel> InitializeAsync()
+        {
+            return this;
+        }
+
+        public static Task<ConsoleViewModel> CreateAsync(bool isVisible = false)
+        {
+            var ret = new ConsoleViewModel { IsVisible = isVisible };
+            return ret.InitializeAsync();
+        }
+
         public void AddLog(string message)
         {
+            if (message == null) return;
+
             Application.Current.Dispatcher.Invoke(delegate
             {
                 ConsoleOutput.Add(message.TrimEnd('\n', '\r'));

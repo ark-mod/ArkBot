@@ -1,0 +1,90 @@
+﻿<UserControl x:Class="ArkBot.Controls.Configuration"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:local="clr-namespace:ArkBot.Controls"
+             xmlns:extensions="clr-namespace:ArkBot.Extensions"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+             xmlns:cef="clr-namespace:CefSharp;assembly=CefSharp.Core"
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity" 
+             xmlns:behaviours="clr-namespace:ArkBot.Browser.Behaviours"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <local:IsPropertyGridConverter x:Key="IsPropertyGridConverter" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="200" />
+            <RowDefinition Height="5" />
+            <RowDefinition Height="250" MinHeight="50" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <xctk:PropertyGrid x:Name="PART_PropertyGrid" SelectedObject="{Binding SelectedObject,  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Configuration}}}" IsReadOnly="{Binding IsReadOnly,  RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:Configuration}}}" Grid.Row="0" ShowDescriptionByTooltip="True" ShowTitle="False" ShowSearchBox="True" ShowSortOptions="True" NameColumnWidth="300" ShowSummary="False" UpdateTextBoxSourceOnEnterKey="True">
+            <!--SelectedObject="{Binding SelectedItem}"-->
+            <!-- ShowAdvancedOptions="True" -->
+            <xctk:PropertyGrid.PropertyContainerStyle>
+                <Style TargetType="{x:Type xctk:PropertyItemBase}">
+                    <Style.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Style.Triggers>
+                                <Trigger Property="x:Name" Value="PART_Editor">
+                                    <Setter Property="Margin" Value="0,0,23,0" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Converter={StaticResource IsPropertyGridConverter}}" Value="True">
+                                    <Setter Property="local:SetGridColumnBehavior.SetGridColumn" Value="True" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="{x:Type ScrollViewer}">
+                            <Setter Property="local:BubbleScrollBehavior.BubbleScroll" Value="True" />
+                            <!--<Setter Property="CanContentScroll" Value="False" />
+                            <Setter Property="IsEnabled" Value="False" />
+                            <Setter Property="VerticalScrollBarVisibility" Value="Disabled" />-->
+                        </Style>
+                        <!--<Style TargetType="{x:Type VirtualizingStackPanel}">
+                            <Setter Property="ScrollOwner.IsEnabled" Value="False" />
+                        </Style>-->
+                    </Style.Resources>
+                    <Setter Property="Validation.ErrorTemplate">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <DockPanel>
+                                    <Grid DockPanel.Dock="Right" Width="16" Height="16" VerticalAlignment="Top" Margin="-22 2 0 0" ToolTip="{Binding ElementName=MyAdorner, Path=AdornedElement.(Validation.Errors).CurrentItem.ErrorContent}">
+                                        <Ellipse Width="16" Height="16" Fill="Red"/>
+                                        <TextBlock Text="!" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 0 0 0" FontSize="14.0" FontWeight="ExtraBold" Foreground="White"></TextBlock>
+                                    </Grid>
+                                    <!--<Border BorderBrush="Red" BorderThickness="1">-->
+                                    <AdornedElementPlaceholder Name="MyAdorner"/>
+                                    <!--</Border>-->
+                                </DockPanel>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </xctk:PropertyGrid.PropertyContainerStyle>
+            <!--<xctk:PropertyGrid.AdvancedOptionsMenu>
+                <ContextMenu>
+                    <MenuItem Header="Copy"></MenuItem>
+                </ContextMenu>
+            </xctk:PropertyGrid.AdvancedOptionsMenu>-->
+        </xctk:PropertyGrid>
+        <GridSplitter Height="3" Grid.Row="1" HorizontalAlignment="Stretch"  />
+        <wpf:ChromiumWebBrowser x:Name="SummaryBrowser" Grid.Row="2" Margin="0 0 0 0" RenderOptions.BitmapScalingMode="HighQuality">
+            <i:Interaction.Behaviors>
+                <behaviours:HoverLinkBehaviour x:Name="HoverLinkBehaviour"/>
+            </i:Interaction.Behaviors>
+        </wpf:ChromiumWebBrowser>
+        <StatusBarItem Grid.Row="3">
+            <TextBlock Text="{Binding HoverLink, ElementName=HoverLinkBehaviour}" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        </StatusBarItem>
+    </Grid>
+</UserControl>

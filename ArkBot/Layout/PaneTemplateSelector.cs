@@ -13,6 +13,8 @@ namespace ArkBot.Layout
     public class PaneTemplateSelector : DataTemplateSelector
     {
         public DataTemplate ConsoleTemplate { get; set; }
+        public DataTemplate ConfigurationTemplate { get; set; }
+        public DataTemplate AboutTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
@@ -20,6 +22,10 @@ namespace ArkBot.Layout
 
             if (item is ConsoleViewModel)
                 return ConsoleTemplate;
+            if (item is ConfigurationViewModel)
+                return ConfigurationTemplate;
+            if (item is AboutViewModel)
+                return AboutTemplate;
 
             return base.SelectTemplate(item, container);
         }

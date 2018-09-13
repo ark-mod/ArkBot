@@ -1,4 +1,5 @@
-﻿using ArkBot.Database.Model;
+﻿using ArkBot.Configuration.Model;
+using ArkBot.Database.Model;
 using ArkBot.Services;
 using ArkBot.Services.Data;
 using ArkBot.Steam;
@@ -166,15 +167,15 @@ namespace ArkBot.Ark
                 SavegameBackupResult bresult = null;
                 try
                 {
-                    if (fullconfig.BackupsEnabled)
+                    if (fullconfig.Backups.BackupsEnabled)
                     {
-                        bresult = savegameBackupService.CreateBackup(Config, _contextManager?.GetCluster(Config.Cluster)?.Config);
+                        bresult = savegameBackupService.CreateBackup(Config, _contextManager?.GetCluster(Config.ClusterKey)?.Config);
                         if (bresult != null && bresult.ArchivePaths != null) progress.Report($@"Server ({Config.Key}): Backup successfull ({(string.Join(", ", bresult.ArchivePaths.Select(x => $@"""{x}""")))})!");
                         else progress.Report($"Server ({Config.Key}): Backup failed...");
                     }
                 }
                 catch (Exception ex) { Logging.LogException($"Server ({Config.Key}): Backup failed", ex, typeof(ArkServerContext), LogLevel.ERROR, ExceptionLevel.Ignored); }
-                BackupCompleted?.Invoke(this, fullconfig.BackupsEnabled, bresult);
+                BackupCompleted?.Invoke(this, fullconfig.Backups.BackupsEnabled, bresult);
             }
 
 

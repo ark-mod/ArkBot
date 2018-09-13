@@ -20,6 +20,7 @@ using System.Threading;
 using ArkBot.Discord.Command;
 using Discord.Commands.Builders;
 using RestSharp;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands.Admin
 {

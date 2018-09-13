@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PropertyChanged;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,17 +16,6 @@ namespace ArkBot.ViewModel
 
         public string Name { get; private set; }
 
-        public bool IsVisible
-        {
-            get { return _isVisible; }
-            set
-            {
-                if (_isVisible == value) return;
-
-                _isVisible = value;
-                RaisePropertyChanged(nameof(IsVisible));
-            }
-        }
-        private bool _isVisible = true;
+        public bool IsVisible { get; set; }
     }
 }

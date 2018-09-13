@@ -15,6 +15,7 @@ using Discord;
 using Discord.Commands.Builders;
 using Discord.Net;
 using RestSharp;
+using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands.Experimental
 {
@@ -104,7 +105,7 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.json)
             {
-                if (_config.DisableDeveloperFetchSaveData)
+                if (_config.Discord.DisableDeveloperFetchSaveData)
                 {
                     await Context.Channel.SendMessageAsync("The administrator have disabled this featurContext.");
                     return;
@@ -197,7 +198,7 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.save)
             {
-                if (_config.DisableDeveloperFetchSaveData)
+                if (_config.Discord.DisableDeveloperFetchSaveData)
                 {
                     await Context.Channel.SendMessageAsync("The administrator have disabled this featurContext.");
                     return;
@@ -214,7 +215,7 @@ namespace ArkBot.Commands.Experimental
                         return;
                     }
                     saveFilePath = server.SaveFilePath;
-                    var cluster = !string.IsNullOrEmpty(server.Cluster) ? _config.Clusters?.FirstOrDefault(x => x.Key.Equals(server.Cluster, StringComparison.OrdinalIgnoreCase)) : null;
+                    var cluster = !string.IsNullOrEmpty(server.ClusterKey) ? _config.Clusters?.FirstOrDefault(x => x.Key.Equals(server.ClusterKey, StringComparison.OrdinalIgnoreCase)) : null;
                     clusterSavePath = cluster?.SavePath;
                 }
                 else
