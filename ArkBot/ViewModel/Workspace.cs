@@ -377,7 +377,6 @@ namespace ArkBot.ViewModel
             builder.RegisterInstance(discordCommands).AsSelf();
             builder.RegisterType<AutofacDiscordServiceProvider>().As<IServiceProvider>().SingleInstance();
             builder.RegisterType<ArkDiscordBot>();
-            builder.RegisterType<UrlShortenerService>().As<IUrlShortenerService>().SingleInstance();
             builder.RegisterType<WebApp.SinglePageApplicationModule>().AsSelf();
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(_savedstate).As<ISavedState>();
@@ -721,12 +720,6 @@ namespace ArkBot.ViewModel
             {
                 sb.AppendLine($@"Error: {nameof(_config.TempFileOutputDirPath)} is not a valid directory path.");
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.TempFileOutputDirPath))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.GoogleApiKey))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.GoogleApiKey)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.GoogleApiKey))}");
                 sb.AppendLine();
             }
             if (string.IsNullOrWhiteSpace(_config.SteamApiKey))

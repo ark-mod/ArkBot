@@ -3,7 +3,6 @@
   "botUrl": "",
   "appUrl": "",
   "tempFileOutputDirPath": "",
-  "googleApiKey": "",
   "steamApiKey": "",
   "discord": {
     "discordBotEnabled": true,
