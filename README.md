@@ -6,7 +6,7 @@ This project is not currently being actively developed. It is still minimally ma
 Important Dependency Note: This release relies upon the ArkSavegameToolkitNet found here: https://github.com/ark-mod/ArkSavegameToolkitNet
 
 #### Support
-Users are encouraged to support each other with issues and requests for help. Personal support request directed my way are no longer answered due to lack of time.
+Please do not use Github as a support forum. If you need help, join our [Discord](https://discord.gg/zDJcckF) and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
 
 Read the [wiki](https://github.com/tsebring/ArkBot/wiki) for help getting started.
 
