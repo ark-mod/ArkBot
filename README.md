@@ -7,6 +7,8 @@ Important Dependency Note: This release relies upon the ArkSavegameToolkitNet fo
 
 Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/wiki/Roadmap)
 
+First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
+
 #### Support
 Please do not use Github as a support forum. If you need help, join our [Discord](https://discord.gg/zDJcckF) and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
 
