@@ -1739,6 +1739,11 @@
     [
       "Baby Argentavis",
       "Argent_Character_BP_Child_C"
+    ],
+    [
+      "Tek Parasaurolophus",
+      "BionicPara_Character_BP_C",
+      "Tek Parasaur"
     ]
   ]
 }
