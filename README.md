@@ -1,5 +1,10 @@
 # Project status
 
+### Support
+Please do not use Github as a support forum. If you need help, join our Discord at this link: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
+
+Read the [wiki](https://github.com/tsebring/ArkBot/wiki) for help getting started.
+
 #### Development
 This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. Jefferson-1 has taken over maintenance of the project with Tsebring's permission. Contributors are welcome.
 
@@ -8,11 +13,6 @@ Important Dependency Note: This release relies upon the ArkSavegameToolkitNet fo
 Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/wiki/Roadmap)
 
 First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
-
-#### Support
-Please do not use Github as a support forum. If you need help, join our [Discord](https://discord.gg/zDJcckF) and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
-
-Read the [wiki](https://github.com/tsebring/ArkBot/wiki) for help getting started.
 
 #### Suggestions/improvments/bugs
 If you think something is wrong with the project - help improve it. If you find a bug - help fix it. Don't know how to program? Start learning. This is the way of open source!
