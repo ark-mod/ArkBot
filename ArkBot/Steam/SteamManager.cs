@@ -1,4 +1,4 @@
-﻿using ArkBot.Configuration.Model;
+using ArkBot.Configuration.Model;
 using QueryMaster.GameServer;
 using System;
 using System.Collections.Generic;
@@ -25,6 +25,7 @@ namespace ArkBot.Steam
         private DateTime _lastServerInfo;
         private DateTime _lastServerRules;
         private DateTime _lastServerPlayers;
+        private int _errorCounter = 0;
 
         public SteamManager(ServerConfigSection config)
         {
@@ -252,10 +253,12 @@ namespace ArkBot.Steam
                         }
 
                         rules = _sourceServer.GetRules();
+                        _errorCounter = 0;
                         if (rules != null)
                         {
                             _lastServerRules = DateTime.Now;
                             cache.Set(cacheKey, rules, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                            
                         }
                     }
                     catch (System.Net.Sockets.SocketException ex)
@@ -265,7 +268,7 @@ namespace ArkBot.Steam
                         _sourceServer = null;
                         return;
                     }
-                  catch (Exception ex)
+                    catch (Exception ex)
                     {
                         if (_errorCounter < 3)
                         {
