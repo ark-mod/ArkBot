@@ -265,12 +265,23 @@ namespace ArkBot.Steam
                         _sourceServer = null;
                         return;
                     }
-                    catch (Exception ex)
+                  catch (Exception ex)
                     {
-                        _sourceServer?.Dispose();
-                        _sourceServer = null;
-                        Logging.LogException("Exception attempting to get server rules", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                        return;
+                        if (_errorCounter < 3)
+                        {
+                            _errorCounter++;
+                            _sourceServer?.Dispose();
+                            _sourceServer = null;
+                            await GetServerRules();
+                        }
+                        else
+                        {
+                            _errorCounter = 0;
+                            _sourceServer?.Dispose();
+                            _sourceServer = null;
+                            Logging.LogException("Exception attempting to get server rules", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                            return;
+                        }
                     }
                 });
             }
