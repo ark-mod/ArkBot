@@ -23,7 +23,7 @@ If you think something is wrong with the project - help improve it. If you find 
 
 ![Discord Bot Commands](https://user-images.githubusercontent.com/408350/31518648-405ee5f6-afa0-11e7-9c50-3dfd60ecdd7a.png)
 
-## Live demo
+## Live demo (currently offline)
 
 * ### [Companion App (Web App)](https://tsebring.github.io/ArkBot)
   * [Server view](https://tsebring.github.io/ArkBot/server/server1)
@@ -51,8 +51,7 @@ https://www.myget.org/F/arkbot-beta/api/v2/package/ArkBot
 ## Installation
 
 * Download the latest pre-built binaries (see above).
-* Copy defaultconfig.json and name it config.json.
-* Open config.json in a text editor and go through each setting and change according to your environment (settings are documented below).
+* Perform configuration within the ArkBot program after opening by clicking on the configuration tab, completing all required fields.
 
 To enable map clean-up from the companion app (web app) for administrators, install [ARK-Server-Beyond-API (forked by me)](https://github.com/tsebring/ARK-Server-Beyond-API) and [ARK Beyond API: Improved Commands (Plugin)](https://github.com/tsebring/ImprovedCommands).
 
@@ -72,7 +71,7 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 * [Companion App (Web App)](https://github.com/tsebring/ArkBot/wiki/Companion-App-(Web-App))
 * [Web API](https://github.com/tsebring/ArkBot/wiki/Web-API)
-* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot)
+* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently steam auth does not work properly)
 
 ## Acknowledgements
 
