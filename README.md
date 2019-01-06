@@ -6,15 +6,24 @@ Please do not use Github as a support forum. If you need help, join our Discord 
 Read the [wiki](https://github.com/tsebring/ArkBot/wiki) for help getting started.
 
 #### Development
-This project is not currently being actively developed. It is still minimally maintained by me as the primary developer of the project. Jefferson-1 has taken over maintenance of the project with Tsebring's permission. Contributors are welcome.
+This project now has a bounty program! Visit our bounty page at this link: https://gitcoin.co/issue/ark-mod/ArkBot/86/2074
 
-Important Dependency Note: This release relies upon the ArkSavegameToolkitNet found here: https://github.com/ark-mod/ArkSavegameToolkitNet
+We are in the process of setting up a grant system. Contributors can pay by Paypal, Stripe or Bitcoin and support the developers directly through Gitcoin. Program details will be released soon.
 
-Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/wiki/Roadmap)
+#### IMPORTANT NOTES
+Important Dependency Note: 
+This release relies upon VS C++ runtimes. We're not sure which ones. Download and install them all here: https://www.itechtics.com/microsoft-visual-c-redistributable-versions-direct-download-links/
 
+This release relies upon the ArkSavegameToolkitNet found here: https://github.com/ark-mod/ArkSavegameToolkitNet
+
+This has been installed on WS 2012R2, WS 2016, Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
+
+#### INSTALLATION INSTRUCTIONS
 First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
 
 #### Suggestions/improvments/bugs
+Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/wiki/Roadmap)
+
 If you think something is wrong with the project - help improve it. If you find a bug - help fix it. Don't know how to program? Start learning. This is the way of open source!
 
 ---
@@ -22,13 +31,6 @@ If you think something is wrong with the project - help improve it. If you find 
 ![Web-app Interface](https://user-images.githubusercontent.com/408350/31540442-f0cb204c-b00b-11e7-8d40-f15b445cdcd2.png)
 
 ![Discord Bot Commands](https://user-images.githubusercontent.com/408350/31518648-405ee5f6-afa0-11e7-9c50-3dfd60ecdd7a.png)
-
-## Live demo (currently offline)
-
-* ### [Companion App (Web App)](https://tsebring.github.io/ArkBot)
-  * [Server view](https://tsebring.github.io/ArkBot/server/server1)
-  * [Player view](https://tsebring.github.io/ArkBot/player/10000000000001888)
-  * [Admin view](https://tsebring.github.io/ArkBot/admin/server1)
 
 ## Introduction
 
