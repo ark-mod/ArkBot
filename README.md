@@ -1,4 +1,4 @@
-# Project status
+# Project status last updated January 6, 2019
 
 ### Support
 Please do not use Github as a support forum. If you need help, join our Discord at this link: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
