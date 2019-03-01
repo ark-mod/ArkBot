@@ -1,6 +1,6 @@
 # Project status last updated March 1, 2019
 
-### SUPPORT
+### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
 
 For items not covered in the above wiki, join our Discord at this link: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. Please do NOT use GitHub as a support forum.
