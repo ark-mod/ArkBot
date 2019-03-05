@@ -24,7 +24,7 @@ namespace ArkBot.Configuration.Model
     {
         public SslConfigSection()
         {
-            Domains = new string[] { };
+            Domains = new List<string>();
         }
 
         public override string ToString() => $"SSL ({(Enabled ? "Enabled" : "Disabled")})";
@@ -51,7 +51,7 @@ namespace ArkBot.Configuration.Model
 
         [JsonProperty(PropertyName = "domains")]
         [Display(Name = "Domain name(s)", Description = "Domain name(s) to issue the certificate for")]
-        public string[] Domains { get; set; }
+        public List<string> Domains { get; set; }
 
         [JsonProperty(PropertyName = "ports")]
         [Display(Name = "Ports", Description = "Ports to bind the ssl certificate to")]

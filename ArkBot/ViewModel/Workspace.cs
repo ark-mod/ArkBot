@@ -766,7 +766,7 @@ namespace ArkBot.ViewModel
                     sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.Email))}");
                     sb.AppendLine();
                 }
-                if (!(_config.Ssl.Domains?.Length >= 1) || _config.Ssl.Domains.Any(x => string.IsNullOrWhiteSpace(x)))
+                if (!(_config.Ssl.Domains?.Count >= 1) || _config.Ssl.Domains.Any(x => string.IsNullOrWhiteSpace(x)))
                 {
                     sb.AppendLine($@"Error: {nameof(_config.Ssl)}.{nameof(_config.Ssl.Domains)} is not set.");
                     sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config.Ssl, nameof(_config.Ssl.Domains))}");
