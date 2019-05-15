@@ -1,4 +1,4 @@
-# Project status last updated March 1, 2019
+# Project status last updated May 14th 2019
 
 ### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
@@ -8,9 +8,7 @@ For items not covered in the above wiki, join our Discord at this link: https://
 Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
-This project now has a bounty program! Visit our bounty page at this link: https://gitcoin.co/issue/ark-mod/ArkBot/86/2074
-
-We are in the process of setting up a grant system. Contributors can pay by Paypal, Stripe or Bitcoin and support the developers directly through Gitcoin. Program details will be released soon.
+All development has halted as we have been unable to find a developer willing to pickup this project. If you would like to develop it further, please visit our discord and speak to one of our admins for details. 
 
 #### IMPORTANT NOTES
 Important Dependency Note: 
