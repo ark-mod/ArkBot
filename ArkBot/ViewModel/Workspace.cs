@@ -83,6 +83,8 @@ namespace ArkBot.ViewModel
 
 
         public DelegateCommand<System.ComponentModel.CancelEventArgs> ClosingCommand { get; private set; }
+        public DelegateCommand ShowOrHideCommand { get; private set; }
+        public DelegateCommand TaskIconDoubleClickCommand { get; private set; }
 
         public ICommand ExitCommand => _exitCommand ?? (_exitCommand = new RelayCommand(parameter => OnExit(parameter), parameter => CanExit(parameter)));
         private RelayCommand _exitCommand;
@@ -105,6 +107,9 @@ namespace ArkBot.ViewModel
         private ArkContextManager _contextManager;
         internal IConfig _config;
 
+        internal bool _isUIHidden = false;
+        internal bool _startedWithoutErrors = false;
+
         private Workspace()
         {
             //do not create viewmodels or load data here, or avalondock layout deserialization will fail
@@ -112,6 +117,9 @@ namespace ArkBot.ViewModel
             ManuallyUpdateServers = new ObservableCollection<MenuItemViewModel>();
             ManuallyUpdateClusters = new ObservableCollection<MenuItemViewModel>();
             ClosingCommand = new DelegateCommand<System.ComponentModel.CancelEventArgs>(OnClosing);
+            //Bind both the show or hide command and task bar double click to the same action
+            ShowOrHideCommand = new DelegateCommand(OnShowHide);
+            TaskIconDoubleClickCommand = new DelegateCommand(OnShowHide);
 
             PropertyChanged += Workspace_PropertyChanged;
 
@@ -171,6 +179,23 @@ namespace ArkBot.ViewModel
             }
         }
 
+        private void OnShowHide()
+        {
+            //If the UI is hidden, show the main window
+            if (_isUIHidden)
+            {
+                Application.Current.MainWindow?.Show();
+                //Set the variable to indicate if the application should be shown
+                _isUIHidden = false;
+            }
+            else //If the UI is shown, hide the main window
+            {
+                Application.Current.MainWindow?.Hide();
+                //Set the variable to indicate if the application should be hidden
+                _isUIHidden = true;
+            }
+        }
+
         private bool CanExit(object parameter)
         {
             return true;
@@ -178,7 +203,7 @@ namespace ArkBot.ViewModel
 
         private void OnExit(object parameter)
         {
-            Application.Current.MainWindow.Close();
+            Application.Current.MainWindow?.Close();
         }
 
         private bool CanReloadPartialConfig(object parameter)
@@ -705,6 +730,10 @@ namespace ArkBot.ViewModel
                     Console.AddLog("Web App redirect added");
                 }
             }
+
+            //Indicates the application started without errors, required for auto hide on startup
+            _startedWithoutErrors = true;
+
         }
 
         private string ValidateConfig()

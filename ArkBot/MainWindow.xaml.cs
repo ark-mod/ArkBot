@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Prism.Commands;
 
 namespace ArkBot
 {
@@ -22,6 +23,8 @@ namespace ArkBot
     /// </summary>
     public partial class MainWindow : Window
     {
+        public DelegateCommand WorkspaceConfiguredCommand { get; private set; }
+
         public MainWindow()
         {
             Initialized += MainWindow_Initialized;
@@ -35,12 +38,22 @@ namespace ArkBot
         private async void MainWindow_Initialized(object sender, EventArgs e)
         {
             DataContext = await Workspace.AsyncInstance;
+
+            //Check if the UI should be hidden on startup
+            //Only checks here to allow the user to see if an error occurred
+            if (Workspace.Instance._config.HideUiOnStartup && Workspace.Instance._startedWithoutErrors)
+            {
+                Application.Current.MainWindow?.Hide();
+                Workspace.Instance._isUIHidden = true;
+            }
+
         }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
+
                 if (File.Exists(Workspace.Constants.LayoutFilePath))
                 {
                     var serializer = new Xceed.Wpf.AvalonDock.Layout.Serialization.XmlLayoutSerializer(dockManager);
@@ -50,7 +63,8 @@ namespace ArkBot
 
                     serializer.Deserialize(Workspace.Constants.LayoutFilePath);
                 }
-            } catch (Exception ex) { /*do nothing*/ }
+            }
+            catch (Exception ex) { /*do nothing*/ }
         }
 
         void MainWindow_Unloaded(object sender, RoutedEventArgs e)

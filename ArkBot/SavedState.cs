@@ -34,7 +34,7 @@ namespace ArkBot
 
         [JsonProperty(PropertyName = "skipExtractNextRestart")]
         public bool SkipExtractNextRestart { get; set; }
-
+        
         [JsonProperty(PropertyName = "playerLastActive")]
         public List<PlayerLastActiveSavedState> PlayerLastActive { get; set; }
 

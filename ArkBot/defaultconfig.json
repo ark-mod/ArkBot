@@ -111,6 +111,7 @@
   },
   "savegameExtractionMaxDegreeOfParallelism": null,
   "anonymizeWebApiData": false,
+  "hideUiOnStartup": false,
   "discordLogLevel": "Warning",
   "servers": [
     {
@@ -123,7 +124,7 @@
       "rconPort": 27020,
       "rconPassword": "",
       "serverManagement": {
-        "enabled":  true,
+        "enabled": true,
         "serverExecutablePath": "",
         "serverExecutableArguments": "",
         "steamCmdExecutablePath": "",
