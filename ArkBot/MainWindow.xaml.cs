@@ -23,7 +23,6 @@ namespace ArkBot
     /// </summary>
     public partial class MainWindow : Window
     {
-        public DelegateCommand WorkspaceConfiguredCommand { get; private set; }
 
         public MainWindow()
         {
