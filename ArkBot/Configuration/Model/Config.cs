@@ -81,6 +81,8 @@ namespace ArkBot.Configuration.Model
         [Required(ErrorMessage = "{0} is not set")]
         [ValidateCollection(ErrorMessage = "{0} contains item(s) that are invalid")]
         public ClustersConfigSection Clusters { get; set; }
+
+
         
         // Optional
 
