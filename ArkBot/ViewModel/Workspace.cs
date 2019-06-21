@@ -182,13 +182,16 @@ namespace ArkBot.ViewModel
         private void OnShowHide()
         {
             //If the UI is hidden, show the main window
-            if (_isUIHidden)
+            if (_isUIHidden && Application.Current.MainWindow != null)
             {
                 Application.Current.MainWindow?.Show();
+                //Make sure the app has the focus
+                Application.Current.MainWindow.Topmost = true;
+                Application.Current.MainWindow.Topmost = false;
                 //Set the variable to indicate if the application should be shown
                 _isUIHidden = false;
             }
-            else //If the UI is shown, hide the main window
+            else if (!_isUIHidden && Application.Current.MainWindow != null) //If the UI is shown, hide the main window
             {
                 Application.Current.MainWindow?.Hide();
                 //Set the variable to indicate if the application should be hidden
