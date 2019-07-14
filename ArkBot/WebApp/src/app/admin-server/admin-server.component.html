@@ -72,3 +72,10 @@
 <section *ngIf="isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
+
+<section *ngIf="isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
+  <h2 class="theme-text-d1">Fertilized Eggs</h2>
+  <div class="w3-card-4 w3-responsive">
+    Nope
+  </div>
+</section>
