@@ -19,5 +19,6 @@ export class AdminServerMenuComponent implements OnInit {
     if (this.dataService.hasFeatureAccess('admin-server', 'structures')) this.menu.activate("structures");
     else if (this.dataService.hasFeatureAccess('admin-server', 'players')) this.menu.activate("players");
     else if (this.dataService.hasFeatureAccess('admin-server', 'tribes')) this.menu.activate("tribes");
+    else if (this.dataService.hasFeatureAccess('admin-server', 'eggs')) this.menu.activate("eggs");
   }
 }
