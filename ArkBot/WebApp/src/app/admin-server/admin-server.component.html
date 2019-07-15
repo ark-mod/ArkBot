@@ -72,7 +72,6 @@
 <section *ngIf="isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
-
 <section *ngIf="isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
   <h2 class="theme-text-d1">Fertilized Eggs</h2>
   <div class="w3-card-4 w3-margin-bottom">  
@@ -87,8 +86,7 @@
         <p>There are no fertilized eggs on the map</p>
       </div>
   </div>
-  <div *ngIf="fertilizedEggsCount != 0" class="w3-card-4 w3-responsive">   
-    <br/>   
+  <div *ngIf="fertilizedEggsCount != 0" class="w3-card-4 w3-responsive">     
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
@@ -107,7 +105,6 @@
     </table> 
   </div>
   <div *ngIf="fertilizedSpoiledEggsCount != 0" class="w3-card-4 w3-responsive">   
-    <br/>   
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">

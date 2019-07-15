@@ -79,8 +79,8 @@
     "admin-server": {
       "players": [ "admin" ],
       "tribes": [ "admin" ],
-      "structures": [ "admin" ],
-      "fertilized-eggs": [ "admin" ],
+      "structures": [ "admin" ],	  
+      "fertilized-eggs": [ "disabled" ],
       "structures-rcon": [ "disabled" ]
     }
   },
