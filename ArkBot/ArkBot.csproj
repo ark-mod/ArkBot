@@ -753,6 +753,8 @@
     <Compile Include="Voting\VotingManager.cs" />
     <Compile Include="WebApi\Controllers\WildCreaturesController.cs" />
     <Compile Include="WebApi\DemoMode.cs" />
+    <Compile Include="WebApi\Model\FertilizedEggsResponseViewModel.cs" />
+    <Compile Include="WebApi\Model\FertilizedEggViewModel.cs" />
     <Compile Include="WebApi\Model\WildCreatureSpeciesStatistics.cs" />
     <Compile Include="WebApi\Model\WildCreatureStatistics.cs" />
     <Compile Include="WebApi\Model\WildCreatureSpeciesViewModel.cs" />
