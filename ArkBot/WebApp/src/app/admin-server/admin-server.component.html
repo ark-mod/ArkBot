@@ -73,30 +73,56 @@
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
 
-<section *ngIf="isMenuActive('eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'eggs')" class="w3-container">
-  <h2 class="theme-text-d1">Eggs</h2>
-  <div class="w3-card-4 w3-responsive">
+<section *ngIf="isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
+  <h2 class="theme-text-d1">Fertilized Eggs</h2>
+  <div class="w3-card-4 w3-margin-bottom">  
+      <header class="w3-container theme-d1">
+        <h3>Summary</h3>
+      </header>
+      <div *ngIf="fertilizedEggsCount != 0 || fertilizedSpoiledEggsCount != 0" class="w3-container theme-l1">
+        <p>Fertilized Egg Count: {{fertilizedEggsCount}}</p>
+        <p>Spoiled Egg Count: {{fertilizedSpoiledEggsCount}}</p>
+      </div>
+      <div *ngIf="fertilizedEggsCount == 0 && fertilizedSpoiledEggsCount == 0" class="w3-container theme-l1">
+        <p>There are no fertilized eggs on the map</p>
+      </div>
+  </div>
+  <div *ngIf="fertilizedEggsCount != 0" class="w3-card-4 w3-responsive">   
+    <br/>   
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
-          <th>Id</th>
-          <th>Name</th>
-          <th>Members</th>
-          <th>Structures</th>
-          <th>Creatures</th>
-          <th>Last Active</th>
+          <th>Creature</th>
+          <th>Egg Level</th>
+          <th>Spoil Time</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let tribe of server.Tribes">
-          <td>{{tribe.Id}}</td>
-          <td>{{tribe.Name}}</td>
-          <td><span *ngFor="let member of tribe.MemberSteamIds; let last = last"><a *ngIf="dataService.hasFeatureAccess('pages', 'player', member); else tribes_player_no_link" [routerLink]="'/player/' + member">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribes_player_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf="!last">, </span></span></td>
-          <td>{{tribe.StructureCount}}</td>
-          <td>{{tribe.CreatureCount}}</td>
-          <td>{{dataService.toRelativeDate(tribe.LastActiveTime)}}</td>
+        <tr *ngFor="let egg of fertilizedEggsList">
+          <td>{{egg.Dino}}</td>
+          <td>{{egg.EggLevel}}</td>
+          <td>{{egg.SpoilTime}}</td>
         </tr>
       </tbody>
-    </table>
+    </table> 
+  </div>
+  <div *ngIf="fertilizedSpoiledEggsCount != 0" class="w3-card-4 w3-responsive">   
+    <br/>   
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Creature</th>
+          <th>Egg Level</th>
+          <th>Spoil Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let egg of fertilizedSpoiledEggsList">
+          <td>{{egg.Dino}}</td>
+          <td>{{egg.EggLevel}}</td>
+          <td>{{egg.SpoilTime}}</td>
+        </tr>
+      </tbody>
+    </table> 
   </div>
 </section>

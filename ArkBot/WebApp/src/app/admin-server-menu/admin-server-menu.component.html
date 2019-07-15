@@ -4,6 +4,6 @@
     <div *ngIf="dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('structures')}" (click)="menu.activate('structures')">Structures</div>
     <div *ngIf="dataService.hasFeatureAccess('admin-server', 'players')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('players')}" (click)="menu.activate('players')">Players</div>
     <div *ngIf="dataService.hasFeatureAccess('admin-server', 'tribes')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('tribes')}" (click)="menu.activate('tribes')">Tribes</div>
-    <div *ngIf="dataService.hasFeatureAccess('admin-server', 'eggs')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('eggs')}" (click)="menu.activate('eggs')">Dropped Eggs</div>
+    <div *ngIf="dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('fertilized-eggs')}" (click)="menu.activate('fertilized-eggs')">Fertilized Eggs</div>
   </div>
 </app-menu>

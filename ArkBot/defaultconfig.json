@@ -80,6 +80,7 @@
       "players": [ "admin" ],
       "tribes": [ "admin" ],
       "structures": [ "admin" ],
+      "fertilized-eggs": [ "admin" ],
       "structures-rcon": [ "disabled" ]
     }
   },
