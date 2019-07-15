@@ -75,7 +75,54 @@
 
 <section *ngIf="isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
   <h2 class="theme-text-d1">Fertilized Eggs</h2>
-  <div class="w3-card-4 w3-responsive">
-    Nope
+  <div class="w3-card-4 w3-margin-bottom">  
+      <header class="w3-container theme-d1">
+        <h3>Summary</h3>
+      </header>
+      <div *ngIf="fertilizedEggsCount != 0 || fertilizedSpoiledEggsCount != 0" class="w3-container theme-l1">
+        <p>Fertilized Egg Count: {{fertilizedEggsCount}}</p>
+        <p>Spoiled Egg Count: {{fertilizedSpoiledEggsCount}}</p>
+      </div>
+      <div *ngIf="fertilizedEggsCount == 0 && fertilizedSpoiledEggsCount == 0" class="w3-container theme-l1">
+        <p>There are no fertilized eggs on the map</p>
+      </div>
+  </div>
+  <div *ngIf="fertilizedEggsCount != 0" class="w3-card-4 w3-responsive">   
+    <br/>   
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Creature</th>
+          <th>Egg Level</th>
+          <th>Spoil Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let egg of fertilizedEggsList">
+          <td>{{egg.Dino}}</td>
+          <td>{{egg.EggLevel}}</td>
+          <td>{{egg.SpoilTime}}</td>
+        </tr>
+      </tbody>
+    </table> 
+  </div>
+  <div *ngIf="fertilizedSpoiledEggsCount != 0" class="w3-card-4 w3-responsive">   
+    <br/>   
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Creature</th>
+          <th>Egg Level</th>
+          <th>Spoil Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let egg of fertilizedSpoiledEggsList">
+          <td>{{egg.Dino}}</td>
+          <td>{{egg.EggLevel}}</td>
+          <td>{{egg.SpoilTime}}</td>
+        </tr>
+      </tbody>
+    </table> 
   </div>
 </section>

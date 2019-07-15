@@ -105,6 +105,13 @@ export class HttpService {
                .catch(this.handleError);
   }
 
+  adminListFertilizedEggs(serverKey: string): Promise<any> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.administerUrl}/DroppedEggsList/${serverKey}?t=${+new Date()}`, this.getOptions())
+               .toPromise()
+               .then(response => response.json() as any)
+               .catch(this.handleError);
+  }
+
   getApiBaseUrl(): string {
     return environment.apiBaseUrl
       .replace(/\<protocol\>/gi, window.location.protocol)

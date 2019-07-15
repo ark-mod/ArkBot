@@ -53,6 +53,7 @@ using Nito.AsyncEx;
 using Markdig;
 using PropertyChanged;
 using ArkBot.Configuration.Model;
+using CefSharp;
 
 namespace ArkBot.ViewModel
 {
@@ -178,6 +179,7 @@ namespace ArkBot.ViewModel
 
         private void OnExit(object parameter)
         {
+            Cef.Shutdown();
             Application.Current.MainWindow.Close();
         }
 

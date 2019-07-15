@@ -20,8 +20,13 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   server: any;
   loaded: boolean = false;
   loadedStructures: boolean = false;
+  loadedFertilizedEggs: boolean = false;
   serverKey: string;
   structures: any;
+  fertilizedEggsList: any[];
+  fertilizedSpoiledEggsList: any[];
+  fertilizedEggsCount: number;
+  fertilizedSpoiledEggsCount: number;
 
   constructor(
     private route: ActivatedRoute,
@@ -57,6 +62,22 @@ export class AdminServerComponent implements OnInit, OnDestroy {
           this.loadedStructures = true;
         });
   }
+  
+  getListFertilizedEggs(): void {
+      this.httpService
+        .adminListFertilizedEggs(this.serverKey)
+        .then(fertilizedEggs => {
+          // this.fertilizedSpoiledEggsList = fertilizedEggs.FertilizedSpoiledEggList;
+          this.fertilizedEggsList = fertilizedEggs.FertilizedEggList;
+          this.fertilizedEggsCount = fertilizedEggs.FertilizedEggsCount;
+          this.fertilizedSpoiledEggsCount = fertilizedEggs.SpoiledFertilizedEggsCount;
+          this.loadedFertilizedEggs = true;
+        })
+        .catch(error => {
+          this.fertilizedEggsList = undefined;
+          this.loadedFertilizedEggs = true;
+        });
+  }
 
   ngOnInit() {
     this.serverKey = this.route.snapshot.params['id'];
@@ -65,6 +86,9 @@ export class AdminServerComponent implements OnInit, OnDestroy {
       this.menuOption = menuOption;
       if (this.menuOption == "structures") {
         this.getStructures();
+      }
+      else  if (this.menuOption == "fertilized-eggs") {
+        this.getListFertilizedEggs();
       }
     });
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => {
