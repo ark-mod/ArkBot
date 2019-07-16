@@ -10,9 +10,11 @@ namespace ArkBot.WebApi.Model
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public int? FertilizedEggsCount { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public int? SpoiledFertilizedEggsCount { get; set; }
+        public int? SpoiledEggsCount { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public IEnumerable<FertilizedEggViewModel> FertilizedEggList { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public IEnumerable<FertilizedEggViewModel> SpoiledEggList { get; set; }
     }
 }

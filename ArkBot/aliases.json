@@ -1209,7 +1209,7 @@
     ],
     [
       "Megaloceros (Lifes Labyrinth)",
-	  "Stag_LL_Character_BP_C",
+      "Stag_LL_Character_BP_C",
       "Deer (Lifes Labyrinth)"
     ],
     [
@@ -1275,7 +1275,7 @@
     [
       "Zombie Wyvern (Fire)",
       "Wyvern_Character_BP_ZombieFire_c"
-      
+
     ],
     [
       "Zombie Wyvern (Lightning)",
@@ -1740,154 +1740,158 @@
       "Baby Argentavis",
       "Argent_Character_BP_Child_C"
     ],
-	[
-	  "King Titan",
-	  "KingKaiju_Character_BP_C"
-	],
-	[
-	  "Desert Titan",
-	  "DesertKaiju_Character_BP_C"
-	],
-	[
-	  "Enforcer",
-	  "Enforcer_Character_BP_C"
-	],
-	[
-	  "Forest Wyvern",
-	  "Wyvern_Character_BP_Fire_Minion_C"
-	],
-	[
-	  "Corrupt Wyvern",
-	  "Wyvern_Character_BP_Fire_Corrupt_C"
-	],
-	[
-	  "Gacha",
-	  "Gacha_Character_BP_C"
-	],
-	[
-	  "Gasbags",
-	  "GasBags_Character_BP_C"
-	],
-	[
-	  "Managarmr",
-	  "IceJumper_Character_BP_C"
-	],
-	[
-	  "Mek",
-	  "Mek_Character_BP_C"
-	],
-	[
-	  "Mega Mek",
-	  "MegaMek_Character_BP_C"
-	],
-	[
-	  "Scout",
-	  "Scout_Character_BP_C"
-	],
-	[
-	  "Snow Owl",
-	  "Owl_Character_BP_C"
-	],
-	[
-	  "Velonasaur",
-	  "Spindles_Character_BP_C"
-	],
-	[
-	  "Forest Titan",
-	  "ForestKaiju_Character_BP_C"
-	],
-	[
-	  "Ice Titan",
-	  "IceKaiju_Character_BP_C"
-	],
-	[
-	  "Beta King Titan",
-	  "KingKaiju_Character_BP_Beta_C"
-	],
-	[
-	  "Alpha King Titan",
-	  "KingKaiju_Character_BP_Alpha_C"
-	],
-	[
-	  "Defense Unit",
-	  "Defender_Character_BP_C"
-	],
-	[
-	  "Tek Parasaurolophus",
-	  "BionicPara_Character_BP_C",
-	  "Tek Parasaur"
-	],
-	[
-	  "Corrupted Arthropluera",
-	  "Arthro_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Carnotaurus",
-	  "Carno_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Chalicotherium",
-	  "Chalico_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Deathworm",
-	  "Deathworm_Character_BP_Corrupt_C"
-	],
-	[
-	  "Enraged Corrupted Rex",
-	  "MegaRex_Character_BP_Corrupt_C"
-	],
-	[
-	  "Enraged Triceratops",
-	  "MegaTrike_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Triceratops",
-	  "Trike_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Dilophosaur",
-	  "Dilo_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Dimorphodon",
-	  "Dimorph_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Giganotosaurus",
-	  "Gigant_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Paraceratherium",
-	  "Paracer_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Pteranodon",
-	  "Ptero_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Raptor",
-	  "Raptor_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Reaper King",
-	  "Xenomorph_Character_BP_Male_Tamed_Corrupt_C"
-	],
-	[
-	  "Corrupted Rock Drake",
-	  "RockDrake_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Spino",
-	  "Spino_Character_BP_Corrupt_C"
-	],
-	[
-	  "Corrupted Stegosaurus",
-	  "Stego_Character_BP_Corrupt_C"
-	],
-	[
-	  "Tek Quetzal",
-	  "BionicQuetz_Character_BP_C"
-	]
+    [
+      "King Titan",
+      "KingKaiju_Character_BP_C"
+    ],
+    [
+      "Desert Titan",
+      "DesertKaiju_Character_BP_C"
+    ],
+    [
+      "Enforcer",
+      "Enforcer_Character_BP_C"
+    ],
+    [
+      "Forest Wyvern",
+      "Wyvern_Character_BP_Fire_Minion_C"
+    ],
+    [
+      "Corrupt Wyvern",
+      "Wyvern_Character_BP_Fire_Corrupt_C"
+    ],
+    [
+      "Gacha",
+      "Gacha_Character_BP_C"
+    ],
+    [
+      "Gasbags",
+      "GasBags_Character_BP_C"
+    ],
+    [
+      "Managarmr",
+      "IceJumper_Character_BP_C"
+    ],
+    [
+      "Mek",
+      "Mek_Character_BP_C"
+    ],
+    [
+      "Mega Mek",
+      "MegaMek_Character_BP_C"
+    ],
+    [
+      "Scout",
+      "Scout_Character_BP_C"
+    ],
+    [
+      "Snow Owl",
+      "Owl_Character_BP_C"
+    ],
+    [
+      "Velonasaur",
+      "Spindles_Character_BP_C"
+    ],
+    [
+      "Forest Titan",
+      "ForestKaiju_Character_BP_C"
+    ],
+    [
+      "Ice Titan",
+      "IceKaiju_Character_BP_C"
+    ],
+    [
+      "Beta King Titan",
+      "KingKaiju_Character_BP_Beta_C"
+    ],
+    [
+      "Alpha King Titan",
+      "KingKaiju_Character_BP_Alpha_C"
+    ],
+    [
+      "Defense Unit",
+      "Defender_Character_BP_C"
+    ],
+    [
+      "Tek Parasaurolophus",
+      "BionicPara_Character_BP_C",
+      "Tek Parasaur"
+    ],
+    [
+      "Corrupted Arthropluera",
+      "Arthro_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Carnotaurus",
+      "Carno_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Chalicotherium",
+      "Chalico_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Deathworm",
+      "Deathworm_Character_BP_Corrupt_C"
+    ],
+    [
+      "Enraged Corrupted Rex",
+      "MegaRex_Character_BP_Corrupt_C"
+    ],
+    [
+      "Enraged Triceratops",
+      "MegaTrike_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Triceratops",
+      "Trike_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Dilophosaur",
+      "Dilo_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Dimorphodon",
+      "Dimorph_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Giganotosaurus",
+      "Gigant_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Paraceratherium",
+      "Paracer_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Pteranodon",
+      "Ptero_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Raptor",
+      "Raptor_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Reaper King",
+      "Xenomorph_Character_BP_Male_Tamed_Corrupt_C"
+    ],
+    [
+      "Corrupted Rock Drake",
+      "RockDrake_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Spino",
+      "Spino_Character_BP_Corrupt_C"
+    ],
+    [
+      "Corrupted Stegosaurus",
+      "Stego_Character_BP_Corrupt_C"
+    ],
+    [
+      "Tek Quetzal",
+      "BionicQuetz_Character_BP_C"
+    ],
+    [
+      "Deinonychus",
+      "Deinonychus_Character_BP_C"
+    ]
   ]
 }

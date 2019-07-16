@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { NotificationsService } from 'angular2-notifications';
 import * as moment from 'moment'
@@ -6,6 +6,7 @@ import * as moment from 'moment'
 import { DataService } from '../data.service';
 import { MessageService } from '../message.service';
 import { HttpService } from '../http.service';
+import * as d3 from "d3";
 
 @Component({
   selector: 'app-admin-server',
@@ -16,6 +17,8 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   private menuOption: string = undefined; 
   private menuOptionSubscription: any;
 
+  public modalInfo: any;
+
   serverUpdatedSubscription: any;
   server: any;
   loaded: boolean = false;
@@ -24,9 +27,12 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   serverKey: string;
   structures: any;
   fertilizedEggsList: any[];
-  fertilizedSpoiledEggsList: any[];
+  spoiledEggsList: any[];
   fertilizedEggsCount: number;
-  fertilizedSpoiledEggsCount: number;
+  spoiledEggsCount: number;
+  totalEggCount: number;
+  
+  @ViewChild('contextMenu') contextMenu: ElementRef;
 
   constructor(
     private route: ActivatedRoute,
@@ -67,11 +73,14 @@ export class AdminServerComponent implements OnInit, OnDestroy {
       this.httpService
         .adminListFertilizedEggs(this.serverKey)
         .then(fertilizedEggs => {
-          // this.fertilizedSpoiledEggsList = fertilizedEggs.FertilizedSpoiledEggList;
+          this.spoiledEggsList = fertilizedEggs.SpoiledEggList;
           this.fertilizedEggsList = fertilizedEggs.FertilizedEggList;
           this.fertilizedEggsCount = fertilizedEggs.FertilizedEggsCount;
-          this.fertilizedSpoiledEggsCount = fertilizedEggs.SpoiledFertilizedEggsCount;
+          this.spoiledEggsCount = fertilizedEggs.SpoiledEggsCount;
+          this.totalEggCount = this.spoiledEggsCount +  this.fertilizedEggsCount;
           this.loadedFertilizedEggs = true;
+
+          //76561198241517230
         })
         .catch(error => {
           this.fertilizedEggsList = undefined;
@@ -124,9 +133,71 @@ export class AdminServerComponent implements OnInit, OnDestroy {
           clickToClose: true
       }
     );
+    
   }
 
   isMenuActive(menuOption: string): boolean {
     return this.menuOption == menuOption;
+  }
+  
+  showInfoModal(header: string, message: string): void {
+    let modalInfo = <any> {};
+    modalInfo.Header = header;
+    modalInfo.Message = message;
+    this.modalInfo = modalInfo;
+
+    let cm = d3.select(this.contextMenu.nativeElement);
+    cm.style("display", "block");
+
+    if(d3.event) d3.event.stopPropagation();
+  }
+
+  hideContextMenu(): void {
+    let cm = d3.select(this.contextMenu.nativeElement);
+    cm.style("display", "none");
+
+    this.modalInfo = undefined;
+  }
+
+  saveWorld(event: string): void {
+    this.httpService.adminSaveWorld(this.serverKey)
+    .then(response => {
+        this.hideContextMenu();
+        this.getListFertilizedEggs();
+        this.showInfoModal("Action Successfull!", response.Message);
+      })
+      .catch(error => {
+        this.hideContextMenu();
+        let json = error && error._body ? JSON.parse(error._body) : undefined;
+        this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+      });
+  }
+
+  destroyAllEggs(event: string): void {
+    this.httpService.adminDestroyAllEggs(this.serverKey)
+    .then(response => {
+        this.hideContextMenu();
+        this.getListFertilizedEggs();
+        this.showInfoModal("Action Successfull!", response.Message);
+      })
+      .catch(error => {
+        this.hideContextMenu();
+        let json = error && error._body ? JSON.parse(error._body) : undefined;
+        this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+      });
+  }
+
+  destroySpoiledEggs(event: string): void {
+    this.httpService.adminDestroySpoiledEggs(this.serverKey)
+    .then(response => {
+        this.hideContextMenu();
+        this.getListFertilizedEggs();
+        this.showInfoModal("Action Successfull!", response.Message);
+      })
+      .catch(error => {
+        this.hideContextMenu();
+        let json = error && error._body ? JSON.parse(error._body) : undefined;
+        this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+      });
   }
 }
