@@ -107,9 +107,7 @@ namespace ArkBot.WebApi.Controllers
                 });
             }
 
-            var m = _rFertilizedEggCount.Match(result);
             var eggList = result.Split('\n').Skip(1).Where(a => !string.IsNullOrWhiteSpace(a));
-
             var fertilizedEggList = new List<FertilizedEggViewModel>();
             var spoiledEggList = new List<FertilizedEggViewModel>();
 
@@ -168,10 +166,10 @@ namespace ArkBot.WebApi.Controllers
             return Request.CreateResponse(HttpStatusCode.OK, new FertilizedEggsResponseViewModel
             {
                 Message = result?.TrimEnd('\n'),
-                FertilizedEggsCount = m.Success ? fertilizedEggList.Count : (int?)null,
+                FertilizedEggsCount = fertilizedEggList.Count,
                 FertilizedEggList = fertilizedEggList,
                 SpoiledEggList = spoiledEggList,
-                SpoiledEggsCount = spoiledEggList.Count
+                SpoiledEggsCount = spoiledEggList.Count,
             });
         }
 

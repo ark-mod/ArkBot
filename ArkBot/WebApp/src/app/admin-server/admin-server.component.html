@@ -72,7 +72,14 @@
 <section *ngIf="isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
-<section *ngIf="isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
+
+<section *ngIf="loadedFertilizedEggs == false &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
+  <div class="w3-panel theme-l2">
+    <h3 class="theme-text-l1-light">Loading...</h3>
+  </div> 
+</section>
+
+<section *ngIf="loadedFertilizedEggs == true &amp;&amp;isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
   <div class="w3-cell-row">
       <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Egg Summary</h2></div>
       <div class="w3-cell w3-cell-middle"><confirm-button (callback)="saveWorld($event)" class="w3-right" [width]="undefined">Save World</confirm-button></div>
@@ -92,7 +99,7 @@
       </div>
   </div>
 
-  <div *ngIf="fertilizedEggsCount != 0" class="w3-cell-row">
+  <div *ngIf="fertilizedEggsCount &amp;&amp; fertilizedEggsCount != 0" class="w3-cell-row">
       <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Fertilized Eggs</h2></div>
       <div class="w3-cell w3-cell-middle"><confirm-button (callback)="destroyAllEggs($event)" class="w3-right" [width]="undefined">Destroy All Eggs</confirm-button></div>
   </div>
@@ -115,7 +122,7 @@
     </table> 
   </div>
 
-  <div *ngIf="spoiledEggsCount != 0" class="w3-cell-row">
+  <div *ngIf="spoiledEggsCount &amp;&amp; spoiledEggsCount != 0" class="w3-cell-row">
       <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Spoiled Eggs</h2></div>
       <div class="w3-cell w3-cell-middle"><confirm-button (callback)="destroySpoiledEggs($event)" class="w3-right" [width]="undefined">Destroy Spoiled Eggs</confirm-button></div>
   </div>
