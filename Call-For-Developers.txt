@@ -1,0 +1,27 @@
+ARKBOT:
+This is an application developed by TseBring. He since left the project. He is unreachable. We have taken it over and are trying our best to maintain basic features to keep it working.
+WHAT ARKBOT DOES:
+Provides some data to a web interface on players, structures, locations, etc.
+WHAT IT USES:
+Steam for authentication and ARK Savegame toolkit
+HOW IT DOES IT
+Arkbot reads the savegame files for data every 10 minutes and then looks for those data points. It saves it to a local cache for displaying on the web page.
+Arkbot uses the config.json at launch to set all the parameters of the application
+It has a built in web server to display the information
+Many elements are hardcoded, unfortunately.
+ARKBOT SAVEGAME TOOLKIT
+This is an application developed by someone else modified by TseBring and also abandoned
+WHAT ARKBOT SAVEGAME TOOLKIT DOES
+This is a library that has hardcoded map elements in it that then reads savegame files and provides the information to ARKBOT
+WHAT IT USES
+Hard coded map filename parameters
+HOW IT DOES IT
+When called by ARKBOT it goes and reads the savegame files and provides it back to ARKBOT. The detection routines for mapnames are hardcoded here.
+ARK - The Game
+This game is built by some chinese company somewhere by a room full of chinese programmers.
+WHAT HAPPENS EVERY 2-3 MONTHS
+This company will release a new game and perhaps 2-3 new maps.
+WHAT HAPPENS WITH ARKBOT
+Now Arkbot can't read the new maps without some major updates to the SaveGame toolkit and to the ARKBOT app to try to get it to work with the new maps
+WHAT WE ARE LOOKING FOR
+We're looking for developers to assist us in maintaining this project to correct this and other issues like this. We are willing to pay bounties for every feature developed. Contact us first prior to beginning work.
