@@ -18,7 +18,7 @@ Hard coded map filename parameters
 HOW IT DOES IT
 When called by ARKBOT it goes and reads the savegame files and provides it back to ARKBOT. The detection routines for mapnames are hardcoded here.
 ARK - The Game
-This game is built by some chinese company somewhere by a room full of chinese programmers.
+This game is built by some  company somewhere by a room full of probably very underpaid programmers programmers.
 WHAT HAPPENS EVERY 2-3 MONTHS
 This company will release a new game and perhaps 2-3 new maps.
 WHAT HAPPENS WITH ARKBOT
