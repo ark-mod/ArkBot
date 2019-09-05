@@ -58,7 +58,7 @@ https://www.myget.org/F/arkbot-beta/api/v2/package/ArkBot
 * Download the latest pre-built binaries (see above).
 * Perform configuration within the ArkBot program after opening by clicking on the configuration tab, completing all required fields.
 
-To enable map clean-up from the companion app (web app) for administrators, install [ARK-Server-Beyond-API (forked by me)](https://github.com/tsebring/ARK-Server-Beyond-API) and [ARK Beyond API: Improved Commands (Plugin)](https://github.com/tsebring/ImprovedCommands).
+To enable map clean-up from the companion app (web app) for administrators, install [ARK-Server-API](https://arkserverapi.com/resources/ark-server-api.4/) and [ARK-Server-API: ArkBotHelper Plugin by WETBATMAN](https://arkserverapi.com/resources/ark-bot-helper.142/).
 
 ## Documentation from Wiki
 
@@ -76,7 +76,7 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 * [Companion App (Web App)](https://github.com/tsebring/ArkBot/wiki/Companion-App-(Web-App))
 * [Web API](https://github.com/tsebring/ArkBot/wiki/Web-API)
-* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently steam auth does not work properly)
+* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently not working properly and needed updating as of 9/5/2019)
 
 ## Acknowledgements
 
@@ -92,23 +92,17 @@ Library for reading ARK Survival Evolved savegame files in .NET
 
 https://github.com/tsebring/ArkSavegameToolkitNet
 
-#### ARK-Server-Beyond-API (forked by me)
+#### ARK-Server-API 
 
-Server-side ARK plugins.
+Allows server-side ARK plugins.
 
-https://github.com/tsebring/ARK-Server-Beyond-API
+https://arkserverapi.com/resources/ark-server-api.4/
 
-#### ARK Beyond API: Improved Commands (Plugin)
+#### ARK Server API: ArkBotHelper (Plugin by WETBATMAN)
 
 Used to facilitate map clean-up from the companion app (web app) for administrators.
 
-https://github.com/tsebring/ImprovedCommands
-
-#### ARK Beyond API: Cross Server Chat (Plugin)
-
-Used for cross-server chat support.
-
-https://github.com/tsebring/ArkCrossServerChat
+https://arkserverapi.com/resources/ark-bot-helper.142/
 
 #### ARK Beyond API: Imprinting Mod (Plugin)
 
@@ -118,6 +112,6 @@ https://github.com/tsebring/ImprintingMod
 
 #### ARK Beyond API: Modified Spawn Level Distribution (Plugin)
 
-Used to change spawn level distribution on The Island and Scorched Earth to match the official spawn level distribution on Ragnarok and The Center.
+Used to change spawn level distribution on The Island and Scorched Earth (can be used on others as well) to match the official spawn level distribution on Ragnarok and The Center.
 
 https://github.com/tsebring/ArkModifiedSpawnLevelDistribution
