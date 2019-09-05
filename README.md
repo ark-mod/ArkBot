@@ -3,7 +3,9 @@
 ### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
 
-For items not covered in the above wiki, join our Discord at this link: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. Please do NOT use GitHub as a support forum.
+For items not covered in the above wiki, join our Discord at this [link](https://discord.gg/zDJcckF) and one of us will try to help as we can. Be sure to read #welcome on how to get support for arkbot. 
+
+## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using the link above.
 
 Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
 
@@ -11,15 +13,13 @@ Before requesting support from our Discord, please understand that ArkBot is des
 We have found a developer and we are currently working on bugfixes at the moment.  We currently have in our discord (link found above) a poll with what feature adds to work on next.  The top 4 suggestions will be worked on.  One of the first feature requests we will working on is adding support for any modmap server admins wish to utilize.  We will be making a user editable drag-and-drop folder for map images so all admins will need to do is place a map image in for it to work within arkbot.
 
 #### Donate
-If you wish to help support our costs for development, you can donate by simply typing "donate" (no quotes) in our discord in any channel.  Everything donated goes directly back into ArkBot.  Alternativly, you may click here without joining discord: https://donatebot.io/checkout/305511546417709058
+If you wish to help support our costs for development, you can donate by simply typing "donate" (no quotes) in our discord in any channel.  Everything donated goes directly back into ArkBot.  Alternativly, you may click [here](https://donatebot.io/checkout/305511546417709058) without joining discord.
 
 #### IMPORTANT NOTES
 Important Dependency Note: 
-This release relies upon VS C++ runtimes. We're not sure which ones. Download and install them all here: https://www.itechtics.com/microsoft-visual-c-redistributable-versions-direct-download-links/
+This release relies upon VS C++ runtimes. We're not sure which ones. Download and install them all [here](https://www.itechtics.com/microsoft-visual-c-redistributable-versions-direct-download-links/)
 
-This release relies upon the ArkSavegameToolkitNet found here: https://github.com/ark-mod/ArkSavegameToolkitNet
-
-This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
+This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
 
 #### INSTALLATION INSTRUCTIONS
 First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
