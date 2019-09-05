@@ -76,7 +76,7 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 * [Companion App (Web App)](https://github.com/tsebring/ArkBot/wiki/Companion-App-(Web-App))
 * [Web API](https://github.com/tsebring/ArkBot/wiki/Web-API)
-* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently not working properly and needed updating as of 9/5/2019)
+* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently not working properly and needs updating as of 9/5/2019)
 
 ## Acknowledgements
 
