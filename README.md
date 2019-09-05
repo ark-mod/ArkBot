@@ -1,4 +1,4 @@
-# Project status last updated July 28th 2019
+# Project status last updated Sept 5th 2019
 
 ### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
@@ -19,7 +19,7 @@ This release relies upon VS C++ runtimes. We're not sure which ones. Download an
 
 This release relies upon the ArkSavegameToolkitNet found here: https://github.com/ark-mod/ArkSavegameToolkitNet
 
-This has been installed on WS 2012R2, WS 2016, Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
+This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord: https://discord.gg/zDJcckF and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
 
 #### INSTALLATION INSTRUCTIONS
 First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
