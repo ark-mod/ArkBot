@@ -7,7 +7,7 @@ Steam for authentication and ARK Savegame toolkit
 HOW IT DOES IT
 Arkbot reads the savegame files for data every 10 minutes and then looks for those data points. It saves it to a local cache for displaying on the web page.
 Arkbot uses the config.json at launch to set all the parameters of the application
-It has a built in web server to display the information
+It has a built in web server that is using Angular/JS WebPack to display the information
 Many elements are hardcoded, unfortunately.
 ARKBOT SAVEGAME TOOLKIT
 This is an application developed by someone else modified by TseBring and also abandoned
