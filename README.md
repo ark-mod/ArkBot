@@ -16,7 +16,7 @@ If you wish to help support our costs for development, you can donate by simply 
 
 #### IMPORTANT NOTES
 Important Dependency Note: 
-This release relies upon VS C++ runtimes. We're not sure which ones. Download and install them all [here](https://www.itechtics.com/microsoft-visual-c-redistributable-versions-direct-download-links/)
+ArkBot relies upon certain VS C++ runtimes installed. It requires [.NET 3.5 with service pack 1](https://www.microsoft.com/en-us/download/details.aspx?id=25150), [.NET 4.7](https://www.microsoft.com/en-us/download/details.aspx?id=55170), and [Microsoft Visual C++ Redistributable 2013](https://support.microsoft.com/en-us/help/4032938/update-for-visual-c-2013-redistributable-package). Please note: If you are running a windows server install, you must install the [.NET 3.5 and 4.7(or 4.8) from the server admin panel.](https://www.interserver.net/tips/kb/enable-net-framework-3-5-windows-server/)
 
 This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
 
