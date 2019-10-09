@@ -1,4 +1,4 @@
-# Project status last updated Sept 5th 2019
+# Project status last updated Oct 8th 2019
 
 ### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
@@ -9,7 +9,7 @@ Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
 Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
-We have found a developer and we are currently working on bugfixes at the moment.  We currently have in our discord (link found above) a poll with what feature adds to work on next.  The top 4 suggestions will be worked on.  One of the first feature requests we will working on is adding support for any modmap server admins wish to utilize.  We will be making a user editable drag-and-drop folder for map images so all admins will need to do is place a map image in for it to work within arkbot.
+We have decided to halt development on this particular version of ArkBot.  We will be pursuing a more flexible, php/mysql based solution which will require a complete rewrite/rework of arkbot from the ground up.  We have no ETA at this point and will update as more details become available.
 
 #### Donate
 If you wish to help support our costs for development, you can donate by simply typing "donate" (no quotes) in our discord in any channel.  Everything donated goes directly back into ArkBot.  Alternativly, you may click [here](https://donatebot.io/checkout/305511546417709058) without joining discord.
