@@ -39,7 +39,7 @@ namespace ArkBot
 
             //Check if the UI should be hidden on startup
             //Only checks here to allow the user to see if an error occurred
-            if (Workspace.Instance._config.HideUiOnStartup && Workspace.Instance._startedWithoutErrors)
+            if (Workspace.Instance._startedWithoutErrors && Workspace.Instance._config != null && Workspace.Instance._config.HideUiOnStartup)
             {
                 Application.Current.MainWindow?.Hide();
                 Workspace.Instance._isUIHidden = true;

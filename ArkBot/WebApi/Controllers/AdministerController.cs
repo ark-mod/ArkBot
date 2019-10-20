@@ -30,7 +30,9 @@ namespace ArkBot.WebApi.Controllers
         private Regex _rDestroyedStructureCount = new Regex(@"^Destroyed (?<num>\d+) structures", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         private Regex _rFertilizedEggCount = new Regex(@"^Found (?<num>\d+) fertilized eggs on the map", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         private Regex _rFertilizedEgg = new Regex(@"^(?<bp>\w+) \(lvl (?<level>\d+)\): Spoiling in (?<time>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-
+        private Regex _rSpoiledEgg = new Regex(@"^(?<bp>\w+) \(lvl (?<level>\d+)\): Spoiled", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+        private Regex _rFertilizedEggPlayerDropped = new Regex(@"^(?<bp>\w+) \(lvl (?<level>\d+), dropped by '(?<player>\w+) - Lvl (?<playerLevel>\d+)'\): Spoiling in (?<time>.+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+        private Regex _rSpoiledEggPlayerDropped = new Regex(@"^(?<bp>\w+) \(lvl (?<level>\d+), dropped by '(?<player>\w+) - Lvl (?<playerLevel>\d+)'\): Spoiled", RegexOptions.Singleline | RegexOptions.IgnoreCase);
         public AdministerController(ArkContextManager contextManager, IConfig config) : base(config)
         {
             _contextManager = contextManager;
@@ -54,6 +56,39 @@ namespace ArkBot.WebApi.Controllers
 
         [HttpGet]
         [AccessControl("admin-server", "fertilized-eggs")]
+        public async Task<HttpResponseMessage> DestroySpoiledEggs(string id)
+        {
+            var serverContext = _contextManager.GetServer(id);
+            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+
+            var result = await serverContext.Steam.SendRconCommand($"DroppedEggs destroy_spoiled_including_dropped_by_player");
+            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+
+            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            {
+                Message = "All spoiled eggs destroyed!"
+            });
+        }
+
+        [HttpGet]
+        [AccessControl("admin-server", "fertilized-eggs")]
+        public async Task<HttpResponseMessage> DestroyAllEggs(string id)
+        {
+            var serverContext = _contextManager.GetServer(id);
+            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+
+            var result = await serverContext.Steam.SendRconCommand($"DroppedEggs destroy_all_including_dropped_by_player");
+            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+
+            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            {
+                Message = "All eggs destroyed!"
+            });
+        }
+
+
+        [HttpGet]
+        [AccessControl("admin-server", "fertilized-eggs")]
         public async Task<HttpResponseMessage> DroppedEggsList(string id)
         {
             var serverContext = _contextManager.GetServer(id);
@@ -68,36 +103,73 @@ namespace ArkBot.WebApi.Controllers
                 {
                     Message = result?.TrimEnd('\n'),
                     FertilizedEggsCount = 0,
-                    SpoiledFertilizedEggsCount = 0
+                    SpoiledEggsCount = 0
                 });
             }
 
-            var m = _rFertilizedEggCount.Match(result);
-
             var eggList = result.Split('\n').Skip(1).Where(a => !string.IsNullOrWhiteSpace(a));
-
             var fertilizedEggList = new List<FertilizedEggViewModel>();
+            var spoiledEggList = new List<FertilizedEggViewModel>();
 
             foreach (var egg in eggList)
             {
-                var eggInfo = _rFertilizedEgg.Match(egg);
+                var fertilized = _rFertilizedEgg.Match(egg);
+                var spoiled = _rSpoiledEgg.Match(egg);
+                var fertilizedPlayerDropped = _rFertilizedEggPlayerDropped.Match(egg);
+                var spoiledPlayerDropped = _rSpoiledEggPlayerDropped.Match(egg);
 
-                fertilizedEggList.Add(new FertilizedEggViewModel
+                if (fertilized.Success)
                 {
-                    CharacterBP = eggInfo.Success ? eggInfo.Groups["bp"].Value : null,
-                    SpoilTime = eggInfo.Success ? eggInfo.Groups["time"].Value : null,
-                    EggLevel = eggInfo.Success ? int.Parse(eggInfo.Groups["level"].Value) : (int?)null,
-                    Dino = eggInfo.Success ? ArkSpeciesAliases.Instance.GetAliases(eggInfo.Groups["bp"].Value).FirstOrDefault() : null
-                });
+                    fertilizedEggList.Add(new FertilizedEggViewModel
+                    {
+                        CharacterBP = fertilized.Success ? fertilized.Groups["bp"].Value : null,
+                        SpoilTime = fertilized.Success ? fertilized.Groups["time"].Value : null,
+                        EggLevel = fertilized.Success ? int.Parse(fertilized.Groups["level"].Value) : (int?)null,
+                        Dino = fertilized.Success ? ArkSpeciesAliases.Instance.GetAliases(fertilized.Groups["bp"].Value).FirstOrDefault() : null
+                    });
+                }
+                else if (fertilizedPlayerDropped.Success)
+                {
+                    fertilizedEggList.Add(new FertilizedEggViewModel
+                    {
+                        CharacterBP = fertilizedPlayerDropped.Success ? fertilizedPlayerDropped.Groups["bp"].Value : null,
+                        SpoilTime = fertilizedPlayerDropped.Success ? fertilizedPlayerDropped.Groups["time"].Value : null,
+                        EggLevel = fertilizedPlayerDropped.Success ? int.Parse(fertilizedPlayerDropped.Groups["level"].Value) : (int?)null,
+                        Dino = fertilizedPlayerDropped.Success ? ArkSpeciesAliases.Instance.GetAliases(fertilizedPlayerDropped.Groups["bp"].Value).FirstOrDefault() : null,
+                        DroppedBy = fertilizedPlayerDropped.Success ? fertilizedPlayerDropped.Groups["player"].Value + " - " + fertilizedPlayerDropped.Groups["playerLevel"].Value : null,
+                        DroppedBySteamId = serverContext.Players.FirstOrDefault(a => a.CharacterName.Equals(fertilizedPlayerDropped.Groups["player"].Value))?.SteamId ?? null
+                    });
+                }
+                else if (spoiled.Success)
+                {
+                    spoiledEggList.Add(new FertilizedEggViewModel
+                    {
+                        CharacterBP = spoiled.Success ? spoiled.Groups["bp"].Value : null,
+                        Dino = spoiled.Success ? ArkSpeciesAliases.Instance.GetAliases(spoiled.Groups["bp"].Value).FirstOrDefault() : null,
+                        EggLevel = spoiled.Success ? int.Parse(spoiled.Groups["level"].Value) : (int?)null
+                    });
+                }
+                else if (spoiledPlayerDropped.Success)
+                {
+                    spoiledEggList.Add(new FertilizedEggViewModel
+                    {
+                        CharacterBP = spoiledPlayerDropped.Success ? spoiledPlayerDropped.Groups["bp"].Value : null,
+                        Dino = spoiledPlayerDropped.Success ? ArkSpeciesAliases.Instance.GetAliases(spoiledPlayerDropped.Groups["bp"].Value).FirstOrDefault() : null,
+                        EggLevel = spoiledPlayerDropped.Success ? int.Parse(spoiledPlayerDropped.Groups["level"].Value) : (int?)null,
+                        DroppedBy = spoiledPlayerDropped.Success ? spoiledPlayerDropped.Groups["player"].Value + " - " + spoiledPlayerDropped.Groups["playerLevel"].Value : null,
+                        DroppedBySteamId = serverContext.Players.FirstOrDefault(a => a.CharacterName.Equals(spoiledPlayerDropped.Groups["player"].Value))?.SteamId ?? null
+                    });
+                }
             }
 
 
             return Request.CreateResponse(HttpStatusCode.OK, new FertilizedEggsResponseViewModel
             {
                 Message = result?.TrimEnd('\n'),
-                FertilizedEggsCount = m.Success ? int.Parse(m.Groups["num"].Value) : (int?)null,
+                FertilizedEggsCount = fertilizedEggList.Count,
                 FertilizedEggList = fertilizedEggList,
-                SpoiledFertilizedEggsCount = 0
+                SpoiledEggList = spoiledEggList,
+                SpoiledEggsCount = spoiledEggList.Count,
             });
         }
 

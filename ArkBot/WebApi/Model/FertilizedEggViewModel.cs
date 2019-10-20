@@ -12,5 +12,7 @@ namespace ArkBot.WebApi.Model
         public string Dino { get; set; }
         public int? EggLevel { get; set; }
         public string SpoilTime { get; set; }
+        public string DroppedBySteamId { get; set; }
+        public string DroppedBy { get; set; }
     }
 }
