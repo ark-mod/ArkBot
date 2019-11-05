@@ -55,7 +55,7 @@ namespace ArkBot.WebApi.Controllers
         }
 
         [HttpGet]
-        [AccessControl("admin-server", "fertilized-eggs")]
+        [AccessControl("admin-server", "structures-rcon")]
         public async Task<HttpResponseMessage> DestroySpoiledEggs(string id)
         {
             var serverContext = _contextManager.GetServer(id);
@@ -71,7 +71,7 @@ namespace ArkBot.WebApi.Controllers
         }
 
         [HttpGet]
-        [AccessControl("admin-server", "fertilized-eggs")]
+        [AccessControl("admin-server", "structures-rcon")]
         public async Task<HttpResponseMessage> DestroyAllEggs(string id)
         {
             var serverContext = _contextManager.GetServer(id);
@@ -85,7 +85,6 @@ namespace ArkBot.WebApi.Controllers
                 Message = "All eggs destroyed!"
             });
         }
-
 
         [HttpGet]
         [AccessControl("admin-server", "fertilized-eggs")]

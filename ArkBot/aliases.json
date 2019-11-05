@@ -1,5 +1,5 @@
 {
-   "Aliases":[
+   "Aliases": [
       [
          "Alpha Basilisk",
          "MegaBasilisk_Character_BP_C"
@@ -2384,6 +2384,307 @@
       [
          "Korpus",
          "Korpus_Character_BP_C"
+      ],
+      [
+         "Angler (Ebenus Cave)",
+         "Angler_Character_BP_EbenusCave_C"
+      ],
+      [
+         "Ankylo (Battle)",
+         "Ankylo_Character_BP_Battle_C",
+         "Battle Ankylo"
+      ],
+      [
+         "Arch Demon",
+         "ArchDemon_Character_BP_C"
+      ],
+      [
+         "Automaton",
+         "Automaton_Character_BP_C"
+      ],
+      [
+         "Basilisk (Glacial)",
+         "Basilisk_Character_BP_Glacial_C",
+         "Glacial Basilisk"
+      ],
+      [
+         "Basilisk (Infernal)",
+         "Basilisk_Character_BP_Infernal_C",
+         "Infernal Basilisk"
+      ],
+      [
+         "Carno (Battle)",
+         "Carno_Character_BP_Battle_C",
+         "Battle Carno"
+      ],
+      [
+         "Centaur (Female Flame)",
+         "Centaur_Character_BP_Female_Flame_C",
+         "Female Flame Centaur"
+      ],
+      [
+         "Compy (Battle)",
+         "Compy_Character_BP_Battle_C",
+         "Battle Compy"
+      ],
+      [
+         "Crawler",
+         "Crawler_Character_BP_C"
+      ],
+      [
+         "DarkReaper (Empress)",
+         "DarkReaper_Character_BP_Empress_C",
+         "Empress DarkReaper"
+      ],
+      [
+         "DarkReaper (Wild)",
+         "DarkReaper_Character_BP_Wild_C",
+         "Wild DarkReaper"
+      ],
+      [
+         "DarkSeeker",
+         "DarkSeeker_Character_BP_C"
+      ],
+      [
+         "DG",
+         "DG_Character_BP_C"
+      ],
+      [
+         "Dilo (Battle)",
+         "Dilo_Character_BP_Battle_C",
+         "Battle Dilo"
+      ],
+      [
+         "Dodo (Battle)",
+         "Dodo_Character_BP_Battle_C",
+         "Battle Dodo"
+      ],
+      [
+         "Doed (Battle)",
+         "Doed_Character_BP_Battle_C",
+         "Battle Doed"
+      ],
+      [
+         "DungBeetle (Ebenus)",
+         "DungBeetle_Character_BP_Ebenus_C",
+         "Ebenus DungBeetle"
+      ],
+      [
+         "Eminence (Dark)",
+         "Eminence_Character_BP_Dark_C",
+         "Dark Eminence"
+      ],
+      [
+         "Ent (Minion)",
+         "Ent_Character_BP_Minion_C",
+         "Minion Ent"
+      ],
+      [
+         "Escadora",
+         "Escadora_Character_BP_C"
+      ],
+      [
+         "Firepike",
+         "Firepike_Character_BP_C"
+      ],
+      [
+         "Gigant (Ebenus)",
+         "Gigant_Character_BP_Ebenus_C",
+         "Ebenus Gigant"
+      ],
+      [
+         "KaiserBug",
+         "KaiserBug_Character_BP_C"
+      ],
+      [
+         "Kobold",
+         "Kobold_Character_BP_C"
+      ],
+      [
+         "Lich",
+         "Lich_Character_BP_C"
+      ],
+      [
+         "Maju",
+         "Maju_Character_BP_C"
+      ],
+      [
+         "Mono",
+         "Mono_Character_BP_C"
+      ],
+      [
+         "Female Elf",
+         "NPC_Female_Elf_Character_BP_C"
+      ],
+      [
+         "Male Elf",
+         "NPC_Male_Elf_Character_BP_C"
+      ],
+      [
+         "Orc",
+         "Orc_Character_BP_C"
+      ],
+      [
+         "Owl (Velox)",
+         "Owl_Character_BP_Velox_C",
+         "Velox Owl"
+      ],
+      [
+         "Pachy (Battle)",
+         "Pachy_Character_BP_Battle_C",
+         "Battle Pachy"
+      ],
+      [
+         "Paladin (Dark Wild Minion)",
+         "Paladin_Character_BP_Dark_Wild_Minion_C",
+         "Dark Wild Paladin Minion"
+      ],
+      [
+         "Phoenix (NoSuperHeat)",
+         "Phoenix_Character_BP_NoSuperHeat_C",
+         "NoSuperHeat Phoenix"
+      ],
+      [
+         "Ptero (Velox)",
+         "Ptero_Character_BP_Velox_C",
+         "Velox Ptero"
+      ],
+      [
+         "PyriaWyvern (Ice)",
+         "PyriaWyvern_Character_BP_Ice_C",
+         "Ice PyriaWyvern"
+      ],
+      [
+         "Quinkan",
+         "Quinkan_Character_BP_C"
+      ],
+      [
+         "Rex (Battle)",
+         "Rex_Character_BP_Battle_C",
+         "Battle Rex"
+      ],
+      [
+         "Rhino (Battle)",
+         "Rhino_Character_BP_Battle_C",
+         "Battle Rhino"
+      ],
+      [
+         "RockDrake (VeloxNew)",
+         "RockDrake_Character_BP_VeloxNew_C",
+         "VeloxNew RockDrake"
+      ],
+      [
+         "Ryu",
+         "Ryu_Character_BP_C"
+      ],
+      [
+         "Saber (Battle)",
+         "Saber_Character_BP_Battle_C",
+         "Battle Saber"
+      ],
+      [
+         "Sarco (Battle)",
+         "Sarco_Character_BP_Battle_C",
+         "Battle Sarco"
+      ],
+      [
+         "Sauropod (Battle)",
+         "Sauropod_Character_BP_Battle_C",
+         "Battle Sauropod"
+      ],
+      [
+         "Scorpion (Lava)",
+         "Scorpion_Character_BP_Lava_C",
+         "Lava Scorpion"
+      ],
+      [
+         "Snowman (BP)",
+         "Snowman_Dodo_Character_BP_C",
+         "BP Snowman"
+      ],
+      [
+         "Spino (BattleNew)",
+         "Spino_Character_BP_BattleNew_C",
+         "BattleNew Spino"
+      ],
+      [
+         "Stego (Battle)",
+         "Stego_Character_BP_Battle_C",
+         "Battle Stego"
+      ],
+      [
+         "SulfurWyrm (Polar)",
+         "SulfurWyrm_Character_BP_Polar_C",
+         "Polar SulfurWyrm"
+      ],
+      [
+         "Titanosaur (Ebenus)",
+         "Titanosaur_Character_BP_Ebenus_C",
+         "Ebenus Titanosaur"
+      ],
+      [
+         "Trike (Battle)",
+         "Trike_Character_BP_Battle_C",
+         "Battle Trike"
+      ],
+      [
+         "Troodon (Battle)",
+         "Troodon_Character_BP_Battle_C",
+         "Battle Troodon"
+      ],
+      [
+         "Turtle (Battle)",
+         "Turtle_Character_BP_Battle_C",
+         "Battle Turtle"
+      ],
+      [
+         "Withered",
+         "Withered_Character_BP_C"
+      ],
+      [
+         "Wyvern (Bazel)",
+         "Wyvern_Character_BP_Bazel_C",
+         "Bazel Wyvern"
+      ],
+      [
+         "White Pearl Wyvern",
+         "WhitePearlWyvern_C",
+         "Wyvern (White Pearl)"
+      ],
+      [
+         "Gigant (Bone)",
+         "Bone_Gigant_Character_BP_C",
+         "Bone Gigant"
+      ],
+      [
+         "Jerboa (Bone)",
+         "Bone_Jerboa_Character_BP_C",
+         "Bone Jerboa"
+      ],
+      [
+         "MegaCarno (Bone)",
+         "Bone_MegaCarno_Character_BP_C",
+         "Bone MegaCarno"
+      ],
+      [
+         "MegaRaptor (Bone)",
+         "Bone_MegaRaptor_Character_BP_C",
+         "Bone MegaRaptor"
+      ],
+      [
+         "Sauropod (Bone)",
+         "Bone_Sauropod_Character_BP_C",
+         "Bone Sauropod"
+      ],
+      [
+         "Stego (Bone)",
+         "Bone_Stego_Character_BP_C",
+         "Bone Stego"
+      ],
+      [
+         "Trike (Bone)",
+         "Bone_Trike_Character_BP_C",
+         "Bone Trike"
       ]
    ]
 }

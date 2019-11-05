@@ -92,10 +92,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ArkSavegameToolkitNet, Version=1.9.0.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ArkSavegameToolkitNet.1.9.0.5\lib\net461\ArkSavegameToolkitNet.dll</HintPath>
+      <HintPath>..\..\..\..\Downloads\Compressed\ArkSavegameToolkitNet-master\ArkSavegameToolkitNet-master\ArkSavegameToolkitNet\bin\Release\ArkSavegameToolkitNet.dll</HintPath>
     </Reference>
     <Reference Include="ArkSavegameToolkitNet.Domain, Version=1.9.0.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ArkSavegameToolkitNet.Domain.1.9.0.5\lib\net461\ArkSavegameToolkitNet.Domain.dll</HintPath>
+      <HintPath>..\..\..\..\Downloads\Compressed\ArkSavegameToolkitNet-master\ArkSavegameToolkitNet-master\ArkSavegameToolkitNet.Domain\bin\Release\ArkSavegameToolkitNet.Domain.dll</HintPath>
     </Reference>
     <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>

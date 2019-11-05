@@ -14,7 +14,7 @@ import * as d3 from "d3";
   styleUrls: ['./admin-server.component.css']
 })
 export class AdminServerComponent implements OnInit, OnDestroy {
-  private menuOption: string = undefined; 
+  private menuOption: string = undefined;
   private menuOptionSubscription: any;
 
   public modalInfo: any;
@@ -31,7 +31,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
   fertilizedEggsCount: number;
   spoiledEggsCount: number;
   totalEggCount: number;
-  
+
   @ViewChild('contextMenu') contextMenu: ElementRef;
 
   constructor(
@@ -41,51 +41,49 @@ export class AdminServerComponent implements OnInit, OnDestroy {
     public dataService: DataService,
     private messageService: MessageService,
     private notificationsService: NotificationsService) {
-    }
+  }
 
-    getServer(): void {
-      this.httpService
-        .getAdminServer(this.serverKey)
-        .then(server => {
-          this.server = server;
-          this.loaded = true;
-        })
-        .catch(error => {
-          this.server = null;
-          this.loaded = true;
-        });
+  getServer(): void {
+    this.httpService
+      .getAdminServer(this.serverKey)
+      .then(server => {
+        this.server = server;
+        this.loaded = true;
+      })
+      .catch(error => {
+        this.server = null;
+        this.loaded = true;
+      });
   }
 
   getStructures(): void {
-      this.httpService
-        .getStructures(this.serverKey)
-        .then(structures => {
-          this.structures = structures;
-          this.loadedStructures = true;
-        })
-        .catch(error => {
-          this.structures = undefined;
-          this.loadedStructures = true;
-        });
+    this.httpService
+      .getStructures(this.serverKey)
+      .then(structures => {
+        this.structures = structures;
+        this.loadedStructures = true;
+      })
+      .catch(error => {
+        this.structures = undefined;
+        this.loadedStructures = true;
+      });
   }
-  
-  getListFertilizedEggs(): void {
-      this.httpService
-        .adminListFertilizedEggs(this.serverKey)
-        .then(fertilizedEggs => {
-          this.spoiledEggsList = fertilizedEggs.SpoiledEggList;
-          this.fertilizedEggsList = fertilizedEggs.FertilizedEggList;
-          this.fertilizedEggsCount = fertilizedEggs.FertilizedEggsCount;
-          this.spoiledEggsCount = fertilizedEggs.SpoiledEggsCount;
-          this.totalEggCount = this.spoiledEggsCount +  this.fertilizedEggsCount;
-          this.loadedFertilizedEggs = true;
 
-          //76561198241517230
-        })
-        .catch(error => {
-          this.fertilizedEggsList = undefined;
-          this.loadedFertilizedEggs = true;
-        });
+  getListFertilizedEggs(): void {
+    this.httpService
+      .adminListFertilizedEggs(this.serverKey)
+      .then(fertilizedEggs => {
+        this.spoiledEggsList = fertilizedEggs.SpoiledEggList;
+        this.fertilizedEggsList = fertilizedEggs.FertilizedEggList;
+        this.fertilizedEggsCount = fertilizedEggs.FertilizedEggsCount === undefined ? 0 : fertilizedEggs.FertilizedEggsCount;
+        this.spoiledEggsCount = fertilizedEggs.SpoiledEggsCount === undefined ? 0 : fertilizedEggs.SpoiledEggsCount;
+        this.totalEggCount = this.spoiledEggsCount + this.fertilizedEggsCount;
+        this.loadedFertilizedEggs = true;
+      })
+      .catch(error => {
+        this.fertilizedEggsList = undefined;
+        this.loadedFertilizedEggs = true;
+      });
   }
 
   ngOnInit() {
@@ -96,16 +94,16 @@ export class AdminServerComponent implements OnInit, OnDestroy {
       if (this.menuOption == "structures") {
         this.getStructures();
       }
-      else  if (this.menuOption == "fertilized-eggs") {
+      else if (this.menuOption == "fertilized-eggs") {
         this.getListFertilizedEggs();
       }
     });
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => {
-        if(this.serverKey == serverKey) {
-          this.updateServer();
-          this.showServerUpdateNotification(serverKey);
-        }
-      });
+      if (this.serverKey == serverKey) {
+        this.updateServer();
+        this.showServerUpdateNotification(serverKey);
+      }
+    });
 
     this.getServer();
   }
@@ -128,20 +126,20 @@ export class AdminServerComponent implements OnInit, OnDestroy {
       'Server Update',
       `${serverKey} was updated; Reloading data...`,
       {
-          showProgressBar: true,
-          pauseOnHover: true,
-          clickToClose: true
+        showProgressBar: true,
+        pauseOnHover: true,
+        clickToClose: true
       }
     );
-    
+
   }
 
   isMenuActive(menuOption: string): boolean {
     return this.menuOption == menuOption;
   }
-  
+
   showInfoModal(header: string, message: string): void {
-    let modalInfo = <any> {};
+    let modalInfo = <any>{};
     modalInfo.Header = header;
     modalInfo.Message = message;
     this.modalInfo = modalInfo;
@@ -149,7 +147,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
     let cm = d3.select(this.contextMenu.nativeElement);
     cm.style("display", "block");
 
-    if(d3.event) d3.event.stopPropagation();
+    if (d3.event) d3.event.stopPropagation();
   }
 
   hideContextMenu(): void {
@@ -161,7 +159,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
 
   saveWorld(event: string): void {
     this.httpService.adminSaveWorld(this.serverKey)
-    .then(response => {
+      .then(response => {
         this.hideContextMenu();
         this.getListFertilizedEggs();
         this.showInfoModal("Action Successfull!", response.Message);
@@ -175,7 +173,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
 
   destroyAllEggs(event: string): void {
     this.httpService.adminDestroyAllEggs(this.serverKey)
-    .then(response => {
+      .then(response => {
         this.hideContextMenu();
         this.getListFertilizedEggs();
         this.showInfoModal("Action Successfull!", response.Message);
@@ -189,7 +187,7 @@ export class AdminServerComponent implements OnInit, OnDestroy {
 
   destroySpoiledEggs(event: string): void {
     this.httpService.adminDestroySpoiledEggs(this.serverKey)
-    .then(response => {
+      .then(response => {
         this.hideContextMenu();
         this.getListFertilizedEggs();
         this.showInfoModal("Action Successfull!", response.Message);

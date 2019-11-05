@@ -103,7 +103,7 @@
       <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Fertilized Eggs</h2></div>
       <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroyAllEggs($event)" class="w3-right" [width]="undefined">Destroy All Eggs</confirm-button></div>
   </div>
-  <div *ngIf="fertilizedEggsCount != 0" class="w3-card-4 w3-responsive w3-margin-bottom">     
+  <div *ngIf="fertilizedEggsCount &amp;&amp; fertilizedEggsCount != 0" class="w3-card-4 w3-responsive w3-margin-bottom">     
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
@@ -126,7 +126,7 @@
       <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Spoiled Eggs</h2></div>
       <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroySpoiledEggs($event)" class="w3-right" [width]="undefined">Destroy Spoiled Eggs</confirm-button></div>
   </div>
-  <div *ngIf="spoiledEggsCount != 0" class="w3-card-4 w3-responsive w3-margin-bottom"> 
+  <div *ngIf="spoiledEggsCount &amp;&amp; spoiledEggsCount != 0" class="w3-card-4 w3-responsive w3-margin-bottom"> 
    <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
