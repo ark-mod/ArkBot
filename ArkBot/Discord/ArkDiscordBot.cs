@@ -389,7 +389,7 @@ namespace ArkBot.Discord
 
         public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(),_serviceProvider);
 
             //await _context.Initialize(token, skipExtract);
         }
