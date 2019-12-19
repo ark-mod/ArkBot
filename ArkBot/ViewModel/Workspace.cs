@@ -716,7 +716,7 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.BotName))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(_config.TempFileOutputDirPath) || !Directory.Exists(_config.TempFileOutputDirPath))
+            if (string.IsNullOrWhiteSpace(_config.TempFileOutputDirPath) || !Directory.Exists(Environment.ExpandEnvironmentVariables(_config.TempFileOutputDirPath)))
             {
                 sb.AppendLine($@"Error: {nameof(_config.TempFileOutputDirPath)} is not a valid directory path.");
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.TempFileOutputDirPath))}");
