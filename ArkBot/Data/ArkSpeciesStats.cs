@@ -42,7 +42,7 @@ namespace ArkBot.Data
                             {
                                 //this resource contains species stats that we need
                                 await DownloadHelper.DownloadFile(
-                                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values.json",
+                                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values/values.json",
                                     _speciesstatsFileName,
                                     true,
                                     TimeSpan.FromDays(1)
