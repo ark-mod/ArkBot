@@ -52,7 +52,7 @@ namespace ArkBot.Ark
         {
             if (string.IsNullOrEmpty(className) || !teamId.HasValue) return base.GetDinoName(className, teamId);
 
-            var speciesName = ArkSpeciesAliases.Instance.GetAliases(className).FirstOrDefault();
+            var speciesName = ArkSpeciesAliases.Instance.GetAliasesByClassName(className).FirstOrDefault();
             if (speciesName == null) return base.GetDinoName(className, teamId);
 
             var key = Tuple.Create(className, teamId.Value);
