@@ -90,14 +90,6 @@
       <HintPath>..\packages\Accord.Statistics.3.5.0\lib\net46\Accord.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ArkSavegameToolkitNet, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ArkSavegameToolkitNet.1.9.0\lib\net461\ArkSavegameToolkitNet.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ArkSavegameToolkitNet.Domain, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ArkSavegameToolkitNet.1.9.0\lib\net461\ArkSavegameToolkitNet.Domain.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>
       <Private>True</Private>
@@ -895,7 +887,16 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\ArkSavegameToolkitNet\ArkSavegameToolkitNet.Domain\ArkSavegameToolkitNet.Domain.csproj">
+      <Project>{dbf15752-cb8a-40d8-8da6-2597538e86d0}</Project>
+      <Name>ArkSavegameToolkitNet.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ArkSavegameToolkitNet\ArkSavegameToolkitNet\ArkSavegameToolkitNet.csproj">
+      <Project>{2b78ed8e-a311-49bd-b4ac-8787f829ad17}</Project>
+      <Name>ArkSavegameToolkitNet</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <CefSharpTargetDir>$(TargetDir)\lib</CefSharpTargetDir>
