@@ -530,6 +530,9 @@ namespace ArkBot.ViewModel
             }
             else Console.AddLog("Discord bot is disabled.");
 
+            //load the server multipliers data
+            await ArkServerMultipliers.Instance.LoadOrUpdate();
+
             //load the species stats data
             await ArkSpeciesStats.Instance.LoadOrUpdate();
 
