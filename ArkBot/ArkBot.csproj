@@ -597,6 +597,7 @@
     <Compile Include="Controls\Configuration.xaml.cs">
       <DependentUpon>Configuration.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Data\ArkServerMultipliers.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />

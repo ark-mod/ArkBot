@@ -14,6 +14,7 @@ namespace ArkBot.Data
 
     public class ArkSpeciesStats
     {
+        private const string _speciesstatsUrl = @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values/values.json";
         private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
         private object _lock = new object();
         private Task _updateTask;
@@ -42,14 +43,17 @@ namespace ArkBot.Data
                             {
                                 //this resource contains species stats that we need
                                 await DownloadHelper.DownloadFile(
-                                    @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values.json",
+                                    _speciesstatsUrl,
                                     _speciesstatsFileName,
                                     true,
                                     TimeSpan.FromDays(1)
                                 );
                             }
-                            catch { /*ignore exceptions */ }
-
+                            catch (Exception ex)
+                            {
+                                /*ignore exceptions */
+                                Logging.LogException($"Error downloading {_speciesstatsUrl}", ex, typeof(ArkSpeciesStats), LogLevel.WARN, ExceptionLevel.Ignored);
+                            }
 
                             //even if download failed try with local file if it exists
                             if (File.Exists(_speciesstatsFileName))
@@ -83,32 +87,16 @@ namespace ArkBot.Data
 
     public class ArkSpeciesStatsData
     {
-        public static ArkSpeciesStatsData Instance { get { return _instance ?? (_instance = new ArkSpeciesStatsData()); } }
-        private static ArkSpeciesStatsData _instance;
-
         public ArkSpeciesStatsData()
         {
-            StatMultipliers = new double[0][];
             SpeciesStats = new List<SpeciesStat>();
         }
-
-        /// <summary>
-        /// These are the default stat multipliers for MP (on official servers)
-        /// </summary>
-        [JsonProperty("statMultipliers")]
-        public double[][] StatMultipliers { get; set; }
-
-        /// <summary>
-        /// These are the default stat multipliers for SP (on official servers)
-        /// </summary>
-        [JsonProperty("statMultipliersSP")]
-        public double?[][] StatMultipliersSp { get; set; }
 
         [JsonProperty("species")]
         public List<SpeciesStat> SpeciesStats { get; set; }
 
         /// <summary>
-        /// Stats in order: Health, Stamina, Oxygen, Food, Weight, Damage, Speed, Torpor
+        /// Stats in order: Health, Stamina, Torpidity, Oxygen, Food, Water, Temperature, Weight, MeleeDamage, MovementSpeed, Fortitude, CraftingSpeed
         /// </summary>
         public class SpeciesStat
         {
@@ -121,7 +109,10 @@ namespace ArkBot.Data
             [JsonProperty("name")]
             public string Name { get; set; }
 
-            [JsonProperty("statsRaw")]
+            [JsonProperty("blueprintPath")]
+            public string BlueprintPath { get; set; }
+
+            [JsonProperty("fullStatsRaw")]
             public double[][] Stats { get; set; }
 
             [JsonProperty("breeding")]
@@ -135,8 +126,8 @@ namespace ArkBot.Data
 
             }
 
-            [JsonProperty("pregnancyTime")]
-            public double PregnancyTime { get; set; }
+            [JsonProperty("gestationTime")]
+            public double GestationTime { get; set; }
 
             [JsonProperty("incubationTime")]
             public double IncubationTime { get; set; }
@@ -162,7 +153,7 @@ namespace ArkBot.Data
             {
                 return _isAdjusted ? this : new SpeciesStatBreeding
                 {
-                    PregnancyTime = PregnancyTime / config.EggHatchSpeedMultiplier,
+                    GestationTime = GestationTime / config.EggHatchSpeedMultiplier,
                     IncubationTime = IncubationTime / config.EggHatchSpeedMultiplier,
                     MaturationTime = MaturationTime / config.BabyMatureSpeedMultiplier,
                     MatingCooldownMin = MatingCooldownMin,
@@ -179,7 +170,7 @@ namespace ArkBot.Data
             TClass GetAdjusted(ArkMultipliersConfigSection config);
         }
 
-        public enum Stat { Health, Stamina, Oxygen, Food, Weight, Damage, Speed, Torpor }
+        public enum Stat { Health, Stamina, Torpidity, Oxygen, Food, Water, Temperature, Weight, MeleeDamage, MovementSpeed, Fortitude, CraftingSpeed }
 
         public SpeciesStat GetSpecies(string[] speciesaliases)
         {
@@ -189,7 +180,7 @@ namespace ArkBot.Data
         public double? GetMaxValue(string[] speciesaliases, Stat stat, int baseLevel, int tamedLevel, double tamingEfficiency, double imprintingBonus = 0)
         {
             var index = (int)stat;
-            var multipliers = index < StatMultipliers?.Length ? StatMultipliers.ElementAt(index) : null;
+            var multipliers = ArkServerMultipliers.Instance.Data?.GetStatMultipliers(stat);
             var stats = SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase))?.Stats;
 
             if (multipliers == null || multipliers.Length != 4 || stats == null) return null;
