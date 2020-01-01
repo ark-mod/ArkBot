@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tb="http://www.hardcodet.net/taskbar" 
         xmlns:local="clr-namespace:ArkBot"
         xmlns:layout="clr-namespace:ArkBot.Layout"
         xmlns:controls="clr-namespace:ArkBot.Controls"
@@ -66,7 +67,7 @@
                 <MenuItem Header="Configuration" IsChecked="{Binding Configuration.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
                 <MenuItem Header="About" IsChecked="{Binding About.IsVisible, Mode=TwoWay}" IsCheckable="True"/>
             </MenuItem>
-            
+
         </Menu>
         <xcad:DockingManager x:Name="dockManager" Grid.Row="1" AnchorablesSource="{Binding Panes}" GridSplitterWidth="7" GridSplitterHeight="7" AllowMixedOrientation="True">
             <xcad:DockingManager.Theme>
@@ -161,5 +162,20 @@
                 </xcad:LayoutPanel>
             </xcad:LayoutRoot>
         </xcad:DockingManager>
+
+        <tb:TaskbarIcon
+            Grid.Row="0" 
+            IconSource="basket_empty.ico"
+            ToolTipText="ARK Bot"
+            DoubleClickCommand="{Binding TaskIconDoubleClickCommand}"
+            >
+            <!-- Set a simple context menu  -->
+            <tb:TaskbarIcon.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Show/Hide" Command="{Binding ShowOrHideCommand}"/>
+                    <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
+                </ContextMenu>
+            </tb:TaskbarIcon.ContextMenu>
+        </tb:TaskbarIcon>
     </Grid>
 </Window>

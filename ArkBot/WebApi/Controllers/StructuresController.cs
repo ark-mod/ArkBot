@@ -271,7 +271,7 @@ namespace ArkBot.WebApi.Controllers
             if (context.Structures != null)
             {
                 // make fake structure objects out of rafts to include them in the clustering
-                var rafts = context.Rafts.Select(x => new ArkStructure
+                var rafts = context.Rafts?.Select(x => new ArkStructure
                 {
                     ClassName = x.ClassName,
                     Location = x.Location,
@@ -279,6 +279,9 @@ namespace ArkBot.WebApi.Controllers
                     OwningPlayerId = x.OwningPlayerId,
                     TargetingTeam = x.TargetingTeam
                 }).ToArray();
+
+                if (rafts == null)
+                    rafts = new List<ArkStructure>().ToArray();
 
                 var structureAreas = context.Structures.Concat(rafts).Where(x => (x.TargetingTeam.HasValue || x.OwningPlayerId.HasValue) && x.Location?.Latitude != null && x.Location?.Longitude != null)
                     .GroupBy(x => x.TargetingTeam ?? x.OwningPlayerId ?? 0)

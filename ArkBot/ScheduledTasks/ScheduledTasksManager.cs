@@ -154,7 +154,7 @@ namespace ArkBot.ScheduledTasks
                     }
                 }
 
-                if (DateTime.Now - _prevServerStatusUpdate > TimeSpan.FromMinutes(1))
+                if (DateTime.Now - _prevServerStatusUpdate > TimeSpan.FromMinutes(2))
                 {
                     _prevServerStatusUpdate = DateTime.Now;
                     var banUpdateTask = Task.Run(async () =>

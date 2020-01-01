@@ -30,8 +30,8 @@ namespace ArkBot.WebApi.Controllers
 
         public ServersController(
             IConfig config,
-            EfDatabaseContextFactory databaseContextFactory,  
-            ArkContextManager contextManager, 
+            EfDatabaseContextFactory databaseContextFactory,
+            ArkContextManager contextManager,
             Discord.DiscordManager discordManager,
             IArkServerService serverService,
             ArkBotAnonymizeData anonymizeData) : base(config)
@@ -49,22 +49,26 @@ namespace ArkBot.WebApi.Controllers
 
             var anonymize = _config.AnonymizeWebApiData;
             var user = WebApiHelper.GetUser(Request, _config);
+
             if (anonymize)
             {
-                var serverContext = _contextManager.Servers.FirstOrDefault();
-                var player = serverContext?.Players.Where(x =>
-                        x.Tribe != null
+                var serverContext = _contextManager?.Servers?.FirstOrDefault();
+                var player = serverContext?.Players?.Where(x =>
+                        x.Tribe != null && x.Tribe.Creatures != null && x.Tribe.Structures != null
                         && x.Tribe.Creatures.Any(y => y.IsBaby)
                         && x.Tribe.Structures.OfType<ArkStructureCropPlot>().Any()
                         && x.Tribe.Structures.OfType<ArkStructureElectricGenerator>().Any()
                     ).OrderByDescending(x => x.Creatures.Length).FirstOrDefault();
 
-                if (player == null) user = null;
+                if (player == null)
+                {
+                    user = null;
+                }
                 else
                 {
                     user.Name = player.Name;
                     user.SteamId = player.SteamId;
-                    user.Roles = _config.AccessControl.SelectMany(x => x.Value.Values)
+                    user.Roles = _config?.AccessControl?.SelectMany(x => x.Value.Values)
                         .SelectMany(x => x)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .OrderBy(x => x)
@@ -73,24 +77,30 @@ namespace ArkBot.WebApi.Controllers
             }
 
             var result = new ServerStatusAllViewModel { User = user, AccessControl = BuildViewModelForAccessControl(_config) };
-
-            foreach (var context in _contextManager.Servers)
+            if (_contextManager == null)
             {
-                var serverContext = _contextManager.GetServer(context.Config.Key);
-                var status = serverContext.Steam.GetServerStatusCached();
-                //if (status == null || status.Item1 == null || status.Item2 == null)
-                //{
-                //    //Server status is currently unavailable
-                //}
-                //else
-                //{
+                return result;
+            }
+
+            if (_contextManager.Servers != null)
+            {
+                foreach (var context in _contextManager.Servers)
+                {
+                    var serverContext = _contextManager.GetServer(context.Config.Key);
+                    var status = serverContext.Steam.GetServerStatusCached();
+                    //if (status == null || status.Item1 == null || status.Item2 == null)
+                    //{
+                    //    //Server status is currently unavailable
+                    //}
+                    //else
+                    //{
                     var info = status?.Item1;
                     var rules = status?.Item2;
                     var playerinfos = status?.Item3;
 
-                    var m = info != null ? new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)?$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name) : null;
-                    var name = m?.Success == true ? m.Groups["name"].Value : (info?.Name ?? context.Config.Key);
-                    var version = m?.Success == true ? m.Groups["version"] : null;
+                    var matched = info != null ? new Regex(@"^(?<name>.+?)\s+-\s+\(v(?<version>\d+\.\d+)\)?$", RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(info.Name) : null;
+                    var name = matched?.Success == true ? matched.Groups["name"].Value : (info?.Name ?? context.Config.Key);
+                    var version = matched?.Success == true ? matched.Groups["version"] : null;
                     var currentTime = rules?.FirstOrDefault(x => x.Name == "DayTime_s")?.Value;
                     var tamedDinosCount = context.TamedCreatures?.Count();
                     var uploadedDinosCount = context.CloudCreatures?.Count();
@@ -108,7 +118,7 @@ namespace ArkBot.WebApi.Controllers
                     var lastUpdateString = lastUpdate.ToStringWithRelativeDay();
 
                     var anonymizedServer = anonymize ? _anonymizeData.GetServer(context.Config.Key) : null;
-                    var sr = new ServerStatusViewModel
+                    var serverStatusViewModel = new ServerStatusViewModel
                     {
                         Key = anonymizedServer?.Key ?? context.Config.Key,
                         Name = anonymizedServer?.Name ?? name,
@@ -129,25 +139,35 @@ namespace ArkBot.WebApi.Controllers
                         ServerStarted = serverStarted
                     };
 
+                    serverStatusViewModel.OnlinePlayers = new List<OnlinePlayerViewModel>();
                     if (HasFeatureAccess("home", "online"))
                     {
                         var onlineplayers = playerinfos?.Where(x => !string.IsNullOrEmpty(x.Name)).ToArray() ?? new PlayerInfo[] { };
                         if (anonymize)
                         {
-                            int n = 0;
-                            foreach (var player in context.Players.OrderByDescending(x => x.LastActiveTime).Take(onlineplayers.Length))
+                            if (context.Players != null)
                             {
-                                sr.OnlinePlayers.Add(new OnlinePlayerViewModel
+                                int n = 0;
+                                foreach (var player in context.Players.OrderByDescending(x => x.LastActiveTime).Take(onlineplayers.Length))
                                 {
-                                    SteamName = player.Name,
-                                    CharacterName = player.CharacterName,
-                                    TribeName = player.Tribe?.Name,
-                                    DiscordName = null,
-                                    TimeOnline = onlineplayers[n].Time.ToStringCustom(),
-                                    TimeOnlineSeconds = (int)Math.Round(onlineplayers[n].Time.TotalSeconds)
-                                });
+                                    if (player == null)
+                                    {
+                                        continue;
+                                    }
 
-                                n++;
+                                    var timeSpan = onlineplayers[n] != null ? onlineplayers[n].Time : TimeSpan.Zero;
+                                    serverStatusViewModel.OnlinePlayers.Add(new OnlinePlayerViewModel
+                                    {
+                                        SteamName = player.Name,
+                                        CharacterName = player.CharacterName,
+                                        TribeName = player.Tribe?.Name,
+                                        DiscordName = null,
+                                        TimeOnline = timeSpan.ToStringCustom(),
+                                        TimeOnlineSeconds = (int)Math.Round(timeSpan.TotalSeconds)
+                                    });
+
+                                    n++;
+                                }
                             }
                         }
                         else
@@ -175,14 +195,15 @@ namespace ArkBot.WebApi.Controllers
                                     var extra = onlineplayerData.Length > n ? new { player = onlineplayerData[n], user = databaseUsers[n], discordName = discordUsers[n] } : null;
                                     var demoPlayerName = demoMode?.GetPlayerName();
 
-                                    sr.OnlinePlayers.Add(new OnlinePlayerViewModel
+                                    var timeSpan = player != null ? player.Time : TimeSpan.Zero;
+                                    serverStatusViewModel.OnlinePlayers.Add(new OnlinePlayerViewModel
                                     {
                                         SteamName = demoPlayerName ?? player.Name,
                                         CharacterName = demoPlayerName ?? extra?.player?.CharacterName,
                                         TribeName = demoMode?.GetTribeName() ?? extra?.player?.Tribe?.Name,
                                         DiscordName = demoMode != null ? null : extra?.discordName,
-                                        TimeOnline = player.Time.ToStringCustom(),
-                                        TimeOnlineSeconds = (int)Math.Round(player.Time.TotalSeconds)
+                                        TimeOnline = timeSpan.ToStringCustom(),
+                                        TimeOnlineSeconds = (int)Math.Round(timeSpan.TotalSeconds)
                                     });
 
                                     n++;
@@ -190,25 +211,27 @@ namespace ArkBot.WebApi.Controllers
                             }
                         }
                     }
-                    else
-                    {
-                        sr.OnlinePlayers = null;
-                    }
 
-                    result.Servers.Add(sr);
-                //}
+
+                    result.Servers.Add(serverStatusViewModel);
+                    //}
+                }
             }
 
-            foreach (var context in _contextManager.Clusters)
+
+            if (_contextManager.Clusters != null)
             {
-                var cc = new ClusterStatusViewModel
+                foreach (var context in _contextManager.Clusters)
                 {
-                    Key = context.Config.Key,
-                    ServerKeys = _contextManager.Servers
-                        .Where(x => x.Config.ClusterKey.Equals(context.Config.Key, StringComparison.OrdinalIgnoreCase))
-                        .Select(x => x.Config.Key).ToArray()
-                };
-                result.Clusters.Add(cc);
+                    var cc = new ClusterStatusViewModel
+                    {
+                        Key = context?.Config?.Key,
+                        ServerKeys = _contextManager.Servers
+                            .Where(x => x.Config != null && x.Config.ClusterKey != null && x.Config.ClusterKey.Equals(context.Config.Key, StringComparison.OrdinalIgnoreCase))
+                            .Select(x => x.Config.Key).ToArray()
+                    };
+                    result.Clusters.Add(cc);
+                }
             }
 
             return result;

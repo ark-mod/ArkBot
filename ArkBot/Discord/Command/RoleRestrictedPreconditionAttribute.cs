@@ -21,7 +21,7 @@ namespace ArkBot.Discord.Command
         }
 
         // Override the CheckPermissions method
-        public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             try
             {

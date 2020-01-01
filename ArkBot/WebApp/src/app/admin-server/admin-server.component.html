@@ -72,3 +72,93 @@
 <section *ngIf="isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')" class="w3-container">
   <arkmap-structures [serverKey]="serverKey" [mapName]="structures?.MapName" [structures]="structures"></arkmap-structures>
 </section>
+
+<section *ngIf="isMenuActive('fertilized-eggs') &amp;&amp; loadedFertilizedEggs == false &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
+  <div class="w3-panel theme-l2">
+    <h3 class="theme-text-l1-light">Loading...</h3>
+  </div> 
+</section>
+
+<section *ngIf="loadedFertilizedEggs == true &amp;&amp;isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')" class="w3-container">
+  <div class="w3-cell-row">
+      <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Egg Summary</h2></div>
+      <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="saveWorld($event)" class="w3-right" [width]="undefined">Save World</confirm-button></div>
+    </div>
+
+  <div class="w3-card-4 w3-margin-bottom w3-responsive">  
+      <header class="w3-container theme-d1">
+        <h3>Summary</h3>
+      </header>
+      <div *ngIf="fertilizedEggsCount != 0 || spoiledEggsCount != 0" class="w3-container theme-l1">
+        <p>Total Egg<span *ngIf="(totalEggCount) > 1">s</span>: {{totalEggCount}}</p>
+        <p>Fertilized Egg<span *ngIf="fertilizedEggsCount > 1">s</span>: {{fertilizedEggsCount}}</p>
+        <p>Spoiled Egg<span *ngIf="spoiledEggsCount > 1">s</span>: {{spoiledEggsCount}}</p>
+      </div>
+      <div *ngIf="fertilizedEggsCount == 0 && spoiledEggsCount == 0" class="w3-container theme-l1">
+        <p>There are no fertilized eggs on the map</p>
+      </div>
+  </div>
+
+  <div *ngIf="fertilizedEggsCount &amp;&amp; fertilizedEggsCount != 0" class="w3-cell-row">
+      <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Fertilized Eggs</h2></div>
+      <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroyAllEggs($event)" class="w3-right" [width]="undefined">Destroy All Eggs</confirm-button></div>
+  </div>
+  <div *ngIf="fertilizedEggsCount &amp;&amp; fertilizedEggsCount != 0" class="w3-card-4 w3-responsive w3-margin-bottom">     
+    <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Creature</th>
+          <th>Egg Level</th>
+          <th>Spoil Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let egg of fertilizedEggsList">
+          <td>{{egg.Dino}}</td>
+          <td>{{egg.EggLevel}}</td>
+          <td>{{egg.SpoilTime}}</td>
+        </tr>
+      </tbody>
+    </table> 
+  </div>
+
+  <div *ngIf="spoiledEggsCount &amp;&amp; spoiledEggsCount != 0" class="w3-cell-row">
+      <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Spoiled Eggs</h2></div>
+      <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroySpoiledEggs($event)" class="w3-right" [width]="undefined">Destroy Spoiled Eggs</confirm-button></div>
+  </div>
+  <div *ngIf="spoiledEggsCount &amp;&amp; spoiledEggsCount != 0" class="w3-card-4 w3-responsive w3-margin-bottom"> 
+   <table class="w3-table-all border-theme">
+      <thead>
+        <tr class="theme-d1">
+          <th>Creature</th>
+          <th>Egg Level</th>
+          <th>Dropped By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let egg of spoiledEggsList">
+          <td>{{egg.Dino}}</td>
+          <td>{{egg.EggLevel}}</td>
+          <td *ngIf="DroppedBySteamId"><a href="/player/{{egg.DroppedBySteamId}}">{{egg.DroppedBy}}</a></td>
+          <td *ngIf="!DroppedBySteamId">{{egg.DroppedBy}}</td>
+        </tr>
+      </tbody>
+    </table> 
+  </div>
+</section>
+
+<div #contextMenu class="contextMenu w3-modal">
+    <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="hideContextMenu()" style="font-size: 0;">
+      <ng-container *ngIf="modalInfo">
+        <header class="w3-container theme-d1"> 
+          <span (click)="hideContextMenu()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+          <h2>{{modalInfo.Header}}</h2>
+        </header>
+        <div class="w3-container w3-medium theme-l2">
+          <div class="w3-section">
+            {{modalInfo.Message}}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>

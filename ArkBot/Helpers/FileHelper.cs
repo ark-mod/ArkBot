@@ -1,5 +1,4 @@
-﻿extern alias DotNetZip;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -99,7 +98,7 @@ namespace ArkBot.Helpers
             return null;
         }
 
-        public static string[] CreateDotNetZipArchive(Tuple<string, string, string[]>[] files, string path, int? maxSegmentSizeBytes = null, DotNetZip::Ionic.Zlib.CompressionLevel compressionLevel = DotNetZip::Ionic.Zlib.CompressionLevel.BestCompression)
+        public static string[] CreateDotNetZipArchive(Tuple<string, string, string[]>[] files, string path, int? maxSegmentSizeBytes = null, Ionic.Zlib.CompressionLevel compressionLevel = Ionic.Zlib.CompressionLevel.BestCompression)
         {
             using (var zip = new Ionic.Zip.ZipFile { CompressionLevel = compressionLevel })
             {

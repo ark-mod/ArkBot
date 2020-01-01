@@ -243,7 +243,7 @@ namespace ArkBot.WebApi.Controllers
                         babyFullyGrownTimeApprox = context.SaveState.GetApproxDateTimeOf(context.SaveState.GameTime.Value + babyFullyGrown);
                     }
 
-                    var aliases = ArkSpeciesAliases.Instance.GetAliases(item.c.ClassName);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliasesByClassName(item.c.ClassName);
                     var vmc = new TamedCreatureViewModel
                     {
                         Id1 = item.c.Id1,
@@ -308,7 +308,7 @@ namespace ArkBot.WebApi.Controllers
             {
                 foreach (var c in cloudInventory.Dinos)
                 {
-                    var aliases = ArkSpeciesAliases.Instance.GetAliases(c.ClassName);
+                    var aliases = ArkSpeciesAliases.Instance.GetAliasesByClassName(c.ClassName);
                     var vmc = new CloudCreatureViewModel
                     {
                         Name = demoMode?.GetCreatureName(c.Id1, c.Id2, aliases?.FirstOrDefault()) ?? c.Name,
