@@ -1,18 +1,15 @@
-# Project status last updated Nov 4th 2019
+# Project status last updated Dec 31th 2019
 
 ### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
 
 
-## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/zDJcckF).  Be sure to read #welcome in the Discord on how to get support for ArkBot. 
+## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to read #welcome in the Discord on how to get support for ArkBot. 
 
 Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
-We have decided as a team to pull the plug on arkbot development.  There is a multitude of reasons as to why, the biggest one is the lack of donations to keep funding for the project alive.  Developers are not cheap and with no one willing to take on the project full-time and pickup where tsebring left off, has proven to be very problematic.  In total we have spent close to if not over 5K on development of the old arkbot, sourcing 95% of that figure from our players on our KNIGHTS ark clusters that have no idea what arkbot even is.  As it is, we do not own arkbot and have no way to turn a profit off of our efforts.  With the rewrite we proposed, that could change, however, the gains projected from this outweigh the development costs.  As arkbot is open source, everyone is welcome to continue on working on arkbot if you wish but at this point we are opting to bow out.  We will continue supporting the existing released version of arkbot as best we can but no further development will take place on the KNIGHTS behalf. Thank You.
-
-#### Donate
-If you wish to help support our costs for development, you can donate by simply typing "donate" (no quotes) in our discord in any channel.  Everything donated goes directly back into ArkBot.  Alternativly, you may click [here](https://donatebot.io/checkout/305511546417709058) without joining discord.
+We are actively developing this tool again!  We have assembled a team with past and new members.  Users can follow development progress here or get updates on Discord (link found above)
 
 #### IMPORTANT NOTES
 Important Dependency Note: 
@@ -43,14 +40,14 @@ The application monitors and extracts data from any number of configured local A
 It aims to provide important functions to players: dino listings, food-status, breeding info, statistics; and server admins: rcon-commands, server managing etc. It does not enable cheating or making available data that have a considerable impact on how the game is played.
 
 ## Latest release
-### Stable
+### Stable Branch
 
 https://github.com/tsebring/ArkBot/releases
 
-### Pre-release built from latest sources
-Open as zip-archive or change extension to .zip, binaries are located under tools/.
+### Development Branch
 
-https://www.myget.org/F/arkbot-beta/api/v2/package/ArkBot
+https://github.com/johnthegreat/ArkBot (no binaries at this point.  Users will need to compile releases on their own.)
+
 
 ## Installation
 
