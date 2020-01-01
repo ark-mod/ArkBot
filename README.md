@@ -4,7 +4,7 @@
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
 
 
-## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to read #welcome in the Discord on how to get support for ArkBot. 
+## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
 
 Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
 
@@ -46,7 +46,7 @@ https://github.com/tsebring/ArkBot/releases
 
 ### Development Branch
 
-https://github.com/johnthegreat/ArkBot (no binaries at this point.  Users will need to compile releases on their own.)
+https://github.com/johnthegreat/ArkBot/releases
 
 
 ## Installation
