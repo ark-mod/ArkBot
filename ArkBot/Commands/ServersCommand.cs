@@ -56,7 +56,7 @@ namespace ArkBot.Commands
 
                     var cluster = args.cluster || args.clusters ? $" (cluster **`{server.ClusterKey}`**)" : "";
 
-                    embed.AddInlineField($"{ name ?? address}", $"steam://connect/{address} (key: `{server.Key}`){cluster}");
+                    embed.AddField($"{ name ?? address}", $"steam://connect/{address} (key: `{server.Key}`){cluster}",true);
                 }
 
                 await Context.Channel.SendMessageAsync("", false, embed.Build());

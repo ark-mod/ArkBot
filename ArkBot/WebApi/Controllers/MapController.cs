@@ -1,9 +1,4 @@
-﻿using ArkBot.Ark;
-using ArkBot.Configuration.Model;
-using ArkBot.Data;
-using ArkBot.ViewModel;
-using ArkBot.WebApi.Model;
-using ArkSavegameToolkitNet.Domain;
+﻿using ArkBot.Configuration.Model;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,9 +9,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -35,21 +27,31 @@ namespace ArkBot.WebApi.Controllers
         {
             var notfound = new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = $@"Map ""{id}"" does not exist!" };
             Bitmap bmp = null;
+            string imageExtension;
             var ms = new MemoryStream();
             try
             {
-                bmp = MapResources.ResourceManager.GetObject($"topo_map_{id}") as Bitmap;
-                if (bmp == null) return notfound;
+                var map = GetMapImage(id);
+                bmp = map.Value;
+                imageExtension = map.Key;
+                if (bmp == null || string.IsNullOrWhiteSpace(imageExtension)) return notfound;
 
-                var jpegEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
+                var imageFormat = GetImageFormatGuid(imageExtension);
+                var imageEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == imageFormat);
                 var encParams = new EncoderParameters { Param = new[] { new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L) } };
-                if (jpegEncoder == null) return new HttpResponseMessage(HttpStatusCode.InternalServerError) { ReasonPhrase = "Could not find jpeg encoder." };
+                if (imageEncoder == null) return new HttpResponseMessage(HttpStatusCode.InternalServerError) { ReasonPhrase = "Could not find " + imageExtension + " encoder." };
 
-                bmp.Save(ms, jpegEncoder, encParams);
+                bmp.Save(ms, imageEncoder, encParams);
                 ms.Seek(0, SeekOrigin.Begin);
             }
-            catch (MissingManifestResourceException) { return notfound; }
-            catch (MissingSatelliteAssemblyException) { return notfound; }
+            catch (MissingManifestResourceException)
+            {
+                return notfound;
+            }
+            catch (MissingSatelliteAssemblyException)
+            {
+                return notfound;
+            }
             finally
             {
                 bmp?.Dispose();
@@ -59,9 +61,49 @@ namespace ArkBot.WebApi.Controllers
             {
                 Content = new StreamContent(ms)
             };
-            result.Content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("image/" + imageExtension);
 
             return result;
+        }
+
+        private static Guid GetImageFormatGuid(string imageExtension)
+        {
+            switch (imageExtension)
+            {
+                case "jpeg":
+                    return ImageFormat.Jpeg.Guid;
+                case "jpg":
+                    return ImageFormat.Jpeg.Guid;
+                case "bmp":
+                    return ImageFormat.Bmp.Guid;
+                case "png":
+                    return ImageFormat.Png.Guid;
+                default:
+                    return ImageFormat.Jpeg.Guid;
+            }
+        }
+
+        private static KeyValuePair<string, Bitmap> GetMapImage(string imageName)
+        {
+            var imageDirectory = @"Resources\MapImages";
+            imageDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imageDirectory);
+            var filePath = Directory.GetFiles(imageDirectory).FirstOrDefault(x => Path.GetFileNameWithoutExtension(x) == imageName);
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                Bitmap bitmap;
+                using (Stream bmpStream = System.IO.File.Open(filePath, System.IO.FileMode.Open))
+                {
+                    Image image = Image.FromStream(bmpStream);
+
+                    bitmap = new Bitmap(image);
+                }
+
+                var imageExtension = Path.GetExtension(filePath);
+
+                return new KeyValuePair<string, Bitmap>(imageExtension, bitmap);
+            }
+
+            return new KeyValuePair<string, Bitmap>(null, null);
         }
     }
 }

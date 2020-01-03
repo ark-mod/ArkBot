@@ -79,7 +79,8 @@
     "admin-server": {
       "players": [ "admin" ],
       "tribes": [ "admin" ],
-      "structures": [ "admin" ],
+      "structures": [ "admin" ],	  
+      "fertilized-eggs": [ "disabled" ],
       "structures-rcon": [ "disabled" ]
     }
   },
@@ -111,6 +112,7 @@
   },
   "savegameExtractionMaxDegreeOfParallelism": null,
   "anonymizeWebApiData": false,
+  "hideUiOnStartup": false,
   "discordLogLevel": "Warning",
   "servers": [
     {
@@ -123,7 +125,7 @@
       "rconPort": 27020,
       "rconPassword": "",
       "serverManagement": {
-        "enabled":  true,
+        "enabled": true,
         "serverExecutablePath": "",
         "serverExecutableArguments": "",
         "steamCmdExecutablePath": "",

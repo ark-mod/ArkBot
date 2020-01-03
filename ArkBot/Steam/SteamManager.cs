@@ -1,11 +1,8 @@
 using ArkBot.Configuration.Model;
 using QueryMaster.GameServer;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.Caching;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ArkBot.Steam
@@ -46,7 +43,11 @@ namespace ArkBot.Steam
         {
             try
             {
-                if (_rconServer?.Rcon == null) await ReconnectRcon();
+                if (_rconServer?.Rcon == null)
+                {
+                    await ReconnectRcon();
+                }
+
                 if (_rconServer?.Rcon == null)
                 {
                     Logging.Log("Exception attempting to send rcon command (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
@@ -67,86 +68,132 @@ namespace ArkBot.Steam
 
         private async Task ReconnectSource()
         {
-            if (DateTime.Now - _sourceServerLastReconnect <= TimeSpan.FromSeconds(15)) return;
-
-            Task reconnect = null;
-            lock (_sourceServerLock)
+            if (DateTime.Now - _sourceServerLastReconnect <= TimeSpan.FromSeconds(60))
             {
-                if (_sourceServerReconnectTask != null) reconnect = Task.WhenAll(_sourceServerReconnectTask);
-                else
+                return;
+            }
+
+            await Task.Run(() =>
+            {
+                try
                 {
-                    _sourceServerLastReconnect = DateTime.Now;
-                    _sourceServerReconnectTask = reconnect = Task.Run(() =>
-                    {
-                        try
-                        {
-                            _sourceServer?.Dispose();
-                            _sourceServer = null;
+                    _sourceServer?.Dispose();
+                    _sourceServer = null;
 
-                            _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.QueryPort, false, 2000, 5000, 1, true);
-                        }
-                        catch (Exception ex)
-                        {
-                            _sourceServer?.Dispose();
-                            _sourceServer = null;
-
-                            Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.QueryPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
-                        }
-                    });
+                    _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.QueryPort, false, 2000, 5000, 1, true);
                 }
-            }
+                catch (Exception ex)
+                {
+                    Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.QueryPort}). Exception Message : {ex.Message}", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                    _sourceServer?.Dispose();
+                    _sourceServer = null;
+                }
+            });
+            //Task reconnect = null;
+            //lock (_sourceServerLock)
+            //{
+            //    if (_sourceServerReconnectTask != null) reconnect = Task.WhenAll(_sourceServerReconnectTask);
+            //    else
+            //    {
+            //        _sourceServerLastReconnect = DateTime.Now;
+            //        _sourceServerReconnectTask = reconnect = Task.Run(() =>
+            //        {
+            //            try
+            //            {
+            //                _sourceServer?.Dispose();
+            //                _sourceServer = null;
 
-            await reconnect;
+            //                _sourceServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.QueryPort, false, 2000, 5000, 1, true);
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                _sourceServer?.Dispose();
+            //                _sourceServer = null;
 
-            lock (_sourceServerLock)
-            {
-                _sourceServerReconnectTask = null;
-            }
+            //                Logging.LogException($"Failed to connect to server steamworks api ({_config.Ip}, {_config.QueryPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+            //            }
+            //        });
+            //    }
+            //}
+
+            //await reconnect;
+
+            //lock (_sourceServerLock)
+            //{
+            //    _sourceServerReconnectTask = null;
+            //}
         }
 
         private async Task ReconnectRcon()
         {
-            if (DateTime.Now - _rconServerLastReconnect <= TimeSpan.FromSeconds(15)) return;
-
-            Task reconnect = null;
-            lock (_rconServerLock)
+            if (DateTime.Now - _rconServerLastReconnect <= TimeSpan.FromSeconds(60))
             {
-                if (_rconServerReconnectTask != null) reconnect = Task.WhenAll(_rconServerReconnectTask);
-                else
+                return;
+            }
+
+            await Task.Run(() =>
+            {
+                try
                 {
-                    _rconServerLastReconnect = DateTime.Now;
-                    _rconServerReconnectTask = reconnect = Task.Run(() =>
-                    {
-                        try
-                        {
-                            _rconServer?.Dispose();
-                            _rconServer = null;
+                    _rconServer?.Dispose();
+                    _rconServer = null;
 
-                            _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
-                            _rconServer?.GetControl(_config.RconPassword);
-                        }
-                        catch (SocketException)
-                        {
-                            _rconServer?.Dispose();
-                            _rconServer = null;
-                        }
-                        catch (Exception ex)
-                        {
-                            _rconServer?.Dispose();
-                            _rconServer = null;
-
-                            Logging.LogException($"Error when connecting to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
-                        }
-                    });
+                    _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
+                    _rconServer?.GetControl(_config.RconPassword);
                 }
-            }
+                catch (SocketException)
+                {
+                    _rconServer?.Dispose();
+                    _rconServer = null;
+                }
+                catch (Exception ex)
+                {
+                    _rconServer?.Dispose();
+                    _rconServer = null;
 
-            await reconnect;
+                    Logging.LogException($"Error when connecting to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+                }
+            });
 
-            lock (_rconServerLock)
-            {
-                _rconServerReconnectTask = null;
-            }
+            //Task reconnect = null;
+            //lock (_rconServerLock)
+            //{
+            //    if (_rconServerReconnectTask != null) reconnect = Task.WhenAll(_rconServerReconnectTask);
+            //    else
+            //    {
+            //        _rconServerLastReconnect = DateTime.Now;
+            //        _rconServerReconnectTask = reconnect = Task.Run(() =>
+            //        {
+            //            try
+            //            {
+            //                _rconServer?.Dispose();
+            //                _rconServer = null;
+
+            //                _rconServer = ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, _config.Ip, (ushort)_config.RconPort, false, 2000, 5000, 1, true);
+            //                _rconServer?.GetControl(_config.RconPassword);
+            //            }
+            //            catch (SocketException)
+            //            {
+            //                _rconServer?.Dispose();
+            //                _rconServer = null;
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                _rconServer?.Dispose();
+            //                _rconServer = null;
+
+            //                Logging.LogException($"Error when connecting to server rcon ({_config.Ip}, {_config.RconPort})", ex, typeof(SteamManager), LogLevel.WARN, ExceptionLevel.Ignored);
+            //            }
+            //        });
+            //    }
+            //}
+
+            //await reconnect;
+
+            //lock (_rconServerLock)
+            //{
+            //    _rconServerReconnectTask = null;
+            //}
         }
 
         public async Task<long> Ping()
@@ -192,45 +239,54 @@ namespace ArkBot.Steam
             var cache = MemoryCache.Default;
             var cacheKey = $"{nameof(GetServerInfo)}_{_config.Ip}_{_config.QueryPort}";
             var info = cache[cacheKey] as ServerInfo;
-
-            if ((DateTime.Now - _lastServerInfo) > TimeSpan.FromMinutes(1))
+            if ((DateTime.Now - _lastServerInfo) <= TimeSpan.FromMinutes(1))
             {
-                await Task.Run(async () =>
-                {
-                    try
-                    {
-                        if (_sourceServer == null) await ReconnectSource();
-                        if (_sourceServer == null)
-                        {
-                            Logging.Log("Exception attempting to get server info (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
-                            return;
-                        }
-
-                        info = _sourceServer.GetInfo();
-                        if (info != null)
-                        {
-                            _lastServerInfo = DateTime.Now;
-                            cache.Set(cacheKey, info, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
-                        }
-                    }
-                    catch (System.Net.Sockets.SocketException ex)
-                    when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
-                    {
-                        _sourceServer?.Dispose();
-                        _sourceServer = null;
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        _sourceServer?.Dispose();
-                        _sourceServer = null;
-                        Logging.LogException("Exception attempting to get server info", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                        return;
-                    }
-                });
+                return info;
             }
 
-            return info;
+            try
+            {
+                if (_sourceServer == null)
+                {
+                    await ReconnectSource();
+                }
+
+                if (_sourceServer == null)
+                {
+                    Logging.Log("Exception attempting to get server info (could not connect)", typeof(SteamManager),
+                        LogLevel.DEBUG);
+                    return info;
+                }
+
+                info = _sourceServer.GetInfo();
+                if (info != null)
+                {
+                    _lastServerInfo = DateTime.Now;
+                    cache.Set(cacheKey, info,
+                        new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                }
+
+                return info;
+            }
+            catch (System.Net.Sockets.SocketException ex)
+                when (ex.SocketErrorCode == SocketError.ConnectionReset ||
+                      ex.SocketErrorCode == SocketError.TimedOut ||
+                      ex.SocketErrorCode == SocketError.HostUnreachable)
+            {
+                Logging.LogException($"Exception attempting to get server info.Exception Message : {ex.Message}", ex,
+                    typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                _sourceServer?.Dispose();
+                _sourceServer = null;
+                return info;
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException($"Exception attempting to get server info.Exception Message : {ex.Message}", ex,
+                    typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                _sourceServer?.Dispose();
+                _sourceServer = null;
+                return info;
+            }
         }
 
         public async Task<QueryMaster.QueryMasterCollection<Rule>> GetServerRules()
@@ -239,57 +295,50 @@ namespace ArkBot.Steam
             var cacheKey = $"{nameof(GetServerRules)}_{_config.Ip}_{_config.QueryPort}";
             var rules = cache[cacheKey] as QueryMaster.QueryMasterCollection<Rule>;
 
-            if ((DateTime.Now - _lastServerRules) > TimeSpan.FromMinutes(1))
+            if ((DateTime.Now - _lastServerRules) <= TimeSpan.FromMinutes(1))
             {
-                await Task.Run(async () =>
-                {
-                    try
-                    {
-                        if (_sourceServer == null) await ReconnectSource();
-                        if (_sourceServer == null)
-                        {
-                            Logging.Log("Exception attempting to get server rules (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
-                            return;
-                        }
-
-                        rules = _sourceServer.GetRules();
-                        _errorCounter = 0;
-                        if (rules != null)
-                        {
-                            _lastServerRules = DateTime.Now;
-                            cache.Set(cacheKey, rules, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
-                            
-                        }
-                    }
-                    catch (System.Net.Sockets.SocketException ex)
-                    when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
-                    {
-                        _sourceServer?.Dispose();
-                        _sourceServer = null;
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        if (_errorCounter < 3)
-                        {
-                            _errorCounter++;
-                            _sourceServer?.Dispose();
-                            _sourceServer = null;
-                            await GetServerRules();
-                        }
-                        else
-                        {
-                            _errorCounter = 0;
-                            _sourceServer?.Dispose();
-                            _sourceServer = null;
-                            Logging.LogException("Exception attempting to get server rules", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                            return;
-                        }
-                    }
-                });
+                return rules;
             }
 
-            return rules;
+            try
+            {
+                if (_sourceServer == null)
+                {
+                    await ReconnectSource();
+                }
+
+                if (_sourceServer == null)
+                {
+                    Logging.Log("Exception attempting to get server rules (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
+                    return rules;
+                }
+
+                rules = _sourceServer.GetRules();
+                _errorCounter = 0;
+                if (rules != null)
+                {
+                    _lastServerRules = DateTime.Now;
+                    cache.Set(cacheKey, rules, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                }
+
+                return rules;
+            }
+            catch (System.Net.Sockets.SocketException ex)
+                when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
+            {
+                Logging.LogException($"Exception attempting to get server rules.Exception Message : {ex.Message}", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                _sourceServer?.Dispose();
+                _sourceServer = null;
+                return rules;
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException($"Exception attempting to get server rules.Exception Message : {ex.Message}", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
+                _sourceServer?.Dispose();
+                _sourceServer = null;
+                return rules;
+            }
+
         }
 
         public async Task<QueryMaster.QueryMasterCollection<PlayerInfo>> GetServerPlayers()
@@ -298,44 +347,48 @@ namespace ArkBot.Steam
             var cacheKey = $"{nameof(GetServerPlayers)}_{_config.Ip}_{_config.QueryPort}";
             var players = cache[cacheKey] as QueryMaster.QueryMasterCollection<PlayerInfo>;
 
-            if ((DateTime.Now - _lastServerPlayers) > TimeSpan.FromMinutes(1))
+            if ((DateTime.Now - _lastServerPlayers) <= TimeSpan.FromMinutes(1))
             {
-                await Task.Run(async () =>
-                {
-                    try
-                    {
-                        if (_sourceServer == null) await ReconnectSource();
-                        if (_sourceServer == null)
-                        {
-                            Logging.Log("Exception attempting to get server players (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
-                            return;
-                        }
-
-                        players = _sourceServer.GetPlayers();
-                        if (players != null)
-                        {
-                            _lastServerPlayers = DateTime.Now;
-                            cache.Set(cacheKey, players, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
-                        }
-                    }
-                    catch (System.Net.Sockets.SocketException ex)
-                    when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
-                    {
-                        _sourceServer?.Dispose();
-                        _sourceServer = null;
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        _sourceServer?.Dispose();
-                        _sourceServer = null;
-                        Logging.LogException("Exception attempting to get server players", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                        return;
-                    }
-                });
+                return players;
             }
 
-            return players;
+            try
+            {
+                if (_sourceServer == null)
+                {
+                    await ReconnectSource();
+                }
+
+                if (_sourceServer == null)
+                {
+                    Logging.Log("Exception attempting to get server players (could not connect)", typeof(SteamManager), LogLevel.DEBUG);
+                    return players;
+                }
+
+                players = _sourceServer.GetPlayers();
+                if (players != null)
+                {
+                    _lastServerPlayers = DateTime.Now;
+                    cache.Set(cacheKey, players, new CacheItemPolicy { }); //AbsoluteExpiration = DateTime.Now.AddMinutes(1)
+                }
+
+                return players;
+            }
+            catch (System.Net.Sockets.SocketException ex)
+                when (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.TimedOut || ex.SocketErrorCode == SocketError.HostUnreachable)
+            {
+                Logging.LogException($"Exception attempting to get server players .Exception Message : {ex.Message}", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Unhandled);
+                _sourceServer?.Dispose();
+                _sourceServer = null;
+                return players;
+            }
+            catch (Exception ex)
+            {
+                _sourceServer?.Dispose();
+                _sourceServer = null;
+                Logging.LogException($"Exception attempting to get server players.Exception Message : {ex.Message}", ex, typeof(SteamManager), LogLevel.DEBUG, ExceptionLevel.Unhandled);
+                return players;
+            }
         }
 
         public async Task<Tuple<ServerInfo, QueryMaster.QueryMasterCollection<Rule>, QueryMaster.QueryMasterCollection<PlayerInfo>>> GetServerStatus()
@@ -350,7 +403,10 @@ namespace ArkBot.Steam
         #region IDisposable Support
         protected virtual void Dispose(bool disposing)
         {
-            if (disposedValue) return;
+            if (disposedValue)
+            {
+                return;
+            }
 
             if (disposing)
             {

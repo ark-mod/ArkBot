@@ -1,4 +1,4 @@
 <button #confirmButton class="w3-button" [ngClass]="{'theme-d1': !confirming, 'theme-e1': confirming}" [style.width.%]="width" (click)="onClick($event)">
   <ng-content *ngIf="!confirming"></ng-content>
-  <ng-container *ngIf="confirming">Tap three times to confirm...</ng-container>
+  <ng-container *ngIf="confirming">Tripple tap to confirm...</ng-container>
 </button>

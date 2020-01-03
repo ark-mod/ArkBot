@@ -52,7 +52,7 @@ namespace ArkBot.Commands
                     var context = new SocketCommandContext(Context.Client, Context.Message);
 
                     var precRoleRestricted = command.Preconditions.OfType<RoleRestrictedPreconditionAttribute>().FirstOrDefault();
-                    if (precRoleRestricted != null && !(await precRoleRestricted.CheckPermissions(context, command, _serviceProvider)).IsSuccess) continue;
+                    if (precRoleRestricted != null && !(await precRoleRestricted.CheckPermissionsAsync(context, command, _serviceProvider)).IsSuccess) continue;
 
                     sb.AppendLine($"● **!{command.Name}**" + (!string.IsNullOrWhiteSpace(command.Summary) ? $": {command.Summary}" : ""));
                     var syntaxHelp = command.SyntaxHelp();
@@ -78,7 +78,7 @@ namespace ArkBot.Commands
 
                     var precRoleRestricted = command.Preconditions.OfType<RoleRestrictedPreconditionAttribute>().FirstOrDefault();
                     if (precRoleRestricted != null &&
-                        !(await precRoleRestricted.CheckPermissions(context, command, _serviceProvider)).IsSuccess)
+                        !(await precRoleRestricted.CheckPermissionsAsync(context, command, _serviceProvider)).IsSuccess)
                     {
                         sb.AppendLine($"**The specified command is only available to some roles and using a private channel.**");
                     }

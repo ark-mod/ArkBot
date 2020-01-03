@@ -29,6 +29,8 @@ namespace ArkBot.Configuration.Model
         ServersConfigSection Servers { get; set; }
         ClustersConfigSection Clusters { get; set; }
 
+        bool HideUiOnStartup { get; set; }
+
         //Test1ConfigSection Test { get; set; }
     }
 }
