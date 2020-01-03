@@ -151,7 +151,7 @@ namespace ArkBot.WebApi.Controllers
             if (incKibblesEggs) vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, playerId);
             if (incCrops) vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, playerId);
             if (incGenerators) vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, playerId);
-            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, playerId, 100);
+            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, playerId, config.WebApp.TribeLogLimit);
 
             return vm;
         }
@@ -202,7 +202,7 @@ namespace ArkBot.WebApi.Controllers
             if (incKibblesEggs) vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id);
             if (incCrops) vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, player.Id);
             if (incGenerators) vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id);
-            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, player.Id, 100);
+            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, player.Id, config.WebApp.TribeLogLimit);
 
             return vm;
         }

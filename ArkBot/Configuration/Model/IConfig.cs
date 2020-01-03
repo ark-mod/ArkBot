@@ -12,6 +12,7 @@ namespace ArkBot.Configuration.Model
         string AppUrl { get; set; }
         string SteamApiKey { get; set; }
         string TempFileOutputDirPath { get; set; }
+        WebAppConfigSection WebApp { get; set; }
         DiscordConfigSection Discord { get; set; }
         UserRolesConfigSection UserRoles { get; set; }
         AccessControlConfigSection AccessControl { get; set; }

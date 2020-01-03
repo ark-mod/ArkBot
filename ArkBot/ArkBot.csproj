@@ -571,6 +571,7 @@
     <Compile Include="Commands\VoteCommand.cs" />
     <Compile Include="Commands\WhoAmICommand.cs" />
     <Compile Include="Commands\WildCommand.cs" />
+    <Compile Include="Configuration\Model\WebAppConfigSection.cs" />
     <Compile Include="Configuration\Model\UsersInRoleConfig.cs" />
     <Compile Include="Configuration\Model\UserRolesConfigSection.cs" />
     <Compile Include="Configuration\Model\BackupsConfigSection.cs" />
@@ -868,7 +869,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\MapImages\EbenusAstrum.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>      
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\MapImages\Extinction.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
