@@ -18,6 +18,8 @@ using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace ArkBot.Configuration.Model
 {
+    public enum WebAppTheme { Dark = 0, Light = 1 };
+
     public class WebAppConfigSection
     {
         public WebAppConfigSection()
@@ -25,6 +27,10 @@ namespace ArkBot.Configuration.Model
         }
 
         public override string ToString() => $"Web App";
+
+        [JsonProperty(PropertyName = "defaultTheme")]
+        [Display(Name = "Default Theme", Description = "Default theme to use in the Web App")]
+        public WebAppTheme DefaultTheme { get; set; } = WebAppTheme.Dark;
 
         [JsonProperty(PropertyName = "tribeLogLimit")]
         [Display(Name = "Tribe Log Limit", Description = "Limit for how many tribe logs are displayed in the Web App")]

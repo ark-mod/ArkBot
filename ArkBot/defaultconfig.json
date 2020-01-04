@@ -5,6 +5,7 @@
   "tempFileOutputDirPath": "",
   "steamApiKey": "",
   "webApp": {
+    "defaultTheme": "Dark",
     "tribeLogLimit": 100,
     "tribeLogColors": false
   },

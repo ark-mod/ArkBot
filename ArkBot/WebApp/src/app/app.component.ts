@@ -6,6 +6,8 @@ import { DataService } from './data.service';
 import { HttpService } from './http.service';
 import { environment } from '../environments/environment';
 
+declare var config: any;
+
 @Component({
   selector: 'body',
   host: {'[class]': 'getTheme()'},
@@ -74,8 +76,13 @@ export class AppComponent implements OnInit, OnDestroy {
     return `Player`;
   }
 
+  getDefaultTheme(): string {
+    var value = (typeof config !== 'undefined' && config.webapp !== 'undefined' && typeof config.webapp.defaultTheme === 'string' ? config.webapp.defaultTheme.toLowerCase() : undefined);
+    return value != 'light' && value != 'dark' ? 'dark' : value;
+  }
+
   getTheme(): string {
-    return localStorage.getItem('theme') || 'light';
+    return localStorage.getItem('theme') || this.getDefaultTheme();
   }
   
   setTheme(theme: string): boolean {
