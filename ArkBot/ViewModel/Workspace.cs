@@ -89,6 +89,9 @@ namespace ArkBot.ViewModel
         public ICommand ExitCommand => _exitCommand ?? (_exitCommand = new RelayCommand(parameter => OnExit(parameter), parameter => CanExit(parameter)));
         private RelayCommand _exitCommand;
 
+        public ICommand OpenWebAppCommand => _openWebAppCommand ?? (_openWebAppCommand = new RelayCommand(parameter => OnOpenWebApp(parameter), parameter => CanOpenWebApp(parameter)));
+        private RelayCommand _openWebAppCommand;
+
         public ICommand ReloadPartialConfig => _reloadPartialConfig ?? (_reloadPartialConfig = new RelayCommand(parameter => OnReloadPartialConfig(parameter), parameter => CanReloadPartialConfig(parameter)));
         private RelayCommand _reloadPartialConfig;
 
@@ -209,6 +212,16 @@ namespace ArkBot.ViewModel
             Application.Current.MainWindow?.Close();
         }
 
+        private bool CanOpenWebApp(object parameter)
+        {
+            return true;
+        }
+
+        private void OnOpenWebApp(object parameter)
+        {
+            Process.Start(_config.AppUrl);
+        }
+
         private bool CanReloadPartialConfig(object parameter)
         {
             return true;
@@ -267,6 +280,7 @@ namespace ArkBot.ViewModel
                 {
                     _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Constants.ConfigFilePath));
                     if (_config.Discord == null) _config.Discord = new DiscordConfigSection();
+                    _config.SetupDefaults();
                 }
                 catch (Exception ex)
                 {

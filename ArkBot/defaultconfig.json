@@ -63,6 +63,7 @@
       "players": [ "guest" ],
       "tribes": [ "guest" ],
       "wildcreatures": [ "admin" ],
+      "wildcreatures-coords": [ "admin" ],
       "wildcreatures-basestats": [ "admin" ],
       "wildcreatures-ids": [ "admin" ],
       "wildcreatures-statistics": [ "admin" ]

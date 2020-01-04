@@ -25,5 +25,11 @@ namespace ArkBot.Configuration.Model
     public class AccessControlFeatureGroup : Dictionary<string, AccessControlFeatureRoles>
     {
         public override string ToString() => "Group";
+
+        internal void SetupDefaults(string[] keys)
+        {
+            foreach (var key in keys)
+                if (!ContainsKey(key)) Add(key, new AccessControlFeatureRoles(new[] { "" }));
+        }
     }
 }

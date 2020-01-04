@@ -118,7 +118,7 @@
 <section *ngIf="isMenuActive('wildcreatures') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures')" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="creatures"></a><h2 class="theme-text-d1 w3-left">Wild Creatures <span class="w3-tag w3-large theme-d1">{{(filteredCreatures?.length || 0) | number}}</span>&nbsp;/&nbsp;<span class="w3-tag w3-large theme-d1">{{(wild?.Statistics?.CreatureCount || 0) | number}}</span></h2></div>
-    <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
+    <div *ngIf="dataService.hasFeatureAccess('server', 'wildcreatures-coords')" class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
   </div>
   <div *ngIf="!(species?.length > 0)">There are no creatures...</div>
   <ng-container *ngIf="species?.length > 0">
@@ -141,7 +141,7 @@
             <th style="cursor: pointer;" title="Sort by Gender" (click)="setCreaturesSort('gender')">Gender</th>
             <th style="cursor: pointer;" title="Sort by Base Level" (click)="setCreaturesSort('base_level')">Base Level</th>
             <th style="cursor: pointer;" title="Sort by Tameable" (click)="setCreaturesSort('tameable')">Tameable</th>
-            <ng-container *ngIf="activeCreaturesMode('status')">
+            <ng-container *ngIf="activeCreaturesMode('status') && dataService.hasFeatureAccess('server', 'wildcreatures-coords')">
               <th style="cursor: pointer;" title="Sort by X" (click)="setCreaturesSort('x')">X</th>
               <th style="cursor: pointer;" title="Sort by Y" (click)="setCreaturesSort('y')">Y</th>
               <th style="cursor: pointer;" title="Sort by Z" (click)="setCreaturesSort('z')">Z</th>
@@ -170,7 +170,7 @@
             <td>{{creature.Gender}}</td>
             <td>{{creature.BaseLevel}}</td>
             <td>{{(wild.Species[selectedSpecies].IsTameable &amp;&amp; creature.IsTameable == true ? "Yes" : "No")}}</td>
-            <ng-container *ngIf="activeCreaturesMode('status')">
+            <ng-container *ngIf="activeCreaturesMode('status') && dataService.hasFeatureAccess('server', 'wildcreatures-coords')">
               <td>{{creature.X}}</td>
               <td>{{creature.Y}}</td>
               <td>{{creature.Z}}</td>

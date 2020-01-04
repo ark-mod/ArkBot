@@ -43,6 +43,11 @@ namespace ArkBot.Configuration.Model
             //Test = new Test1ConfigSection();
         }
 
+        public void SetupDefaults()
+        {
+            AccessControl.SetupConfigDefaults();
+        }
+
         // Required
 
         [JsonProperty(PropertyName = "steamApiKey")]

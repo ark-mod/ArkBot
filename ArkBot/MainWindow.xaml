@@ -38,10 +38,13 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <MenuItem Header="File">
+                <MenuItem Header="Open Web App" Command="{Binding OpenWebAppCommand }" />
+                <Separator />
                 <MenuItem Header="Exit" Command="{Binding ExitCommand}" />
             </MenuItem>
             <MenuItem Header="Options">
                 <MenuItem Header="Reload partial config" Command="{Binding ReloadPartialConfig}" />
+                <Separator />
                 <MenuItem Header="Manually trigger server update" ItemsSource="{Binding ManuallyUpdateServers}">
                     <MenuItem.ItemContainerStyle>
                         <Style TargetType="{x:Type MenuItem}">

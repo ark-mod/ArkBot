@@ -22,5 +22,8 @@ namespace ArkBot.Configuration.Model
     [InjectValidation]
     public class AccessControlFeatureRoles : List<string>
     {
+        public AccessControlFeatureRoles() { }
+
+        public AccessControlFeatureRoles(string[] roles) => AddRange(roles);
     }
 }
