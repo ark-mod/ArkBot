@@ -10,3 +10,4 @@ Updates included:
 6. Fixed ARK Breeding Stats data format
 7. Tray icon / autohide fixes
 8. Tons of other fixes for Discord, Egg Spoilage and others.
+9. Dark mode is now the default.
