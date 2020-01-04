@@ -19,6 +19,7 @@ export class DataService {
   public UserSteamId: string;
   public ServersUpdated$: EventEmitter<Servers>;
   private menuOption: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
+  private theme: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
 
   constructor(
     private httpService: HttpService,
@@ -27,6 +28,14 @@ export class DataService {
       messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
       //this.getServers();
     }
+
+  get Theme() : Observable<string> {
+    return this.theme.asObservable();
+  }
+
+  SetTheme(theme: string) {
+    this.theme.next(theme);
+  }
 
   get MenuOption() : Observable<string> {
     return this.menuOption.asObservable();

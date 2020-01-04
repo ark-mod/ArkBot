@@ -5,7 +5,8 @@
   "tempFileOutputDirPath": "",
   "steamApiKey": "",
   "webApp": {
-    "tribeLogLimit": 100
+    "tribeLogLimit": 100,
+    "tribeLogColors": false
   },
   "discord": {
     "discordBotEnabled": true,

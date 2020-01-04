@@ -41,6 +41,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
   ngOnInit(): void {
+    this.dataService.SetTheme(this.getTheme());
     this.routerEventsSubscription = this.router.events.subscribe((event: RouterEvent) => {
       this.navigationInterceptor(event);
     });
@@ -76,8 +77,9 @@ export class AppComponent implements OnInit, OnDestroy {
   getTheme(): string {
     return localStorage.getItem('theme') || 'light';
   }
-
+  
   setTheme(theme: string): boolean {
+    this.dataService.SetTheme(theme);
     localStorage.setItem('theme', theme);
     return false;
   }

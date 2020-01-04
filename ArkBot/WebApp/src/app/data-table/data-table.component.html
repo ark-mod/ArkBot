@@ -18,6 +18,9 @@
       </tr>
     </thead>
     <tbody>
+      <tr *ngIf="(_rows$ | async)?.length == 0">
+        <td [colSpan]="currentModeEnabledColumnCount()">No matching entries...</td>
+      </tr>
       <tr *ngFor="let row of _rows$ | async | slice:_fromRow:_fromRow+_numRows;  trackBy: trackByRow">
         <ng-container *ngFor="let column of _columnTemplates; trackBy: trackByKey">
           <td *ngIf="showColumn(column.key)">
@@ -41,7 +44,7 @@
             <a (click)="setFirstPage()" [ngClass]="{'disabled': isFirstPage()}" class="w3-button w3-border-right border-theme">«</a>
             <a (click)="setPrevPage()" [ngClass]="{'disabled': isFirstPage()}" class="w3-button device-tiny-show">❮</a>
             <a (click)="setPrevPage()" [ngClass]="{'disabled': isFirstPage()}" class="w3-button w3-border-right border-theme device-tiny-hide">❮</a>
-            <span class="device-tiny-hide">&nbsp;{{_fromRow}} - {{getLastRowOffset()}} of {{_rows.length}}&nbsp;</span>
+            <span class="device-tiny-hide">&nbsp;{{_fromRow}} - {{getLastRowOffset()}} of {{_totalRows}}&nbsp;</span>
             <a (click)="setLastPage()" [ngClass]="{'disabled': isLastPage()}" class="w3-button w3-border-left border-theme w3-right">»</a>
             <a (click)="setNextPage()" [ngClass]="{'disabled': isLastPage()}" class="w3-button w3-border-left border-theme w3-right">❯</a>
           </div>

@@ -5,11 +5,13 @@ import * as moment from 'moment'
 
 import { Player } from '../player';
 import { Creature } from '../creature';
+import { TribeLog } from '../tribelog';
 import { DataService } from '../data.service';
 import { MessageService } from '../message.service';
 import { HttpService } from '../http.service';
 
 import { floatCompare, intCompare, stringLocaleCompare, nullCompare } from '../utils'
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-player',
@@ -19,6 +21,10 @@ import { floatCompare, intCompare, stringLocaleCompare, nullCompare } from '../u
 export class PlayerComponent implements OnInit, OnDestroy {
   private menuOption: string = undefined; 
   private menuOptionSubscription: any;
+
+  private theme: string = undefined; 
+  private theme$: Observable<string>;
+  private themeSubscription: any;
 
   serverUpdatedSubscription: any;
   player: Player;
@@ -37,6 +43,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   clusterKey: string;
   creaturesMode: string = "status";
   creatureStates: any = {};
+  tribeLogFilter: string;
 
   creaturesSortField: string = "food";
   creaturesAltSortFields: string = "name";
@@ -61,6 +68,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     "id1": (o1, o2, asc) => intCompare(o1.Id1, o2.Id1, asc),
     "id2": (o1, o2, asc) => intCompare(o1.Id1, o2.Id1, asc)
   };
+
+  tribeLogFilterFunction: any = (o1, filter) => filter == null ? true : o1.Message != null && o1.Message.toLowerCase().indexOf(filter) >= 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -102,6 +111,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   
   ngOnInit(): void {
     this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => this.menuOption = menuOption);
+    this.theme$ = this.dataService.Theme;
+    this.themeSubscription = this.theme$.subscribe(theme => { this.theme = theme; console.log(theme); });
     this.steamId = this.route.snapshot.params['playerid'];
 
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
@@ -111,6 +122,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.menuOptionSubscription.unsubscribe();
+    this.themeSubscription.unsubscribe();
     this.serverUpdatedSubscription.unsubscribe();
   }
 
@@ -336,5 +348,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.dataService.hasFeatureAccess('player', 'creatures-ids', this.steamId)) num += 1;
 
     return num;
+  }
+
+  isTheme(theme: string): boolean {
+    return this.theme == theme;
   }
 }

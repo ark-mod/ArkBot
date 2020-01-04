@@ -22,6 +22,7 @@ import { DataService } from './data.service';
 import { DataServiceResolver } from './data-resolver.service';
 import { AccessControlRouteGuardService } from './access-control-route-guard.service';
 import { SanitizeStylePipe } from './sanitize-style.pipe';
+import { SanitizeHtmlPipe } from './sanitize-html.pipe';
 import { ClickOutsideDirective } from './clickOutside.directive';
 import { ServerListMenuComponent } from './server-list-menu/server-list-menu.component';
 import { MenuComponent } from './menu/menu.component';
@@ -131,6 +132,7 @@ const appRoutes: Routes = [
     ServerListComponent,
     ArkMapComponent,
     SanitizeStylePipe,
+    SanitizeHtmlPipe,
     ClickOutsideDirective,
     PlayerComponent,
     PlayerMenuComponent,
