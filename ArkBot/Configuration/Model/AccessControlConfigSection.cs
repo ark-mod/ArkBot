@@ -26,5 +26,23 @@ namespace ArkBot.Configuration.Model
     public class AccessControlConfigSection : Dictionary<string, AccessControlFeatureGroup>
     {
         public override string ToString() => "Access Control";
+
+        /// <summary>
+        /// Default settings for <see cref="Config.AccessControl"/>
+        /// </summary>
+        internal void SetupConfigDefaults()
+        {
+            GetOrAddNewWithPostAction("pages", (x) => x.SetupDefaults(new[] { "home", "server", "player", "admin-server" }));
+            GetOrAddNewWithPostAction("home", (x) => x.SetupDefaults(new[] { "myprofile", "serverlist", "serverdetails", "online", "externalresources" }));
+            GetOrAddNewWithPostAction("server", (x) => x.SetupDefaults(new[] { "players", "tribes", "wildcreatures", "wildcreatures-coords", "wildcreatures-basestats", "wildcreatures-ids", "wildcreatures-statistics" }));
+            GetOrAddNewWithPostAction("player", (x) => x.SetupDefaults(new[] { "profile", "profile-detailed", "creatures", "creatures-basestats", "creatures-ids", "creatures-cloud", "breeding", "crops", "generators", "kibbles-eggs", "tribelog" }));
+            GetOrAddNewWithPostAction("admin-server", (x) => x.SetupDefaults(new[] { "players", "tribes", "structures", "fertilized-eggs", "structures-rcon" }));
+        }
+
+        private void GetOrAddNewWithPostAction(string key, Action<AccessControlFeatureGroup> postAction)
+        {
+            if (!TryGetValue(key, out var fg)) Add(key, fg = new AccessControlFeatureGroup());
+            postAction(fg);
+        }
     }
 }

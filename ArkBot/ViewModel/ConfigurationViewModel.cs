@@ -86,6 +86,9 @@ namespace ArkBot.ViewModel
         {
             //if (!File.Exists(Constants.ConfigFilePath)) return;
 
+            // clear keyboard focus so that the configuration control triggers an update for the current field before saving
+            Keyboard.ClearFocus();
+
             var result = MessageBox.Show("Are you sure you want to save this configuration?", "Save current configuration", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result != MessageBoxResult.Yes) return;

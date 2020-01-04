@@ -9,6 +9,7 @@ import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/startWith';
 
 @Component({
   selector: 'ark-data-table',
@@ -22,13 +23,15 @@ export class DataTableComponent implements OnInit {
   _columnTemplates: any[];
   _rows: any[];
   _rows$: Observable<any[]> = Observable.of<any[]>([]);
-  _orderByColumnKey: BehaviorSubject<string>;
+  _orderByColumnKey: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
+  _filter: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
   _sort: Subject<string> = new Subject<string>();
   _trackByProp: string;
   _modes: any[];
   _currentMode: string;
   _fromRow: number = 0;
   _numRows: number = 25;
+  _totalRows: number = 0;
   trackByRow: any;
   _enabledColumnsForMode: any = {};
   numEnabledModes: Observable<number>;
@@ -42,21 +45,28 @@ export class DataTableComponent implements OnInit {
     { 'value': 1000000, 'text': 'All' }
   ];
 
+  _prevColumnKey: string = undefined;
+  _prevFilter: string = undefined;
+  _prevSortedRows: any[] = undefined;
+  _prevFilteredRows: any[] = undefined;
+  _prevSortedRowsKey: string = undefined;
+  _prevFilteredRowsKey: string = undefined;
+
   constructor(private ref: ChangeDetectorRef) { }
 
   ngOnInit() {
-    this._orderByColumnKey = new BehaviorSubject<string>(undefined)
-    
-        this._rows$ = this._orderByColumnKey
-        .switchMap(key => {
-          return key ? 
-          Observable.of<any[]>(this.sortData(this._rows, key)) 
-          : Observable.of<any[]>(this._rows);
-        })
-        .catch(error => {
-          console.log(`Error in component ... ${error}`);
-          return Observable.of<any[]>(this._rows);
-        });
+    this._rows$ = Observable.combineLatest(this._orderByColumnKey, this._filter.debounceTime(250), (key: string, filter: string) => ({ key, filter }))
+      // skip the first emitted value (default value = (undefined, undefined)) which gets delayed by debounce
+      // instead use a startWith value that get's emitted right away
+      .skip(1)
+      .startWith({key: this._orderByColumnKey.getValue(), filter: this._filter.getValue()})
+      .switchMap(x => {
+        return Observable.of<any[]>(this.filterAndSortData(x.key, x.filter));
+      })
+      .catch(error => {
+        console.log(`Error in component ... ${error}`);
+        return Observable.of<any[]>(this._rows);
+      });
   }
 
   @ContentChildren(DataTableModeDirective)
@@ -131,6 +141,11 @@ export class DataTableComponent implements OnInit {
     };
   }
 
+  @Input() set filter(val: string) {
+    this._filter.next(val);
+  };
+
+  @Input() filterFunction: any;
   @Input() sortFunctions: any;
   @Input() orderByColumn: string;
 
@@ -155,6 +170,15 @@ export class DataTableComponent implements OnInit {
     return enabled;
   }
 
+  currentModeEnabledColumnCount(): number {
+    let count = 0;
+    for (var i = 0; i < this._columnTemplates.length; i++) {
+      if (this.showColumn(this._columnTemplates[i].key)) count++;
+    }
+
+    return count;
+  }
+
   trackByKey(index: number, data: any) : string {
     return data.key;
   }
@@ -166,7 +190,47 @@ export class DataTableComponent implements OnInit {
     this._orderByColumnKey.next((this._orderByColumnKey.getValue() == columnKey ? '-' : '') + columnKey);
   }
 
+  filterAndSortData(columnKey: string, filter: string) {
+    var rows: any[] = undefined;
+
+    if (filter != this._prevFilter && columnKey == this._prevColumnKey) {
+      if (this._prevSortedRowsKey != columnKey) {
+        this._prevSortedRowsKey = columnKey;
+        this._prevSortedRows = this.sortData(this._rows.slice(), columnKey);
+      }
+
+      rows = this.filterData(this._prevSortedRows, filter);
+    } else { //if (columnKey != this._prevColumnKey && filter == this._prevFilter) {
+      if (this._prevFilteredRowsKey != filter) {
+        this._prevFilteredRowsKey = filter;
+        this._prevFilteredRows = this.filterData(this._rows, filter);
+      }
+
+      if (filter == undefined || filter == null || filter == "") {
+        this._prevSortedRowsKey = columnKey;
+        rows = this._prevSortedRows = this.sortData(this._rows.slice(), columnKey);
+      } else rows = this.sortData(this._prevFilteredRows, columnKey);
+    }
+
+    if (filter != this._prevFilter) this.setFirstPage();
+
+    this._totalRows = rows.length;
+
+    this._prevColumnKey = columnKey;
+    this._prevFilter = filter;
+
+    return rows;
+  }
+
+  filterData(rows: any[], filter: string): any[] {
+    if (filter == undefined || filter == null || filter == "") return rows.slice();
+
+    return rows.filter((x) => this.filterFunction(x, filter));
+  }
+
   sortData(rows: any[], columnKey: string): any[] {
+    if (columnKey == undefined) return rows;
+
     let asc = columnKey[0] != '-';
     let column = this._columnTemplates.find(x => x.key == columnKey.substr(asc ? 0 : 1));
 
@@ -179,7 +243,7 @@ export class DataTableComponent implements OnInit {
       return a;
     });
 
-    return rows.slice().sort((o1, o2) => {
+    return rows.sort((o1, o2) => {
       let r = sortFunc(o1, o2, asc);
       if(r == 0) {
         for (let alt of alts) {
@@ -196,7 +260,7 @@ export class DataTableComponent implements OnInit {
   setViewOffset(offset: number) {
     let newOffset = offset;
     if (newOffset < 0) newOffset = 0;
-    if (newOffset >= this._rows.length) newOffset = this._rows.length - 1;
+    if (newOffset >= this._totalRows) newOffset = this._totalRows - 1;
 
     this._fromRow = parseInt("" + newOffset);
 
@@ -220,7 +284,7 @@ export class DataTableComponent implements OnInit {
   }
 
   setLastPage() {
-    if (!this.isLastPage()) this.setViewOffset(this._rows.length - this._numRows);
+    if (!this.isLastPage()) this.setViewOffset(this._totalRows - this._numRows);
   }
 
   isFirstPage(): boolean {
@@ -228,7 +292,7 @@ export class DataTableComponent implements OnInit {
   }
 
   isLastPage(): boolean {
-    return this._fromRow >= this._rows.length - this._numRows;
+    return this._fromRow >= this._totalRows - this._numRows;
   }
 
   setViewLimit(limit: number) {
@@ -238,6 +302,6 @@ export class DataTableComponent implements OnInit {
 
   getLastRowOffset(): number {
     let last = this._fromRow + this._numRows;
-    return last > this._rows.length ? this._rows.length : last;
+    return last > this._totalRows ? this._totalRows : last;
   }
 }

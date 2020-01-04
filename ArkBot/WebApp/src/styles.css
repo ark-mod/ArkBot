@@ -108,15 +108,43 @@ body { margin-bottom: 2em;}
     color: #2196f3;
 }
 
+h2.logo {
+    display:block;
+  	margin-left:auto;
+    margin-right:auto;
+    margin-top: 5px;
+    margin-bottom: 10px; /* -10px (with menu headers enabled) */
+    height:200px; 
+    width:200px; 
+    text-indent:-99999em;
+    overflow:hidden;
+    background-size: contain !important;
+}
+
+.dark h2.logo { background:url(/assets/logodark.png) 0 0 no-repeat; }
+.light h2.logo { background:url(/assets/logolight.png) 0 0 no-repeat; }
+
 .menucontainer + #page { margin-left: 220px; }
 #menu.w3-sidebar { width: 220px; padding-bottom: 10px; }
 #menu .w3-cell { display: inline-block; width: 100%; text-align: left; }
 #menucontent.hide { display: block; }
 #menubtn { display: none; }
 
+/* experiment with removing menu headers */
+#menu .menu-header { display: none; }
+#menu .menu-items { margin-top: 20px; }
+
 .device-tiny-show, .device-small-show, .device-medium-show { display: none; }
 
 @media screen and (max-width: 767px) {
+    .dark #menu h2.logo, .light #menu h2.logo {
+        height:46px;
+        width:46px;
+        margin-top: 3px;
+        margin-left: 14px;
+        margin-right: 0px;
+        margin-bottom: -7px;
+    }
     .menucontainer + #page { margin-left: 0px; }
     #menu.w3-sidebar
     {

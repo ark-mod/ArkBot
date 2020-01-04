@@ -6,12 +6,15 @@ namespace ArkBot.Configuration.Model
 {
     public interface IConfig
     {
+        void SetupDefaults();
+
         ArkMultipliersConfigSection ArkMultipliers { get; set; }
         string BotName { get; set; }
         string BotUrl { get; set; }
         string AppUrl { get; set; }
         string SteamApiKey { get; set; }
         string TempFileOutputDirPath { get; set; }
+        WebAppConfigSection WebApp { get; set; }
         DiscordConfigSection Discord { get; set; }
         UserRolesConfigSection UserRoles { get; set; }
         AccessControlConfigSection AccessControl { get; set; }

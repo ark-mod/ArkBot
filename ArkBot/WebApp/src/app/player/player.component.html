@@ -345,24 +345,39 @@
       <div class="w3-cell"><a id="tribelog"></a><h2 class="theme-text-d1 w3-left">Tribe Log</h2></div>
     </div>
     <div *ngIf="!(player.Servers[serverKey].TribeLog?.length > 0)">There are no tribe logs...</div>
-    <div *ngIf="player.Servers[serverKey].TribeLog?.length > 0" class="w3-card-4 w3-responsive">
-      <table class="w3-table-all border-theme">
-        <thead>
-          <tr class="theme-d1">
-            <th>Day</th>
-            <th>Time</th>
-            <th>Message</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let eg of player.Servers[serverKey].TribeLog">
-            <td>{{eg.Day}}</td>
-            <td>{{eg.Time}}</td>
-            <td>{{eg.Message}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ng-container *ngIf="player.Servers[serverKey].TribeLog?.length > 0">
+      <div class="inner-addon right-addon">
+          <i *ngIf="tribeLogFilter != null &amp;&amp; tribeLogFilter != ''" class="material-icons" style="cursor: pointer;" (click)="tribeLogFilter = '';">close</i>
+          <input [ngModel]="tribeLogFilter" (ngModelChange)="tribeLogFilter = $event;" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
+      </div>
+      <ark-data-table [rows]="player.Servers[serverKey].TribeLog" [filter]="tribeLogFilter" [filterFunction]="tribeLogFilterFunction">
+        <ark-dt-mode name="Default" key="default" columnKeys="day,time,message"></ark-dt-mode>
+        <ark-dt-column key="day">
+          <ng-template ark-dt-header>
+            Day
+          </ng-template>
+          <ng-template let-log ark-dt-cell>
+              {{log.Day}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="time">
+          <ng-template ark-dt-header>
+            Time
+          </ng-template>
+          <ng-template let-log ark-dt-cell>
+              {{log.Time}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="message">
+          <ng-template ark-dt-header>
+            Message
+          </ng-template>
+          <ng-template let-log ark-dt-cell>
+              <span [outerHTML]="log.Message | sanitizeHtml"></span>
+          </ng-template>
+        </ark-dt-column>
+      </ark-data-table>
+    </ng-container>
   </section>
 <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
