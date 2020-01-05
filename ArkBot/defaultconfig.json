@@ -4,6 +4,11 @@
   "appUrl": "",
   "tempFileOutputDirPath": "",
   "steamApiKey": "",
+  "webApp": {
+    "defaultTheme": "Dark",
+    "tribeLogLimit": 100,
+    "tribeLogColors": false
+  },
   "discord": {
     "discordBotEnabled": true,
     "botToken": "",
@@ -59,6 +64,7 @@
       "players": [ "guest" ],
       "tribes": [ "guest" ],
       "wildcreatures": [ "admin" ],
+      "wildcreatures-coords": [ "admin" ],
       "wildcreatures-basestats": [ "admin" ],
       "wildcreatures-ids": [ "admin" ],
       "wildcreatures-statistics": [ "admin" ]
@@ -79,7 +85,7 @@
     "admin-server": {
       "players": [ "admin" ],
       "tribes": [ "admin" ],
-      "structures": [ "admin" ],	  
+      "structures": [ "admin" ],
       "fertilized-eggs": [ "disabled" ],
       "structures-rcon": [ "disabled" ]
     }

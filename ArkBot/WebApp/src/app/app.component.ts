@@ -6,6 +6,8 @@ import { DataService } from './data.service';
 import { HttpService } from './http.service';
 import { environment } from '../environments/environment';
 
+declare var config: any;
+
 @Component({
   selector: 'body',
   host: {'[class]': 'getTheme()'},
@@ -41,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
   ngOnInit(): void {
+    this.dataService.SetTheme(this.getTheme());
     this.routerEventsSubscription = this.router.events.subscribe((event: RouterEvent) => {
       this.navigationInterceptor(event);
     });
@@ -73,11 +76,17 @@ export class AppComponent implements OnInit, OnDestroy {
     return `Player`;
   }
 
-  getTheme(): string {
-    return localStorage.getItem('theme') || 'light';
+  getDefaultTheme(): string {
+    var value = (typeof config !== 'undefined' && config.webapp !== 'undefined' && typeof config.webapp.defaultTheme === 'string' ? config.webapp.defaultTheme.toLowerCase() : undefined);
+    return value != 'light' && value != 'dark' ? 'dark' : value;
   }
 
+  getTheme(): string {
+    return localStorage.getItem('theme') || this.getDefaultTheme();
+  }
+  
   setTheme(theme: string): boolean {
+    this.dataService.SetTheme(theme);
     localStorage.setItem('theme', theme);
     return false;
   }

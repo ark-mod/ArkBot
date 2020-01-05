@@ -101,7 +101,16 @@ namespace ArkBot.WebApp
                 {
                     var portStr = new Regex(@":(?<port>\d+)(?:/|$)").Match(_config.WebApiListenPrefix)?.Groups["port"].Value;
                     var success = int.TryParse(portStr, out var port);
-                    var js = $"var config = {JsonConvert.SerializeObject(new { webapi = new { port = success ? port : (int?)null } }, Formatting.None)};";
+                    var obj = new {
+                      webapi = new {
+                        port = success ? port : (int?)null
+                      },
+                      webapp = new {
+                        defaultTheme = _config.WebApp.DefaultTheme.ToString()
+                      }
+                    };
+                    var json = JsonConvert.SerializeObject(obj, Formatting.None);
+                    var js = $"var config = {json};";
                     return Response.AsText(js, "application/javascript");
                 }
                 if (File.Exists(Path.Combine(Response.RootPath, parameters["path"].Value))) return Response.AsFile((string)parameters["path"].Value);

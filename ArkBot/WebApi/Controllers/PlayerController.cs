@@ -151,7 +151,7 @@ namespace ArkBot.WebApi.Controllers
             if (incKibblesEggs) vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, playerId);
             if (incCrops) vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, playerId);
             if (incGenerators) vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, playerId);
-            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, playerId, 100);
+            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, playerId, config.WebApp.TribeLogLimit, config.WebApp.TribeLogColors);
 
             return vm;
         }
@@ -202,7 +202,7 @@ namespace ArkBot.WebApi.Controllers
             if (incKibblesEggs) vm.KibblesAndEggs = BuildKibblesAndEggsViewModelsForPlayerId(context, player.Id);
             if (incCrops) vm.CropPlots = BuildCropPlotViewModelsForPlayerId(context, player.Id);
             if (incGenerators) vm.ElectricalGenerators = BuildElectricalGeneratorViewModelsForPlayerId(context, player.Id);
-            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, player.Id, 100);
+            if (incTribeLog) vm.TribeLog = BuildTribeLogViewModelsForPlayerId(context, player.Id, config.WebApp.TribeLogLimit, config.WebApp.TribeLogColors);
 
             return vm;
         }
@@ -442,7 +442,7 @@ namespace ArkBot.WebApi.Controllers
             return results;
         }
 
-        internal static List<TribeLogEntryViewModel> BuildTribeLogViewModelsForPlayerId(ArkServerContext context, int playerId, int? limit = null)
+        internal static List<TribeLogEntryViewModel> BuildTribeLogViewModelsForPlayerId(ArkServerContext context, int playerId, int? limit = null, bool logColors = false)
         {
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
             var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
@@ -454,7 +454,7 @@ namespace ArkBot.WebApi.Controllers
                 {
                     Day = x.Day,
                     Time = x.Time,
-                    Message = x.MessageUnformatted
+                    Message = logColors ? x.MessageHtml : x.MessageUnformatted
                 };
             }).ToList();
 

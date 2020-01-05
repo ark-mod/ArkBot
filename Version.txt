@@ -1,1 +1,13 @@
-This is Version 1.83
+This is Version 1.9 - Release Candidate
+
+Updates included:
+
+1. Parallelism fix. Now it runs on less CPU
+2. Memory usage fixes. Uses way less ram.
+3. Various bugfixes and map fixes
+4. Updated ArkBot Save Game Tool Kit - Massive overhaul to support new maps at anytime
+5. Bumped various dependencies to newer versions
+6. Fixed ARK Breeding Stats data format
+7. Tray icon / autohide fixes
+8. Tons of other fixes for Discord, Egg Spoilage and others.
+9. Dark mode is now the default.

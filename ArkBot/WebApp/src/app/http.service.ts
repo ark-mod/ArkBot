@@ -130,7 +130,7 @@ export class HttpService {
     return environment.apiBaseUrl
       .replace(/\<protocol\>/gi, window.location.protocol)
       .replace(/\<hostname\>/gi, window.location.hostname)
-      .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
+      .replace(/\<webapi_port\>/gi, typeof config !== 'undefined' ? config.webapi.port : "");
   }
 
   protected handleError(error: any): Promise<any> {

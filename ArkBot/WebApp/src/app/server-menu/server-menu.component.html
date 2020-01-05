@@ -1,6 +1,6 @@
 <app-menu #menu>
-  <h2 class="theme-text-d1">Server</h2>
-  <div class="w3-cell-row theme-l2">
+  <h2 class="menu-header theme-text-d1">Server</h2>
+  <div class="menu-items w3-cell-row theme-l2">
     <div *ngIf="dataService.hasFeatureAccess('server', 'players')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('players')}" (click)="menu.activate('players')">Players</div>
     <div *ngIf="dataService.hasFeatureAccess('server', 'tribes')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('tribes')}" (click)="menu.activate('tribes')">Tribes</div>
     <div *ngIf="dataService.hasFeatureAccess('server', 'wildcreatures-statistics')" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('wildcreatures-statistics')}" (click)="menu.activate('wildcreatures-statistics')">Wild Statistics</div>

@@ -117,6 +117,7 @@ namespace ArkBot.WebApi.Controllers
 
             // access control
             var incWildCreatures = HasFeatureAccess("server", "wildcreatures", id);
+            var incWildCreaturesCoords = HasFeatureAccess("server", "wildcreatures-coords", id);
             var incWildCreaturesBaseStats = HasFeatureAccess("server", "wildcreatures-basestats", id);
             var incStatistics = HasFeatureAccess("server", "wildcreatures-statistics", id);
 
@@ -143,15 +144,21 @@ namespace ArkBot.WebApi.Controllers
                             Id2 = y.Id2,
                             Gender = y.Gender.ToString(),
                             BaseLevel = y.BaseLevel,
-                            X = y.Location?.X.Round(0),
-                            Y = y.Location?.Y.Round(0),
-                            Z = y.Location?.Z.Round(0),
-                            IsTameable = y.IsTameable,
-                            Latitude = y.Location?.Latitude,
-                            Longitude = y.Location?.Longitude,
-                            TopoMapX = y.Location?.TopoMapX,
-                            TopoMapY = y.Location?.TopoMapY
+                            IsTameable = y.IsTameable
                         };
+
+                        if (incWildCreaturesCoords)
+                        {
+                            vmc.X = y.Location?.X.Round(0);
+                            vmc.Y = y.Location?.Y.Round(0);
+                            vmc.Z = y.Location?.Z.Round(0);
+                            vmc.Latitude = y.Location?.Latitude;
+                            vmc.Longitude = y.Location?.Longitude;
+                            vmc.TopoMapX = y.Location?.TopoMapX;
+                            vmc.TopoMapY = y.Location?.TopoMapY;
+                        }
+
+
                         if (incWildCreaturesBaseStats)
                         {
                         //0: health

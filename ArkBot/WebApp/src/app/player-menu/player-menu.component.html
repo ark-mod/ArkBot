@@ -1,6 +1,6 @@
 <app-menu #menu>
-  <h2 class="theme-text-d1">Player</h2>
-  <div class="w3-cell-row theme-l2">
+  <h2 class="menu-header theme-text-d1">Player</h2>
+  <div class="menu-items w3-cell-row theme-l2">
     <div *ngIf="dataService.hasFeatureAccess('player', 'profile', steamId)" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('profile')}" (click)="menu.activate('profile')">Profile</div>
     <div *ngIf="dataService.hasFeatureAccess('player', 'creatures', steamId)" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('creatures')}" (click)="menu.activate('creatures')">Creatures</div>
     <div *ngIf="dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('creatures_cloud')}" (click)="menu.activate('creatures_cloud')">Creatures (Cloud)</div>

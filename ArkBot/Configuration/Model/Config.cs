@@ -37,9 +37,15 @@ namespace ArkBot.Configuration.Model
             WebAppRedirectListenPrefix = new string[] { };
             AccessControl = new AccessControlConfigSection();
             Discord = new DiscordConfigSection();
+            WebApp = new WebAppConfigSection();
             Backups = new BackupsConfigSection();
 
             //Test = new Test1ConfigSection();
+        }
+
+        public void SetupDefaults()
+        {
+            AccessControl.SetupConfigDefaults();
         }
 
         // Required
@@ -111,15 +117,15 @@ namespace ArkBot.Configuration.Model
         [ValidUrl(Optional = true, ErrorMessage = "{0} is not a valid URL")]
         public string AppUrl { get; set; }
 
-        [JsonProperty(PropertyName = "arkMultipliers")]
-        [Display(Name = "ARK Multipliers", Description = "Server specific multipliers")]
-        [ConfigurationHelp(remarks: new[] { "ARK configuration multipliers used on your servers and required for accurate calculations throughout the application." })]
+        [JsonProperty(PropertyName = "webApp")]
+        [Display(Name = "Web App", Description = "Settings specific to the Web App feature")]
+        [ConfigurationHelp(remarks: new[] { "The Web App aims to provide important functions to players: dino listings, food-status, breeding info, statistics; and server admins: rcon-commands, server managing etc." })]
         [Category(ConfigurationCategory.Optional)]
         [PropertyOrder(3)]
         [ExpandableObject]
         [Required(ErrorMessage = "{0} is not set")]
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
-        public ArkMultipliersConfigSection ArkMultipliers { get; set; }
+        public WebAppConfigSection WebApp { get; set; }
 
         [JsonProperty(PropertyName = "discord")]
         [Display(Name = "Discord", Description = "Discord bot settings")]
@@ -131,11 +137,21 @@ namespace ArkBot.Configuration.Model
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
         public DiscordConfigSection Discord { get; set; }
 
+        [JsonProperty(PropertyName = "arkMultipliers")]
+        [Display(Name = "ARK Multipliers", Description = "Server specific multipliers")]
+        [ConfigurationHelp(remarks: new[] { "ARK configuration multipliers used on your servers and required for accurate calculations throughout the application." })]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(5)]
+        [ExpandableObject]
+        [Required(ErrorMessage = "{0} is not set")]
+        [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
+        public ArkMultipliersConfigSection ArkMultipliers { get; set; }
+
         [JsonProperty(PropertyName = "userRoles")]
         [Display(Name = "User Roles", Description = "Explicit steam user role assignment")]
         [ConfigurationHelp(remarks: new[] { "Multiple roles can be configured and each contains a list of steam ids who belong to that role. Roles are used in Companion App (Web App) access control to grant access to specific pages/features." })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(5)]
+        [PropertyOrder(6)]
         [Editor(typeof(CustomCollectionEditor), typeof(CustomCollectionEditor))]
         [Required(ErrorMessage = "{0} is not set")]
         [ValidateCollection(ErrorMessage = "{0} contains item(s) that are invalid")]
@@ -145,7 +161,7 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "Access Control", Description = "Per-feature role based access control configuration")]
         [ConfigurationHelp(remarks: new[] { "Contain a predefined set of pages/features to grant access to. Each page/feature contains a list of roles that have access to that particular resource. Roles are connected to steam users in the User Roles setting." })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(6)]
+        [PropertyOrder(7)]
         [Required(ErrorMessage = "{0} is not set")]
         public AccessControlConfigSection AccessControl { get; set; }
 
@@ -153,7 +169,7 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "Backups", Description = "Savegame backups")]
         [ConfigurationHelp(remarks: new[] { "Settings specific to the savegame backup feature which optionally can be configured to take backups each time a savegame change is detected." })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(7)]
+        [PropertyOrder(8)]
         [ExpandableObject]
         [Required(ErrorMessage = "{0} is not set")]
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
@@ -163,7 +179,7 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "Web App Redirect Listen Prefix(es)", Description = "Http listen prefix(es) that are redirected to BotUrl")]
         [ConfigurationHelp(remarks: new[] { "Used to redirect alternate URLs to the actual Companion App (Web App) URL. Typically used to redirect HTTP requests to a secure HTTPS connection when SSL is enabled." }, Example = "http://+:80/")]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(8)]
+        [PropertyOrder(9)]
         //todo: validate this listen prefix
         public string[] WebAppRedirectListenPrefix { get; set; }
 
@@ -172,7 +188,7 @@ namespace ArkBot.Configuration.Model
         [DefaultValue(@"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe")]
         [ConfigurationHelp(remarks: new[] { "This is the path to the PowerShell executable on your system. It is used when `Use Powershell Output Redirect` is configured for a server instance to relay SteamCmd status back to ARK Bot." })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(9)]
+        [PropertyOrder(10)]
         [Editor(typeof(OpenFilePathEditor), typeof(OpenFilePathEditor))]
         [OpenFilePathEditor(Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*")]
         [FileExists(ErrorMessage = "{0} is not set or the file path does not exist")]
@@ -187,7 +203,7 @@ namespace ArkBot.Configuration.Model
             "For the SSL-certificate to be issued you need to prove that you control the domain name; the domain must be pointed to your public IP and port 80 must be open externally and available for the bot to bind locally.\r\n"
         })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(10)]
+        [PropertyOrder(11)]
         [ExpandableObject]
         [Required(ErrorMessage = "{0} is not set")]
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
@@ -203,7 +219,7 @@ namespace ArkBot.Configuration.Model
             "[Learn more about listen prefixes](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx)\r\n"
         })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(11)]
+        [PropertyOrder(12)]
         [MinLength(1, ErrorMessage = "{0} is not set")]
         //todo: validate this listen prefix
         [RegularExpressionCustom(@"^https://.*", IfMethod = nameof(IsSslEnabled), ErrorMessage = "{0} should be `https` when SSL is enabled")]
@@ -221,7 +237,7 @@ namespace ArkBot.Configuration.Model
             "[Learn more about listen prefixes](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx)\r\n"
         })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(12)]
+        [PropertyOrder(13)]
         [MinLength(1, ErrorMessage = "{0} is not set")]
         //todo: validate this listen prefix
         [RegularExpressionCustom(@"^https://.*", IfMethod = nameof(IsSslEnabled), ErrorMessage = "{0} should be `https` when SSL is enabled")]
@@ -232,10 +248,18 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "Temporary Files Directory", Description = "An existing directory path where temporary binary files can be stored (zip-files etc.)")]
         [DefaultValue("%TEMP%\\ArkBot")]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(13)]
+        [PropertyOrder(14)]
         [Editor(typeof(DirectoryPathEditor), typeof(DirectoryPathEditor))]
         [DirectoryPathIsValid(ErrorMessage = "{0} is not set or the directory path is not valid")]
         public string TempFileOutputDirPath { get; set; }
+
+        [JsonProperty(PropertyName = "hideUiOnStartup")]
+        [Display(Name = "Hide Ui On Startup", Description = "Hides the user interface on program startup")]
+        [DefaultValue(false)]
+        [ConfigurationHelp(remarks: new[] { "Allows hiding the user interface on program startup. The program can be accessed from the system tray icon." })]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(15)]
+        public bool HideUiOnStartup { get; set; }
 
 
         // Optional Advanced
@@ -271,15 +295,6 @@ namespace ArkBot.Configuration.Model
         [Category(ConfigurationCategory.Debug)]
         [PropertyOrder(1)]
         public bool AnonymizeWebApiData { get; set; }
-
-
-        [JsonProperty(PropertyName = "hideUiOnStartup")]
-        [Display(Name = "Hide Ui On Startup", Description = "Hides the user interface on program startup")]
-        [DefaultValue(false)]
-        [ConfigurationHelp(remarks: new[] { "Allows hiding the user interface on program startup. The program can be accessed from the system tray icon." })]
-        [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(14)]
-        public bool HideUiOnStartup { get; set; }
 
         //[JsonProperty(PropertyName = "test")]
         //[Display(Name = "Test", Description = "Test")]
