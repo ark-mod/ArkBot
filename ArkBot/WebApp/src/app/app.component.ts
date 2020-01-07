@@ -1,10 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { Router, Event as RouterEvent, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { NotificationsService } from 'angular2-notifications';
 import { BreadcrumbService } from 'ng2-breadcrumb/ng2-breadcrumb';
+import { MessageService } from './message.service';
 import { DataService } from './data.service';
 import { HttpService } from './http.service';
 import { environment } from '../environments/environment';
+import { DOCUMENT } from '@angular/platform-browser';
 
 declare var config: any;
 
@@ -28,11 +30,20 @@ export class AppComponent implements OnInit, OnDestroy {
   private loading: boolean = true;
 
   constructor(
+    @Inject(DOCUMENT) private doc: any,
+    public messageService: MessageService,
     public dataService: DataService,
     private httpService: HttpService,
     private breadcrumbService: BreadcrumbService,
     private notificationsService: NotificationsService,
     private router: Router) { 
+      const s = this.doc.createElement('script');
+      s.type = 'text/javascript';
+      if (environment.configJsOverride == null) s.src = "config.js"
+      else s.innerHTML = environment.configJsOverride;
+      const head = this.doc.getElementsByTagName('head')[0];
+      head.appendChild(s);
+
       breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
       breadcrumbService.addFriendlyNameForRoute('/connectionerror', 'Connection error');
       breadcrumbService.hideRoute('/player');
@@ -40,6 +51,7 @@ export class AppComponent implements OnInit, OnDestroy {
       breadcrumbService.hideRoute('/server');
       breadcrumbService.hideRoute('/admin');
       breadcrumbService.addCallbackForRouteRegex('^/player/.+$', this.getNameForPlayer);
+      if (!environment.demo) messageService.connect();
     }
 
   ngOnInit(): void {
@@ -102,7 +114,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   getLoginUrl(): string {
-    return this.httpService.getApiBaseUrl() + '/authentication/login';
+    return !environment.demo ? this.httpService.getApiBaseUrl() + '/authentication/login' : '';
   }
 
   getLogoutUrl(): string {

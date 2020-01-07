@@ -152,10 +152,13 @@ export class ServerComponent implements OnInit, OnDestroy {
   }
 
   filter(): void {
+    let currentDate = this.dataService.getCurrentDate();
+    let pastDate = currentDate.subtract(90, 'day');
+
     this.filteredPlayers = this.server.Players.filter(player => 
-      moment(new Date(player.LastActiveTime)).isSameOrAfter(moment().subtract(90, 'day')));
+      moment(new Date(player.LastActiveTime)).isSameOrAfter(pastDate));
       this.filteredTribes = this.server.Tribes.filter(tribe => 
-      moment(new Date(tribe.LastActiveTime)).isSameOrAfter(moment().subtract(90, 'day')));
+      moment(new Date(tribe.LastActiveTime)).isSameOrAfter(pastDate));
   }
 
   sortWild() {
