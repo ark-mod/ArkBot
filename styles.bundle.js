@@ -1,15 +1,15 @@
 webpackJsonp([2,5],{
 
-/***/ 285:
+/***/ 286:
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(372);
+var content = __webpack_require__(375);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // add the styles to the DOM
-var update = __webpack_require__(667)(content, {});
+var update = __webpack_require__(669)(content, {});
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -55,7 +55,7 @@ module.exports = g;
 
 /***/ }),
 
-/***/ 372:
+/***/ 375:
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(7)(false);
@@ -63,14 +63,14 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, ".light .theme-l1 {color:#000 !important; background-color:#fff !important}\r\n.light .theme-l2 {color:#000 !important; background-color:#f1f1f1 !important}\r\n.light .theme-d1 {color:#fff !important; background-color:#2196F3 !important}\r\n.light .theme-c1 {color:#fff !important; background-color:#4CAF50 !important}\r\n.light .theme-e1 {color:#fff !important; background-color:#f44336 !important}\r\n.light .odd .theme-l2 {color:#000 !important; background-color:#f5f5f5 !important}\r\n\r\n.light .theme-l1.theme-hover:hover {color:#000 !important; background-color:#ccc !important}\r\n.light .theme-l2.theme-hover:hover {color:#000 !important; background-color:#ccc !important}\r\n\r\n.light .theme-text-l1-light {color:darkgray !important}\r\n.light .theme-text-d1 {color:#2196F3 !important}\r\n.light .theme-text-c1 {color:#4CAF50 !important}\r\n\r\n.light .border-theme {border-color:#ddd !important}\r\n\r\n\r\nbody.dark { background-color: #141519 !important; color: #fff; }\r\n\r\n/*.dark .w3-btn:hover, .dark .w3-button:hover {box-shadow:none; background-opacity: #3F4251 !important;}*/\r\n\r\n.dark .theme-l1 {color:#fff !important; background-color:#141519 !important}\r\n.dark .theme-l2 {color:#fff !important; background-color:#2A2C36 !important}\r\n.dark .theme-d1 {color:#fff !important; background-color:#114F7F !important}\r\n.dark .theme-c1 {color:#fff !important; background-color:#114F7F !important}\r\n.dark .theme-e1 {color:#fff !important; background-color:#f44336 !important}\r\n\r\n.dark .theme-l1.theme-hover:hover {color:#fff !important; background-color:#ccc !important}\r\n.dark .theme-l2.theme-hover:hover {color:#fff !important; background-color:#ccc !important}\r\n\r\n.dark .theme-text-l1-light {color:darkgray !important}\r\n.dark .theme-text-d1 {color:#fff !important}\r\n.dark .theme-text-c1 {color:#114F7F !important}\r\n\r\n.dark .border-theme {border-color:#2B2D33 !important}\r\n\r\n.dark .w3-bordered tr,.dark .w3-table-all tr{border-bottom:1px solid #2B2D33}\r\n.dark .w3-striped tbody tr:nth-child(even){background-color:#22232B; color: #fff}\r\n.dark .w3-table-all tr:nth-child(odd){background-color:#141519; color: #fff}\r\n.dark .w3-table-all tr:nth-child(even){background-color:#22232B; color: #fff}\r\n\r\n.dark .w3-ul li{border-bottom:1px solid #2B2D33}\r\n.dark .w3-ul li:last-child{border-bottom: none;}\r\n\r\n.dark .w3-card-4 {box-shadow:none;}\r\n\r\n.dark .breadcrumb ul li a { color: #fff !important}\r\n/*.w3-card,.w3-card-2{box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)}\r\n.w3-card-4,.w3-hover-shadow:hover{box-shadow:0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19)}*/\r\n\r\n.dark .app-green-light,.app-hover-green-light:hover{background-color:#58A6DD!important}\r\n\r\n/* You can add global styles to this file, and also import other style files */\r\n.app-green-light,.app-hover-green-light:hover{background-color:#CEEDCE!important}\r\n\r\n.light .theme-d1 a:hover, .light .theme-c1 a:hover { color:#fff; }\r\n.light a:hover { color:#2196F3; }\r\na:hover { opacity: 0.60; }\r\n\r\nbody { margin-bottom: 2em;}\r\n\r\n.inner-addon { \r\n    position: relative; \r\n}\r\n\r\n/* style icon */\r\n.inner-addon .material-icons {\r\n    position: absolute;\r\n    padding: 10px;\r\n}\r\n\r\n/* align icon */\r\n.left-addon .material-icons  { left:  0px;}\r\n.right-addon .material-icons { right: 0px;}\r\n\r\n/* add padding  */\r\n.left-addon input  { padding-left:  30px; }\r\n.right-addon input { padding-right: 30px; }\r\n\r\n.navigation a:not(.w3-green) {\r\n    background-color:#CEEDCE!important\r\n}\r\n\r\n/* Style the list */\r\n.breadcrumb ul {\r\n    list-style: none;\r\n    padding: 0px;\r\n    margin: 0px;\r\n}\r\n\r\n/* Display list items side by side */\r\n.breadcrumb ul li {\r\n    display: inline;\r\n    color: darkgray;\r\n}\r\n\r\n/* Add a slash symbol (/) before/behind each list item */\r\n.breadcrumb ul li+li:before {\r\n    padding: 8px;\r\n    color: silver;\r\n    content: \"/\\A0\";\r\n}\r\n\r\n/* Add a color to all links inside the list */\r\n.breadcrumb ul li a {\r\n    text-decoration: none;\r\n    cursor: pointer;\r\n    color: #2196f3;\r\n}\r\n\r\n.menucontainer + #page { margin-left: 220px; }\r\n#menu.w3-sidebar { width: 220px; padding-bottom: 10px; }\r\n#menu .w3-cell { display: inline-block; width: 100%; text-align: left; }\r\n#menucontent.hide { display: block; }\r\n#menubtn { display: none; }\r\n\r\n.device-tiny-show, .device-small-show, .device-medium-show { display: none; }\r\n\r\n@media screen and (max-width: 767px) {\r\n    .menucontainer + #page { margin-left: 0px; }\r\n    #menu.w3-sidebar\r\n    {\r\n        position: relative !important; width: auto;\r\n    }\r\n    #menu .w3-cell { display: table-cell; width: auto; text-align: center; }\r\n    #menubtn { display: block; }\r\n    #menucontent.hide { display: none; }\r\n    .device-medium-hide { display: none; }\r\n    .device-medium-show { display: unset; }\r\n}\r\n\r\n@media screen and (max-width: 600px) {\r\n    #menu .w3-cell { display: block; }\r\n    #menucontent.hide { display: none; }\r\n    .device-small-hide, .device-medium-hide { display: none; }\r\n    .device-small-show, .device-medium-show { display: unset; }\r\n}\r\n\r\n@media screen and (max-width: 400px) {\r\n    .device-tiny-hide, .device-small-hide, .device-medium-hide { display: none; }\r\n    .device-tiny-show, .device-small-show, .device-medium-show { display: unset; }\r\n}", ""]);
+exports.push([module.i, ".light .theme-l1 {color:#000 !important; background-color:#fff !important}\r\n.light .theme-l2 {color:#000 !important; background-color:#f1f1f1 !important}\r\n.light .theme-d1 {color:#fff !important; background-color:#2196F3 !important}\r\n.light .theme-c1 {color:#fff !important; background-color:#4CAF50 !important}\r\n.light .theme-e1 {color:#fff !important; background-color:#f44336 !important}\r\n.light .odd .theme-l2 {color:#000 !important; background-color:#f5f5f5 !important}\r\n\r\n.light .theme-l1.theme-hover:hover {color:#000 !important; background-color:#ccc !important}\r\n.light .theme-l2.theme-hover:hover {color:#000 !important; background-color:#ccc !important}\r\n\r\n.light .theme-text-l1-light {color:darkgray !important}\r\n.light .theme-text-d1 {color:#2196F3 !important}\r\n.light .theme-text-c1 {color:#4CAF50 !important}\r\n\r\n.light .border-theme {border-color:#ddd !important}\r\n\r\n\r\nbody.dark { background-color: #141519 !important; color: #fff; }\r\n\r\n/*.dark .w3-btn:hover, .dark .w3-button:hover {box-shadow:none; background-opacity: #3F4251 !important;}*/\r\n\r\n.dark .theme-l1 {color:#fff !important; background-color:#141519 !important}\r\n.dark .theme-l2 {color:#fff !important; background-color:#2A2C36 !important}\r\n.dark .theme-d1 {color:#fff !important; background-color:#114F7F !important}\r\n.dark .theme-c1 {color:#fff !important; background-color:#114F7F !important}\r\n.dark .theme-e1 {color:#fff !important; background-color:#f44336 !important}\r\n\r\n.dark .theme-l1.theme-hover:hover {color:#fff !important; background-color:#ccc !important}\r\n.dark .theme-l2.theme-hover:hover {color:#fff !important; background-color:#ccc !important}\r\n\r\n.dark .theme-text-l1-light {color:darkgray !important}\r\n.dark .theme-text-d1 {color:#fff !important}\r\n.dark .theme-text-c1 {color:#114F7F !important}\r\n\r\n.dark .border-theme {border-color:#2B2D33 !important}\r\n\r\n.dark .w3-bordered tr,.dark .w3-table-all tr{border-bottom:1px solid #2B2D33}\r\n.dark .w3-striped tbody tr:nth-child(even){background-color:#22232B; color: #fff}\r\n.dark .w3-table-all tr:nth-child(odd){background-color:#141519; color: #fff}\r\n.dark .w3-table-all tr:nth-child(even){background-color:#22232B; color: #fff}\r\n\r\n.dark .w3-ul li{border-bottom:1px solid #2B2D33}\r\n.dark .w3-ul li:last-child{border-bottom: none;}\r\n\r\n.dark .w3-card-4 {box-shadow:none;}\r\n\r\n.dark .breadcrumb ul li a { color: #fff !important}\r\n/*.w3-card,.w3-card-2{box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12)}\r\n.w3-card-4,.w3-hover-shadow:hover{box-shadow:0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.19)}*/\r\n\r\n.dark .app-green-light,.app-hover-green-light:hover{background-color:#58A6DD!important}\r\n\r\n/* You can add global styles to this file, and also import other style files */\r\n.app-green-light,.app-hover-green-light:hover{background-color:#CEEDCE!important}\r\n\r\n.light .theme-d1 a:hover, .light .theme-c1 a:hover { color:#fff; }\r\n.light a:hover { color:#2196F3; }\r\na:hover { opacity: 0.60; }\r\n\r\nbody { margin-bottom: 2em;}\r\n\r\n.inner-addon { \r\n    position: relative; \r\n}\r\n\r\n/* style icon */\r\n.inner-addon .material-icons {\r\n    position: absolute;\r\n    padding: 10px;\r\n}\r\n\r\n/* align icon */\r\n.left-addon .material-icons  { left:  0px;}\r\n.right-addon .material-icons { right: 0px;}\r\n\r\n/* add padding  */\r\n.left-addon input  { padding-left:  30px; }\r\n.right-addon input { padding-right: 30px; }\r\n\r\n.navigation a:not(.w3-green) {\r\n    background-color:#CEEDCE!important\r\n}\r\n\r\n/* Style the list */\r\n.breadcrumb ul {\r\n    list-style: none;\r\n    padding: 0px;\r\n    margin: 0px;\r\n}\r\n\r\n/* Display list items side by side */\r\n.breadcrumb ul li {\r\n    display: inline;\r\n    color: darkgray;\r\n}\r\n\r\n/* Add a slash symbol (/) before/behind each list item */\r\n.breadcrumb ul li+li:before {\r\n    padding: 8px;\r\n    color: silver;\r\n    content: \"/\\A0\";\r\n}\r\n\r\n/* Add a color to all links inside the list */\r\n.breadcrumb ul li a {\r\n    text-decoration: none;\r\n    cursor: pointer;\r\n    color: #2196f3;\r\n}\r\n\r\nh2.logo {\r\n    display:block;\r\n  \tmargin-left:auto;\r\n    margin-right:auto;\r\n    margin-top: 5px;\r\n    margin-bottom: 10px; /* -10px (with menu headers enabled) */\r\n    height:200px; \r\n    width:200px; \r\n    text-indent:-99999em;\r\n    overflow:hidden;\r\n    background-size: contain !important;\r\n}\r\n\r\n.dark h2.logo { background:url(https://ark-mod.github.io/ArkBot/assets/logodark.png) 0 0 no-repeat; }\r\n.light h2.logo { background:url(https://ark-mod.github.io/ArkBot/assets/logolight.png) 0 0 no-repeat; }\r\n\r\n.menucontainer + #page { margin-left: 220px; }\r\n#menu.w3-sidebar { width: 220px; padding-bottom: 10px; }\r\n#menu .w3-cell { display: inline-block; width: 100%; text-align: left; }\r\n#menucontent.hide { display: block; }\r\n#menubtn { display: none; }\r\n\r\n/* experiment with removing menu headers */\r\n#menu .menu-header { display: none; }\r\n#menu .menu-items { margin-top: 20px; }\r\n\r\n.device-tiny-show, .device-small-show, .device-medium-show { display: none; }\r\n\r\n@media screen and (max-width: 767px) {\r\n    .dark #menu h2.logo, .light #menu h2.logo {\r\n        height:46px;\r\n        width:46px;\r\n        margin-top: 3px;\r\n        margin-left: 14px;\r\n        margin-right: 0px;\r\n        margin-bottom: -7px;\r\n    }\r\n    .menucontainer + #page { margin-left: 0px; }\r\n    #menu.w3-sidebar\r\n    {\r\n        position: relative !important; width: auto;\r\n    }\r\n    #menu .w3-cell { display: table-cell; width: auto; text-align: center; }\r\n    #menubtn { display: block; }\r\n    #menucontent.hide { display: none; }\r\n    .device-medium-hide { display: none; }\r\n    .device-medium-show { display: unset; }\r\n}\r\n\r\n@media screen and (max-width: 600px) {\r\n    #menu .w3-cell { display: block; }\r\n    #menucontent.hide { display: none; }\r\n    .device-small-hide, .device-medium-hide { display: none; }\r\n    .device-small-show, .device-medium-show { display: unset; }\r\n}\r\n\r\n@media screen and (max-width: 400px) {\r\n    .device-tiny-hide, .device-small-hide, .device-medium-hide { display: none; }\r\n    .device-tiny-show, .device-small-show, .device-medium-show { display: unset; }\r\n}", ""]);
 
 // exports
 
 
 /***/ }),
 
-/***/ 667:
+/***/ 669:
 /***/ (function(module, exports) {
 
 /*
@@ -323,10 +323,10 @@ function updateLink(linkElement, obj) {
 
 /***/ }),
 
-/***/ 672:
+/***/ 674:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(285);
+module.exports = __webpack_require__(286);
 
 
 /***/ }),
@@ -551,8 +551,8 @@ function fromByteArray (uint8) {
 
 
 var base64 = __webpack_require__(70)
-var ieee754 = __webpack_require__(88)
-var isArray = __webpack_require__(89)
+var ieee754 = __webpack_require__(89)
+var isArray = __webpack_require__(90)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2334,7 +2334,7 @@ function isnan (val) {
 
 /***/ }),
 
-/***/ 88:
+/***/ 89:
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -2425,7 +2425,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 /***/ }),
 
-/***/ 89:
+/***/ 90:
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -2437,5 +2437,5 @@ module.exports = Array.isArray || function (arr) {
 
 /***/ })
 
-},[672]);
+},[674]);
 //# sourceMappingURL=styles.bundle.js.map

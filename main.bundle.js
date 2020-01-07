@@ -8,8 +8,8 @@ webpackJsonp([1,5],{
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__http_service__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__environments_environment__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_moment__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_moment__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataService; });
@@ -35,10 +35,21 @@ var DataService = (function () {
         this.messageService = messageService;
         this._servers = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__["BehaviorSubject"](undefined);
         this.menuOption = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__["BehaviorSubject"](undefined);
+        this.theme = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__["BehaviorSubject"](undefined);
         this.ServersUpdated$ = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["t" /* EventEmitter */]();
         messageService.serverUpdated$.subscribe(function (serverKey) { return _this.updateServer(serverKey); });
         //this.getServers();
     }
+    Object.defineProperty(DataService.prototype, "Theme", {
+        get: function () {
+            return this.theme.asObservable();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    DataService.prototype.SetTheme = function (theme) {
+        this.theme.next(theme);
+    };
     Object.defineProperty(DataService.prototype, "MenuOption", {
         get: function () {
             return this.menuOption.asObservable();
@@ -105,6 +116,9 @@ var DataService = (function () {
             return foo;
         });
     };
+    DataService.prototype.getCurrentDate = function () {
+        return !__WEBPACK_IMPORTED_MODULE_4__environments_environment__["a" /* environment */].demo ? __WEBPACK_IMPORTED_MODULE_5_moment__() : __WEBPACK_IMPORTED_MODULE_5_moment__(new Date(__WEBPACK_IMPORTED_MODULE_4__environments_environment__["a" /* environment */].demoDate));
+    };
     DataService.prototype.toDate = function (datejson) {
         //todo: fix locale
         return new Date(datejson).toLocaleString('sv-SE');
@@ -129,7 +143,7 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 104:
+/***/ 105:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -213,7 +227,7 @@ var _a, _b, _c, _d;
 
 /***/ }),
 
-/***/ 105:
+/***/ 106:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -281,7 +295,7 @@ var _a;
 
 /***/ }),
 
-/***/ 106:
+/***/ 107:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -331,12 +345,12 @@ function nullCompare(v1, v2, asc) {
 
 /***/ }),
 
-/***/ 20:
+/***/ 19:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__environments_environment__ = __webpack_require__(22);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MessageService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -351,9 +365,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 var MessageService = (function () {
     function MessageService(zone) {
-        var _this = this;
         this.zone = zone;
         this.serverUpdated$ = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["t" /* EventEmitter */]();
+    }
+    MessageService.prototype.connect = function () {
+        var _this = this;
         this.connection = $.hubConnection(this.getSignalRBaseUrl());
         this.proxy = this.connection.createHubProxy('ServerUpdateHub');
         this.proxy.on('serverUpdateNotification', function (serverKey) {
@@ -364,12 +380,12 @@ var MessageService = (function () {
         this.connection.start()
             .done(function () { return console.log('Now connected, connection ID=' + _this.connection.id); })
             .fail(function () { return console.log('Could not connect'); });
-    }
+    };
     MessageService.prototype.getSignalRBaseUrl = function () {
         return __WEBPACK_IMPORTED_MODULE_1__environments_environment__["a" /* environment */].signalrBaseUrl
             .replace(/\<protocol\>/gi, window.location.protocol)
             .replace(/\<hostname\>/gi, window.location.hostname)
-            .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
+            .replace(/\<webapi_port\>/gi, typeof config !== 'undefined' ? config.webapi.port : "");
     };
     return MessageService;
 }());
@@ -383,28 +399,26 @@ var _a;
 
 /***/ }),
 
-/***/ 21:
+/***/ 22:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__environment_common__ = __webpack_require__(320);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return environment; });
-// The file contents for the current environment will overwrite these during build.
-// The build system defaults to the dev environment which uses `environment.ts`, but if you do
-// `ng build --env=prod` then `environment.prod.ts` will be used instead.
-// The list of which env maps to which file can be found in `.angular-cli.json`.
-// The file contents for the current environment will overwrite these during build.
+
 var environment = {
-    production: false,
-    demo: false,
-    demoDate: null,
-    apiBaseUrl: "<protocol>//<hostname>:60001/api",
-    signalrBaseUrl: "<protocol>//<hostname>:60001/signalr"
+    production: true,
+    demo: true,
+    demoDate: '2017-11-10T16:30:00.0000000Z',
+    configJsOverride: __WEBPACK_IMPORTED_MODULE_0__environment_common__["a" /* commonEnvironment */].configJs,
+    apiBaseUrl: null,
+    signalrBaseUrl: null
 };
 //# sourceMappingURL=environment.js.map
 
 /***/ }),
 
-/***/ 282:
+/***/ 283:
 /***/ (function(module, exports) {
 
 function webpackEmptyContext(req) {
@@ -413,20 +427,20 @@ function webpackEmptyContext(req) {
 webpackEmptyContext.keys = function() { return []; };
 webpackEmptyContext.resolve = webpackEmptyContext;
 module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 282;
+webpackEmptyContext.id = 283;
 
 
 /***/ }),
 
-/***/ 283:
+/***/ 284:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__ = __webpack_require__(290);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_app_module__ = __webpack_require__(298);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__ = __webpack_require__(291);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_app_module__ = __webpack_require__(299);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(22);
 
 
 
@@ -445,9 +459,9 @@ __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dyna
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(68);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(93);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(22);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HttpService; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -544,11 +558,29 @@ var HttpService = (function () {
             .then(function (response) { return response.json(); })
             .catch(this.handleError);
     };
+    HttpService.prototype.adminListFertilizedEggs = function (serverKey) {
+        return this.http.get("" + this.getApiBaseUrl() + this.administerUrl + "/DroppedEggsList/" + serverKey + "?t=" + +new Date(), this.getOptions())
+            .toPromise()
+            .then(function (response) { return response.json(); })
+            .catch(this.handleError);
+    };
+    HttpService.prototype.adminDestroyAllEggs = function (serverKey) {
+        return this.http.get("" + this.getApiBaseUrl() + this.administerUrl + "/DestroyAllEggs/" + serverKey + "?t=" + +new Date(), this.getOptions())
+            .toPromise()
+            .then(function (response) { return response.json(); })
+            .catch(this.handleError);
+    };
+    HttpService.prototype.adminDestroySpoiledEggs = function (serverKey) {
+        return this.http.get("" + this.getApiBaseUrl() + this.administerUrl + "/DestroySpoiledEggs/" + serverKey + "?t=" + +new Date(), this.getOptions())
+            .toPromise()
+            .then(function (response) { return response.json(); })
+            .catch(this.handleError);
+    };
     HttpService.prototype.getApiBaseUrl = function () {
         return __WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment */].apiBaseUrl
             .replace(/\<protocol\>/gi, window.location.protocol)
             .replace(/\<hostname\>/gi, window.location.hostname)
-            .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
+            .replace(/\<webapi_port\>/gi, typeof config !== 'undefined' ? config.webapi.port : "");
     };
     HttpService.prototype.handleError = function (error) {
         return Promise.reject(error.message || error);
@@ -565,12 +597,12 @@ var _a;
 
 /***/ }),
 
-/***/ 293:
+/***/ 294:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__data_service__ = __webpack_require__(10);
@@ -623,14 +655,14 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 294:
+/***/ 295:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(19);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AccessDeniedComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -676,8 +708,8 @@ var AccessDeniedComponent = (function () {
 AccessDeniedComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-access-denied',
-        template: __webpack_require__(395),
-        styles: [__webpack_require__(373)]
+        template: __webpack_require__(398),
+        styles: [__webpack_require__(376)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _c || Object])
 ], AccessDeniedComponent);
@@ -687,7 +719,7 @@ var _a, _b, _c;
 
 /***/ }),
 
-/***/ 295:
+/***/ 296:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -718,6 +750,8 @@ var AdminServerMenuComponent = (function () {
             this.menu.activate("players");
         else if (this.dataService.hasFeatureAccess('admin-server', 'tribes'))
             this.menu.activate("tribes");
+        else if (this.dataService.hasFeatureAccess('admin-server', 'eggs'))
+            this.menu.activate("eggs");
     };
     return AdminServerMenuComponent;
 }());
@@ -729,8 +763,8 @@ AdminServerMenuComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-admin-server-menu',
         host: { '[class]': 'menu.className' },
-        template: __webpack_require__(396),
-        styles: [__webpack_require__(374)]
+        template: __webpack_require__(399),
+        styles: [__webpack_require__(377)]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */]) === "function" && _b || Object])
 ], AdminServerMenuComponent);
@@ -740,16 +774,18 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 296:
+/***/ 297:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__message_service__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__http_service__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_d3__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_d3__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AdminServerComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -760,6 +796,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+
 
 
 
@@ -777,6 +814,7 @@ var AdminServerComponent = (function () {
         this.menuOption = undefined;
         this.loaded = false;
         this.loadedStructures = false;
+        this.loadedFertilizedEggs = false;
     }
     AdminServerComponent.prototype.getServer = function () {
         var _this = this;
@@ -804,6 +842,23 @@ var AdminServerComponent = (function () {
             _this.loadedStructures = true;
         });
     };
+    AdminServerComponent.prototype.getListFertilizedEggs = function () {
+        var _this = this;
+        this.httpService
+            .adminListFertilizedEggs(this.serverKey)
+            .then(function (fertilizedEggs) {
+            _this.spoiledEggsList = fertilizedEggs.SpoiledEggList;
+            _this.fertilizedEggsList = fertilizedEggs.FertilizedEggList;
+            _this.fertilizedEggsCount = fertilizedEggs.FertilizedEggsCount === undefined ? 0 : fertilizedEggs.FertilizedEggsCount;
+            _this.spoiledEggsCount = fertilizedEggs.SpoiledEggsCount === undefined ? 0 : fertilizedEggs.SpoiledEggsCount;
+            _this.totalEggCount = _this.spoiledEggsCount + _this.fertilizedEggsCount;
+            _this.loadedFertilizedEggs = true;
+        })
+            .catch(function (error) {
+            _this.fertilizedEggsList = undefined;
+            _this.loadedFertilizedEggs = true;
+        });
+    };
     AdminServerComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.serverKey = this.route.snapshot.params['id'];
@@ -811,6 +866,9 @@ var AdminServerComponent = (function () {
             _this.menuOption = menuOption;
             if (_this.menuOption == "structures") {
                 _this.getStructures();
+            }
+            else if (_this.menuOption == "fertilized-eggs") {
+                _this.getListFertilizedEggs();
             }
         });
         this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(function (serverKey) {
@@ -841,33 +899,96 @@ var AdminServerComponent = (function () {
     AdminServerComponent.prototype.isMenuActive = function (menuOption) {
         return this.menuOption == menuOption;
     };
+    AdminServerComponent.prototype.showInfoModal = function (header, message) {
+        var modalInfo = {};
+        modalInfo.Header = header;
+        modalInfo.Message = message;
+        this.modalInfo = modalInfo;
+        var cm = __WEBPACK_IMPORTED_MODULE_6_d3__["select"](this.contextMenu.nativeElement);
+        cm.style("display", "block");
+        if (__WEBPACK_IMPORTED_MODULE_6_d3__["event"])
+            __WEBPACK_IMPORTED_MODULE_6_d3__["event"].stopPropagation();
+    };
+    AdminServerComponent.prototype.hideContextMenu = function () {
+        var cm = __WEBPACK_IMPORTED_MODULE_6_d3__["select"](this.contextMenu.nativeElement);
+        cm.style("display", "none");
+        this.modalInfo = undefined;
+    };
+    AdminServerComponent.prototype.saveWorld = function (event) {
+        var _this = this;
+        this.httpService.adminSaveWorld(this.serverKey)
+            .then(function (response) {
+            _this.hideContextMenu();
+            _this.getListFertilizedEggs();
+            _this.showInfoModal("Action Successfull!", response.Message);
+        })
+            .catch(function (error) {
+            _this.hideContextMenu();
+            var json = error && error._body ? JSON.parse(error._body) : undefined;
+            _this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
+    };
+    AdminServerComponent.prototype.destroyAllEggs = function (event) {
+        var _this = this;
+        this.httpService.adminDestroyAllEggs(this.serverKey)
+            .then(function (response) {
+            _this.hideContextMenu();
+            _this.getListFertilizedEggs();
+            _this.showInfoModal("Action Successfull!", response.Message);
+        })
+            .catch(function (error) {
+            _this.hideContextMenu();
+            var json = error && error._body ? JSON.parse(error._body) : undefined;
+            _this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
+    };
+    AdminServerComponent.prototype.destroySpoiledEggs = function (event) {
+        var _this = this;
+        this.httpService.adminDestroySpoiledEggs(this.serverKey)
+            .then(function (response) {
+            _this.hideContextMenu();
+            _this.getListFertilizedEggs();
+            _this.showInfoModal("Action Successfull!", response.Message);
+        })
+            .catch(function (error) {
+            _this.hideContextMenu();
+            var json = error && error._body ? JSON.parse(error._body) : undefined;
+            _this.showInfoModal("Action Failed...", json ? json.Message : error.statusText);
+        });
+    };
     return AdminServerComponent;
 }());
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_17" /* ViewChild */])('contextMenu'),
+    __metadata("design:type", typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* ElementRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* ElementRef */]) === "function" && _a || Object)
+], AdminServerComponent.prototype, "contextMenu", void 0);
 AdminServerComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-admin-server',
-        template: __webpack_require__(397),
-        styles: [__webpack_require__(375)]
+        template: __webpack_require__(400),
+        styles: [__webpack_require__(378)]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _f || Object])
+    __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _g || Object])
 ], AdminServerComponent);
 
-var _a, _b, _c, _d, _e, _f;
+var _a, _b, _c, _d, _e, _f, _g;
 //# sourceMappingURL=admin-server.component.js.map
 
 /***/ }),
 
-/***/ 297:
+/***/ 298:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ng2_breadcrumb_ng2_breadcrumb__ = __webpack_require__(103);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__http_service__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_ng2_breadcrumb_ng2_breadcrumb__ = __webpack_require__(104);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__message_service__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__data_service__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__http_service__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__environments_environment__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__angular_platform_browser__ = __webpack_require__(18);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -878,6 +999,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+
+
 
 
 
@@ -886,7 +1012,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var AppComponent = (function () {
-    function AppComponent(dataService, httpService, breadcrumbService, notificationsService, router) {
+    function AppComponent(doc, messageService, dataService, httpService, breadcrumbService, notificationsService, router) {
+        this.doc = doc;
+        this.messageService = messageService;
         this.dataService = dataService;
         this.httpService = httpService;
         this.breadcrumbService = breadcrumbService;
@@ -901,6 +1029,14 @@ var AppComponent = (function () {
         this.currentUrl = "/";
         this.serversUpdatedBefore = false;
         this.loading = true;
+        var s = this.doc.createElement('script');
+        s.type = 'text/javascript';
+        if (__WEBPACK_IMPORTED_MODULE_7__environments_environment__["a" /* environment */].configJsOverride == null)
+            s.src = "config.js";
+        else
+            s.innerHTML = __WEBPACK_IMPORTED_MODULE_7__environments_environment__["a" /* environment */].configJsOverride;
+        var head = this.doc.getElementsByTagName('head')[0];
+        head.appendChild(s);
         breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
         breadcrumbService.addFriendlyNameForRoute('/connectionerror', 'Connection error');
         breadcrumbService.hideRoute('/player');
@@ -908,9 +1044,12 @@ var AppComponent = (function () {
         breadcrumbService.hideRoute('/server');
         breadcrumbService.hideRoute('/admin');
         breadcrumbService.addCallbackForRouteRegex('^/player/.+$', this.getNameForPlayer);
+        if (!__WEBPACK_IMPORTED_MODULE_7__environments_environment__["a" /* environment */].demo)
+            messageService.connect();
     }
     AppComponent.prototype.ngOnInit = function () {
         var _this = this;
+        this.dataService.SetTheme(this.getTheme());
         this.routerEventsSubscription = this.router.events.subscribe(function (event) {
             _this.navigationInterceptor(event);
         });
@@ -942,10 +1081,15 @@ var AppComponent = (function () {
     AppComponent.prototype.getNameForPlayer = function (id) {
         return "Player";
     };
+    AppComponent.prototype.getDefaultTheme = function () {
+        var value = (typeof config !== 'undefined' && config.webapp !== 'undefined' && typeof config.webapp.defaultTheme === 'string' ? config.webapp.defaultTheme.toLowerCase() : undefined);
+        return value != 'light' && value != 'dark' ? 'dark' : value;
+    };
     AppComponent.prototype.getTheme = function () {
-        return localStorage.getItem('theme') || 'light';
+        return localStorage.getItem('theme') || this.getDefaultTheme();
     };
     AppComponent.prototype.setTheme = function (theme) {
+        this.dataService.SetTheme(theme);
         localStorage.setItem('theme', theme);
         return false;
     };
@@ -958,10 +1102,10 @@ var AppComponent = (function () {
         this.showLogin = false;
     };
     AppComponent.prototype.getLoginUrl = function () {
-        return this.httpService.getApiBaseUrl() + '/authentication/login';
+        return !__WEBPACK_IMPORTED_MODULE_7__environments_environment__["a" /* environment */].demo ? this.httpService.getApiBaseUrl() + '/authentication/login' : '';
     };
     AppComponent.prototype.getLogoutUrl = function () {
-        return !__WEBPACK_IMPORTED_MODULE_6__environments_environment__["a" /* environment */].demo ? this.httpService.getApiBaseUrl() + '/authentication/logout?returnUrl=' + this.currentUrl : '';
+        return !__WEBPACK_IMPORTED_MODULE_7__environments_environment__["a" /* environment */].demo ? this.httpService.getApiBaseUrl() + '/authentication/logout?returnUrl=' + this.currentUrl : '';
     };
     return AppComponent;
 }());
@@ -969,57 +1113,59 @@ AppComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'body',
         host: { '[class]': 'getTheme()' },
-        template: __webpack_require__(398),
-        styles: [__webpack_require__(376)]
+        template: __webpack_require__(401),
+        styles: [__webpack_require__(379)]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__data_service__["a" /* DataService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3_ng2_breadcrumb_ng2_breadcrumb__["b" /* BreadcrumbService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_ng2_breadcrumb_ng2_breadcrumb__["b" /* BreadcrumbService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === "function" && _e || Object])
+    __param(0, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["G" /* Inject */])(__WEBPACK_IMPORTED_MODULE_8__angular_platform_browser__["e" /* DOCUMENT */])),
+    __metadata("design:paramtypes", [Object, typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_5__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__data_service__["a" /* DataService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_6__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__http_service__["a" /* HttpService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3_ng2_breadcrumb_ng2_breadcrumb__["b" /* BreadcrumbService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3_ng2_breadcrumb_ng2_breadcrumb__["b" /* BreadcrumbService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === "function" && _f || Object])
 ], AppComponent);
 
-var _a, _b, _c, _d, _e;
+var _a, _b, _c, _d, _e, _f;
 //# sourceMappingURL=app.component.js.map
 
 /***/ }),
 
-/***/ 298:
+/***/ 299:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_animations__ = __webpack_require__(291);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_animations__ = __webpack_require__(292);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_forms__ = __webpack_require__(102);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_forms__ = __webpack_require__(103);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_router__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_http__ = __webpack_require__(68);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_angular2_notifications__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_ng2_breadcrumb_ng2_breadcrumb__ = __webpack_require__(103);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__app_component__ = __webpack_require__(297);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__player_player_component__ = __webpack_require__(310);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__player_menu_player_menu_component__ = __webpack_require__(309);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__server_server_component__ = __webpack_require__(316);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__server_list_server_list_component__ = __webpack_require__(314);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__admin_server_admin_server_component__ = __webpack_require__(296);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__arkmap_component__ = __webpack_require__(300);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_angular2_notifications__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_ng2_breadcrumb_ng2_breadcrumb__ = __webpack_require__(104);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__app_component__ = __webpack_require__(298);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__player_player_component__ = __webpack_require__(311);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__player_menu_player_menu_component__ = __webpack_require__(310);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__server_server_component__ = __webpack_require__(318);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__server_list_server_list_component__ = __webpack_require__(316);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__admin_server_admin_server_component__ = __webpack_require__(297);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__arkmap_component__ = __webpack_require__(301);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__http_service__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__demo_http_service__ = __webpack_require__(307);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__demo_http_service__ = __webpack_require__(308);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__message_service__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__data_resolver_service__ = __webpack_require__(304);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__access_control_route_guard_service__ = __webpack_require__(293);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__sanitize_style_pipe__ = __webpack_require__(312);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__clickOutside_directive__ = __webpack_require__(301);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__server_list_menu_server_list_menu_component__ = __webpack_require__(313);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__menu_menu_component__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__server_menu_server_menu_component__ = __webpack_require__(315);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__admin_server_menu_admin_server_menu_component__ = __webpack_require__(295);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__arkmap_structures_arkmap_structures_component__ = __webpack_require__(299);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__timer_timer_component__ = __webpack_require__(317);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__relative_time_relative_time_component__ = __webpack_require__(311);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__confirm_button_confirm_button_component__ = __webpack_require__(302);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__access_denied_access_denied_component__ = __webpack_require__(294);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_32__connection_error_connection_error_component__ = __webpack_require__(303);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_33__developer_developer_component__ = __webpack_require__(308);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_34__data_table_data_table_module__ = __webpack_require__(306);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_35__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__data_resolver_service__ = __webpack_require__(305);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__access_control_route_guard_service__ = __webpack_require__(294);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__sanitize_style_pipe__ = __webpack_require__(314);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__sanitize_html_pipe__ = __webpack_require__(313);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__clickOutside_directive__ = __webpack_require__(302);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__server_list_menu_server_list_menu_component__ = __webpack_require__(315);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__menu_menu_component__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__server_menu_server_menu_component__ = __webpack_require__(317);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__admin_server_menu_admin_server_menu_component__ = __webpack_require__(296);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__arkmap_structures_arkmap_structures_component__ = __webpack_require__(300);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__timer_timer_component__ = __webpack_require__(319);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__relative_time_relative_time_component__ = __webpack_require__(312);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__confirm_button_confirm_button_component__ = __webpack_require__(303);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_32__access_denied_access_denied_component__ = __webpack_require__(295);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_33__connection_error_connection_error_component__ = __webpack_require__(304);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_34__developer_developer_component__ = __webpack_require__(309);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_35__data_table_data_table_module__ = __webpack_require__(307);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_36__environments_environment__ = __webpack_require__(22);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1027,6 +1173,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -1093,7 +1240,7 @@ var appRoutes = [
             },
             {
                 path: '',
-                component: __WEBPACK_IMPORTED_MODULE_25__server_menu_server_menu_component__["a" /* ServerMenuComponent */],
+                component: __WEBPACK_IMPORTED_MODULE_26__server_menu_server_menu_component__["a" /* ServerMenuComponent */],
                 outlet: 'menu'
             }
         ]
@@ -1110,7 +1257,7 @@ var appRoutes = [
             },
             {
                 path: '',
-                component: __WEBPACK_IMPORTED_MODULE_26__admin_server_menu_admin_server_menu_component__["a" /* AdminServerMenuComponent */],
+                component: __WEBPACK_IMPORTED_MODULE_27__admin_server_menu_admin_server_menu_component__["a" /* AdminServerMenuComponent */],
                 outlet: 'menu'
             }
         ]
@@ -1127,22 +1274,22 @@ var appRoutes = [
             },
             {
                 path: '',
-                component: __WEBPACK_IMPORTED_MODULE_23__server_list_menu_server_list_menu_component__["a" /* ServerListMenuComponent */],
+                component: __WEBPACK_IMPORTED_MODULE_24__server_list_menu_server_list_menu_component__["a" /* ServerListMenuComponent */],
                 outlet: 'menu'
             }
         ]
     },
     {
         path: 'developer',
-        component: __WEBPACK_IMPORTED_MODULE_33__developer_developer_component__["a" /* DeveloperComponent */]
+        component: __WEBPACK_IMPORTED_MODULE_34__developer_developer_component__["a" /* DeveloperComponent */]
     },
     {
         path: 'accessdenied',
-        component: __WEBPACK_IMPORTED_MODULE_31__access_denied_access_denied_component__["a" /* AccessDeniedComponent */]
+        component: __WEBPACK_IMPORTED_MODULE_32__access_denied_access_denied_component__["a" /* AccessDeniedComponent */]
     },
     {
         path: 'connectionerror',
-        component: __WEBPACK_IMPORTED_MODULE_32__connection_error_connection_error_component__["a" /* ConnectionErrorComponent */]
+        component: __WEBPACK_IMPORTED_MODULE_33__connection_error_connection_error_component__["a" /* ConnectionErrorComponent */]
     },
     { path: '',
         redirectTo: '/servers',
@@ -1161,22 +1308,23 @@ AppModule = __decorate([
             __WEBPACK_IMPORTED_MODULE_12__server_list_server_list_component__["a" /* ServerListComponent */],
             __WEBPACK_IMPORTED_MODULE_14__arkmap_component__["a" /* ArkMapComponent */],
             __WEBPACK_IMPORTED_MODULE_21__sanitize_style_pipe__["a" /* SanitizeStylePipe */],
-            __WEBPACK_IMPORTED_MODULE_22__clickOutside_directive__["a" /* ClickOutsideDirective */],
+            __WEBPACK_IMPORTED_MODULE_22__sanitize_html_pipe__["a" /* SanitizeHtmlPipe */],
+            __WEBPACK_IMPORTED_MODULE_23__clickOutside_directive__["a" /* ClickOutsideDirective */],
             __WEBPACK_IMPORTED_MODULE_9__player_player_component__["a" /* PlayerComponent */],
             __WEBPACK_IMPORTED_MODULE_10__player_menu_player_menu_component__["a" /* PlayerMenuComponent */],
             __WEBPACK_IMPORTED_MODULE_11__server_server_component__["a" /* ServerComponent */],
             __WEBPACK_IMPORTED_MODULE_13__admin_server_admin_server_component__["a" /* AdminServerComponent */],
-            __WEBPACK_IMPORTED_MODULE_23__server_list_menu_server_list_menu_component__["a" /* ServerListMenuComponent */],
-            __WEBPACK_IMPORTED_MODULE_24__menu_menu_component__["a" /* MenuComponent */],
-            __WEBPACK_IMPORTED_MODULE_25__server_menu_server_menu_component__["a" /* ServerMenuComponent */],
-            __WEBPACK_IMPORTED_MODULE_26__admin_server_menu_admin_server_menu_component__["a" /* AdminServerMenuComponent */],
-            __WEBPACK_IMPORTED_MODULE_27__arkmap_structures_arkmap_structures_component__["a" /* ArkmapStructuresComponent */],
-            __WEBPACK_IMPORTED_MODULE_28__timer_timer_component__["a" /* TimerComponent */],
-            __WEBPACK_IMPORTED_MODULE_29__relative_time_relative_time_component__["a" /* RelativeTimeComponent */],
-            __WEBPACK_IMPORTED_MODULE_30__confirm_button_confirm_button_component__["a" /* ConfirmButtonComponent */],
-            __WEBPACK_IMPORTED_MODULE_31__access_denied_access_denied_component__["a" /* AccessDeniedComponent */],
-            __WEBPACK_IMPORTED_MODULE_32__connection_error_connection_error_component__["a" /* ConnectionErrorComponent */],
-            __WEBPACK_IMPORTED_MODULE_33__developer_developer_component__["a" /* DeveloperComponent */]
+            __WEBPACK_IMPORTED_MODULE_24__server_list_menu_server_list_menu_component__["a" /* ServerListMenuComponent */],
+            __WEBPACK_IMPORTED_MODULE_25__menu_menu_component__["a" /* MenuComponent */],
+            __WEBPACK_IMPORTED_MODULE_26__server_menu_server_menu_component__["a" /* ServerMenuComponent */],
+            __WEBPACK_IMPORTED_MODULE_27__admin_server_menu_admin_server_menu_component__["a" /* AdminServerMenuComponent */],
+            __WEBPACK_IMPORTED_MODULE_28__arkmap_structures_arkmap_structures_component__["a" /* ArkmapStructuresComponent */],
+            __WEBPACK_IMPORTED_MODULE_29__timer_timer_component__["a" /* TimerComponent */],
+            __WEBPACK_IMPORTED_MODULE_30__relative_time_relative_time_component__["a" /* RelativeTimeComponent */],
+            __WEBPACK_IMPORTED_MODULE_31__confirm_button_confirm_button_component__["a" /* ConfirmButtonComponent */],
+            __WEBPACK_IMPORTED_MODULE_32__access_denied_access_denied_component__["a" /* AccessDeniedComponent */],
+            __WEBPACK_IMPORTED_MODULE_33__connection_error_connection_error_component__["a" /* ConnectionErrorComponent */],
+            __WEBPACK_IMPORTED_MODULE_34__developer_developer_component__["a" /* DeveloperComponent */]
         ],
         imports: [
             __WEBPACK_IMPORTED_MODULE_4__angular_router__["a" /* RouterModule */].forRoot(appRoutes),
@@ -1186,10 +1334,10 @@ AppModule = __decorate([
             __WEBPACK_IMPORTED_MODULE_5__angular_http__["a" /* HttpModule */],
             __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_animations__["a" /* BrowserAnimationsModule */],
             __WEBPACK_IMPORTED_MODULE_6_angular2_notifications__["a" /* SimpleNotificationsModule */].forRoot(),
-            __WEBPACK_IMPORTED_MODULE_34__data_table_data_table_module__["a" /* DataTableModule */]
+            __WEBPACK_IMPORTED_MODULE_35__data_table_data_table_module__["a" /* DataTableModule */]
         ],
         providers: [
-            [{ provide: __WEBPACK_IMPORTED_MODULE_15__http_service__["a" /* HttpService */], useClass: !__WEBPACK_IMPORTED_MODULE_35__environments_environment__["a" /* environment */].demo ? __WEBPACK_IMPORTED_MODULE_15__http_service__["a" /* HttpService */] : __WEBPACK_IMPORTED_MODULE_16__demo_http_service__["a" /* DemoHttpService */] }],
+            [{ provide: __WEBPACK_IMPORTED_MODULE_15__http_service__["a" /* HttpService */], useClass: !__WEBPACK_IMPORTED_MODULE_36__environments_environment__["a" /* environment */].demo ? __WEBPACK_IMPORTED_MODULE_15__http_service__["a" /* HttpService */] : __WEBPACK_IMPORTED_MODULE_16__demo_http_service__["a" /* DemoHttpService */] }],
             __WEBPACK_IMPORTED_MODULE_17__message_service__["a" /* MessageService */],
             __WEBPACK_IMPORTED_MODULE_18__data_service__["a" /* DataService */],
             __WEBPACK_IMPORTED_MODULE_19__data_resolver_service__["a" /* DataServiceResolver */],
@@ -1204,7 +1352,7 @@ AppModule = __decorate([
 
 /***/ }),
 
-/***/ 299:
+/***/ 300:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1213,8 +1361,8 @@ AppModule = __decorate([
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__data_service__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__http_service__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__environments_environment__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__environments_environment__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3__ = __webpack_require__(88);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_d3__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_moment__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_moment__);
@@ -1483,7 +1631,7 @@ var ArkmapStructuresComponent = (function () {
         return __WEBPACK_IMPORTED_MODULE_4__environments_environment__["a" /* environment */].apiBaseUrl
             .replace(/\<protocol\>/gi, window.location.protocol)
             .replace(/\<hostname\>/gi, window.location.hostname)
-            .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
+            .replace(/\<webapi_port\>/gi, typeof config !== 'undefined' ? config.webapi.port : "");
     };
     ArkmapStructuresComponent.prototype.reset = function () {
         this.selectedOwner = undefined;
@@ -1620,8 +1768,8 @@ __decorate([
 ArkmapStructuresComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'arkmap-structures',
-        template: __webpack_require__(399),
-        styles: [__webpack_require__(377)],
+        template: __webpack_require__(402),
+        styles: [__webpack_require__(380)],
         encapsulation: __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewEncapsulation */].None
     }),
     __metadata("design:paramtypes", [typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__http_service__["a" /* HttpService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["V" /* NgZone */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["V" /* NgZone */]) === "function" && _e || Object])
@@ -1632,13 +1780,13 @@ var _a, _b, _c, _d, _e;
 
 /***/ }),
 
-/***/ 300:
+/***/ 301:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__environments_environment__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__environments_environment__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3__ = __webpack_require__(88);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_d3___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_d3__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArkMapComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -1711,7 +1859,7 @@ var ArkMapComponent = (function () {
         return __WEBPACK_IMPORTED_MODULE_1__environments_environment__["a" /* environment */].apiBaseUrl
             .replace(/\<protocol\>/gi, window.location.protocol)
             .replace(/\<hostname\>/gi, window.location.hostname)
-            .replace(/\<webapi_port\>/gi, config != undefined ? config.webapi.port : "");
+            .replace(/\<webapi_port\>/gi, typeof config !== 'undefined' ? config.webapi.port : "");
     };
     return ArkMapComponent;
 }());
@@ -1740,7 +1888,7 @@ var _a;
 
 /***/ }),
 
-/***/ 301:
+/***/ 302:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1795,7 +1943,7 @@ var _a;
 
 /***/ }),
 
-/***/ 302:
+/***/ 303:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1851,8 +1999,8 @@ __decorate([
 ConfirmButtonComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'confirm-button',
-        template: __webpack_require__(400),
-        styles: [__webpack_require__(378)]
+        template: __webpack_require__(403),
+        styles: [__webpack_require__(381)]
     }),
     __metadata("design:paramtypes", [])
 ], ConfirmButtonComponent);
@@ -1862,14 +2010,14 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 303:
+/***/ 304:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(19);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ConnectionErrorComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1915,8 +2063,8 @@ var ConnectionErrorComponent = (function () {
 ConnectionErrorComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-connection-error',
-        template: __webpack_require__(401),
-        styles: [__webpack_require__(379)]
+        template: __webpack_require__(404),
+        styles: [__webpack_require__(382)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _c || Object])
 ], ConnectionErrorComponent);
@@ -1926,12 +2074,12 @@ var _a, _b, _c;
 
 /***/ }),
 
-/***/ 304:
+/***/ 305:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__data_service__ = __webpack_require__(10);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataServiceResolver; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -1973,13 +2121,13 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 305:
+/***/ 306:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__columns_column_directive__ = __webpack_require__(104);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__modes_mode_directive__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__columns_column_directive__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__modes_mode_directive__ = __webpack_require__(106);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_observable_combineLatest__ = __webpack_require__(241);
@@ -1988,10 +2136,12 @@ var _a, _b;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_observable_of___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_observable_of__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch__ = __webpack_require__(243);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_switchMap__ = __webpack_require__(245);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_switchMap__ = __webpack_require__(246);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_switchMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_rxjs_add_operator_switchMap__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_operator_filter__ = __webpack_require__(244);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_add_operator_filter___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_rxjs_add_operator_filter__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_add_operator_startWith__ = __webpack_require__(245);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_add_operator_startWith___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_rxjs_add_operator_startWith__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataTableComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2011,14 +2161,18 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var DataTableComponent = (function () {
     function DataTableComponent(ref) {
         this.ref = ref;
         this._modeEnabledSubscriptions = [];
         this._rows$ = __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Observable"].of([]);
+        this._orderByColumnKey = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["BehaviorSubject"](undefined);
+        this._filter = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["BehaviorSubject"](undefined);
         this._sort = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Subject"]();
         this._fromRow = 0;
         this._numRows = 25;
+        this._totalRows = 0;
         this._enabledColumnsForMode = {};
         this._viewOptions = [
             { 'value': 25, 'text': '25' },
@@ -2029,15 +2183,20 @@ var DataTableComponent = (function () {
             { 'value': 1000, 'text': '1000' },
             { 'value': 1000000, 'text': 'All' }
         ];
+        this._prevColumnKey = undefined;
+        this._prevFilter = undefined;
+        this._prevSortedRows = undefined;
+        this._prevFilteredRows = undefined;
+        this._prevSortedRowsKey = undefined;
+        this._prevFilteredRowsKey = undefined;
     }
     DataTableComponent.prototype.ngOnInit = function () {
         var _this = this;
-        this._orderByColumnKey = new __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["BehaviorSubject"](undefined);
-        this._rows$ = this._orderByColumnKey
-            .switchMap(function (key) {
-            return key ?
-                __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Observable"].of(_this.sortData(_this._rows, key))
-                : __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Observable"].of(_this._rows);
+        this._rows$ = __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Observable"].combineLatest(this._orderByColumnKey, this._filter.debounceTime(250), function (key, filter) { return ({ key: key, filter: filter }); })
+            .skip(1)
+            .startWith({ key: this._orderByColumnKey.getValue(), filter: this._filter.getValue() })
+            .switchMap(function (x) {
+            return __WEBPACK_IMPORTED_MODULE_3_rxjs_Rx__["Observable"].of(_this.filterAndSortData(x.key, x.filter));
         })
             .catch(function (error) {
             console.log("Error in component ... " + error);
@@ -2119,6 +2278,14 @@ var DataTableComponent = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DataTableComponent.prototype, "filter", {
+        set: function (val) {
+            this._filter.next(val);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ;
     DataTableComponent.prototype.isCurrentMode = function (key) {
         return key === this._currentMode;
     };
@@ -2138,6 +2305,14 @@ var DataTableComponent = (function () {
         this._enabledColumnsForMode[this._currentMode][columnKey] = enabled;
         return enabled;
     };
+    DataTableComponent.prototype.currentModeEnabledColumnCount = function () {
+        var count = 0;
+        for (var i = 0; i < this._columnTemplates.length; i++) {
+            if (this.showColumn(this._columnTemplates[i].key))
+                count++;
+        }
+        return count;
+    };
     DataTableComponent.prototype.trackByKey = function (index, data) {
         return data.key;
     };
@@ -2148,8 +2323,44 @@ var DataTableComponent = (function () {
             return;
         this._orderByColumnKey.next((this._orderByColumnKey.getValue() == columnKey ? '-' : '') + columnKey);
     };
+    DataTableComponent.prototype.filterAndSortData = function (columnKey, filter) {
+        var rows = undefined;
+        if (filter != this._prevFilter && columnKey == this._prevColumnKey) {
+            if (this._prevSortedRowsKey != columnKey) {
+                this._prevSortedRowsKey = columnKey;
+                this._prevSortedRows = this.sortData(this._rows.slice(), columnKey);
+            }
+            rows = this.filterData(this._prevSortedRows, filter);
+        }
+        else {
+            if (this._prevFilteredRowsKey != filter) {
+                this._prevFilteredRowsKey = filter;
+                this._prevFilteredRows = this.filterData(this._rows, filter);
+            }
+            if (filter == undefined || filter == null || filter == "") {
+                this._prevSortedRowsKey = columnKey;
+                rows = this._prevSortedRows = this.sortData(this._rows.slice(), columnKey);
+            }
+            else
+                rows = this.sortData(this._prevFilteredRows, columnKey);
+        }
+        if (filter != this._prevFilter)
+            this.setFirstPage();
+        this._totalRows = rows.length;
+        this._prevColumnKey = columnKey;
+        this._prevFilter = filter;
+        return rows;
+    };
+    DataTableComponent.prototype.filterData = function (rows, filter) {
+        var _this = this;
+        if (filter == undefined || filter == null || filter == "")
+            return rows.slice();
+        return rows.filter(function (x) { return _this.filterFunction(x, filter); });
+    };
     DataTableComponent.prototype.sortData = function (rows, columnKey) {
         var _this = this;
+        if (columnKey == undefined)
+            return rows;
         var asc = columnKey[0] != '-';
         var column = this._columnTemplates.find(function (x) { return x.key == columnKey.substr(asc ? 0 : 1); });
         var sortFunc = this.sortFunctions[column.key.replace(/^\-/, "")];
@@ -2159,7 +2370,7 @@ var DataTableComponent = (function () {
             a.sortFunc = _this.sortFunctions[k.replace(/^\-/, "")];
             return a;
         });
-        return rows.slice().sort(function (o1, o2) {
+        return rows.sort(function (o1, o2) {
             var r = sortFunc(o1, o2, asc);
             if (r == 0) {
                 for (var _i = 0, alts_1 = alts; _i < alts_1.length; _i++) {
@@ -2176,8 +2387,8 @@ var DataTableComponent = (function () {
         var newOffset = offset;
         if (newOffset < 0)
             newOffset = 0;
-        if (newOffset >= this._rows.length)
-            newOffset = this._rows.length - 1;
+        if (newOffset >= this._totalRows)
+            newOffset = this._totalRows - 1;
         this._fromRow = parseInt("" + newOffset);
         this.ref.markForCheck();
     };
@@ -2198,13 +2409,13 @@ var DataTableComponent = (function () {
     };
     DataTableComponent.prototype.setLastPage = function () {
         if (!this.isLastPage())
-            this.setViewOffset(this._rows.length - this._numRows);
+            this.setViewOffset(this._totalRows - this._numRows);
     };
     DataTableComponent.prototype.isFirstPage = function () {
         return this._fromRow <= 0;
     };
     DataTableComponent.prototype.isLastPage = function () {
-        return this._fromRow >= this._rows.length - this._numRows;
+        return this._fromRow >= this._totalRows - this._numRows;
     };
     DataTableComponent.prototype.setViewLimit = function (limit) {
         this._numRows = parseInt("" + (limit > 0 ? limit : 1000000));
@@ -2212,7 +2423,7 @@ var DataTableComponent = (function () {
     };
     DataTableComponent.prototype.getLastRowOffset = function () {
         var last = this._fromRow + this._numRows;
-        return last > this._rows.length ? this._rows.length : last;
+        return last > this._totalRows ? this._totalRows : last;
     };
     return DataTableComponent;
 }());
@@ -2238,6 +2449,15 @@ __decorate([
 ], DataTableComponent.prototype, "trackByProp", null);
 __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["o" /* Input */])(),
+    __metadata("design:type", String),
+    __metadata("design:paramtypes", [String])
+], DataTableComponent.prototype, "filter", null);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["o" /* Input */])(),
+    __metadata("design:type", Object)
+], DataTableComponent.prototype, "filterFunction", void 0);
+__decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["o" /* Input */])(),
     __metadata("design:type", Object)
 ], DataTableComponent.prototype, "sortFunctions", void 0);
 __decorate([
@@ -2247,8 +2467,8 @@ __decorate([
 DataTableComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'ark-data-table',
-        template: __webpack_require__(402),
-        styles: [__webpack_require__(380)],
+        template: __webpack_require__(405),
+        styles: [__webpack_require__(383)],
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_13" /* ChangeDetectionStrategy */].OnPush,
         encapsulation: __WEBPACK_IMPORTED_MODULE_0__angular_core__["X" /* ViewEncapsulation */].None
     }),
@@ -2260,16 +2480,16 @@ var _a, _b, _c, _d, _e;
 
 /***/ }),
 
-/***/ 306:
+/***/ 307:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(102);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__data_table_component__ = __webpack_require__(305);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__columns_column_directive__ = __webpack_require__(104);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__modes_mode_directive__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(103);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__data_table_component__ = __webpack_require__(306);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__columns_column_directive__ = __webpack_require__(105);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__modes_mode_directive__ = __webpack_require__(106);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DataTableModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2316,13 +2536,13 @@ DataTableModule = __decorate([
 
 /***/ }),
 
-/***/ 307:
+/***/ 308:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(68);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__ = __webpack_require__(93);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_toPromise__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__http_service__ = __webpack_require__(29);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DemoHttpService; });
@@ -2414,14 +2634,14 @@ var _a;
 
 /***/ }),
 
-/***/ 308:
+/***/ 309:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(19);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return DeveloperComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2474,8 +2694,8 @@ var DeveloperComponent = (function () {
 DeveloperComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-developer',
-        template: __webpack_require__(403),
-        styles: [__webpack_require__(381)]
+        template: __webpack_require__(406),
+        styles: [__webpack_require__(384)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _c || Object])
 ], DeveloperComponent);
@@ -2485,13 +2705,13 @@ var _a, _b, _c;
 
 /***/ }),
 
-/***/ 309:
+/***/ 310:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__menu_menu_component__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_router__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_router__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__data_service__ = __webpack_require__(10);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PlayerMenuComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -2541,8 +2761,8 @@ PlayerMenuComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-player-menu',
         host: { '[class]': 'menu.className' },
-        template: __webpack_require__(405),
-        styles: [__webpack_require__(383)]
+        template: __webpack_require__(408),
+        styles: [__webpack_require__(386)]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__angular_router__["g" /* ActivatedRoute */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__angular_router__["g" /* ActivatedRoute */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */]) === "function" && _c || Object])
 ], PlayerMenuComponent);
@@ -2552,17 +2772,17 @@ var _a, _b, _c;
 
 /***/ }),
 
-/***/ 310:
+/***/ 311:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__message_service__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__http_service__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__utils__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__utils__ = __webpack_require__(107);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PlayerComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2590,6 +2810,7 @@ var PlayerComponent = (function () {
         this.notificationsService = notificationsService;
         this.ref = ref;
         this.menuOption = undefined;
+        this.theme = undefined;
         this.imprintNotifications = false;
         this.keysGetter = Object.keys;
         this.loaded = false;
@@ -2619,6 +2840,7 @@ var PlayerComponent = (function () {
             "id1": function (o1, o2, asc) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__utils__["b" /* intCompare */])(o1.Id1, o2.Id1, asc); },
             "id2": function (o1, o2, asc) { return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_6__utils__["b" /* intCompare */])(o1.Id1, o2.Id1, asc); }
         };
+        this.tribeLogFilterFunction = function (o1, filter) { return filter == null ? true : o1.Message != null && o1.Message.toLowerCase().indexOf(filter) >= 0; };
     }
     PlayerComponent.prototype.getPlayer = function () {
         var _this = this;
@@ -2649,12 +2871,15 @@ var PlayerComponent = (function () {
     PlayerComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.menuOptionSubscription = this.dataService.MenuOption.subscribe(function (menuOption) { return _this.menuOption = menuOption; });
+        this.theme$ = this.dataService.Theme;
+        this.themeSubscription = this.theme$.subscribe(function (theme) { _this.theme = theme; });
         this.steamId = this.route.snapshot.params['playerid'];
         this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(function (serverKey) { return _this.updateServer(serverKey); });
         this.getPlayer();
     };
     PlayerComponent.prototype.ngOnDestroy = function () {
         this.menuOptionSubscription.unsubscribe();
+        this.themeSubscription.unsubscribe();
         this.serverUpdatedSubscription.unsubscribe();
     };
     PlayerComponent.prototype.haveMatingCooldown = function (creature) {
@@ -2860,13 +3085,16 @@ var PlayerComponent = (function () {
             num += 1;
         return num;
     };
+    PlayerComponent.prototype.isTheme = function (theme) {
+        return this.theme == theme;
+    };
     return PlayerComponent;
 }());
 PlayerComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-player',
-        template: __webpack_require__(406),
-        styles: [__webpack_require__(384)]
+        template: __webpack_require__(409),
+        styles: [__webpack_require__(387)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__http_service__["a" /* HttpService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__data_service__["a" /* DataService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__message_service__["a" /* MessageService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["r" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["r" /* ChangeDetectorRef */]) === "function" && _g || Object])
 ], PlayerComponent);
@@ -2876,7 +3104,7 @@ var _a, _b, _c, _d, _e, _f, _g;
 
 /***/ }),
 
-/***/ 311:
+/***/ 312:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2948,7 +3176,7 @@ RelativeTimeComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'relative-time',
         template: "<span>{{_str}}</span>",
-        styles: [__webpack_require__(385)],
+        styles: [__webpack_require__(388)],
         changeDetection: __WEBPACK_IMPORTED_MODULE_0__angular_core__["_13" /* ChangeDetectionStrategy */].OnPush
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["r" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["r" /* ChangeDetectorRef */]) === "function" && _a || Object])
@@ -2959,12 +3187,51 @@ var _a;
 
 /***/ }),
 
-/***/ 312:
+/***/ 313:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__(18);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SanitizeHtmlPipe; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var SanitizeHtmlPipe = (function () {
+    function SanitizeHtmlPipe(_sanitizer) {
+        this._sanitizer = _sanitizer;
+    }
+    SanitizeHtmlPipe.prototype.transform = function (html) {
+        return this._sanitizer.bypassSecurityTrustHtml(html);
+    };
+    return SanitizeHtmlPipe;
+}());
+SanitizeHtmlPipe = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["S" /* Pipe */])({
+        name: 'sanitizeHtml'
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__["c" /* DomSanitizer */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__["c" /* DomSanitizer */]) === "function" && _a || Object])
+], SanitizeHtmlPipe);
+
+var _a;
+//# sourceMappingURL=sanitize-html.pipe.js.map
+
+/***/ }),
+
+/***/ 314:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__(18);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SanitizeStylePipe; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2998,7 +3265,7 @@ var _a;
 
 /***/ }),
 
-/***/ 313:
+/***/ 315:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3035,8 +3302,8 @@ ServerListMenuComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-server-list-menu',
         host: { '[class]': 'menu.className' },
-        template: __webpack_require__(407),
-        styles: [__webpack_require__(386)]
+        template: __webpack_require__(410),
+        styles: [__webpack_require__(389)]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */]) === "function" && _b || Object])
 ], ServerListMenuComponent);
@@ -3046,14 +3313,14 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 314:
+/***/ 316:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__message_service__ = __webpack_require__(19);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ServerListComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3126,8 +3393,8 @@ var ServerListComponent = (function () {
 ServerListComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-server-list',
-        template: __webpack_require__(408),
-        styles: [__webpack_require__(387)]
+        template: __webpack_require__(411),
+        styles: [__webpack_require__(390)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__message_service__["a" /* MessageService */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _c || Object])
 ], ServerListComponent);
@@ -3137,7 +3404,7 @@ var _a, _b, _c;
 
 /***/ }),
 
-/***/ 315:
+/***/ 317:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3181,8 +3448,8 @@ ServerMenuComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-server-menu',
         host: { '[class]': 'menu.className' },
-        template: __webpack_require__(409),
-        styles: [__webpack_require__(388)]
+        template: __webpack_require__(412),
+        styles: [__webpack_require__(391)]
     }),
     __metadata("design:paramtypes", [typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__data_service__["a" /* DataService */]) === "function" && _b || Object])
 ], ServerMenuComponent);
@@ -3192,19 +3459,19 @@ var _a, _b;
 
 /***/ }),
 
-/***/ 316:
+/***/ 318:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_moment__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__data_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__message_service__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__message_service__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__http_service__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__utils__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__utils__ = __webpack_require__(107);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ServerComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3335,11 +3602,13 @@ var ServerComponent = (function () {
         this.serverUpdatedSubscription.unsubscribe();
     };
     ServerComponent.prototype.filter = function () {
+        var currentDate = this.dataService.getCurrentDate();
+        var pastDate = currentDate.subtract(90, 'day');
         this.filteredPlayers = this.server.Players.filter(function (player) {
-            return __WEBPACK_IMPORTED_MODULE_3_moment__(new Date(player.LastActiveTime)).isSameOrAfter(__WEBPACK_IMPORTED_MODULE_3_moment__().subtract(90, 'day'));
+            return __WEBPACK_IMPORTED_MODULE_3_moment__(new Date(player.LastActiveTime)).isSameOrAfter(pastDate);
         });
         this.filteredTribes = this.server.Tribes.filter(function (tribe) {
-            return __WEBPACK_IMPORTED_MODULE_3_moment__(new Date(tribe.LastActiveTime)).isSameOrAfter(__WEBPACK_IMPORTED_MODULE_3_moment__().subtract(90, 'day'));
+            return __WEBPACK_IMPORTED_MODULE_3_moment__(new Date(tribe.LastActiveTime)).isSameOrAfter(pastDate);
         });
     };
     ServerComponent.prototype.sortWild = function () {
@@ -3453,8 +3722,8 @@ var ServerComponent = (function () {
 ServerComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-server',
-        template: __webpack_require__(410),
-        styles: [__webpack_require__(389)]
+        template: __webpack_require__(413),
+        styles: [__webpack_require__(392)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["g" /* ActivatedRoute */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* Router */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_6__http_service__["a" /* HttpService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_6__http_service__["a" /* HttpService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_4__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__data_service__["a" /* DataService */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_5__message_service__["a" /* MessageService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5__message_service__["a" /* MessageService */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_angular2_notifications__["b" /* NotificationsService */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["r" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["r" /* ChangeDetectorRef */]) === "function" && _g || Object])
 ], ServerComponent);
@@ -3464,14 +3733,14 @@ var _a, _b, _c, _d, _e, _f, _g;
 
 /***/ }),
 
-/***/ 317:
+/***/ 319:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Rx__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__environments_environment__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_moment___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_moment__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TimerComponent; });
@@ -3611,7 +3880,7 @@ TimerComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'timer',
         template: "<span *ngIf=\"!_ready\">{{_str}}</span><button *ngIf=\"_ready\" style=\"padding: 4px 8px;\" class=\"w3-button w3-small\" [ngClass]=\"{'theme-d1': state._completed, 'theme-l2': !state._completed && _ready, 'theme-hover': !state._completed && _ready}\" (click)=\"state._completed = !state._completed\">{{(state._completed ? \"Completed\" : \"Ready\")}}</button>",
-        styles: [__webpack_require__(390)]
+        styles: [__webpack_require__(393)]
     }),
     __metadata("design:paramtypes", [])
 ], TimerComponent);
@@ -3620,57 +3889,15 @@ TimerComponent = __decorate([
 
 /***/ }),
 
-/***/ 373:
-/***/ (function(module, exports, __webpack_require__) {
+/***/ 320:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(7)(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
-
-/***/ }),
-
-/***/ 374:
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(7)(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
-
-/***/ }),
-
-/***/ 375:
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(7)(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return commonEnvironment; });
+var commonEnvironment = {
+    configJs: 'var config = {"webapi":{"port":60001},"webapp":{"defaultTheme":"Dark"}};',
+};
+//# sourceMappingURL=environment.common.js.map
 
 /***/ }),
 
@@ -3700,7 +3927,7 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, ".map canvas { position: absolute; top: 0; left: 0; width: 100%; }\r\n.map svg { position: absolute; top: 0; left: 0; width: 100%; }\r\nrect.overlay { fill: transparent; }\r\n.wrapper { position: relative; }\r\n.wrapper:after {\r\n  padding-top: 100%;\r\n  display: block;\r\n  content: '';\r\n}\r\n.wrapper .buttons {\r\n  position: absolute;\r\n  left: 5px;\r\n  top: 5px;\r\n  opacity: 0.75;\r\n  z-index: 2;\r\n}\r\n/*.contextMenu {\r\n  position: absolute;\r\n  left: 0px;\r\n  top: 0px;\r\n  background-color: #fff;\r\n  color: #000;\r\n  padding: 10px;\r\n  z-index: 20;\r\n  opacity: 0.90;\r\n  display: none;\r\n}*/\r\n.contextMenu {\r\n}", ""]);
+exports.push([module.i, "", ""]);
 
 // exports
 
@@ -3754,7 +3981,7 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, "tr th.orderBy { cursor: pointer; }\r\na.w3-button.disabled { color: darkgray; }\r\na.w3-button.disabled:hover { color: darkgray !important; background-color: transparent !important; opacity: 1.0 !important; cursor: default; }", ""]);
+exports.push([module.i, ".map canvas { position: absolute; top: 0; left: 0; width: 100%; }\r\n.map svg { position: absolute; top: 0; left: 0; width: 100%; }\r\nrect.overlay { fill: transparent; }\r\n.wrapper { position: relative; }\r\n.wrapper:after {\r\n  padding-top: 100%;\r\n  display: block;\r\n  content: '';\r\n}\r\n.wrapper .buttons {\r\n  position: absolute;\r\n  left: 5px;\r\n  top: 5px;\r\n  opacity: 0.75;\r\n  z-index: 2;\r\n}\r\n/*.contextMenu {\r\n  position: absolute;\r\n  left: 0px;\r\n  top: 0px;\r\n  background-color: #fff;\r\n  color: #000;\r\n  padding: 10px;\r\n  z-index: 20;\r\n  opacity: 0.90;\r\n  display: none;\r\n}*/\r\n.contextMenu {\r\n}", ""]);
 
 // exports
 
@@ -3808,7 +4035,7 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, "tr th.orderBy { cursor: pointer; }\r\na.w3-button.disabled { color: darkgray; }\r\na.w3-button.disabled:hover { color: darkgray !important; background-color: transparent !important; opacity: 1.0 !important; cursor: default; }", ""]);
 
 // exports
 
@@ -3880,7 +4107,7 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, ".serverdetails th {\r\n    white-space: nowrap;\r\n}\r\n\r\n.serverdetails td {\r\n    width: 99%;\r\n}", ""]);
+exports.push([module.i, "", ""]);
 
 // exports
 
@@ -3973,8 +4200,8 @@ var MenuComponent = (function () {
 MenuComponent = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_12" /* Component */])({
         selector: 'app-menu',
-        template: __webpack_require__(404),
-        styles: [__webpack_require__(382)]
+        template: __webpack_require__(407),
+        styles: [__webpack_require__(385)]
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__data_service__["a" /* DataService */]) === "function" && _a || Object])
 ], MenuComponent);
@@ -3992,7 +4219,7 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, ".serverdetails th {\r\n    white-space: nowrap;\r\n}\r\n\r\n.serverdetails td {\r\n    width: 99%;\r\n}", ""]);
 
 // exports
 
@@ -4003,6 +4230,60 @@ module.exports = module.exports.toString();
 /***/ }),
 
 /***/ 391:
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(7)(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ 392:
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(7)(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ 393:
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(7)(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ 394:
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -4251,130 +4532,130 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 391;
+webpackContext.id = 394;
 
-
-/***/ }),
-
-/***/ 395:
-/***/ (function(module, exports) {
-
-module.exports = "<section class=\"w3-container\">\n    <div class=\"w3-panel w3-red\">\n      <h3>Access Denied</h3>\n      <p>You do not have access to view this page...</p>\n    </div> \n  </section>"
-
-/***/ }),
-
-/***/ 396:
-/***/ (function(module, exports) {
-
-module.exports = "<app-menu #menu>\r\n  <h2 class=\"theme-text-d1\">Admin|Server</h2>\r\n  <div class=\"w3-cell-row theme-l2\">\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('structures')}\" (click)=\"menu.activate('structures')\">Structures</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'players')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('players')}\" (click)=\"menu.activate('players')\">Players</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'tribes')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('tribes')}\" (click)=\"menu.activate('tribes')\">Tribes</div>\r\n  </div>\r\n</app-menu>"
-
-/***/ }),
-
-/***/ 397:
-/***/ (function(module, exports) {
-
-module.exports = "<section *ngIf=\"(loaded == false &amp;&amp; !isMenuActive('structures')) || loadedStructures == false &amp;&amp; isMenuActive('structures')\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"(loaded == true &amp;&amp; server == null &amp;&amp; !isMenuActive('structures')) || (loadedStructures == true &amp;&amp; structures == null &amp;&amp; isMenuActive('structures'))\" class=\"w3-container\">\r\n  <div class=\"w3-panel w3-red\">\r\n    <h3>Error!</h3>\r\n    <p>No data could be loaded for the given server key.</p>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'players')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Players</h2>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Steam Id</th>\r\n          <th>Character Id</th>\r\n          <!--<th>Steam Name</th>-->\r\n          <th>Character Name</th>\r\n          <th>Tribe Name</th>\r\n          <th>Tribe Id</th>\r\n          <th>Structures</th>\r\n          <th>Creatures</th>\r\n          <th>Last Active</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let player of server.Players\">\r\n          <td>{{player.FakeSteamId || player.SteamId}}</td>\r\n          <td>{{player.Id}}</td>\r\n          <!--<td>{{player.SteamName}}</td>-->\r\n          <td><a *ngIf=\"dataService.hasFeatureAccess('pages', 'player', player.SteamId); else players_player_no_link\" [routerLink]=\"'/player/' + player.SteamId\">{{player.CharacterName}}</a><ng-template #players_player_no_link>{{player.CharacterName}}</ng-template></td>\r\n          <td>{{player.TribeName}}</td>\r\n          <td>{{player.TribeId}}</td>\r\n          <td>{{player.StructureCount}}</td>\r\n          <td>{{player.CreatureCount}}</td>\r\n          <td>{{dataService.toRelativeDate(player.LastActiveTime)}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'tribes')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Tribes</h2>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Id</th>\r\n          <th>Name</th>\r\n          <th>Members</th>\r\n          <th>Structures</th>\r\n          <th>Creatures</th>\r\n          <th>Last Active</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let tribe of server.Tribes\">\r\n          <td>{{tribe.Id}}</td>\r\n          <td>{{tribe.Name}}</td>\r\n          <td><span *ngFor=\"let member of tribe.MemberSteamIds; let last = last\"><a *ngIf=\"dataService.hasFeatureAccess('pages', 'player', member); else tribes_player_no_link\" [routerLink]=\"'/player/' + member\">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribes_player_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf=\"!last\">, </span></span></td>\r\n          <td>{{tribe.StructureCount}}</td>\r\n          <td>{{tribe.CreatureCount}}</td>\r\n          <td>{{dataService.toRelativeDate(tribe.LastActiveTime)}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')\" class=\"w3-container\">\r\n  <arkmap-structures [serverKey]=\"serverKey\" [mapName]=\"structures?.MapName\" [structures]=\"structures\"></arkmap-structures>\r\n</section>"
 
 /***/ }),
 
 /***/ 398:
 /***/ (function(module, exports) {
 
-module.exports = "<simple-notifications [options]=\"notificationOptions\"></simple-notifications>\r\n<!--<div class=\"theme-c1 w3-container\">\r\n  <div class=\"w3-display-container\" style=\"height: 80px;\">\r\n    <div class=\"w3-display-left\"><h1 style=\"font-size: 4em; margin: 0px;\">ARK</h1></div><div class=\"w3-display-right\"><img src=\"assets/logo_small.png\" /></div>\r\n  </div>\r\n</div>-->\r\n\r\n<router-outlet name=\"menu\"></router-outlet>\r\n<div id=\"page\">\r\n  <div class=\"w3-bar\">\r\n    <breadcrumb prefix=\"Home\" [useBootstrap]=\"false\" class=\"breadcrumb w3-bar-item\"></breadcrumb>\r\n    <div class=\"w3-bar-item w3-right w3-tiny theme-l1\"><span *ngIf=\"dataService.Servers?.User?.SteamId\">Logged in as {{dataService.Servers.User.Name}} | <a [href]=\"getLogoutUrl()\">Logout</a> | </span><span *ngIf=\"!dataService.Servers?.User?.SteamId\"><a href=\"#\" (click)=\"openLogin($event)\">Login</a> | </span>Theme: <a href=\"#\" (click)=\"setTheme('light')\">Light</a> | <a href=\"#\" (click)=\"setTheme('dark')\">Dark</a></div>\r\n  </div>\r\n  <router-outlet></router-outlet>\r\n</div>\r\n<div id=\"modal_login\" class=\"w3-modal\" [style.display]=\"showLogin ? 'block' : 'none'\">\r\n  <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"closeLogin($event)\" style=\"font-size: 0;\">\r\n    <header class=\"w3-container theme-d1\"> \r\n      <span (click)=\"showLogin = false\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n      <h2>Log In</h2>\r\n    </header>\r\n    <form class=\"w3-container theme-l2 w3-medium\" method=\"post\" [action]=\"getLoginUrl()\" ngNoForm>\r\n      <div class=\"w3-section\">\r\n        <p>To give you access to personal information, first, we must verify your identity.</p>\r\n        <p>Please authenticate with our app through Steam by clicking on the button below.</p>\r\n        <input name=\"returnUrl\" type=\"hidden\" [value]=\"currentUrl\" />\r\n        <button type=\"submit\" class=\"w3-button w3-block theme-d1 w3-section w3-padding\" name=\"provider\" title=\"Log in using your Steam account\">Go to Steam</button>\r\n      </div>\r\n    </form>\r\n  </div>\r\n</div>"
+module.exports = "<section class=\"w3-container\">\n    <div class=\"w3-panel w3-red\">\n      <h3>Access Denied</h3>\n      <p>You do not have access to view this page...</p>\n    </div> \n  </section>"
 
 /***/ }),
 
 /***/ 399:
 /***/ (function(module, exports) {
 
-module.exports = "<!--<div class=\"contextMenu\" #contextMenu>\r\n  <ng-container *ngIf=\"currentOwner &amp;&amp; currentArea\">\r\n    <h4 style=\"margin-bottom: 3px;\">{{currentOwner.Name}}</h4>\r\n    <div>Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}</div>\r\n    <div *ngIf=\"currentOwner.LastActiveTime\">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}</div>\r\n    <div class=\"w3-margin-bottom\">{{currentArea.StructureCount | number}} structures</div>\r\n    <button *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\" class=\"w3-button theme-d1\" style=\"width: 100%;\" (click)=\"confirmDestroyCurrentArea()\">Destroy this area</button>\r\n  </ng-container>\r\n</div>-->\r\n<div #contextMenu class=\"contextMenu w3-modal\">\r\n  <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"hideContextMenu()\" style=\"font-size: 0;\">\r\n    <ng-container *ngIf=\"currentArea &amp;&amp; currentOwner\">\r\n      <header class=\"w3-container theme-d1\"> \r\n        <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n        <h2>{{currentOwner.Name}}</h2>\r\n      </header>\r\n      <div class=\"w3-container w3-medium theme-l2\">\r\n        <div class=\"w3-section\">\r\n          Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}<br />\r\n          <ng-container *ngIf=\"currentOwner.LastActiveTime\">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>\r\n          {{currentArea.StructureCount | number}} structures\r\n        </div>\r\n        <div class=\"w3-section\"><button class=\"w3-button theme-d1\" style=\"width: 100%;\" (click)=\"setSelectedOwner(currentOwner)\">Show only areas for this team</button></div>\r\n        <div class=\"w3-section\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyCurrentArea($event)\" [width]=\"100\">Destroy this area</confirm-button></div>\r\n      </div>\r\n    </ng-container>\r\n    <ng-container *ngIf=\"currentOwner &amp;&amp; !currentArea\">\r\n      <header class=\"w3-container theme-d1\"> \r\n        <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n        <h2>{{currentOwner.Name}}</h2>\r\n      </header>\r\n      <div class=\"w3-container w3-medium theme-l2\">\r\n        <div class=\"w3-section\">\r\n          <ng-container *ngIf=\"currentOwner.LastActiveTime\">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>\r\n          {{currentOwner.AreaCount | number}} areas<br />\r\n          {{currentOwner.StructureCount | number}} structures<br />\r\n          {{currentOwner.CreatureCount | number}} creatures\r\n        </div>\r\n        <div class=\"w3-section\"><button class=\"w3-button theme-d1\" style=\"width: 100%;\" (click)=\"setSelectedOwner(currentOwner)\">Show only areas for this team</button></div>\r\n        <div class=\"w3-section\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyAllStructuresForTeam($event)\" [width]=\"100\">Destroy all structures</confirm-button></div>\r\n        <div class=\"w3-section\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyDinosForTeam($event)\" [width]=\"100\">Destroy all creatures</confirm-button></div>\r\n      </div>\r\n    </ng-container>\r\n    <ng-container *ngIf=\"modalInfo\">\r\n      <header class=\"w3-container theme-d1\"> \r\n        <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n        <h2>{{modalInfo.Header}}</h2>\r\n      </header>\r\n      <div class=\"w3-container w3-medium theme-l2\">\r\n        <div class=\"w3-section\">\r\n          {{modalInfo.Message}}\r\n        </div>\r\n      </div>\r\n    </ng-container>\r\n  </div>\r\n</div>\r\n\r\n<div class=\"w3-cell-row\">\r\n  <div class=\"w3-cell\"><a id=\"structures\"></a><h2 class=\"theme-text-d1 w3-left\">Structures</h2></div>\r\n  <div class=\"w3-cell w3-cell-middle\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"saveWorld($event)\" class=\"w3-right\" [width]=\"undefined\">Save World</confirm-button></div>\r\n</div>\r\n\r\n<div class=\"wrapper\">\r\n  <div class=\"buttons\">\r\n    <button class=\"w3-button theme-d1\" style=\"padding: 3px 6px;\" (click)=\"zoomIn()\"><i class=\"material-icons w3-xxlarge\">add</i></button>\r\n    <button class=\"w3-button theme-d1\" style=\"padding: 3px 6px;\" (click)=\"zoomOut()\"><i class=\"material-icons w3-xxlarge\">remove</i></button>\r\n  </div>\r\n  <div class=\"map\" #map></div>\r\n</div>\r\n\r\n<ng-container *ngIf=\"ownersSorted\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Player/Tribe Locations</h2></div>\r\n    <div class=\"w3-cell w3-cell-middle\">\r\n      <div class=\"w3-clear\">\r\n        <!--<button class=\"w3-button theme-d1 w3-right w3-margin-left\" (click)=\"reset($event)\">All</button>\r\n        <button class=\"w3-button theme-d1 w3-right\" (click)=\"reset($event)\">None</button>-->\r\n        <button class=\"w3-button theme-d1 w3-right\" (click)=\"reset($event)\">Reset</button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Type</th>\r\n          <th style=\"cursor: pointer;\" title=\"Sort by Location Count\" (click)=\"setOwnerSort('locations')\">A#</th>\r\n          <th style=\"cursor: pointer;\" title=\"Sort by Structure Count\" (click)=\"setOwnerSort('structures')\">S#</th>\r\n          <th title=\"Creature Count\">C#</th>\r\n          <th style=\"cursor: pointer;\" title=\"Sort by Last Active Time\" (click)=\"setOwnerSort('lastactive')\">Last Active</th>\r\n          <th></th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let owner of ownersSorted\">\r\n          <td><input type=\"radio\" [(ngModel)]=\"selectedOwner\" [value]=\"owner\" (change)=\"updateSelection()\" /> {{owner.Name}}</td>\r\n          <td>{{owner.Type}}</td>\r\n          <td>{{owner.AreaCount}}</td>\r\n          <td>{{owner.StructureCount}}</td>\r\n          <td>{{owner.CreatureCount}}</td>\r\n          <td>{{dataService.toRelativeDate(owner.LastActiveTime)}}</td>\r\n          <td><button class=\"w3-button theme-d1 w3-right\" (click)=\"showOwnerModal($event, owner)\">Options</button></td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</ng-container>"
+module.exports = "<app-menu #menu>\r\n  <h2 class=\"menu-header theme-text-d1\">Admin|Server</h2>\r\n  <div class=\"menu-items w3-cell-row theme-l2\">\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('structures')}\" (click)=\"menu.activate('structures')\">Structures</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'players')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('players')}\" (click)=\"menu.activate('players')\">Players</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'tribes')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('tribes')}\" (click)=\"menu.activate('tribes')\">Tribes</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('fertilized-eggs')}\" (click)=\"menu.activate('fertilized-eggs')\">Fertilized Eggs</div>\r\n  </div>\r\n</app-menu>"
 
 /***/ }),
 
 /***/ 400:
 /***/ (function(module, exports) {
 
-module.exports = "<button #confirmButton class=\"w3-button\" [ngClass]=\"{'theme-d1': !confirming, 'theme-e1': confirming}\" [style.width.%]=\"width\" (click)=\"onClick($event)\">\r\n  <ng-content *ngIf=\"!confirming\"></ng-content>\r\n  <ng-container *ngIf=\"confirming\">Tap three times to confirm...</ng-container>\r\n</button>"
+module.exports = "<section *ngIf=\"(loaded == false &amp;&amp; !isMenuActive('structures')) || loadedStructures == false &amp;&amp; isMenuActive('structures')\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"(loaded == true &amp;&amp; server == null &amp;&amp; !isMenuActive('structures')) || (loadedStructures == true &amp;&amp; structures == null &amp;&amp; isMenuActive('structures'))\" class=\"w3-container\">\r\n  <div class=\"w3-panel w3-red\">\r\n    <h3>Error!</h3>\r\n    <p>No data could be loaded for the given server key.</p>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'players')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Players</h2>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Steam Id</th>\r\n          <th>Character Id</th>\r\n          <!--<th>Steam Name</th>-->\r\n          <th>Character Name</th>\r\n          <th>Tribe Name</th>\r\n          <th>Tribe Id</th>\r\n          <th>Structures</th>\r\n          <th>Creatures</th>\r\n          <th>Last Active</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let player of server.Players\">\r\n          <td>{{player.FakeSteamId || player.SteamId}}</td>\r\n          <td>{{player.Id}}</td>\r\n          <!--<td>{{player.SteamName}}</td>-->\r\n          <td><a *ngIf=\"dataService.hasFeatureAccess('pages', 'player', player.SteamId); else players_player_no_link\" [routerLink]=\"'/player/' + player.SteamId\">{{player.CharacterName}}</a><ng-template #players_player_no_link>{{player.CharacterName}}</ng-template></td>\r\n          <td>{{player.TribeName}}</td>\r\n          <td>{{player.TribeId}}</td>\r\n          <td>{{player.StructureCount}}</td>\r\n          <td>{{player.CreatureCount}}</td>\r\n          <td>{{dataService.toRelativeDate(player.LastActiveTime)}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'tribes')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Tribes</h2>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Id</th>\r\n          <th>Name</th>\r\n          <th>Members</th>\r\n          <th>Structures</th>\r\n          <th>Creatures</th>\r\n          <th>Last Active</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let tribe of server.Tribes\">\r\n          <td>{{tribe.Id}}</td>\r\n          <td>{{tribe.Name}}</td>\r\n          <td><span *ngFor=\"let member of tribe.MemberSteamIds; let last = last\"><a *ngIf=\"dataService.hasFeatureAccess('pages', 'player', member); else tribes_player_no_link\" [routerLink]=\"'/player/' + member\">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribes_player_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf=\"!last\">, </span></span></td>\r\n          <td>{{tribe.StructureCount}}</td>\r\n          <td>{{tribe.CreatureCount}}</td>\r\n          <td>{{dataService.toRelativeDate(tribe.LastActiveTime)}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('structures') &amp;&amp; structures &amp;&amp; dataService.hasFeatureAccess('admin-server', 'structures')\" class=\"w3-container\">\r\n  <arkmap-structures [serverKey]=\"serverKey\" [mapName]=\"structures?.MapName\" [structures]=\"structures\"></arkmap-structures>\r\n</section>\r\n\r\n<section *ngIf=\"isMenuActive('fertilized-eggs') &amp;&amp; loadedFertilizedEggs == false &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n\r\n<section *ngIf=\"loadedFertilizedEggs == true &amp;&amp;isMenuActive('fertilized-eggs') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('admin-server', 'fertilized-eggs')\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n      <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Egg Summary</h2></div>\r\n      <div class=\"w3-cell w3-cell-middle\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"saveWorld($event)\" class=\"w3-right\" [width]=\"undefined\">Save World</confirm-button></div>\r\n    </div>\r\n\r\n  <div class=\"w3-card-4 w3-margin-bottom w3-responsive\">  \r\n      <header class=\"w3-container theme-d1\">\r\n        <h3>Summary</h3>\r\n      </header>\r\n      <div *ngIf=\"fertilizedEggsCount != 0 || spoiledEggsCount != 0\" class=\"w3-container theme-l1\">\r\n        <p>Total Egg<span *ngIf=\"(totalEggCount) > 1\">s</span>: {{totalEggCount}}</p>\r\n        <p>Fertilized Egg<span *ngIf=\"fertilizedEggsCount > 1\">s</span>: {{fertilizedEggsCount}}</p>\r\n        <p>Spoiled Egg<span *ngIf=\"spoiledEggsCount > 1\">s</span>: {{spoiledEggsCount}}</p>\r\n      </div>\r\n      <div *ngIf=\"fertilizedEggsCount == 0 && spoiledEggsCount == 0\" class=\"w3-container theme-l1\">\r\n        <p>There are no fertilized eggs on the map</p>\r\n      </div>\r\n  </div>\r\n\r\n  <div *ngIf=\"fertilizedEggsCount &amp;&amp; fertilizedEggsCount != 0\" class=\"w3-cell-row\">\r\n      <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Fertilized Eggs</h2></div>\r\n      <div class=\"w3-cell w3-cell-middle\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyAllEggs($event)\" class=\"w3-right\" [width]=\"undefined\">Destroy All Eggs</confirm-button></div>\r\n  </div>\r\n  <div *ngIf=\"fertilizedEggsCount &amp;&amp; fertilizedEggsCount != 0\" class=\"w3-card-4 w3-responsive w3-margin-bottom\">     \r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Creature</th>\r\n          <th>Egg Level</th>\r\n          <th>Spoil Time</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let egg of fertilizedEggsList\">\r\n          <td>{{egg.Dino}}</td>\r\n          <td>{{egg.EggLevel}}</td>\r\n          <td>{{egg.SpoilTime}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table> \r\n  </div>\r\n\r\n  <div *ngIf=\"spoiledEggsCount &amp;&amp; spoiledEggsCount != 0\" class=\"w3-cell-row\">\r\n      <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Spoiled Eggs</h2></div>\r\n      <div class=\"w3-cell w3-cell-middle\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroySpoiledEggs($event)\" class=\"w3-right\" [width]=\"undefined\">Destroy Spoiled Eggs</confirm-button></div>\r\n  </div>\r\n  <div *ngIf=\"spoiledEggsCount &amp;&amp; spoiledEggsCount != 0\" class=\"w3-card-4 w3-responsive w3-margin-bottom\"> \r\n   <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Creature</th>\r\n          <th>Egg Level</th>\r\n          <th>Dropped By</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let egg of spoiledEggsList\">\r\n          <td>{{egg.Dino}}</td>\r\n          <td>{{egg.EggLevel}}</td>\r\n          <td *ngIf=\"DroppedBySteamId\"><a href=\"/player/{{egg.DroppedBySteamId}}\">{{egg.DroppedBy}}</a></td>\r\n          <td *ngIf=\"!DroppedBySteamId\">{{egg.DroppedBy}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table> \r\n  </div>\r\n</section>\r\n\r\n<div #contextMenu class=\"contextMenu w3-modal\">\r\n    <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"hideContextMenu()\" style=\"font-size: 0;\">\r\n      <ng-container *ngIf=\"modalInfo\">\r\n        <header class=\"w3-container theme-d1\"> \r\n          <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n          <h2>{{modalInfo.Header}}</h2>\r\n        </header>\r\n        <div class=\"w3-container w3-medium theme-l2\">\r\n          <div class=\"w3-section\">\r\n            {{modalInfo.Message}}\r\n          </div>\r\n        </div>\r\n      </ng-container>\r\n    </div>\r\n  </div>"
 
 /***/ }),
 
 /***/ 401:
 /***/ (function(module, exports) {
 
-module.exports = "<section class=\"w3-container\">\n    <div class=\"w3-panel w3-red\">\n      <h3>Connection error</h3>\n      <p>The application was unable to connect to the Web API. This could be due to a configuration error...</p>\n    </div> \n  </section>"
+module.exports = "<simple-notifications [options]=\"notificationOptions\"></simple-notifications>\r\n<router-outlet name=\"menu\"></router-outlet>\r\n<div id=\"page\">\r\n  <div class=\"w3-bar\">\r\n    <breadcrumb prefix=\"Home\" [useBootstrap]=\"false\" class=\"breadcrumb w3-bar-item\"></breadcrumb>\r\n    <div class=\"w3-bar-item w3-right w3-tiny theme-l1\"><span *ngIf=\"dataService.Servers?.User?.SteamId\">Logged in as {{dataService.Servers.User.Name}} | <a [href]=\"getLogoutUrl()\">Logout</a> | </span><span *ngIf=\"!dataService.Servers?.User?.SteamId\"><a href=\"#\" (click)=\"openLogin($event)\">Login</a> | </span>Theme: <a href=\"#\" (click)=\"setTheme('light')\">Light</a> | <a href=\"#\" (click)=\"setTheme('dark')\">Dark</a></div>\r\n  </div>\r\n  <router-outlet></router-outlet>\r\n</div>\r\n<div id=\"modal_login\" class=\"w3-modal\" [style.display]=\"showLogin ? 'block' : 'none'\">\r\n  <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"closeLogin($event)\" style=\"font-size: 0;\">\r\n    <header class=\"w3-container theme-d1\"> \r\n      <span (click)=\"showLogin = false\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n      <h2>Log In</h2>\r\n    </header>\r\n    <form class=\"w3-container theme-l2 w3-medium\" method=\"post\" [action]=\"getLoginUrl()\" ngNoForm>\r\n      <div class=\"w3-section\">\r\n        <p>To give you access to personal information, first, we must verify your identity.</p>\r\n        <p>Please authenticate with our app through Steam by clicking on the button below.</p>\r\n        <input name=\"returnUrl\" type=\"hidden\" [value]=\"currentUrl\" />\r\n        <button type=\"submit\" class=\"w3-button w3-block theme-d1 w3-section w3-padding\" name=\"provider\" title=\"Log in using your Steam account\">Go to Steam</button>\r\n      </div>\r\n    </form>\r\n  </div>\r\n</div>"
 
 /***/ }),
 
 /***/ 402:
 /***/ (function(module, exports) {
 
-module.exports = "<div *ngIf=\"(numEnabledModes | async) > 1\" class=\"w3-bar theme-l2 w3-card-4 w3-margin-bottom\">\r\n  <ng-container *ngFor=\"let mode of _modes; trackBy: trackByKey\">\r\n    <button *ngIf=\"mode.enabled | async\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': isCurrentMode(mode.key)}\" [style.width.%]=\"(100/(numEnabledModes | async))\" (click)=\"setCurrentMode(mode.key)\">{{mode.name}}</button>\r\n  </ng-container>\r\n</div>\r\n<div class=\"w3-card-4 w3-responsive\">\r\n  <table class=\"w3-table-all border-theme\">\r\n    <thead>\r\n      <tr class=\"theme-d1\">\r\n        <ng-container *ngFor=\"let column of _columnTemplates; trackBy: trackByKey\">\r\n          <th *ngIf=\"showColumn(column.key)\" (click)=\"orderBy(column.key, $event)\" title=\"{{column.title}}\" [ngClass]=\"{'orderBy': column.orderBy}\">\r\n            <ng-template\r\n              *ngIf=\"column.headerTemplate\"\r\n              [ngTemplateOutlet]=\"column.headerTemplate\">\r\n            </ng-template>\r\n          </th>\r\n        </ng-container>\r\n      </tr>\r\n    </thead>\r\n    <tbody>\r\n      <tr *ngFor=\"let row of _rows$ | async | slice:_fromRow:_fromRow+_numRows;  trackBy: trackByRow\">\r\n        <ng-container *ngFor=\"let column of _columnTemplates; trackBy: trackByKey\">\r\n          <td *ngIf=\"showColumn(column.key)\">\r\n            <ng-template\r\n              *ngIf=\"column.cellTemplate\"\r\n              [ngTemplateOutlet]=\"column.cellTemplate\"\r\n              [ngTemplateOutletContext]=\"{$implicit: row}\">\r\n            </ng-template>\r\n          </td>\r\n        </ng-container>\r\n      </tr>\r\n    </tbody>\r\n  </table>\r\n</div>\r\n<div class=\"w3-cell-row w3-margin-top\">\r\n  <div class=\"w3-cell w3-cell-middle\">\r\n    <table class=\"w3-responsive w3-right w3-small\">\r\n      <tr>\r\n        <td>\r\n          <div class=\"w3-bar w3-border border-theme\">\r\n            <a (click)=\"setFirstPage()\" [ngClass]=\"{'disabled': isFirstPage()}\" class=\"w3-button w3-border-right border-theme\">«</a>\r\n            <a (click)=\"setPrevPage()\" [ngClass]=\"{'disabled': isFirstPage()}\" class=\"w3-button device-tiny-show\">❮</a>\r\n            <a (click)=\"setPrevPage()\" [ngClass]=\"{'disabled': isFirstPage()}\" class=\"w3-button w3-border-right border-theme device-tiny-hide\">❮</a>\r\n            <span class=\"device-tiny-hide\">&nbsp;{{_fromRow}} - {{getLastRowOffset()}} of {{_rows.length}}&nbsp;</span>\r\n            <a (click)=\"setLastPage()\" [ngClass]=\"{'disabled': isLastPage()}\" class=\"w3-button w3-border-left border-theme w3-right\">»</a>\r\n            <a (click)=\"setNextPage()\" [ngClass]=\"{'disabled': isLastPage()}\" class=\"w3-button w3-border-left border-theme w3-right\">❯</a>\r\n          </div>\r\n        </td>\r\n        <td>\r\n          <select [ngModel]=\"_numRows\" (ngModelChange)=\"setViewLimit($event)\" class=\"w3-select w3-border border-theme theme-l1\" style=\"max-width: 200px; padding: 12px 5px;\">\r\n            <option *ngFor=\"let opt of _viewOptions\" [value]=\"opt.value\">{{opt.text}}</option>\r\n          </select>\r\n        </td>\r\n      </tr>\r\n    </table>\r\n  </div>\r\n</div>"
+module.exports = "<!--<div class=\"contextMenu\" #contextMenu>\r\n  <ng-container *ngIf=\"currentOwner &amp;&amp; currentArea\">\r\n    <h4 style=\"margin-bottom: 3px;\">{{currentOwner.Name}}</h4>\r\n    <div>Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}</div>\r\n    <div *ngIf=\"currentOwner.LastActiveTime\">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}</div>\r\n    <div class=\"w3-margin-bottom\">{{currentArea.StructureCount | number}} structures</div>\r\n    <button *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\" class=\"w3-button theme-d1\" style=\"width: 100%;\" (click)=\"confirmDestroyCurrentArea()\">Destroy this area</button>\r\n  </ng-container>\r\n</div>-->\r\n<div #contextMenu class=\"contextMenu w3-modal\">\r\n  <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"hideContextMenu()\" style=\"font-size: 0;\">\r\n    <ng-container *ngIf=\"currentArea &amp;&amp; currentOwner\">\r\n      <header class=\"w3-container theme-d1\"> \r\n        <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n        <h2>{{currentOwner.Name}}</h2>\r\n      </header>\r\n      <div class=\"w3-container w3-medium theme-l2\">\r\n        <div class=\"w3-section\">\r\n          Coords: {{currentArea.Latitude | number:'1.0-1'}}, {{currentArea.Longitude | number:'1.0-1'}}<br />\r\n          <ng-container *ngIf=\"currentOwner.LastActiveTime\">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>\r\n          {{currentArea.StructureCount | number}} structures\r\n        </div>\r\n        <div class=\"w3-section\"><button class=\"w3-button theme-d1\" style=\"width: 100%;\" (click)=\"setSelectedOwner(currentOwner)\">Show only areas for this team</button></div>\r\n        <div class=\"w3-section\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyCurrentArea($event)\" [width]=\"100\">Destroy this area</confirm-button></div>\r\n      </div>\r\n    </ng-container>\r\n    <ng-container *ngIf=\"currentOwner &amp;&amp; !currentArea\">\r\n      <header class=\"w3-container theme-d1\"> \r\n        <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n        <h2>{{currentOwner.Name}}</h2>\r\n      </header>\r\n      <div class=\"w3-container w3-medium theme-l2\">\r\n        <div class=\"w3-section\">\r\n          <ng-container *ngIf=\"currentOwner.LastActiveTime\">Last Active: {{dataService.toRelativeDate(currentOwner.LastActiveTime)}}<br /></ng-container>\r\n          {{currentOwner.AreaCount | number}} areas<br />\r\n          {{currentOwner.StructureCount | number}} structures<br />\r\n          {{currentOwner.CreatureCount | number}} creatures\r\n        </div>\r\n        <div class=\"w3-section\"><button class=\"w3-button theme-d1\" style=\"width: 100%;\" (click)=\"setSelectedOwner(currentOwner)\">Show only areas for this team</button></div>\r\n        <div class=\"w3-section\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyAllStructuresForTeam($event)\" [width]=\"100\">Destroy all structures</confirm-button></div>\r\n        <div class=\"w3-section\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"destroyDinosForTeam($event)\" [width]=\"100\">Destroy all creatures</confirm-button></div>\r\n      </div>\r\n    </ng-container>\r\n    <ng-container *ngIf=\"modalInfo\">\r\n      <header class=\"w3-container theme-d1\"> \r\n        <span (click)=\"hideContextMenu()\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n        <h2>{{modalInfo.Header}}</h2>\r\n      </header>\r\n      <div class=\"w3-container w3-medium theme-l2\">\r\n        <div class=\"w3-section\">\r\n          {{modalInfo.Message}}\r\n        </div>\r\n      </div>\r\n    </ng-container>\r\n  </div>\r\n</div>\r\n\r\n<div class=\"w3-cell-row\">\r\n  <div class=\"w3-cell\"><a id=\"structures\"></a><h2 class=\"theme-text-d1 w3-left\">Structures</h2></div>\r\n  <div class=\"w3-cell w3-cell-middle\" *ngIf=\"dataService.hasFeatureAccess('admin-server', 'structures-rcon')\"><confirm-button (callback)=\"saveWorld($event)\" class=\"w3-right\" [width]=\"undefined\">Save World</confirm-button></div>\r\n</div>\r\n\r\n<div class=\"wrapper\">\r\n  <div class=\"buttons\">\r\n    <button class=\"w3-button theme-d1\" style=\"padding: 3px 6px;\" (click)=\"zoomIn()\"><i class=\"material-icons w3-xxlarge\">add</i></button>\r\n    <button class=\"w3-button theme-d1\" style=\"padding: 3px 6px;\" (click)=\"zoomOut()\"><i class=\"material-icons w3-xxlarge\">remove</i></button>\r\n  </div>\r\n  <div class=\"map\" #map></div>\r\n</div>\r\n\r\n<ng-container *ngIf=\"ownersSorted\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Player/Tribe Locations</h2></div>\r\n    <div class=\"w3-cell w3-cell-middle\">\r\n      <div class=\"w3-clear\">\r\n        <!--<button class=\"w3-button theme-d1 w3-right w3-margin-left\" (click)=\"reset($event)\">All</button>\r\n        <button class=\"w3-button theme-d1 w3-right\" (click)=\"reset($event)\">None</button>-->\r\n        <button class=\"w3-button theme-d1 w3-right\" (click)=\"reset($event)\">Reset</button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Type</th>\r\n          <th style=\"cursor: pointer;\" title=\"Sort by Location Count\" (click)=\"setOwnerSort('locations')\">A#</th>\r\n          <th style=\"cursor: pointer;\" title=\"Sort by Structure Count\" (click)=\"setOwnerSort('structures')\">S#</th>\r\n          <th title=\"Creature Count\">C#</th>\r\n          <th style=\"cursor: pointer;\" title=\"Sort by Last Active Time\" (click)=\"setOwnerSort('lastactive')\">Last Active</th>\r\n          <th></th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let owner of ownersSorted\">\r\n          <td><input type=\"radio\" [(ngModel)]=\"selectedOwner\" [value]=\"owner\" (change)=\"updateSelection()\" /> {{owner.Name}}</td>\r\n          <td>{{owner.Type}}</td>\r\n          <td>{{owner.AreaCount}}</td>\r\n          <td>{{owner.StructureCount}}</td>\r\n          <td>{{owner.CreatureCount}}</td>\r\n          <td>{{dataService.toRelativeDate(owner.LastActiveTime)}}</td>\r\n          <td><button class=\"w3-button theme-d1 w3-right\" (click)=\"showOwnerModal($event, owner)\">Options</button></td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</ng-container>"
 
 /***/ }),
 
 /***/ 403:
 /***/ (function(module, exports) {
 
-module.exports = "<section class=\"w3-container\">\n  <button class=\"w3-button\" [ngClass]=\"{'theme-d1': demoMode, 'theme-l2': !demoMode, 'theme-hover': !demoMode}\" (click)=\"toggleDemoMode()\"><i *ngIf=\"demoMode\" class=\"material-icons\" style=\"margin: -5px 5px -5px -5px; vertical-align: middle;\">check</i>{{(demoMode ? \"Demo Mode Enabled\" : \"Enable Demo Mode\")}}</button>\n</section>"
+module.exports = "<button #confirmButton class=\"w3-button\" [ngClass]=\"{'theme-d1': !confirming, 'theme-e1': confirming}\" [style.width.%]=\"width\" (click)=\"onClick($event)\">\r\n  <ng-content *ngIf=\"!confirming\"></ng-content>\r\n  <ng-container *ngIf=\"confirming\">Tripple tap to confirm...</ng-container>\r\n</button>"
 
 /***/ }),
 
 /***/ 404:
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"menu\" class=\"w3-sidebar theme-l2\" style=\"min-height: 52px;\"> \r\n  <button id=\"menubtn\" class=\"w3-button w3-xlarge w3-display-topright\" (click)=\"toggleMenu()\">☰</button>\r\n  <section id=\"menucontent\" class=\"w3-container\"  [ngClass]=\"{'hide': !menuVisible}\">\r\n    <ng-content></ng-content>\r\n  </section>\r\n</div>"
+module.exports = "<section class=\"w3-container\">\n    <div class=\"w3-panel w3-red\">\n      <h3>Connection error</h3>\n      <p>The application was unable to connect to the Web API. This could be due to a configuration error...</p>\n    </div> \n  </section>"
 
 /***/ }),
 
 /***/ 405:
 /***/ (function(module, exports) {
 
-module.exports = "<app-menu #menu>\r\n  <h2 class=\"theme-text-d1\">Player</h2>\r\n  <div class=\"w3-cell-row theme-l2\">\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'profile', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('profile')}\" (click)=\"menu.activate('profile')\">Profile</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'creatures', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('creatures')}\" (click)=\"menu.activate('creatures')\">Creatures</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('creatures_cloud')}\" (click)=\"menu.activate('creatures_cloud')\">Creatures (Cloud)</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'breeding', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('breeding')}\" (click)=\"menu.activate('breeding')\">Breeding</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'crops', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('crop_plots')}\" (click)=\"menu.activate('crop_plots')\">Crops</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'generators', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('electrical_generators')}\" (click)=\"menu.activate('electrical_generators')\">Electrical Generators</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'kibbles-eggs', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('kibbles_and_eggs')}\" (click)=\"menu.activate('kibbles_and_eggs')\">Kibbles and Eggs</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'tribelog', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('tribelog')}\" (click)=\"menu.activate('tribelog')\">Tribe Log</div>\r\n  </div>\r\n</app-menu>"
+module.exports = "<div *ngIf=\"(numEnabledModes | async) > 1\" class=\"w3-bar theme-l2 w3-card-4 w3-margin-bottom\">\r\n  <ng-container *ngFor=\"let mode of _modes; trackBy: trackByKey\">\r\n    <button *ngIf=\"mode.enabled | async\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': isCurrentMode(mode.key)}\" [style.width.%]=\"(100/(numEnabledModes | async))\" (click)=\"setCurrentMode(mode.key)\">{{mode.name}}</button>\r\n  </ng-container>\r\n</div>\r\n<div class=\"w3-card-4 w3-responsive\">\r\n  <table class=\"w3-table-all border-theme\">\r\n    <thead>\r\n      <tr class=\"theme-d1\">\r\n        <ng-container *ngFor=\"let column of _columnTemplates; trackBy: trackByKey\">\r\n          <th *ngIf=\"showColumn(column.key)\" (click)=\"orderBy(column.key, $event)\" title=\"{{column.title}}\" [ngClass]=\"{'orderBy': column.orderBy}\">\r\n            <ng-template\r\n              *ngIf=\"column.headerTemplate\"\r\n              [ngTemplateOutlet]=\"column.headerTemplate\">\r\n            </ng-template>\r\n          </th>\r\n        </ng-container>\r\n      </tr>\r\n    </thead>\r\n    <tbody>\r\n      <tr *ngIf=\"(_rows$ | async)?.length == 0\">\r\n        <td [colSpan]=\"currentModeEnabledColumnCount()\">No matching entries...</td>\r\n      </tr>\r\n      <tr *ngFor=\"let row of _rows$ | async | slice:_fromRow:_fromRow+_numRows;  trackBy: trackByRow\">\r\n        <ng-container *ngFor=\"let column of _columnTemplates; trackBy: trackByKey\">\r\n          <td *ngIf=\"showColumn(column.key)\">\r\n            <ng-template\r\n              *ngIf=\"column.cellTemplate\"\r\n              [ngTemplateOutlet]=\"column.cellTemplate\"\r\n              [ngTemplateOutletContext]=\"{$implicit: row}\">\r\n            </ng-template>\r\n          </td>\r\n        </ng-container>\r\n      </tr>\r\n    </tbody>\r\n  </table>\r\n</div>\r\n<div class=\"w3-cell-row w3-margin-top\">\r\n  <div class=\"w3-cell w3-cell-middle\">\r\n    <table class=\"w3-responsive w3-right w3-small\">\r\n      <tr>\r\n        <td>\r\n          <div class=\"w3-bar w3-border border-theme\">\r\n            <a (click)=\"setFirstPage()\" [ngClass]=\"{'disabled': isFirstPage()}\" class=\"w3-button w3-border-right border-theme\">«</a>\r\n            <a (click)=\"setPrevPage()\" [ngClass]=\"{'disabled': isFirstPage()}\" class=\"w3-button device-tiny-show\">❮</a>\r\n            <a (click)=\"setPrevPage()\" [ngClass]=\"{'disabled': isFirstPage()}\" class=\"w3-button w3-border-right border-theme device-tiny-hide\">❮</a>\r\n            <span class=\"device-tiny-hide\">&nbsp;{{_fromRow}} - {{getLastRowOffset()}} of {{_totalRows}}&nbsp;</span>\r\n            <a (click)=\"setLastPage()\" [ngClass]=\"{'disabled': isLastPage()}\" class=\"w3-button w3-border-left border-theme w3-right\">»</a>\r\n            <a (click)=\"setNextPage()\" [ngClass]=\"{'disabled': isLastPage()}\" class=\"w3-button w3-border-left border-theme w3-right\">❯</a>\r\n          </div>\r\n        </td>\r\n        <td>\r\n          <select [ngModel]=\"_numRows\" (ngModelChange)=\"setViewLimit($event)\" class=\"w3-select w3-border border-theme theme-l1\" style=\"max-width: 200px; padding: 12px 5px;\">\r\n            <option *ngFor=\"let opt of _viewOptions\" [value]=\"opt.value\">{{opt.text}}</option>\r\n          </select>\r\n        </td>\r\n      </tr>\r\n    </table>\r\n  </div>\r\n</div>"
 
 /***/ }),
 
 /***/ 406:
 /***/ (function(module, exports) {
 
-module.exports = "<section *ngIf=\"loaded == false\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"loaded == true &amp;&amp; player == null\" class=\"w3-container\">\r\n  <div class=\"w3-panel w3-red\">\r\n    <h3>Error!</h3>\r\n    <p>No data could be loaded for the given steam id.</p>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"!isMenuActive('creatures_cloud') &amp;&amp; player != undefined\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Servers</h2>\r\n  <div *ngIf=\"player?.Servers\" class=\"w3-bar theme-l2 w3-card-4\">\r\n    <button *ngFor=\"let server of keysGetter(player?.Servers)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': active(server)}\" [style.width.%]=\"serverWidth()\" (click)=\"activate(server)\">{{server}}</button>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('profile') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'profile', steamId)\" class=\"w3-container\">\r\n  <a id=\"player\"></a><h2 class=\"theme-text-d1\">Player</h2>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Character Name</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Gender</th>\r\n          <th>Tribe Name</th>\r\n          <th>Steam Id</th>\r\n          <th>Tribe Id</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Level</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Engram Points</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Lat</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Lng</th>\r\n          <th>Saved At</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr>\r\n          <td>{{player?.Servers[serverKey]?.CharacterName}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Gender}}</td>\r\n          <td>{{player?.Servers[serverKey]?.TribeName}}</td>\r\n          <td>{{player?.Servers[serverKey]?.FakeSteamId || player?.Servers[serverKey]?.SteamId}}</td>\r\n          <td>{{player?.Servers[serverKey]?.TribeId}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Level}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.EngramPoints | number}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>\r\n          <td>{{dataService.toDate(player?.Servers[serverKey]?.SavedAt)}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'creatures', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"creatures\"></a><h2 class=\"theme-text-d1 w3-left\">Creatures <span class=\"w3-tag w3-large theme-d1\">{{filteredCreatures.length}}</span></h2></div>\r\n    <div class=\"w3-cell w3-cell-middle\"><button class=\"w3-button theme-d1 w3-right\" (click)=\"openMap($event)\">Show Map</button></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey]?.Creatures?.length > 0)\">There are no creatures...</div>\r\n  <ng-container *ngIf=\"player.Servers[serverKey]?.Creatures?.length > 0\">\r\n    <div class=\"inner-addon right-addon\">\r\n      <i *ngIf=\"creaturesFilter != null &amp;&amp; creaturesFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"creaturesFilter = ''; filterAndSort();\">close</i>\r\n      <input [ngModel]=\"creaturesFilter\" (ngModelChange)=\"creaturesFilter = $event; filterAndSort();\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n    </div>\r\n    <div *ngIf=\"numCreatureTabs() > 1\" class=\"w3-bar theme-l2 w3-card-4 w3-margin-bottom\">\r\n      <button href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('status')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('status')\">Overview / Status</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('player', 'creatures-basestats', steamId)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('stats')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('stats')\">Base Stats</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('player', 'creatures-ids', steamId)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('ids')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('ids')\">IDs</button>\r\n    </div>\r\n    <div class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table-all border-theme\">\r\n        <thead>\r\n          <tr class=\"theme-d1\">\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Name\" (click)=\"setCreaturesSort('name')\">Name</th>\r\n            <!--<th>ClassName</th>-->\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Species\" (click)=\"setCreaturesSort('species')\">Species</th>\r\n            <!--<th>Aliases</th>-->\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Gender\" (click)=\"setCreaturesSort('gender')\">Gender</th>\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Base Level\" (click)=\"setCreaturesSort('base_level')\">Base Level</th>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Level\" (click)=\"setCreaturesSort('level')\">Level</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Imprint\" (click)=\"setCreaturesSort('imprint')\">Imprint</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Food\" (click)=\"setCreaturesSort('food')\">Food</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Latitude\" (click)=\"setCreaturesSort('latitude')\">Lat</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Longitude\" (click)=\"setCreaturesSort('longitude')\">Lng</th>\r\n              <th>Status</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Owner\" (click)=\"setCreaturesSort('owner')\">Owner</th>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Health\" (click)=\"setCreaturesSort('stat_health')\">HP</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Stamina\" (click)=\"setCreaturesSort('stat_stamina')\">ST</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Oxygen\" (click)=\"setCreaturesSort('stat_oxygen')\">OX</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Food\" (click)=\"setCreaturesSort('stat_food')\">FO</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Weight\" (click)=\"setCreaturesSort('stat_weight')\">WE</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Melee\" (click)=\"setCreaturesSort('stat_melee')\">ME</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Speed\" (click)=\"setCreaturesSort('stat_speed')\">SP</th>\r\n              <!--<th></th>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID1\" (click)=\"setCreaturesSort('id1')\">ID1</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID2\" (click)=\"setCreaturesSort('id2')\">ID2</th>\r\n            </ng-container>\r\n          </tr>\r\n        </thead>\r\n        <tbody>\r\n          <tr *ngIf=\"!(filteredCreatures?.length > 0)\"><td [colSpan]=\"(activeCreaturesMode('ids') ? 6 : 11)\">No matching creatures...</td></tr>\r\n          <tr *ngFor=\"let creature of filteredCreatures\">\r\n            <td>{{creature.Name}}</td>\r\n            <!--<td>{{creature.ClassName}}</td>-->\r\n            <td>{{creature.Species}}</td>\r\n            <!--<td>{{creature.Aliases}}</td>-->\r\n            <td>{{creature.Gender}}</td>\r\n            <td>{{creature.BaseLevel}}</td>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status')\">\r\n              <td><span *ngIf=\"creature.BaseLevel != creature.Level\">{{creature.Level}}</span></td>\r\n              <td>{{creature.Imprint | percent:'1.0-0'}}</td>\r\n              <td>\r\n                <div *ngIf=\"creature.FoodStatus != null\" class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n                  <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{creature.FoodStatus | percent:'1.0-0'}}</div>\r\n                  <div class=\"theme-c1 w3-round\" [style.width.%]=\"creature.FoodStatus * 100\">&nbsp;</div>\r\n                </div>\r\n              </td>\r\n              <td>{{creature.Latitude | number:'1.1-1'}}</td>\r\n              <td>{{creature.Longitude | number:'1.1-1'}}</td>\r\n              <td>\r\n                <span *ngIf=\"haveMatingCooldown(creature)\">Next mating {{dataService.toRelativeDate(creature.NextMating)}}</span>\r\n                <div *ngIf=\"creature.BabyAge != null\">\r\n                  <div>\r\n                    <div class=\"w3-cell w3-cell-middle\">Baby</div>\r\n                    <div class=\"w3-cell w3-cell-middle\">\r\n                      <div class=\"app-green-light w3-round\" style=\"width: 4em; position: relative; margin: 0em 0.5em;\">\r\n                        <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{creature.BabyAge | percent:'1.0-0'}}</div>\r\n                        <div class=\"theme-c1 w3-round\" [style.width.%]=\"creature.BabyAge * 100\">&nbsp;</div>\r\n                      </div>\r\n                    </div>\r\n                    <div class=\"w3-cell\">cuddle {{dataService.toRelativeDate(creature.BabyNextCuddle)}}</div>\r\n                  </div>\r\n                </div>\r\n              </td>\r\n              <td>{{creature.OwnerType}}</td>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <td>{{creature.BaseStats?.Health}}</td>\r\n              <td>{{creature.BaseStats?.Stamina}}</td>\r\n              <td>{{creature.BaseStats?.Oxygen}}</td>\r\n              <td>{{creature.BaseStats?.Food}}</td>\r\n              <td>{{creature.BaseStats?.Weight}}</td>\r\n              <td>{{creature.BaseStats?.Melee}}</td>\r\n              <td>{{creature.BaseStats?.MovementSpeed}}</td>\r\n              <!--<td><i class=\"material-icons w3-medium\" style=\"cursor: pointer;\" (click)=\"copyCreature(creature)\">content_copy</i></td>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <td>{{creature.Id1}}</td>\r\n              <td>{{creature.Id2}}</td>\r\n            </ng-container>\r\n          </tr>\r\n        </tbody>\r\n      </table>\r\n    </div>\r\n  </ng-container>\r\n</section>\r\n<section *ngIf=\"isMenuActive('breeding') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'breeding', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"imprint_timers\"></a><h2 class=\"theme-text-d1 w3-left\">Breeding <span class=\"w3-tag w3-large theme-d1\">{{imprintCreatures.length}}</span></h2></div>\r\n      <div class=\"w3-cell w3-cell-middle\"><button class=\"w3-button w3-right\" [ngClass]=\"{'theme-d1': imprintNotifications, 'theme-l2': !imprintNotifications, 'theme-hover': !imprintNotifications}\" (click)=\"imprintNotifications = !imprintNotifications\"><i *ngIf=\"imprintNotifications\" class=\"material-icons\" style=\"margin: -5px 5px -5px -5px; vertical-align: middle;\">check</i>{{(imprintNotifications ? \"Notifications Enabled\" : \"Enable Notifications\")}}</button></div>\r\n  </div>\r\n  <div *ngIf=\"!(imprintCreatures?.length > 0)\">There are no baby creatures...</div>\r\n  <div *ngIf=\"imprintCreatures?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Species</th>\r\n          <th>Gender</th>\r\n          <th>Base Level</th>\r\n          <th>Imprint</th>\r\n          <th>Progress</th>\r\n          <th>Fully Grown At</th>\r\n          <th>Next Imprint</th>\r\n          <th *ngIf=\"imprintNotifications\"></th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let creature of imprintCreatures; let index = index\" [ngClass]=\"{'odd': index % 2 == 1}\">\r\n          <td>{{creature.Name}}</td>\r\n          <td>{{creature.Species}}</td>\r\n          <td>{{creature.Gender}}</td>\r\n          <td>{{creature.BaseLevel}}</td>\r\n          <td>{{creature.Imprint | percent:'1.0-0'}}</td>\r\n          <td>\r\n            <div class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n              <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{creature.BabyAge | percent:'1.0-0'}}</div>\r\n              <div class=\"theme-c1 w3-round\" [style.width.%]=\"creature.BabyAge * 100\">&nbsp;</div>\r\n            </div>\r\n          </td>\r\n          <td>{{dataService.toDate(creature.BabyFullyGrown)}}</td>\r\n          <td><timer [time]=\"creature.BabyNextCuddle\" [notification]=\"imprintNotifications\" [state]=\"getStateForCreature(creature)\"></timer></td>\r\n          <td *ngIf=\"imprintNotifications\"><input style=\"top: 0;\" class=\"w3-check w3-right\" type=\"checkbox\" [checked]=\"getStateForCreature(creature).imprintNotifications\" (change)=\"toggleImprintNotificationForCreature(creature)\" /></td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n  <!--<p *ngIf=\"getCurrentServer() != undefined\" class=\"w3-small\">\r\n    Last Update {{getCurrentServer().LastUpdate}}, Next Update {{getCurrentServer().NextUpdate || '-'}}\r\n  </p>-->\r\n</section>\r\n<section *ngIf=\"isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'kibbles-eggs', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"kibblesandeggs\"></a><h2 class=\"theme-text-d1 w3-left\">Kibbles and Eggs <span class=\"w3-tag w3-large theme-d1\">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey].KibblesAndEggs?.length > 0)\">There are no kibbles or eggs...</div>\r\n  <div *ngIf=\"player.Servers[serverKey].KibblesAndEggs?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Kibbles</th>\r\n          <th>Eggs</th>\r\n          <th>Total</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let ke of player.Servers[serverKey].KibblesAndEggs\">\r\n          <td>{{ke.Name}}</td>\r\n          <td>{{ke.KibbleCount}}</td>\r\n          <td>{{ke.EggCount}}</td>\r\n          <td>{{ke.KibbleCount + ke.EggCount}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures_cloud') &amp;&amp; haveCluster()\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Clusters</h2>\r\n  <div *ngIf=\"player?.Clusters\" class=\"w3-bar theme-l2 w3-card-4\">\r\n    <button *ngFor=\"let cluster of keysGetter(player?.Clusters)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCluster(cluster)}\" [style.width.%]=\"clusterWidth()\" (click)=\"activateCluster(cluster)\">{{cluster}}</button>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures_cloud') &amp;&amp; !haveCluster() &amp;&amp; dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Creatures</h2></div>\r\n  </div>\r\n  <div>There are no creatures in the cloud...</div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures_cloud') &amp;&amp; haveCluster() &amp;&amp; dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Creatures <span class=\"w3-tag w3-large theme-d1\">{{filteredClusterCreatures.length}}</span></h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Clusters[clusterKey]?.Creatures?.length > 0)\">There are no creatures in the cloud...</div>\r\n  <div *ngIf=\"player.Clusters[clusterKey]?.Creatures?.length > 0\" class=\"inner-addon right-addon\">\r\n    <i *ngIf=\"creaturesClusterFilter != null &amp;&amp; creaturesClusterFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"creaturesClusterFilter = ''; filterCluster();\">close</i>\r\n    <input [ngModel]=\"creaturesClusterFilter\" (ngModelChange)=\"creaturesClusterFilter = $event; filterCluster();\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n  </div>\r\n  <div *ngIf=\"player.Clusters[clusterKey]?.Creatures?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Species</th>\r\n          <th>Level</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngIf=\"!(filteredClusterCreatures?.length > 0)\"><td colspan=\"3\">No matching creatures...</td></tr>\r\n        <tr *ngFor=\"let creature of filteredClusterCreatures\">\r\n          <td>{{creature.Name}}</td>\r\n          <td>{{creature.Species}}</td>\r\n          <td>{{creature.Level}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('crop_plots') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'crops', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"cropplots\"></a><h2 class=\"theme-text-d1 w3-left\">Crops</h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey].CropPlots?.length > 0)\">There are no crops...</div>\r\n  <div *ngIf=\"player.Servers[serverKey].CropPlots?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Crop</th>\r\n          <th>Size</th>\r\n          <th>Fertilizer %</th>\r\n          <th>Fertilizer Units</th>\r\n          <th>Water</th>\r\n          <th>Lat</th>\r\n          <th>Lng</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let cp of player.Servers[serverKey].CropPlots\">\r\n          <td>{{(cp.PlantedCropName || cp.PlantedCropClassName)}}</td>\r\n          <td>{{cp.Size}}</td>\r\n          <td>\r\n            <div class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n              <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{(cp.FertilizerQuantity / cp.FertilizerMax) | percent:'1.0-0'}}</div>\r\n              <div class=\"theme-c1 w3-round\" [style.width.%]=\"(cp.FertilizerQuantity / cp.FertilizerMax) * 100\">&nbsp;</div>\r\n            </div>\r\n          </td>\r\n          <td>{{cp.FertilizerQuantity | number}}</td>\r\n          <td>{{cp.WaterAmount | number:'1.0-0'}}</td>\r\n          <td>{{cp.Latitude | number:'1.1-1'}}</td>\r\n          <td>{{cp.Longitude | number:'1.1-1'}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'generators', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"electricalgenerators\"></a><h2 class=\"theme-text-d1 w3-left\">Electrical Generators</h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey].ElectricalGenerators?.length > 0)\">There are no electrical generators...</div>\r\n  <div *ngIf=\"player.Servers[serverKey].ElectricalGenerators?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Gasoline %</th>\r\n          <th>Gasoline Quantity</th>\r\n          <th>Activated</th>\r\n          <th>Lat</th>\r\n          <th>Lng</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let eg of player.Servers[serverKey].ElectricalGenerators\">\r\n          <td>\r\n            <div *ngIf=\"eg.Activated == true\" class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n              <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>\r\n              <div class=\"theme-c1 w3-round\" [style.width.%]=\"(eg.GasolineQuantity / 800.0) * 100\">&nbsp;</div>\r\n            </div>\r\n          </td>\r\n          <td>{{eg.GasolineQuantity | number}}</td>\r\n          <td>{{(eg.Activated == true ? \"Yes\" : \"No\")}}</td>\r\n          <td>{{eg.Latitude | number:'1.1-1'}}</td>\r\n          <td>{{eg.Longitude | number:'1.1-1'}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('tribelog') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'tribelog', steamId)\" class=\"w3-container\">\r\n    <div class=\"w3-cell-row\">\r\n      <div class=\"w3-cell\"><a id=\"tribelog\"></a><h2 class=\"theme-text-d1 w3-left\">Tribe Log</h2></div>\r\n    </div>\r\n    <div *ngIf=\"!(player.Servers[serverKey].TribeLog?.length > 0)\">There are no tribe logs...</div>\r\n    <div *ngIf=\"player.Servers[serverKey].TribeLog?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table-all border-theme\">\r\n        <thead>\r\n          <tr class=\"theme-d1\">\r\n            <th>Day</th>\r\n            <th>Time</th>\r\n            <th>Message</th>\r\n          </tr>\r\n        </thead>\r\n        <tbody>\r\n          <tr *ngFor=\"let eg of player.Servers[serverKey].TribeLog\">\r\n            <td>{{eg.Day}}</td>\r\n            <td>{{eg.Time}}</td>\r\n            <td>{{eg.Message}}</td>\r\n          </tr>\r\n        </tbody>\r\n      </table>\r\n    </div>\r\n  </section>\r\n<div id=\"modal_map\" class=\"w3-modal\" [style.display]=\"showMap ? 'block' : 'none'\">\r\n  <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"closeMap($event)\" style=\"font-size: 0;\">\r\n  <header class=\"w3-container theme-d1\"> \r\n    <span (click)=\"showMap = false\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n    <h2>Map</h2>\r\n  </header>\r\n  <arkmap [mapName]=\"player?.MapNames[serverKey]\" [points]=\"points\"></arkmap>\r\n  </div>\r\n</div>"
+module.exports = "<section class=\"w3-container\">\n  <button class=\"w3-button\" [ngClass]=\"{'theme-d1': demoMode, 'theme-l2': !demoMode, 'theme-hover': !demoMode}\" (click)=\"toggleDemoMode()\"><i *ngIf=\"demoMode\" class=\"material-icons\" style=\"margin: -5px 5px -5px -5px; vertical-align: middle;\">check</i>{{(demoMode ? \"Demo Mode Enabled\" : \"Enable Demo Mode\")}}</button>\n</section>"
 
 /***/ }),
 
 /***/ 407:
 /***/ (function(module, exports) {
 
-module.exports = "<app-menu #menu>\r\n  <h2 class=\"theme-text-d1\">Servers</h2>\r\n  <div class=\"w3-cell-row theme-l2\">\r\n    <div class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('overview')}\" (click)=\"menu.activate('overview')\">Overview</div>\r\n    <ng-container *ngIf=\"dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')\">\r\n      <div *ngFor=\"let server of dataService.Servers.Servers\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active(server.Key)}\" (click)=\"menu.activate(server.Key)\">{{server.Key}}</div>\r\n    </ng-container>\r\n  </div>\r\n</app-menu>"
+module.exports = "<div id=\"menu\" class=\"w3-sidebar theme-l2\" style=\"min-height: 52px;\"> \r\n  <h2 class=\"logo\"></h2>\r\n  <button id=\"menubtn\" class=\"w3-button w3-xlarge w3-display-topright\" (click)=\"toggleMenu()\">☰</button>\r\n  <section id=\"menucontent\" class=\"w3-container\"  [ngClass]=\"{'hide': !menuVisible}\">\r\n    <ng-content></ng-content>\r\n  </section>\r\n</div>"
 
 /***/ }),
 
 /***/ 408:
 /***/ (function(module, exports) {
 
-module.exports = "<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.UserSteamId != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'myprofile') &amp;&amp; dataService.hasFeatureAccess('pages', 'player', dataService.UserSteamId)\" class=\"w3-container\">\r\n  <h3 class=\"theme-text-d1\">My Profile</h3>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Hello, {{dataService.Servers.User.Name}}</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p>\r\n        Find your tames, view base stats and keep track of their food status. Get notified of pending imprints, the amount of fertilizer and gasoline remaining in your crops and generators. This and much more is available in your profile.\r\n      </p>\r\n      <p><a [routerLink]=\"'/player/' + dataService.UserSteamId\" class=\"\" style=\"text-decoration: none;\">View my profile&nbsp;❯</a></p>\r\n    </div>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; serverCount > 0 &amp;&amp; dataService.hasFeatureAccess('home', 'serverlist')\" class=\"w3-container\">\r\n  <h3 class=\"theme-text-d1\">Servers</h3>\r\n  <div *ngFor=\"let server of dataService.Servers.Servers\" class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3><a *ngIf=\"dataService.hasFeatureAccess('pages', 'server'); else server_no_link\" [routerLink]=\"'/server/' + server.Key\" style=\"text-decoration: none;\"><ng-container *ngIf=\"server.MapName\">{{server.MapName}} - </ng-container>{{server.Key}}</a><ng-template #server_no_link><ng-container *ngIf=\"server.MapName\">{{server.MapName}} - </ng-container>{{server.Key}}</ng-template></h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p class=\"w3-small\">\r\n        Last Update {{server.LastUpdate}}, Next Update {{server.NextUpdate || '-'}}\r\n      </p>\r\n      <p *ngIf=\"dataService.hasFeatureAccess('pages', 'server')\"><a [routerLink]=\"'/server/' + server.Key\" class=\"\" style=\"text-decoration: none;\">View server ❯</a></p>\r\n      <p *ngIf=\"dataService.hasFeatureAccess('pages', 'admin-server')\"><a [routerLink]=\"'/admin/' + server.Key\" class=\"\" style=\"text-decoration: none;\">Admin ❯</a></p>\r\n    </div>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'online')\" class=\"w3-container\">\r\n  <h3 class=\"theme-text-d1\">Online <span class=\"w3-tag w3-large theme-d1\">{{onlinePlayerCount}}</span></h3>\r\n  <div *ngIf=\"onlinePlayerCount == 0; else online_players_list\">There are no players online...</div>\r\n  <ng-template #online_players_list>\r\n    <div class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table w3-striped w3-bordered border-theme\">\r\n          <tr class=\"theme-d1\">\r\n              <th>Steam Name</th>\r\n              <th>Character Name</th>\r\n              <th>Tribe Name</th>\r\n              <th>Discord Tag</th>\r\n              <th>Server</th>\r\n              <th>Time Online</th>\r\n          </tr>\r\n          <ng-container *ngFor=\"let server of dataService.Servers.Servers\">\r\n            <tr *ngFor=\"let player of server.OnlinePlayers\">\r\n              <td>{{player.SteamName}}</td>\r\n              <td>{{player.CharacterName}}</td>\r\n              <td>{{player.TribeName}}</td>\r\n              <td>{{player.DiscordName}}</td>\r\n              <td>{{server.Key}}</td>\r\n              <td>{{player.TimeOnline}}</td>\r\n            </tr>\r\n          </ng-container>\r\n      </table>\r\n    </div>\r\n  </ng-template>\r\n</section>\r\n<ng-container *ngFor=\"let server of dataService.Servers?.Servers\">\r\n  <section *ngIf=\"isMenuActive(server.Key) &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')\" class=\"w3-container\">\r\n    <div class=\"w3-card-4 w3-responsive w3-margin-bottom\">\r\n      <header class=\"w3-container theme-d1\">\r\n        <h3><a *ngIf=\"dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link\" [routerLink]=\"'/server/' + server.Key\" style=\"text-decoration: none;\">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>\r\n      </header>\r\n      <div class=\"w3-container theme-l1\">\r\n        <table class=\"w3-table w3-bordered w3-small border-theme serverdetails\">\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Address</th>\r\n              <td style=\"width: max-content;\">{{server.Address}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Version</th>\r\n              <td>{{server.Version}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Player Slots</th>\r\n              <td>{{server.OnlinePlayerMax}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Map</th>\r\n              <td>{{server.MapName}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">In-Game Day</th>\r\n              <td>{{server.InGameTime}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Tamed Creatures</th>\r\n              <td>{{server.TamedCreatureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Cloud Creatures</th>\r\n              <td>{{server.CloudCreatureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Wild Creatures</th>\r\n              <td>{{server.WildCreatureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Structures</th>\r\n              <td>{{server.StructureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Players</th>\r\n              <td>{{server.PlayerCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Tribes</th>\r\n              <td>{{server.TribeCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Last Update</th>\r\n              <td>{{server.LastUpdate}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Next Update</th>\r\n              <td>{{server.NextUpdate}}</td>\r\n            </tr>\r\n            <tr style=\"border-bottom: none;\">\r\n              <th class=\"theme-text-d1\">Uptime</th>\r\n              <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>\r\n            </tr>\r\n          </table>\r\n      </div>\r\n    </div>\r\n\r\n    <!--<h3 class=\"theme-text-d1\"><a *ngIf=\"dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link\" [routerLink]=\"'/server/' + server.Key\" style=\"text-decoration: none;\">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>\r\n    <div class=\"w3-responsive w3-margin-bottom\">\r\n      <table class=\"w3-table w3-bordered w3-small border-theme serverdetails\">\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Address</th>\r\n          <td style=\"width: max-content;\">{{server.Address}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Version</th>\r\n          <td>{{server.Version}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Player Slots</th>\r\n          <td>{{server.OnlinePlayerMax}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Map</th>\r\n          <td>{{server.MapName}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">In-Game Time</th>\r\n          <td>{{server.InGameTime}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Tamed Creatures</th>\r\n          <td>{{server.TamedCreatureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Cloud Creatures</th>\r\n          <td>{{server.CloudCreatureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Wild Creatures</th>\r\n          <td>{{server.WildCreatureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Structures</th>\r\n          <td>{{server.StructureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Players</th>\r\n          <td>{{server.PlayerCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Tribes</th>\r\n          <td>{{server.TribeCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Last Update</th>\r\n          <td>{{server.LastUpdate}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Next Update</th>\r\n          <td>{{server.NextUpdate}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Uptime</th>\r\n          <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>\r\n        </tr>\r\n      </table>\r\n    </div>-->\r\n    <ng-container *ngIf=\"dataService.hasFeatureAccess('home', 'online')\">\r\n      <h3 class=\"theme-text-d1\">Online <span class=\"w3-tag w3-large theme-d1\">{{server.OnlinePlayerCount}}</span></h3>\r\n      <div *ngIf=\"server.OnlinePlayerCount == 0; else server_online_players_list\">There are no players online...</div>\r\n      <ng-template #server_online_players_list>\r\n        <div class=\"w3-card-4 w3-responsive w3-margin-bottom\">\r\n          <table *ngIf=\"isMenuActive(server.Key)\" class=\"w3-table w3-striped w3-bordered border-theme\">\r\n              <tr class=\"theme-d1\">\r\n                  <th>Steam Name</th>\r\n                  <th>Character Name</th>\r\n                  <th>Tribe Name</th>\r\n                  <th>Discord Tag</th>\r\n                  <th>Time Online</th>\r\n              </tr>\r\n              <tr *ngFor=\"let player of server.OnlinePlayers\">\r\n                <td>{{player.SteamName}}</td>\r\n                <td>{{player.CharacterName}}</td>\r\n                <td>{{player.TribeName}}</td>\r\n                <td>{{player.DiscordName}}</td>\r\n                <td>{{player.TimeOnline}}</td>\r\n              </tr>\r\n          </table>\r\n        </div>\r\n      </ng-template>\r\n    </ng-container>\r\n  </section>\r\n</ng-container>\r\n<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.hasFeatureAccess('home', 'externalresources')\" class=\"w3-container margin-top\">\r\n  <h3 class=\"theme-text-d1\">External Resources</h3>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Wiki</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p><a href=\"http://ark.gamepedia.com/\" style=\"text-decoration: none;\">Official ARK Survival Evolved Wiki&nbsp;❯</a></p>\r\n    </div>\r\n  </div>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Taming Calculators</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <ul class=\"w3-ul\" style=\"margin: 7px 0px;\">\r\n        <li style=\"padding-left: 0px;\"><a href=\"http://www.survive-ark.com/taming-calculator/\" style=\"text-decoration: none;\">Survive ARK: Taming Calculator&nbsp;❯</a></li>\r\n        <li style=\"padding-left: 0px;\"><a href=\"http://www.dododex.com/\" style=\"text-decoration: none;\">Dododex: Taming Calculator&nbsp;❯</a></li>\r\n      </ul>\r\n    </div>\r\n  </div>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Creature Library and Breeding Suggestions</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p><a href=\"https://github.com/cadon/ARKStatsExtractor\" style=\"text-decoration: none;\">ARK Smart Breeding&nbsp;❯</a></p>\r\n    </div>\r\n  </div>\r\n</section>"
+module.exports = "<app-menu #menu>\r\n  <h2 class=\"menu-header theme-text-d1\">Player</h2>\r\n  <div class=\"menu-items w3-cell-row theme-l2\">\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'profile', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('profile')}\" (click)=\"menu.activate('profile')\">Profile</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'creatures', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('creatures')}\" (click)=\"menu.activate('creatures')\">Creatures</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('creatures_cloud')}\" (click)=\"menu.activate('creatures_cloud')\">Creatures (Cloud)</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'breeding', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('breeding')}\" (click)=\"menu.activate('breeding')\">Breeding</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'crops', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('crop_plots')}\" (click)=\"menu.activate('crop_plots')\">Crops</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'generators', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('electrical_generators')}\" (click)=\"menu.activate('electrical_generators')\">Electrical Generators</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'kibbles-eggs', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('kibbles_and_eggs')}\" (click)=\"menu.activate('kibbles_and_eggs')\">Kibbles and Eggs</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('player', 'tribelog', steamId)\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('tribelog')}\" (click)=\"menu.activate('tribelog')\">Tribe Log</div>\r\n  </div>\r\n</app-menu>"
 
 /***/ }),
 
 /***/ 409:
 /***/ (function(module, exports) {
 
-module.exports = "<app-menu #menu>\r\n  <h2 class=\"theme-text-d1\">Server</h2>\r\n  <div class=\"w3-cell-row theme-l2\">\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'players')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('players')}\" (click)=\"menu.activate('players')\">Players</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'tribes')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('tribes')}\" (click)=\"menu.activate('tribes')\">Tribes</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-statistics')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('wildcreatures-statistics')}\" (click)=\"menu.activate('wildcreatures-statistics')\">Wild Statistics</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('wildcreatures')}\" (click)=\"menu.activate('wildcreatures')\">Wild Creatures</div>\r\n  </div>\r\n</app-menu>"
+module.exports = "<section *ngIf=\"loaded == false\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"loaded == true &amp;&amp; player == null\" class=\"w3-container\">\r\n  <div class=\"w3-panel w3-red\">\r\n    <h3>Error!</h3>\r\n    <p>No data could be loaded for the given steam id.</p>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"!isMenuActive('creatures_cloud') &amp;&amp; player != undefined\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Servers</h2>\r\n  <div *ngIf=\"player?.Servers\" class=\"w3-bar theme-l2 w3-card-4\">\r\n    <button *ngFor=\"let server of keysGetter(player?.Servers)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': active(server)}\" [style.width.%]=\"serverWidth()\" (click)=\"activate(server)\">{{server}}</button>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('profile') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'profile', steamId)\" class=\"w3-container\">\r\n  <a id=\"player\"></a><h2 class=\"theme-text-d1\">Player</h2>\r\n  <div class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Character Name</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Gender</th>\r\n          <th>Tribe Name</th>\r\n          <th>Steam Id</th>\r\n          <th>Tribe Id</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Level</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Engram Points</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Lat</th>\r\n          <th *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">Lng</th>\r\n          <th>Saved At</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr>\r\n          <td>{{player?.Servers[serverKey]?.CharacterName}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Gender}}</td>\r\n          <td>{{player?.Servers[serverKey]?.TribeName}}</td>\r\n          <td>{{player?.Servers[serverKey]?.FakeSteamId || player?.Servers[serverKey]?.SteamId}}</td>\r\n          <td>{{player?.Servers[serverKey]?.TribeId}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Level}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.EngramPoints | number}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Latitude | number:'1.1-1'}}</td>\r\n          <td *ngIf=\"dataService.hasFeatureAccess('player', 'profile-detailed', steamId)\">{{player?.Servers[serverKey]?.Longitude | number:'1.1-1'}}</td>\r\n          <td>{{dataService.toDate(player?.Servers[serverKey]?.SavedAt)}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'creatures', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"creatures\"></a><h2 class=\"theme-text-d1 w3-left\">Creatures <span class=\"w3-tag w3-large theme-d1\">{{filteredCreatures.length}}</span></h2></div>\r\n    <div class=\"w3-cell w3-cell-middle\"><button class=\"w3-button theme-d1 w3-right\" (click)=\"openMap($event)\">Show Map</button></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey]?.Creatures?.length > 0)\">There are no creatures...</div>\r\n  <ng-container *ngIf=\"player.Servers[serverKey]?.Creatures?.length > 0\">\r\n    <div class=\"inner-addon right-addon\">\r\n      <i *ngIf=\"creaturesFilter != null &amp;&amp; creaturesFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"creaturesFilter = ''; filterAndSort();\">close</i>\r\n      <input [ngModel]=\"creaturesFilter\" (ngModelChange)=\"creaturesFilter = $event; filterAndSort();\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n    </div>\r\n    <div *ngIf=\"numCreatureTabs() > 1\" class=\"w3-bar theme-l2 w3-card-4 w3-margin-bottom\">\r\n      <button href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('status')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('status')\">Overview / Status</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('player', 'creatures-basestats', steamId)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('stats')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('stats')\">Base Stats</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('player', 'creatures-ids', steamId)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('ids')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('ids')\">IDs</button>\r\n    </div>\r\n    <div class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table-all border-theme\">\r\n        <thead>\r\n          <tr class=\"theme-d1\">\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Name\" (click)=\"setCreaturesSort('name')\">Name</th>\r\n            <!--<th>ClassName</th>-->\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Species\" (click)=\"setCreaturesSort('species')\">Species</th>\r\n            <!--<th>Aliases</th>-->\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Gender\" (click)=\"setCreaturesSort('gender')\">Gender</th>\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Base Level\" (click)=\"setCreaturesSort('base_level')\">Base Level</th>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Level\" (click)=\"setCreaturesSort('level')\">Level</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Imprint\" (click)=\"setCreaturesSort('imprint')\">Imprint</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Food\" (click)=\"setCreaturesSort('food')\">Food</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Latitude\" (click)=\"setCreaturesSort('latitude')\">Lat</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Longitude\" (click)=\"setCreaturesSort('longitude')\">Lng</th>\r\n              <th>Status</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Owner\" (click)=\"setCreaturesSort('owner')\">Owner</th>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Health\" (click)=\"setCreaturesSort('stat_health')\">HP</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Stamina\" (click)=\"setCreaturesSort('stat_stamina')\">ST</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Oxygen\" (click)=\"setCreaturesSort('stat_oxygen')\">OX</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Food\" (click)=\"setCreaturesSort('stat_food')\">FO</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Weight\" (click)=\"setCreaturesSort('stat_weight')\">WE</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Melee\" (click)=\"setCreaturesSort('stat_melee')\">ME</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Speed\" (click)=\"setCreaturesSort('stat_speed')\">SP</th>\r\n              <!--<th></th>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID1\" (click)=\"setCreaturesSort('id1')\">ID1</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID2\" (click)=\"setCreaturesSort('id2')\">ID2</th>\r\n            </ng-container>\r\n          </tr>\r\n        </thead>\r\n        <tbody>\r\n          <tr *ngIf=\"!(filteredCreatures?.length > 0)\"><td [colSpan]=\"(activeCreaturesMode('ids') ? 6 : 11)\">No matching creatures...</td></tr>\r\n          <tr *ngFor=\"let creature of filteredCreatures\">\r\n            <td>{{creature.Name}}</td>\r\n            <!--<td>{{creature.ClassName}}</td>-->\r\n            <td>{{creature.Species}}</td>\r\n            <!--<td>{{creature.Aliases}}</td>-->\r\n            <td>{{creature.Gender}}</td>\r\n            <td>{{creature.BaseLevel}}</td>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status')\">\r\n              <td><span *ngIf=\"creature.BaseLevel != creature.Level\">{{creature.Level}}</span></td>\r\n              <td>{{creature.Imprint | percent:'1.0-0'}}</td>\r\n              <td>\r\n                <div *ngIf=\"creature.FoodStatus != null\" class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n                  <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{creature.FoodStatus | percent:'1.0-0'}}</div>\r\n                  <div class=\"theme-c1 w3-round\" [style.width.%]=\"creature.FoodStatus * 100\">&nbsp;</div>\r\n                </div>\r\n              </td>\r\n              <td>{{creature.Latitude | number:'1.1-1'}}</td>\r\n              <td>{{creature.Longitude | number:'1.1-1'}}</td>\r\n              <td>\r\n                <span *ngIf=\"haveMatingCooldown(creature)\">Next mating {{dataService.toRelativeDate(creature.NextMating)}}</span>\r\n                <div *ngIf=\"creature.BabyAge != null\">\r\n                  <div>\r\n                    <div class=\"w3-cell w3-cell-middle\">Baby</div>\r\n                    <div class=\"w3-cell w3-cell-middle\">\r\n                      <div class=\"app-green-light w3-round\" style=\"width: 4em; position: relative; margin: 0em 0.5em;\">\r\n                        <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{creature.BabyAge | percent:'1.0-0'}}</div>\r\n                        <div class=\"theme-c1 w3-round\" [style.width.%]=\"creature.BabyAge * 100\">&nbsp;</div>\r\n                      </div>\r\n                    </div>\r\n                    <div class=\"w3-cell\">cuddle {{dataService.toRelativeDate(creature.BabyNextCuddle)}}</div>\r\n                  </div>\r\n                </div>\r\n              </td>\r\n              <td>{{creature.OwnerType}}</td>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <td>{{creature.BaseStats?.Health}}</td>\r\n              <td>{{creature.BaseStats?.Stamina}}</td>\r\n              <td>{{creature.BaseStats?.Oxygen}}</td>\r\n              <td>{{creature.BaseStats?.Food}}</td>\r\n              <td>{{creature.BaseStats?.Weight}}</td>\r\n              <td>{{creature.BaseStats?.Melee}}</td>\r\n              <td>{{creature.BaseStats?.MovementSpeed}}</td>\r\n              <!--<td><i class=\"material-icons w3-medium\" style=\"cursor: pointer;\" (click)=\"copyCreature(creature)\">content_copy</i></td>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <td>{{creature.Id1}}</td>\r\n              <td>{{creature.Id2}}</td>\r\n            </ng-container>\r\n          </tr>\r\n        </tbody>\r\n      </table>\r\n    </div>\r\n  </ng-container>\r\n</section>\r\n<section *ngIf=\"isMenuActive('breeding') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'breeding', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"imprint_timers\"></a><h2 class=\"theme-text-d1 w3-left\">Breeding <span class=\"w3-tag w3-large theme-d1\">{{imprintCreatures.length}}</span></h2></div>\r\n      <div class=\"w3-cell w3-cell-middle\"><button class=\"w3-button w3-right\" [ngClass]=\"{'theme-d1': imprintNotifications, 'theme-l2': !imprintNotifications, 'theme-hover': !imprintNotifications}\" (click)=\"imprintNotifications = !imprintNotifications\"><i *ngIf=\"imprintNotifications\" class=\"material-icons\" style=\"margin: -5px 5px -5px -5px; vertical-align: middle;\">check</i>{{(imprintNotifications ? \"Notifications Enabled\" : \"Enable Notifications\")}}</button></div>\r\n  </div>\r\n  <div *ngIf=\"!(imprintCreatures?.length > 0)\">There are no baby creatures...</div>\r\n  <div *ngIf=\"imprintCreatures?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Species</th>\r\n          <th>Gender</th>\r\n          <th>Base Level</th>\r\n          <th>Imprint</th>\r\n          <th>Progress</th>\r\n          <th>Fully Grown At</th>\r\n          <th>Next Imprint</th>\r\n          <th *ngIf=\"imprintNotifications\"></th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let creature of imprintCreatures; let index = index\" [ngClass]=\"{'odd': index % 2 == 1}\">\r\n          <td>{{creature.Name}}</td>\r\n          <td>{{creature.Species}}</td>\r\n          <td>{{creature.Gender}}</td>\r\n          <td>{{creature.BaseLevel}}</td>\r\n          <td>{{creature.Imprint | percent:'1.0-0'}}</td>\r\n          <td>\r\n            <div class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n              <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{creature.BabyAge | percent:'1.0-0'}}</div>\r\n              <div class=\"theme-c1 w3-round\" [style.width.%]=\"creature.BabyAge * 100\">&nbsp;</div>\r\n            </div>\r\n          </td>\r\n          <td>{{dataService.toDate(creature.BabyFullyGrown)}}</td>\r\n          <td><timer [time]=\"creature.BabyNextCuddle\" [notification]=\"imprintNotifications\" [state]=\"getStateForCreature(creature)\"></timer></td>\r\n          <td *ngIf=\"imprintNotifications\"><input style=\"top: 0;\" class=\"w3-check w3-right\" type=\"checkbox\" [checked]=\"getStateForCreature(creature).imprintNotifications\" (change)=\"toggleImprintNotificationForCreature(creature)\" /></td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n  <!--<p *ngIf=\"getCurrentServer() != undefined\" class=\"w3-small\">\r\n    Last Update {{getCurrentServer().LastUpdate}}, Next Update {{getCurrentServer().NextUpdate || '-'}}\r\n  </p>-->\r\n</section>\r\n<section *ngIf=\"isMenuActive('kibbles_and_eggs') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'kibbles-eggs', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"kibblesandeggs\"></a><h2 class=\"theme-text-d1 w3-left\">Kibbles and Eggs <span class=\"w3-tag w3-large theme-d1\">{{sumKibbleAndEggs() | number:0.0-0}}</span></h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey].KibblesAndEggs?.length > 0)\">There are no kibbles or eggs...</div>\r\n  <div *ngIf=\"player.Servers[serverKey].KibblesAndEggs?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Kibbles</th>\r\n          <th>Eggs</th>\r\n          <th>Total</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let ke of player.Servers[serverKey].KibblesAndEggs\">\r\n          <td>{{ke.Name}}</td>\r\n          <td>{{ke.KibbleCount}}</td>\r\n          <td>{{ke.EggCount}}</td>\r\n          <td>{{ke.KibbleCount + ke.EggCount}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures_cloud') &amp;&amp; haveCluster()\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Clusters</h2>\r\n  <div *ngIf=\"player?.Clusters\" class=\"w3-bar theme-l2 w3-card-4\">\r\n    <button *ngFor=\"let cluster of keysGetter(player?.Clusters)\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCluster(cluster)}\" [style.width.%]=\"clusterWidth()\" (click)=\"activateCluster(cluster)\">{{cluster}}</button>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures_cloud') &amp;&amp; !haveCluster() &amp;&amp; dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Creatures</h2></div>\r\n  </div>\r\n  <div>There are no creatures in the cloud...</div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('creatures_cloud') &amp;&amp; haveCluster() &amp;&amp; dataService.hasFeatureAccess('player', 'creatures-cloud', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><h2 class=\"theme-text-d1 w3-left\">Creatures <span class=\"w3-tag w3-large theme-d1\">{{filteredClusterCreatures.length}}</span></h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Clusters[clusterKey]?.Creatures?.length > 0)\">There are no creatures in the cloud...</div>\r\n  <div *ngIf=\"player.Clusters[clusterKey]?.Creatures?.length > 0\" class=\"inner-addon right-addon\">\r\n    <i *ngIf=\"creaturesClusterFilter != null &amp;&amp; creaturesClusterFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"creaturesClusterFilter = ''; filterCluster();\">close</i>\r\n    <input [ngModel]=\"creaturesClusterFilter\" (ngModelChange)=\"creaturesClusterFilter = $event; filterCluster();\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n  </div>\r\n  <div *ngIf=\"player.Clusters[clusterKey]?.Creatures?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Name</th>\r\n          <th>Species</th>\r\n          <th>Level</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngIf=\"!(filteredClusterCreatures?.length > 0)\"><td colspan=\"3\">No matching creatures...</td></tr>\r\n        <tr *ngFor=\"let creature of filteredClusterCreatures\">\r\n          <td>{{creature.Name}}</td>\r\n          <td>{{creature.Species}}</td>\r\n          <td>{{creature.Level}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('crop_plots') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'crops', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"cropplots\"></a><h2 class=\"theme-text-d1 w3-left\">Crops</h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey].CropPlots?.length > 0)\">There are no crops...</div>\r\n  <div *ngIf=\"player.Servers[serverKey].CropPlots?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Crop</th>\r\n          <th>Size</th>\r\n          <th>Fertilizer %</th>\r\n          <th>Fertilizer Units</th>\r\n          <th>Water</th>\r\n          <th>Lat</th>\r\n          <th>Lng</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let cp of player.Servers[serverKey].CropPlots\">\r\n          <td>{{(cp.PlantedCropName || cp.PlantedCropClassName)}}</td>\r\n          <td>{{cp.Size}}</td>\r\n          <td>\r\n            <div class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n              <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{(cp.FertilizerQuantity / cp.FertilizerMax) | percent:'1.0-0'}}</div>\r\n              <div class=\"theme-c1 w3-round\" [style.width.%]=\"(cp.FertilizerQuantity / cp.FertilizerMax) * 100\">&nbsp;</div>\r\n            </div>\r\n          </td>\r\n          <td>{{cp.FertilizerQuantity | number}}</td>\r\n          <td>{{cp.WaterAmount | number:'1.0-0'}}</td>\r\n          <td>{{cp.Latitude | number:'1.1-1'}}</td>\r\n          <td>{{cp.Longitude | number:'1.1-1'}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'generators', steamId)\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"electricalgenerators\"></a><h2 class=\"theme-text-d1 w3-left\">Electrical Generators</h2></div>\r\n  </div>\r\n  <div *ngIf=\"!(player.Servers[serverKey].ElectricalGenerators?.length > 0)\">There are no electrical generators...</div>\r\n  <div *ngIf=\"player.Servers[serverKey].ElectricalGenerators?.length > 0\" class=\"w3-card-4 w3-responsive\">\r\n    <table class=\"w3-table-all border-theme\">\r\n      <thead>\r\n        <tr class=\"theme-d1\">\r\n          <th>Gasoline %</th>\r\n          <th>Gasoline Quantity</th>\r\n          <th>Activated</th>\r\n          <th>Lat</th>\r\n          <th>Lng</th>\r\n        </tr>\r\n      </thead>\r\n      <tbody>\r\n        <tr *ngFor=\"let eg of player.Servers[serverKey].ElectricalGenerators\">\r\n          <td>\r\n            <div *ngIf=\"eg.Activated == true\" class=\"app-green-light w3-round\" style=\"width: 6em; position: relative;\">\r\n              <div style=\"position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;\">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>\r\n              <div class=\"theme-c1 w3-round\" [style.width.%]=\"(eg.GasolineQuantity / 800.0) * 100\">&nbsp;</div>\r\n            </div>\r\n          </td>\r\n          <td>{{eg.GasolineQuantity | number}}</td>\r\n          <td>{{(eg.Activated == true ? \"Yes\" : \"No\")}}</td>\r\n          <td>{{eg.Latitude | number:'1.1-1'}}</td>\r\n          <td>{{eg.Longitude | number:'1.1-1'}}</td>\r\n        </tr>\r\n      </tbody>\r\n    </table>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('tribelog') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'tribelog', steamId)\" class=\"w3-container\">\r\n    <div class=\"w3-cell-row\">\r\n      <div class=\"w3-cell\"><a id=\"tribelog\"></a><h2 class=\"theme-text-d1 w3-left\">Tribe Log</h2></div>\r\n    </div>\r\n    <div *ngIf=\"!(player.Servers[serverKey].TribeLog?.length > 0)\">There are no tribe logs...</div>\r\n    <ng-container *ngIf=\"player.Servers[serverKey].TribeLog?.length > 0\">\r\n      <div class=\"inner-addon right-addon\">\r\n          <i *ngIf=\"tribeLogFilter != null &amp;&amp; tribeLogFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"tribeLogFilter = '';\">close</i>\r\n          <input [ngModel]=\"tribeLogFilter\" (ngModelChange)=\"tribeLogFilter = $event;\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n      </div>\r\n      <ark-data-table [rows]=\"player.Servers[serverKey].TribeLog\" [filter]=\"tribeLogFilter\" [filterFunction]=\"tribeLogFilterFunction\">\r\n        <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"day,time,message\"></ark-dt-mode>\r\n        <ark-dt-column key=\"day\">\r\n          <ng-template ark-dt-header>\r\n            Day\r\n          </ng-template>\r\n          <ng-template let-log ark-dt-cell>\r\n              {{log.Day}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"time\">\r\n          <ng-template ark-dt-header>\r\n            Time\r\n          </ng-template>\r\n          <ng-template let-log ark-dt-cell>\r\n              {{log.Time}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"message\">\r\n          <ng-template ark-dt-header>\r\n            Message\r\n          </ng-template>\r\n          <ng-template let-log ark-dt-cell>\r\n              <span [outerHTML]=\"log.Message | sanitizeHtml\"></span>\r\n          </ng-template>\r\n        </ark-dt-column>\r\n      </ark-data-table>\r\n    </ng-container>\r\n  </section>\r\n<div id=\"modal_map\" class=\"w3-modal\" [style.display]=\"showMap ? 'block' : 'none'\">\r\n  <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"closeMap($event)\" style=\"font-size: 0;\">\r\n  <header class=\"w3-container theme-d1\"> \r\n    <span (click)=\"showMap = false\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n    <h2>Map</h2>\r\n  </header>\r\n  <arkmap [mapName]=\"player?.MapNames[serverKey]\" [points]=\"points\"></arkmap>\r\n  </div>\r\n</div>"
 
 /***/ }),
 
 /***/ 410:
 /***/ (function(module, exports) {
 
-module.exports = "<section *ngIf=\"loaded == false || ((isMenuActive('wildcreatures') || isMenuActive('wildcreatures-statistics')) &amp;&amp; creaturesLoaded == false)\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"loaded == true &amp;&amp; server == null\" class=\"w3-container\">\r\n  <div class=\"w3-panel w3-red\">\r\n    <h3>Error!</h3>\r\n    <p>No data could be loaded for the given server key.</p>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'players')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Players</h2>\r\n  <ark-data-table [rows]=\"filteredPlayers\" trackByProp=\"Id\" [sortFunctions]=\"playerSortFunctions\" orderByColumn=\"last_active\">\r\n    <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"character_name,tribe_name,last_active\"></ark-dt-mode>\r\n    <ark-dt-column key=\"character_name\" [orderBy]=\"true\" title=\"Sort by Character Name\" thenSort=\"last_active\">\r\n      <ng-template ark-dt-header>\r\n        Character Name\r\n      </ng-template>\r\n      <ng-template let-player ark-dt-cell>\r\n        <a *ngIf=\"dataService.hasFeatureAccessObservable('pages', 'player', player.SteamId) | async; else player_no_link\" [routerLink]=\"'/player/' + player.SteamId\">{{player.CharacterName}}</a><ng-template #player_no_link>{{player.CharacterName}}</ng-template>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"tribe_name\" [orderBy]=\"true\" title=\"Sort by Tribe Name\" thenSort=\"character_name\">\r\n      <ng-template ark-dt-header>\r\n        Tribe Name\r\n      </ng-template>\r\n      <ng-template let-player ark-dt-cell>\r\n        {{player.TribeName}}\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"last_active\" [orderBy]=\"true\" title=\"Sort by Last Active\" thenSort=\"character_name\">\r\n      <ng-template ark-dt-header>\r\n        Last Active\r\n      </ng-template>\r\n      <ng-template let-player ark-dt-cell>\r\n        <relative-time [time]=\"player.LastActiveTime\"></relative-time>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n  </ark-data-table>\r\n</section>\r\n<section *ngIf=\"isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'tribes')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Tribes</h2>\r\n  <ark-data-table [rows]=\"filteredTribes\" trackByProp=\"Id\" [sortFunctions]=\"tribeSortFunctions\" orderByColumn=\"last_active\">\r\n    <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"tribe_name,members,last_active\"></ark-dt-mode>\r\n    <ark-dt-column key=\"tribe_name\" [orderBy]=\"true\" title=\"Sort by Tribe Name\" thenSort=\"last_active\">\r\n      <ng-template ark-dt-header>\r\n        Tribe Name\r\n      </ng-template>\r\n      <ng-template let-tribe ark-dt-cell>\r\n          {{tribe.Name}}\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"members\">\r\n      <ng-template ark-dt-header>\r\n        Members\r\n      </ng-template>\r\n      <ng-template let-tribe ark-dt-cell>\r\n          <span *ngFor=\"let member of tribe.MemberSteamIds; let last = last\"><a *ngIf=\"dataService.hasFeatureAccess('pages', 'player', member); else tribe_member_no_link\" [routerLink]=\"'/player/' + member\">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribe_member_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf=\"!last\">, </span></span>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"last_active\" [orderBy]=\"true\" title=\"Sort by Last Active\" thenSort=\"tribe_name\">\r\n      <ng-template ark-dt-header>\r\n        Last Active\r\n      </ng-template>\r\n      <ng-template let-tribe ark-dt-cell>\r\n        <relative-time [time]=\"tribe.LastActiveTime\"></relative-time>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n  </ark-data-table>\r\n</section>\r\n<section *ngIf=\"isMenuActive('wildcreatures-statistics') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures-statistics')\" class=\"w3-container\">\r\n    <h2 class=\"theme-text-d1\">Wild Statistics <span class=\"w3-tag w3-large theme-d1\">{{(wild.Statistics.Species?.length || 0) | number}}</span></h2>\r\n    <ark-data-table [rows]=\"wild.Statistics.Species\" trackByProp=\"ClassName\" [sortFunctions]=\"wildStatisticsSortFunctions\" orderByColumn=\"species\">\r\n        <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"species,class_name,aliases,count,fraction\"></ark-dt-mode>\r\n        <ark-dt-column key=\"species\" [orderBy]=\"true\" title=\"Sort by Species\" thenSort=\"count\">\r\n          <ng-template ark-dt-header>\r\n            Species\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Name}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"class_name\" [orderBy]=\"true\" title=\"Sort by Class Name\" thenSort=\"count\">\r\n          <ng-template ark-dt-header>\r\n            Class Name\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.ClassName}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"aliases\">\r\n          <ng-template ark-dt-header>\r\n            Aliases\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Aliases.length > 0 ? species.Aliases.join(', ') : ''}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"count\" [orderBy]=\"true\" title=\"Sort by Count\" thenSort=\"species\">\r\n          <ng-template ark-dt-header>\r\n            Count\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Count | number}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"fraction\" [orderBy]=\"true\" title=\"Sort by Fraction\" thenSort=\"species\">\r\n          <ng-template ark-dt-header>\r\n            Fraction\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Fraction | percent:'1.0-4'}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n      </ark-data-table>\r\n</section>\r\n<section *ngIf=\"isMenuActive('wildcreatures') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures')\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"creatures\"></a><h2 class=\"theme-text-d1 w3-left\">Wild Creatures <span class=\"w3-tag w3-large theme-d1\">{{(filteredCreatures?.length || 0) | number}}</span>&nbsp;/&nbsp;<span class=\"w3-tag w3-large theme-d1\">{{(wild?.Statistics?.CreatureCount || 0) | number}}</span></h2></div>\r\n    <div class=\"w3-cell w3-cell-middle\"><button class=\"w3-button theme-d1 w3-right\" (click)=\"openMap($event)\">Show Map</button></div>\r\n  </div>\r\n  <div *ngIf=\"!(species?.length > 0)\">There are no creatures...</div>\r\n  <ng-container *ngIf=\"species?.length > 0\">\r\n    <select [ngModel]=\"selectedSpecies\" (ngModelChange)=\"selectedSpecies = $event; filterAndSortWild();\" class=\"w3-select w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" style=\"padding: 8px;\">\r\n        <option *ngFor=\"let s of species\" [value]=\"s\">{{wild.Species[s].Name || s}}</option>\r\n      </select>\r\n    <!--<div class=\"inner-addon right-addon\">\r\n      <i *ngIf=\"creaturesFilter != null &amp;&amp; creaturesFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"creaturesFilter = ''; filterAndSortWild();\">close</i>\r\n      <input [ngModel]=\"creaturesFilter\" (ngModelChange)=\"creaturesFilter = $event; filterAndSortWild();\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n    </div>-->\r\n    <div *ngIf=\"numCreatureTabs() > 1\" class=\"w3-bar theme-l2 w3-card-4 w3-margin-bottom\">\r\n      <button href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('status')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('status')\">Overview</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-basestats')\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('stats')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('stats')\">Base Stats</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-ids')\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('ids')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('ids')\">IDs</button>\r\n    </div>\r\n    <div class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table-all border-theme\">\r\n        <thead>\r\n          <tr class=\"theme-d1\">\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Gender\" (click)=\"setCreaturesSort('gender')\">Gender</th>\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Base Level\" (click)=\"setCreaturesSort('base_level')\">Base Level</th>\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Tameable\" (click)=\"setCreaturesSort('tameable')\">Tameable</th>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by X\" (click)=\"setCreaturesSort('x')\">X</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Y\" (click)=\"setCreaturesSort('y')\">Y</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Z\" (click)=\"setCreaturesSort('z')\">Z</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Latitude\" (click)=\"setCreaturesSort('latitude')\">Lat</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Longitude\" (click)=\"setCreaturesSort('longitude')\">Lng</th>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Health\" (click)=\"setCreaturesSort('stat_health')\">HP</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Stamina\" (click)=\"setCreaturesSort('stat_stamina')\">ST</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Oxygen\" (click)=\"setCreaturesSort('stat_oxygen')\">OX</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Food\" (click)=\"setCreaturesSort('stat_food')\">FO</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Weight\" (click)=\"setCreaturesSort('stat_weight')\">WE</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Melee\" (click)=\"setCreaturesSort('stat_melee')\">ME</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Speed\" (click)=\"setCreaturesSort('stat_speed')\">SP</th>\r\n              <!--<th></th>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID1\" (click)=\"setCreaturesSort('id1')\">ID1</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID2\" (click)=\"setCreaturesSort('id2')\">ID2</th>\r\n            </ng-container>\r\n          </tr>\r\n        </thead>\r\n        <tbody>\r\n          <tr *ngIf=\"!(filteredCreatures?.length > 0)\"><td [colSpan]=\"activeCreaturesMode('status') ? 8 : (activeCreaturesMode('stats') ? 10 : 5)\">No matching creatures...</td></tr>\r\n          <tr *ngFor=\"let creature of filteredCreatures\">\r\n            <td>{{creature.Gender}}</td>\r\n            <td>{{creature.BaseLevel}}</td>\r\n            <td>{{(wild.Species[selectedSpecies].IsTameable &amp;&amp; creature.IsTameable == true ? \"Yes\" : \"No\")}}</td>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status')\">\r\n              <td>{{creature.X}}</td>\r\n              <td>{{creature.Y}}</td>\r\n              <td>{{creature.Z}}</td>\r\n              <td>{{creature.Latitude | number:'1.1-1'}}</td>\r\n              <td>{{creature.Longitude | number:'1.1-1'}}</td>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <td>{{creature.BaseStats?.Health}}</td>\r\n              <td>{{creature.BaseStats?.Stamina}}</td>\r\n              <td>{{creature.BaseStats?.Oxygen}}</td>\r\n              <td>{{creature.BaseStats?.Food}}</td>\r\n              <td>{{creature.BaseStats?.Weight}}</td>\r\n              <td>{{creature.BaseStats?.Melee}}</td>\r\n              <td>{{creature.BaseStats?.MovementSpeed}}</td>\r\n              <!--<td><i class=\"material-icons w3-medium\" style=\"cursor: pointer;\" (click)=\"copyCreature(creature)\">content_copy</i></td>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <td>{{creature.Id1}}</td>\r\n              <td>{{creature.Id2}}</td>\r\n            </ng-container>\r\n          </tr>\r\n        </tbody>\r\n      </table>\r\n    </div>\r\n  </ng-container>\r\n</section>\r\n<div id=\"modal_map\" class=\"w3-modal\" [style.display]=\"showMap ? 'block' : 'none'\">\r\n    <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"closeMap($event)\" style=\"font-size: 0;\">\r\n    <header class=\"w3-container theme-d1\"> \r\n      <span (click)=\"showMap = false\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n      <h2>Map</h2>\r\n    </header>\r\n    <arkmap [mapName]=\"server?.MapName\" [points]=\"points\"></arkmap>\r\n    </div>\r\n  </div>"
+module.exports = "<app-menu #menu>\r\n  <h2 class=\"menu-header theme-text-d1\">Servers</h2>\r\n  <div class=\"menu-items w3-cell-row theme-l2\">\r\n    <div class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('overview')}\" (click)=\"menu.activate('overview')\">Overview</div>\r\n    <ng-container *ngIf=\"dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')\">\r\n      <div *ngFor=\"let server of dataService.Servers.Servers\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active(server.Key)}\" (click)=\"menu.activate(server.Key)\">{{server.Key}}</div>\r\n    </ng-container>\r\n  </div>\r\n</app-menu>"
 
 /***/ }),
 
-/***/ 670:
+/***/ 411:
+/***/ (function(module, exports) {
+
+module.exports = "<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.UserSteamId != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'myprofile') &amp;&amp; dataService.hasFeatureAccess('pages', 'player', dataService.UserSteamId)\" class=\"w3-container\">\r\n  <h3 class=\"theme-text-d1\">My Profile</h3>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Hello, {{dataService.Servers.User.Name}}</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p>\r\n        Find your tames, view base stats and keep track of their food status. Get notified of pending imprints, the amount of fertilizer and gasoline remaining in your crops and generators. This and much more is available in your profile.\r\n      </p>\r\n      <p><a [routerLink]=\"'/player/' + dataService.UserSteamId\" class=\"\" style=\"text-decoration: none;\">View my profile&nbsp;❯</a></p>\r\n    </div>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; serverCount > 0 &amp;&amp; dataService.hasFeatureAccess('home', 'serverlist')\" class=\"w3-container\">\r\n  <h3 class=\"theme-text-d1\">Servers</h3>\r\n  <div *ngFor=\"let server of dataService.Servers.Servers\" class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3><a *ngIf=\"dataService.hasFeatureAccess('pages', 'server'); else server_no_link\" [routerLink]=\"'/server/' + server.Key\" style=\"text-decoration: none;\"><ng-container *ngIf=\"server.MapName\">{{server.MapName}} - </ng-container>{{server.Key}}</a><ng-template #server_no_link><ng-container *ngIf=\"server.MapName\">{{server.MapName}} - </ng-container>{{server.Key}}</ng-template></h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p class=\"w3-small\">\r\n        Last Update {{server.LastUpdate}}, Next Update {{server.NextUpdate || '-'}}\r\n      </p>\r\n      <p *ngIf=\"dataService.hasFeatureAccess('pages', 'server')\"><a [routerLink]=\"'/server/' + server.Key\" class=\"\" style=\"text-decoration: none;\">View server ❯</a></p>\r\n      <p *ngIf=\"dataService.hasFeatureAccess('pages', 'admin-server')\"><a [routerLink]=\"'/admin/' + server.Key\" class=\"\" style=\"text-decoration: none;\">Admin ❯</a></p>\r\n    </div>\r\n  </div>\r\n</section>\r\n<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'online')\" class=\"w3-container\">\r\n  <h3 class=\"theme-text-d1\">Online <span class=\"w3-tag w3-large theme-d1\">{{onlinePlayerCount}}</span></h3>\r\n  <div *ngIf=\"onlinePlayerCount == 0; else online_players_list\">There are no players online...</div>\r\n  <ng-template #online_players_list>\r\n    <div class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table w3-striped w3-bordered border-theme\">\r\n          <tr class=\"theme-d1\">\r\n              <th>Steam Name</th>\r\n              <th>Character Name</th>\r\n              <th>Tribe Name</th>\r\n              <th>Discord Tag</th>\r\n              <th>Server</th>\r\n              <th>Time Online</th>\r\n          </tr>\r\n          <ng-container *ngFor=\"let server of dataService.Servers.Servers\">\r\n            <tr *ngFor=\"let player of server.OnlinePlayers\">\r\n              <td>{{player.SteamName}}</td>\r\n              <td>{{player.CharacterName}}</td>\r\n              <td>{{player.TribeName}}</td>\r\n              <td>{{player.DiscordName}}</td>\r\n              <td>{{server.Key}}</td>\r\n              <td>{{player.TimeOnline}}</td>\r\n            </tr>\r\n          </ng-container>\r\n      </table>\r\n    </div>\r\n  </ng-template>\r\n</section>\r\n<ng-container *ngFor=\"let server of dataService.Servers?.Servers\">\r\n  <section *ngIf=\"isMenuActive(server.Key) &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')\" class=\"w3-container\">\r\n    <div class=\"w3-card-4 w3-responsive w3-margin-bottom\">\r\n      <header class=\"w3-container theme-d1\">\r\n        <h3><a *ngIf=\"dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link\" [routerLink]=\"'/server/' + server.Key\" style=\"text-decoration: none;\">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>\r\n      </header>\r\n      <div class=\"w3-container theme-l1\">\r\n        <table class=\"w3-table w3-bordered w3-small border-theme serverdetails\">\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Address</th>\r\n              <td style=\"width: max-content;\">{{server.Address}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Version</th>\r\n              <td>{{server.Version}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Player Slots</th>\r\n              <td>{{server.OnlinePlayerMax}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Map</th>\r\n              <td>{{server.MapName}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">In-Game Day</th>\r\n              <td>{{server.InGameTime}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Tamed Creatures</th>\r\n              <td>{{server.TamedCreatureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Cloud Creatures</th>\r\n              <td>{{server.CloudCreatureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Wild Creatures</th>\r\n              <td>{{server.WildCreatureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Structures</th>\r\n              <td>{{server.StructureCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Players</th>\r\n              <td>{{server.PlayerCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Tribes</th>\r\n              <td>{{server.TribeCount | number}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Last Update</th>\r\n              <td>{{server.LastUpdate}}</td>\r\n            </tr>\r\n            <tr>\r\n              <th class=\"theme-text-d1\">Next Update</th>\r\n              <td>{{server.NextUpdate}}</td>\r\n            </tr>\r\n            <tr style=\"border-bottom: none;\">\r\n              <th class=\"theme-text-d1\">Uptime</th>\r\n              <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>\r\n            </tr>\r\n          </table>\r\n      </div>\r\n    </div>\r\n\r\n    <!--<h3 class=\"theme-text-d1\"><a *ngIf=\"dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link\" [routerLink]=\"'/server/' + server.Key\" style=\"text-decoration: none;\">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>\r\n    <div class=\"w3-responsive w3-margin-bottom\">\r\n      <table class=\"w3-table w3-bordered w3-small border-theme serverdetails\">\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Address</th>\r\n          <td style=\"width: max-content;\">{{server.Address}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Version</th>\r\n          <td>{{server.Version}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Player Slots</th>\r\n          <td>{{server.OnlinePlayerMax}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Map</th>\r\n          <td>{{server.MapName}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">In-Game Time</th>\r\n          <td>{{server.InGameTime}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Tamed Creatures</th>\r\n          <td>{{server.TamedCreatureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Cloud Creatures</th>\r\n          <td>{{server.CloudCreatureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Wild Creatures</th>\r\n          <td>{{server.WildCreatureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Structures</th>\r\n          <td>{{server.StructureCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Players</th>\r\n          <td>{{server.PlayerCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Tribes</th>\r\n          <td>{{server.TribeCount | number}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Last Update</th>\r\n          <td>{{server.LastUpdate}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Next Update</th>\r\n          <td>{{server.NextUpdate}}</td>\r\n        </tr>\r\n        <tr>\r\n          <th class=\"theme-text-d1\">Uptime</th>\r\n          <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>\r\n        </tr>\r\n      </table>\r\n    </div>-->\r\n    <ng-container *ngIf=\"dataService.hasFeatureAccess('home', 'online')\">\r\n      <h3 class=\"theme-text-d1\">Online <span class=\"w3-tag w3-large theme-d1\">{{server.OnlinePlayerCount}}</span></h3>\r\n      <div *ngIf=\"server.OnlinePlayerCount == 0; else server_online_players_list\">There are no players online...</div>\r\n      <ng-template #server_online_players_list>\r\n        <div class=\"w3-card-4 w3-responsive w3-margin-bottom\">\r\n          <table *ngIf=\"isMenuActive(server.Key)\" class=\"w3-table w3-striped w3-bordered border-theme\">\r\n              <tr class=\"theme-d1\">\r\n                  <th>Steam Name</th>\r\n                  <th>Character Name</th>\r\n                  <th>Tribe Name</th>\r\n                  <th>Discord Tag</th>\r\n                  <th>Time Online</th>\r\n              </tr>\r\n              <tr *ngFor=\"let player of server.OnlinePlayers\">\r\n                <td>{{player.SteamName}}</td>\r\n                <td>{{player.CharacterName}}</td>\r\n                <td>{{player.TribeName}}</td>\r\n                <td>{{player.DiscordName}}</td>\r\n                <td>{{player.TimeOnline}}</td>\r\n              </tr>\r\n          </table>\r\n        </div>\r\n      </ng-template>\r\n    </ng-container>\r\n  </section>\r\n</ng-container>\r\n<section *ngIf=\"isMenuActive('overview') &amp;&amp; dataService.hasFeatureAccess('home', 'externalresources')\" class=\"w3-container margin-top\">\r\n  <h3 class=\"theme-text-d1\">External Resources</h3>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Wiki</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p><a href=\"http://ark.gamepedia.com/\" style=\"text-decoration: none;\">Official ARK Survival Evolved Wiki&nbsp;❯</a></p>\r\n    </div>\r\n  </div>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Taming Calculators</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <ul class=\"w3-ul\" style=\"margin: 7px 0px;\">\r\n        <li style=\"padding-left: 0px;\"><a href=\"http://www.survive-ark.com/taming-calculator/\" style=\"text-decoration: none;\">Survive ARK: Taming Calculator&nbsp;❯</a></li>\r\n        <li style=\"padding-left: 0px;\"><a href=\"http://www.dododex.com/\" style=\"text-decoration: none;\">Dododex: Taming Calculator&nbsp;❯</a></li>\r\n      </ul>\r\n    </div>\r\n  </div>\r\n  <div class=\"w3-card-4 w3-margin-bottom\">\r\n    <header class=\"w3-container theme-d1\">\r\n      <h3>Creature Library and Breeding Suggestions</h3>\r\n    </header>\r\n    <div class=\"w3-container theme-l1\">\r\n      <p><a href=\"https://github.com/cadon/ARKStatsExtractor\" style=\"text-decoration: none;\">ARK Smart Breeding&nbsp;❯</a></p>\r\n    </div>\r\n  </div>\r\n</section>"
+
+/***/ }),
+
+/***/ 412:
+/***/ (function(module, exports) {
+
+module.exports = "<app-menu #menu>\r\n  <h2 class=\"menu-header theme-text-d1\">Server</h2>\r\n  <div class=\"menu-items w3-cell-row theme-l2\">\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'players')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('players')}\" (click)=\"menu.activate('players')\">Players</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'tribes')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('tribes')}\" (click)=\"menu.activate('tribes')\">Tribes</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-statistics')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('wildcreatures-statistics')}\" (click)=\"menu.activate('wildcreatures-statistics')\">Wild Statistics</div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures')\" class=\"w3-button w3-cell w3-mobile\" [ngClass]=\"{'theme-d1': menu.active('wildcreatures')}\" (click)=\"menu.activate('wildcreatures')\">Wild Creatures</div>\r\n  </div>\r\n</app-menu>"
+
+/***/ }),
+
+/***/ 413:
+/***/ (function(module, exports) {
+
+module.exports = "<section *ngIf=\"loaded == false || ((isMenuActive('wildcreatures') || isMenuActive('wildcreatures-statistics')) &amp;&amp; creaturesLoaded == false)\" class=\"w3-container\">\r\n  <div class=\"w3-panel theme-l2\">\r\n    <h3 class=\"theme-text-l1-light\">Loading...</h3>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"loaded == true &amp;&amp; server == null\" class=\"w3-container\">\r\n  <div class=\"w3-panel w3-red\">\r\n    <h3>Error!</h3>\r\n    <p>No data could be loaded for the given server key.</p>\r\n  </div> \r\n</section>\r\n<section *ngIf=\"isMenuActive('players') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'players')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Players</h2>\r\n  <ark-data-table [rows]=\"filteredPlayers\" trackByProp=\"Id\" [sortFunctions]=\"playerSortFunctions\" orderByColumn=\"last_active\">\r\n    <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"character_name,tribe_name,last_active\"></ark-dt-mode>\r\n    <ark-dt-column key=\"character_name\" [orderBy]=\"true\" title=\"Sort by Character Name\" thenSort=\"last_active\">\r\n      <ng-template ark-dt-header>\r\n        Character Name\r\n      </ng-template>\r\n      <ng-template let-player ark-dt-cell>\r\n        <a *ngIf=\"dataService.hasFeatureAccessObservable('pages', 'player', player.SteamId) | async; else player_no_link\" [routerLink]=\"'/player/' + player.SteamId\">{{player.CharacterName}}</a><ng-template #player_no_link>{{player.CharacterName}}</ng-template>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"tribe_name\" [orderBy]=\"true\" title=\"Sort by Tribe Name\" thenSort=\"character_name\">\r\n      <ng-template ark-dt-header>\r\n        Tribe Name\r\n      </ng-template>\r\n      <ng-template let-player ark-dt-cell>\r\n        {{player.TribeName}}\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"last_active\" [orderBy]=\"true\" title=\"Sort by Last Active\" thenSort=\"character_name\">\r\n      <ng-template ark-dt-header>\r\n        Last Active\r\n      </ng-template>\r\n      <ng-template let-player ark-dt-cell>\r\n        <relative-time [time]=\"player.LastActiveTime\"></relative-time>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n  </ark-data-table>\r\n</section>\r\n<section *ngIf=\"isMenuActive('tribes') &amp;&amp; server &amp;&amp; dataService.hasFeatureAccess('server', 'tribes')\" class=\"w3-container\">\r\n  <h2 class=\"theme-text-d1\">Tribes</h2>\r\n  <ark-data-table [rows]=\"filteredTribes\" trackByProp=\"Id\" [sortFunctions]=\"tribeSortFunctions\" orderByColumn=\"last_active\">\r\n    <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"tribe_name,members,last_active\"></ark-dt-mode>\r\n    <ark-dt-column key=\"tribe_name\" [orderBy]=\"true\" title=\"Sort by Tribe Name\" thenSort=\"last_active\">\r\n      <ng-template ark-dt-header>\r\n        Tribe Name\r\n      </ng-template>\r\n      <ng-template let-tribe ark-dt-cell>\r\n          {{tribe.Name}}\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"members\">\r\n      <ng-template ark-dt-header>\r\n        Members\r\n      </ng-template>\r\n      <ng-template let-tribe ark-dt-cell>\r\n          <span *ngFor=\"let member of tribe.MemberSteamIds; let last = last\"><a *ngIf=\"dataService.hasFeatureAccess('pages', 'player', member); else tribe_member_no_link\" [routerLink]=\"'/player/' + member\">{{getTribeMember(member)?.CharacterName || member}}</a><ng-template #tribe_member_no_link>{{getTribeMember(member)?.CharacterName || member}}</ng-template><span *ngIf=\"!last\">, </span></span>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n    <ark-dt-column key=\"last_active\" [orderBy]=\"true\" title=\"Sort by Last Active\" thenSort=\"tribe_name\">\r\n      <ng-template ark-dt-header>\r\n        Last Active\r\n      </ng-template>\r\n      <ng-template let-tribe ark-dt-cell>\r\n        <relative-time [time]=\"tribe.LastActiveTime\"></relative-time>\r\n      </ng-template>\r\n    </ark-dt-column>\r\n  </ark-data-table>\r\n</section>\r\n<section *ngIf=\"isMenuActive('wildcreatures-statistics') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures-statistics')\" class=\"w3-container\">\r\n    <h2 class=\"theme-text-d1\">Wild Statistics <span class=\"w3-tag w3-large theme-d1\">{{(wild.Statistics.Species?.length || 0) | number}}</span></h2>\r\n    <ark-data-table [rows]=\"wild.Statistics.Species\" trackByProp=\"ClassName\" [sortFunctions]=\"wildStatisticsSortFunctions\" orderByColumn=\"species\">\r\n        <ark-dt-mode name=\"Default\" key=\"default\" columnKeys=\"species,class_name,aliases,count,fraction\"></ark-dt-mode>\r\n        <ark-dt-column key=\"species\" [orderBy]=\"true\" title=\"Sort by Species\" thenSort=\"count\">\r\n          <ng-template ark-dt-header>\r\n            Species\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Name}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"class_name\" [orderBy]=\"true\" title=\"Sort by Class Name\" thenSort=\"count\">\r\n          <ng-template ark-dt-header>\r\n            Class Name\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.ClassName}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"aliases\">\r\n          <ng-template ark-dt-header>\r\n            Aliases\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Aliases.length > 0 ? species.Aliases.join(', ') : ''}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"count\" [orderBy]=\"true\" title=\"Sort by Count\" thenSort=\"species\">\r\n          <ng-template ark-dt-header>\r\n            Count\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Count | number}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n        <ark-dt-column key=\"fraction\" [orderBy]=\"true\" title=\"Sort by Fraction\" thenSort=\"species\">\r\n          <ng-template ark-dt-header>\r\n            Fraction\r\n          </ng-template>\r\n          <ng-template let-species ark-dt-cell>\r\n            {{species.Fraction | percent:'1.0-4'}}\r\n          </ng-template>\r\n        </ark-dt-column>\r\n      </ark-data-table>\r\n</section>\r\n<section *ngIf=\"isMenuActive('wildcreatures') &amp;&amp; creaturesLoaded &amp;&amp; dataService.hasFeatureAccess('server', 'wildcreatures')\" class=\"w3-container\">\r\n  <div class=\"w3-cell-row\">\r\n    <div class=\"w3-cell\"><a id=\"creatures\"></a><h2 class=\"theme-text-d1 w3-left\">Wild Creatures <span class=\"w3-tag w3-large theme-d1\">{{(filteredCreatures?.length || 0) | number}}</span>&nbsp;/&nbsp;<span class=\"w3-tag w3-large theme-d1\">{{(wild?.Statistics?.CreatureCount || 0) | number}}</span></h2></div>\r\n    <div *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-coords')\" class=\"w3-cell w3-cell-middle\"><button class=\"w3-button theme-d1 w3-right\" (click)=\"openMap($event)\">Show Map</button></div>\r\n  </div>\r\n  <div *ngIf=\"!(species?.length > 0)\">There are no creatures...</div>\r\n  <ng-container *ngIf=\"species?.length > 0\">\r\n    <select [ngModel]=\"selectedSpecies\" (ngModelChange)=\"selectedSpecies = $event; filterAndSortWild();\" class=\"w3-select w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" style=\"padding: 8px;\">\r\n        <option *ngFor=\"let s of species\" [value]=\"s\">{{wild.Species[s].Name || s}}</option>\r\n      </select>\r\n    <!--<div class=\"inner-addon right-addon\">\r\n      <i *ngIf=\"creaturesFilter != null &amp;&amp; creaturesFilter != ''\" class=\"material-icons\" style=\"cursor: pointer;\" (click)=\"creaturesFilter = ''; filterAndSortWild();\">close</i>\r\n      <input [ngModel]=\"creaturesFilter\" (ngModelChange)=\"creaturesFilter = $event; filterAndSortWild();\" class=\"w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1\" placeholder=\"Filter\" />\r\n    </div>-->\r\n    <div *ngIf=\"numCreatureTabs() > 1\" class=\"w3-bar theme-l2 w3-card-4 w3-margin-bottom\">\r\n      <button href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('status')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('status')\">Overview</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-basestats')\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('stats')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('stats')\">Base Stats</button>\r\n      <button *ngIf=\"dataService.hasFeatureAccess('server', 'wildcreatures-ids')\" href=\"#\" class=\"w3-bar-item w3-button w3-mobile\" [ngClass]=\"{'theme-d1': activeCreaturesMode('ids')}\" [style.width.%]=\"(100/numCreatureTabs())\" (click)=\"activateCreaturesMode('ids')\">IDs</button>\r\n    </div>\r\n    <div class=\"w3-card-4 w3-responsive\">\r\n      <table class=\"w3-table-all border-theme\">\r\n        <thead>\r\n          <tr class=\"theme-d1\">\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Gender\" (click)=\"setCreaturesSort('gender')\">Gender</th>\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Base Level\" (click)=\"setCreaturesSort('base_level')\">Base Level</th>\r\n            <th style=\"cursor: pointer;\" title=\"Sort by Tameable\" (click)=\"setCreaturesSort('tameable')\">Tameable</th>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status') && dataService.hasFeatureAccess('server', 'wildcreatures-coords')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by X\" (click)=\"setCreaturesSort('x')\">X</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Y\" (click)=\"setCreaturesSort('y')\">Y</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Z\" (click)=\"setCreaturesSort('z')\">Z</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Latitude\" (click)=\"setCreaturesSort('latitude')\">Lat</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Longitude\" (click)=\"setCreaturesSort('longitude')\">Lng</th>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Health\" (click)=\"setCreaturesSort('stat_health')\">HP</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Stamina\" (click)=\"setCreaturesSort('stat_stamina')\">ST</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Oxygen\" (click)=\"setCreaturesSort('stat_oxygen')\">OX</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Food\" (click)=\"setCreaturesSort('stat_food')\">FO</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Weight\" (click)=\"setCreaturesSort('stat_weight')\">WE</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Melee\" (click)=\"setCreaturesSort('stat_melee')\">ME</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by Speed\" (click)=\"setCreaturesSort('stat_speed')\">SP</th>\r\n              <!--<th></th>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID1\" (click)=\"setCreaturesSort('id1')\">ID1</th>\r\n              <th style=\"cursor: pointer;\" title=\"Sort by ID2\" (click)=\"setCreaturesSort('id2')\">ID2</th>\r\n            </ng-container>\r\n          </tr>\r\n        </thead>\r\n        <tbody>\r\n          <tr *ngIf=\"!(filteredCreatures?.length > 0)\"><td [colSpan]=\"activeCreaturesMode('status') ? 8 : (activeCreaturesMode('stats') ? 10 : 5)\">No matching creatures...</td></tr>\r\n          <tr *ngFor=\"let creature of filteredCreatures\">\r\n            <td>{{creature.Gender}}</td>\r\n            <td>{{creature.BaseLevel}}</td>\r\n            <td>{{(wild.Species[selectedSpecies].IsTameable &amp;&amp; creature.IsTameable == true ? \"Yes\" : \"No\")}}</td>\r\n            <ng-container *ngIf=\"activeCreaturesMode('status') && dataService.hasFeatureAccess('server', 'wildcreatures-coords')\">\r\n              <td>{{creature.X}}</td>\r\n              <td>{{creature.Y}}</td>\r\n              <td>{{creature.Z}}</td>\r\n              <td>{{creature.Latitude | number:'1.1-1'}}</td>\r\n              <td>{{creature.Longitude | number:'1.1-1'}}</td>\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('stats')\">\r\n              <td>{{creature.BaseStats?.Health}}</td>\r\n              <td>{{creature.BaseStats?.Stamina}}</td>\r\n              <td>{{creature.BaseStats?.Oxygen}}</td>\r\n              <td>{{creature.BaseStats?.Food}}</td>\r\n              <td>{{creature.BaseStats?.Weight}}</td>\r\n              <td>{{creature.BaseStats?.Melee}}</td>\r\n              <td>{{creature.BaseStats?.MovementSpeed}}</td>\r\n              <!--<td><i class=\"material-icons w3-medium\" style=\"cursor: pointer;\" (click)=\"copyCreature(creature)\">content_copy</i></td>-->\r\n            </ng-container>\r\n            <ng-container *ngIf=\"activeCreaturesMode('ids')\">\r\n              <td>{{creature.Id1}}</td>\r\n              <td>{{creature.Id2}}</td>\r\n            </ng-container>\r\n          </tr>\r\n        </tbody>\r\n      </table>\r\n    </div>\r\n  </ng-container>\r\n</section>\r\n<div id=\"modal_map\" class=\"w3-modal\" [style.display]=\"showMap ? 'block' : 'none'\">\r\n    <div class=\"w3-modal-content w3-card-4 w3-animate-zoom\" (clickOutside)=\"closeMap($event)\" style=\"font-size: 0;\">\r\n    <header class=\"w3-container theme-d1\"> \r\n      <span (click)=\"showMap = false\" class=\"w3-button theme-d1 w3-xlarge w3-display-topright\">&times;</span>\r\n      <h2>Map</h2>\r\n    </header>\r\n    <arkmap [mapName]=\"server?.MapName\" [points]=\"points\"></arkmap>\r\n    </div>\r\n  </div>"
+
+/***/ }),
+
+/***/ 672:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(283);
+module.exports = __webpack_require__(284);
 
 
 /***/ })
 
-},[670]);
+},[672]);
 //# sourceMappingURL=main.bundle.js.map
