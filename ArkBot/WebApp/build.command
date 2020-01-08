@@ -1,6 +1,6 @@
 prod build (the one we commit to the repository)
 ----------------------------
-ng build --env prod --bh /
+ng build --prod --no-aot --bh /
 
 
 dev

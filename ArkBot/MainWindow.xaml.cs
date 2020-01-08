@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +29,8 @@ namespace ArkBot
             Initialized += MainWindow_Initialized;
 
             InitializeComponent();
+
+            Title = $"ARK Bot {Assembly.GetExecutingAssembly().GetName().Version.ToString(2)}";
 
             Loaded += new RoutedEventHandler(MainWindow_Loaded);
             Unloaded += new RoutedEventHandler(MainWindow_Unloaded);
