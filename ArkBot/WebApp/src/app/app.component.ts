@@ -6,7 +6,7 @@ import { MessageService } from './message.service';
 import { DataService } from './data.service';
 import { HttpService } from './http.service';
 import { environment } from '../environments/environment';
-import { DOCUMENT } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
 
 declare var config: any;
 
@@ -37,12 +37,18 @@ export class AppComponent implements OnInit, OnDestroy {
     private breadcrumbService: BreadcrumbService,
     private notificationsService: NotificationsService,
     private router: Router) { 
-      const s = this.doc.createElement('script');
-      s.type = 'text/javascript';
-      if (environment.configJsOverride == null) s.src = "config.js"
-      else s.innerHTML = environment.configJsOverride;
-      const head = this.doc.getElementsByTagName('head')[0];
-      head.appendChild(s);
+      const script_configjs = this.doc.getElementById('configjs');
+      let contents: string = null;
+      if (environment.configJsOverride != null) contents = environment.configJsOverride;
+      else if (script_configjs.text == "/*[[config]]*/") contents = environment.configJsDefault;
+
+      if (contents != null) {
+        const s = this.doc.createElement('script');
+        s.type = 'text/javascript';
+        s.id = "configjs";
+        s.text = contents;
+        script_configjs.parentNode.replaceChild(s, script_configjs);
+      }
 
       breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
       breadcrumbService.addFriendlyNameForRoute('/connectionerror', 'Connection error');

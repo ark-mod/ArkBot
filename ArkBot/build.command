@@ -1,0 +1,1 @@
+msbuild ArkBot.sln /t:arkbot:rebuild /p:Configuration=Release /p:Platform=x64 /p:OutputPath="C:/Temp/ArkBot/dist/"
