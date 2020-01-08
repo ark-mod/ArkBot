@@ -112,7 +112,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.menuOptionSubscription = this.dataService.MenuOption.subscribe(menuOption => this.menuOption = menuOption);
     this.theme$ = this.dataService.Theme;
-    this.themeSubscription = this.theme$.subscribe(theme => { this.theme = theme; console.log(theme); });
+    this.themeSubscription = this.theme$.subscribe(theme => { this.theme = theme; });
     this.steamId = this.route.snapshot.params['playerid'];
 
     this.serverUpdatedSubscription = this.messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));

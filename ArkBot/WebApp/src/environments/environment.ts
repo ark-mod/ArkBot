@@ -3,10 +3,14 @@
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
+import { commonEnvironment } from './environment.common';
+
 export const environment = {
   production: false,
   demo: false,
   demoDate: null,
-  apiBaseUrl: "<protocol>//<hostname>:60001/api",
-  signalrBaseUrl: "<protocol>//<hostname>:60001/signalr"
+  configJsOverride: commonEnvironment.configJs,
+  configJsDefault: commonEnvironment.configJs,
+  apiBaseUrl: "<protocol>//<hostname>:<webapi_port>/api",
+  signalrBaseUrl: "<protocol>//<hostname>:<webapi_port>/signalr"
 };

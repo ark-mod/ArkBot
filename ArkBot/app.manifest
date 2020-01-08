@@ -58,7 +58,8 @@
   -->
 
   <!-- Enable themes for Windows common controls and dialogs (Windows XP and later) -->
-  <dependency>
+  <!-- does not work with x64 applications and not needed on windows 7 and later -->
+  <!--<dependency>
     <dependentAssembly>
       <assemblyIdentity
           type="win32"
@@ -69,6 +70,6 @@
           language="*"
         />
     </dependentAssembly>
-  </dependency>
+  </dependency>-->
 
 </assembly>

@@ -97,6 +97,10 @@ export class DataService {
     });
   }
 
+  getCurrentDate(): any {
+    return !environment.demo ? moment() : moment(new Date(environment.demoDate));
+  }
+
   toDate(datejson: string): string {
     //todo: fix locale
     return new Date(datejson).toLocaleString('sv-SE');
