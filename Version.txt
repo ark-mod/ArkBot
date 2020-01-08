@@ -1,4 +1,4 @@
-This is Version 1.9 - Release Candidate
+This is Version 1.91 - Release Candidate
 
 Updates included:
 
@@ -11,3 +11,5 @@ Updates included:
 7. Tray icon / autohide fixes
 8. Tons of other fixes for Discord, Egg Spoilage and others.
 9. Dark mode is now the default.
+10. Updated Demo webapp
+11. Updates and optimizations to the web pages
