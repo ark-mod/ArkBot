@@ -22,6 +22,7 @@ using ArkBot.OpenID;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Serialization;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace ArkBot.WebHost
 {
@@ -189,19 +190,17 @@ namespace ArkBot.WebHost
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapFallbackToFile("index.html", new StaticFileOptions
+                var sendSpaIndexFile = new Action<HttpContext>(context =>
                 {
-                    OnPrepareResponse = x =>
+                    var filePath = @"WebApp\index.html";
+                    if (!File.Exists(filePath))
                     {
-                        var httpContext = x.Context;
-                        var path = httpContext.Request.RouteValues["path"];
-                        // now you get the original request path
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        return;
                     }
-                });
 
-                endpoints.MapGet("config.js", context =>
-                {
-                    var portStr = new Regex(@":(?<port>\d+)(?:/|$)").Match(_config.WebAppListenPrefix)?.Groups["port"].Value;
+                    var contents = File.ReadAllText(filePath);
+                    var portStr = new Regex(@":(?<port>\d+)(?:/|$)").Match(_config.WebApiListenPrefix)?.Groups["port"].Value;
                     var success = int.TryParse(portStr, out var port);
                     var obj = new
                     {
@@ -216,15 +215,45 @@ namespace ArkBot.WebHost
                     };
                     var json = JsonConvert.SerializeObject(obj, Formatting.None);
                     var js = $"var config = {json};";
-                    return context.Response.WriteAsync(js);
+                    contents = contents.Replace("/*[[config]]*/", js);
+
+                    context.Response.ContentType = "text/html; charset=utf-8";
+                    context.Response.StatusCode = StatusCodes.Status200OK;
+                    context.Response.WriteAsync(contents);
                 });
 
-                endpoints.MapGet("/", context =>
+                var app2 = endpoints.CreateApplicationBuilder();
+                app2.Use(async (context, next) =>
                 {
-                    return context.Response.SendFileAsync("webapp/index.html");
-                    //var stream = File.OpenRead("webapp/index.html");
-                    //return new FileStreamResult(stream, "application/octet-stream");
+                    // could use the static file context which supports range requests, last modified, etags etc. (but it is internal)
+                    // https://github.com/dotnet/aspnetcore/blob/19d2f6124f5d04859e350d1f5a01e994e14ef1ce/src/Middleware/StaticFiles/src/StaticFileContext.cs
+                    sendSpaIndexFile(context);
+
+                    //var responseCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
+                    //if (responseCompressionFeature != null)
+                    //{
+                    //    responseCompressionFeature.Mode = HttpsCompressionMode.Compress;
+                    //}
                 });
+
+                endpoints.MapFallback(app2.Build());
+
+                //endpoints.MapFallbackToFile("index.html", new StaticFileOptions
+                //{
+                //    OnPrepareResponse = x =>
+                //    {
+                //        var httpContext = x.Context;
+                //        var path = httpContext.Request.RouteValues["path"];
+                //        // now you get the original request path
+                //    }
+                //});
+
+                //endpoints.MapGet("/", context =>
+                //{
+                //    return context.Response.SendFileAsync("webapp/index.html");
+                //    //var stream = File.OpenRead("webapp/index.html");
+                //    //return new FileStreamResult(stream, "application/octet-stream");
+                //});
 
                 endpoints.MapControllers();
                 //endpoints.MapControllerRoute("default", "api/{controller}/{action=Get}/{id?}");
