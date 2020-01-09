@@ -54,7 +54,9 @@ namespace ArkBot.Steam
                     return null;
                 }
 
-                var result = await _rconServer.Rcon.SendCommandAsync(command);
+                //TODO [.NET Core]: Changed this because the third-party refactored querymaster nuget supporting .NET Core has no Async method (I added it in my changed version)
+                var result = await Task.Run(() => _rconServer.Rcon.SendCommand(command)).ConfigureAwait(false);
+                //var result = await _rconServer.Rcon.SendCommandAsync(command);
                 return result;
             }
             catch (Exception ex)

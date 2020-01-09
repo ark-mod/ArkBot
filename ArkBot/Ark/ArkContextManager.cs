@@ -1,15 +1,10 @@
 ﻿using ArkBot.Configuration.Model;
 using ArkBot.Services;
 using ArkBot.Services.Data;
-using ArkBot.Threading;
-using ArkSavegameToolkitNet;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

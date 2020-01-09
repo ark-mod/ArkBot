@@ -1,25 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using ArkBot.Browser;
-using ArkBot.Configuration;
-using ArkBot.Helpers;
 using ArkBot.ViewModel;
 using CefSharp;
-using Markdig;
-using Nito.AsyncEx;
-using RazorEngine.Configuration;
-using RazorEngine.Templating;
-using Xceed.Wpf.Toolkit.PropertyGrid;
-using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
 
 namespace ArkBot.Controls
 {

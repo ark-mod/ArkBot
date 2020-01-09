@@ -1,16 +1,14 @@
-﻿using ArkBot.Configuration.Model;
-using ArkBot.Helpers;
+﻿using ArkBot.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ArkBot.Data
 {
-   
+
 
     public class ArkServerMultipliers
     {

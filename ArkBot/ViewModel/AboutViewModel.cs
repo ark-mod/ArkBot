@@ -1,23 +1,11 @@
-﻿using ArkBot.Commands;
-using ArkBot.Helpers;
-using Newtonsoft.Json;
+﻿using ArkBot.Helpers;
 using Nito.AsyncEx;
-using Prism.Commands;
-using PropertyChanged;
-using RazorEngine.Configuration;
-using RazorEngine.Templating;
+//using RazorEngine.Configuration;
+//using RazorEngine.Templating;
+using RazorLight;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace ArkBot.ViewModel
 {
@@ -30,17 +18,26 @@ namespace ArkBot.ViewModel
 
         public bool HasValidConfig { get; set; }
 
-        private Lazy<IRazorEngineService> _razorEngineService = new Lazy<IRazorEngineService>(() =>
-        {
-            var razorConfig = new TemplateServiceConfiguration
-            {
-                DisableTempFileLocking = true,
-                CachingProvider = new DefaultCachingProvider(t => { })
-            };
+        //private Lazy<IRazorEngineService> _razorEngineService = new Lazy<IRazorEngineService>(() =>
+        //{
+        //    var razorConfig = new TemplateServiceConfiguration
+        //    {
+        //        DisableTempFileLocking = true,
+        //        CachingProvider = new DefaultCachingProvider(t => { })
+        //    };
 
-            return RazorEngine.Templating.RazorEngineService.Create(razorConfig);
+        //    return RazorEngine.Templating.RazorEngineService.Create(razorConfig);
+        //});
+
+        private Lazy<IRazorLightEngine> _razorEngineService = new Lazy<IRazorLightEngine>(() =>
+        {
+            return new RazorLightEngineBuilder()
+                  .UseFileSystemProject(Path.Combine(AppContext.BaseDirectory, "Resources"))
+                  .UseMemoryCachingProvider()
+                  .Build();
         });
-        public Lazy<IRazorEngineService> RazorEngineService => _razorEngineService;
+
+        public Lazy<IRazorLightEngine> RazorEngineService => _razorEngineService;
 
         private AsyncLazy<string> _template = new AsyncLazy<string>(async () => await FileHelper.ReadAllTextTaskAsync(new Constants().AboutTemplatePath));
 
@@ -64,7 +61,8 @@ namespace ArkBot.ViewModel
         public async Task<string> RunCompileTemplate(AboutTemplateViewModel model)
         {
             var template = await _template;
-            var html = RazorEngineService.Value.RunCompile(template, template, typeof(AboutTemplateViewModel), model);
+            var html = await RazorEngineService.Value.CompileRenderStringAsync("about", template, model);
+            //var html = RazorEngineService.Value.RunCompile(template, template, typeof(AboutTemplateViewModel), model);
             return html;
         }
 
@@ -77,11 +75,11 @@ namespace ArkBot.ViewModel
             {
                 if (disposing)
                 {
-                    if (_razorEngineService != null && _razorEngineService.IsValueCreated)
-                    {
-                        _razorEngineService.Value.Dispose();
-                        _razorEngineService = null;
-                    }
+                    //if (_razorEngineService != null && _razorEngineService.IsValueCreated)
+                    //{
+                    //    _razorEngineService.Value.Dispose();
+                    //    _razorEngineService = null;
+                    //}
                 }
 
                 disposedValue = true;

@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using ArkBot.Discord.Command;
 using Discord.Commands;
 using ArkBot.Helpers;
-using Discord;
-using Discord.Commands.Builders;
-using Discord.WebSocket;
-using RestSharp;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands

@@ -1,10 +1,5 @@
-﻿using ArkBot.Database.Model;
-using ArkBot.Services.Data;
+﻿using ArkBot.Services.Data;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArkBot
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Discord;
-
-namespace ArkBot.Helpers
+﻿namespace ArkBot.Helpers
 {
     public interface IPlayerLastActiveService
     {

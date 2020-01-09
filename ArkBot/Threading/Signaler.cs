@@ -1,11 +1,7 @@
 ﻿//Based on code from http://stackoverflow.com/a/18611391
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ArkBot.Threading
 {

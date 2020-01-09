@@ -1,8 +1,7 @@
-﻿using ArkBot.Commands;
-using ArkBot.Data;
+﻿using ArkBot.Data;
 using ArkBot.Database;
-using ArkBot.OpenID;
-using ArkBot.Extensions;
+//TODO [.NET Core]: Removed temporarily
+//using ArkBot.OpenID;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
@@ -14,19 +13,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using ArkBot.Database.Model;
-using ArkBot.Helpers;
 using Autofac;
-using log4net;
-using System.Data.Entity.Core.Objects;
 using System.Reflection;
-using ArkBot.ViewModel;
 using ArkBot.Ark;
 using ArkBot.Discord.Command;
 using ArkBot.Voting;
-using RazorEngine.Compilation.ImpromptuInterface;
-using VDS.Common.Collections.Enumerations;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Discord
@@ -38,7 +29,8 @@ namespace ArkBot.Discord
         private IServiceProvider _serviceProvider;
         private IConfig _config;
         private IConstants _constants;
-        private IBarebonesSteamOpenId _openId;
+        //TODO [.NET Core]: Removed temporarily
+        //private IBarebonesSteamOpenId _openId;
         private EfDatabaseContextFactory _databaseContextFactory;
         private ILifetimeScope _scope;
         private ArkContextManager _contextManager;
@@ -52,8 +44,9 @@ namespace ArkBot.Discord
             CommandService commands,
             IServiceProvider serviceProvider,
             IConfig config, 
-            IConstants constants, 
-            IBarebonesSteamOpenId openId, 
+            IConstants constants,
+            //TODO [.NET Core]: Removed temporarily
+            //IBarebonesSteamOpenId openId, 
             EfDatabaseContextFactory databaseContextFactory, 
             ILifetimeScope scope,
             ArkContextManager contextManager,
@@ -65,8 +58,9 @@ namespace ArkBot.Discord
             _config = config;
             _constants = constants;
             _databaseContextFactory = databaseContextFactory;
-            _openId = openId;
-            _openId.SteamOpenIdCallback += _openId_SteamOpenIdCallback;
+            //TODO [.NET Core]: Removed temporarily
+            //_openId = openId;
+            //_openId.SteamOpenIdCallback += _openId_SteamOpenIdCallback;
             _scope = scope;
             _contextManager = contextManager;
             _votingManager = votingManager;
@@ -291,101 +285,102 @@ namespace ArkBot.Discord
             //}
         }
 
-        private async void _openId_SteamOpenIdCallback(object sender, SteamOpenIdCallbackEventArgs e)
-        {
-            if (e.Successful)
-            {
-                var player = new
-                {
-                    RealName = (string)null,
-                    PersonaName = (string)null
-                };
-                try
-                {
-                    using (var wc = new WebClient())
-                    {
-                        var data = await wc.DownloadStringTaskAsync($@"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_config.SteamApiKey}&steamids={e.SteamId}");
-                        var response = JsonConvert.DeserializeAnonymousType(data, new { response = new { players = new[] { player } } });
-                        player = response?.response?.players?.FirstOrDefault();
-                    }
-                }
-                catch { /* ignore exceptions */ }
+        //TODO [.NET Core]: Removed temporarily (method)
+        //private async void _openId_SteamOpenIdCallback(object sender, SteamOpenIdCallbackEventArgs e)
+        //{
+        //    if (e.Successful)
+        //    {
+        //        var player = new
+        //        {
+        //            RealName = (string)null,
+        //            PersonaName = (string)null
+        //        };
+        //        try
+        //        {
+        //            using (var wc = new WebClient())
+        //            {
+        //                var data = await wc.DownloadStringTaskAsync($@"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={_config.SteamApiKey}&steamids={e.SteamId}");
+        //                var response = JsonConvert.DeserializeAnonymousType(data, new { response = new { players = new[] { player } } });
+        //                player = response?.response?.players?.FirstOrDefault();
+        //            }
+        //        }
+        //        catch { /* ignore exceptions */ }
 
-                //QueryMaster.Steam.GetPlayerSummariesResponsePlayer player = null;
-                //await Task.Factory.StartNew(() =>
-                //{
-                //    try
-                //    {
-                //        //this results in an exception (but it is easy enough to query by ourselves)
-                //        var query = new QueryMaster.Steam.SteamQuery(_config.SteamApiKey);
-                //        var result = query?.ISteamUser.GetPlayerSummaries(new[] { e.SteamId });
-                //        if (result == null || !result.IsSuccess) return;
+        //        //QueryMaster.Steam.GetPlayerSummariesResponsePlayer player = null;
+        //        //await Task.Factory.StartNew(() =>
+        //        //{
+        //        //    try
+        //        //    {
+        //        //        //this results in an exception (but it is easy enough to query by ourselves)
+        //        //        var query = new QueryMaster.Steam.SteamQuery(_config.SteamApiKey);
+        //        //        var result = query?.ISteamUser.GetPlayerSummaries(new[] { e.SteamId });
+        //        //        if (result == null || !result.IsSuccess) return;
 
-                //        player = result.ParsedResponse.Players.FirstOrDefault();
-                //    }
-                //    catch { /* ignore exceptions */}
-                //});
+        //        //        player = result.ParsedResponse.Players.FirstOrDefault();
+        //        //    }
+        //        //    catch { /* ignore exceptions */}
+        //        //});
 
-                //set ark role on users when they link
-                //foreach(var server in _discord.Servers)
-                //{
-                //    var user = server.GetUser(e.DiscordUserId);
-                //    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
-                //    if (user == null || role == null) continue;
+        //        //set ark role on users when they link
+        //        //foreach(var server in _discord.Servers)
+        //        //{
+        //        //    var user = server.GetUser(e.DiscordUserId);
+        //        //    var role = server.FindRoles(_config.MemberRoleName, true).FirstOrDefault();
+        //        //    if (user == null || role == null) continue;
 
-                //    //try
-                //    //{
-                //    //    if (!user.HasRole(role)) await user.AddRoles(role);
+        //        //    //try
+        //        //    //{
+        //        //    //    if (!user.HasRole(role)) await user.AddRoles(role);
 
-                //    //    var p = _context.Players?.FirstOrDefault(x => { ulong steamId = 0; return ulong.TryParse(x.SteamId, out steamId) ? steamId == e.SteamId : false; });
-                //    //    if (p != null && !string.IsNullOrWhiteSpace(p.Name))
-                //    //    {
+        //        //    //    var p = _context.Players?.FirstOrDefault(x => { ulong steamId = 0; return ulong.TryParse(x.SteamId, out steamId) ? steamId == e.SteamId : false; });
+        //        //    //    if (p != null && !string.IsNullOrWhiteSpace(p.Name))
+        //        //    //    {
 
-                //    //        //must be less or equal to 32 characters
-                //    //        await user.Edit(nickname: p.Name.Length > 32 ? p.Name.Substring(0, 32) : p.Name);
+        //        //    //        //must be less or equal to 32 characters
+        //        //    //        await user.Edit(nickname: p.Name.Length > 32 ? p.Name.Substring(0, 32) : p.Name);
 
-                //    //    }
-                //    //}
-                //    //catch (HttpException)
-                //    //{
-                //    //    //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
-                //    //}
-                //}
+        //        //    //    }
+        //        //    //}
+        //        //    //catch (HttpException)
+        //        //    //{
+        //        //    //    //could be due to the order of roles on the server. bot role with "manage roles"/"change nickname" permission must be higher up than the role it is trying to set
+        //        //    //}
+        //        //}
 
-                using (var context = _databaseContextFactory.Create())
-                {
-                    var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.DiscordUserId);
-                    if (user != null)
-                    {
-                        user.RealName = player?.RealName;
-                        user.SteamDisplayName = player?.PersonaName;
-                        user.SteamId = (long)e.SteamId;
-                        user.Unlinked = false;
-                    }
-                    else
-                    {
-                        user = new Database.Model.User { DiscordId = (long)e.DiscordUserId, SteamId = (long)e.SteamId, RealName = player?.RealName, SteamDisplayName = player?.PersonaName };
-                        context.Users.Add(user);
-                    }
+        //        using (var context = _databaseContextFactory.Create())
+        //        {
+        //            var user = context.Users.FirstOrDefault(x => x.DiscordId == (long)e.DiscordUserId);
+        //            if (user != null)
+        //            {
+        //                user.RealName = player?.RealName;
+        //                user.SteamDisplayName = player?.PersonaName;
+        //                user.SteamId = (long)e.SteamId;
+        //                user.Unlinked = false;
+        //            }
+        //            else
+        //            {
+        //                user = new Database.Model.User { DiscordId = (long)e.DiscordUserId, SteamId = (long)e.SteamId, RealName = player?.RealName, SteamDisplayName = player?.PersonaName };
+        //                context.Users.Add(user);
+        //            }
 
-                    foreach(var associatePlayed in context.Played.Where(x => x.SteamId == (long)e.SteamId))
-                    {
-                        associatePlayed.SteamId = null;
-                        user.Played.Add(associatePlayed);
-                    }
+        //            foreach(var associatePlayed in context.Played.Where(x => x.SteamId == (long)e.SteamId))
+        //            {
+        //                associatePlayed.SteamId = null;
+        //                user.Played.Add(associatePlayed);
+        //            }
 
-                    context.SaveChanges();
-                }
+        //            context.SaveChanges();
+        //        }
 
-                var ch = await _discord.GetUser(e.DiscordUserId).GetOrCreateDMChannelAsync();
-                if (ch != null) await ch.SendMessageAsync($"Your Discord user is now linked with your Steam account! :)");
-            }
-            else
-            {
-                var ch = await _discord.GetUser(e.DiscordUserId).GetOrCreateDMChannelAsync();
-                if (ch != null) await ch.SendMessageAsync($"Something went wrong during the linking process. Please try again later!");
-            }
-        }
+        //        var ch = await _discord.GetUser(e.DiscordUserId).GetOrCreateDMChannelAsync();
+        //        if (ch != null) await ch.SendMessageAsync($"Your Discord user is now linked with your Steam account! :)");
+        //    }
+        //    else
+        //    {
+        //        var ch = await _discord.GetUser(e.DiscordUserId).GetOrCreateDMChannelAsync();
+        //        if (ch != null) await ch.SendMessageAsync($"Something went wrong during the linking process. Please try again later!");
+        //    }
+        //}
 
         public async Task Initialize(CancellationToken token, bool skipExtract = false)
         {
@@ -421,7 +416,8 @@ namespace ArkBot.Discord
                     _discord?.Dispose();
                     _discord = null;
 
-                    _openId.SteamOpenIdCallback -= _openId_SteamOpenIdCallback;
+                    //TODO: [.NET Core]: Removed temporarily
+                    //_openId.SteamOpenIdCallback -= _openId_SteamOpenIdCallback; 
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

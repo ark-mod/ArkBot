@@ -1,15 +1,10 @@
 ﻿using ArkBot.Configuration.Model;
 using ArkBot.Services;
-using ArkSavegameToolkitNet;
 using ArkSavegameToolkitNet.Domain;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ArkBot.Ark
 {

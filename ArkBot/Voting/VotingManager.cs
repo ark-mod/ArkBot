@@ -4,15 +4,11 @@ using ArkBot.Database;
 using ArkBot.Database.Model;
 using ArkBot.Discord;
 using ArkBot.Extensions;
-using ArkBot.Helpers;
 using ArkBot.ScheduledTasks;
 using ArkBot.Voting.Handlers;
 using Autofac;
 using System;
-using System.Collections.Generic;
-using System.Data.Entity.Core.Objects;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ArkBot.Voting
@@ -117,7 +113,11 @@ namespace ArkBot.Voting
         private IVoteHandler GetVoteHandler(Database.Model.Vote vote)
         {
             IVoteHandler handler = null;
-            var type = ObjectContext.GetObjectType(vote.GetType());
+            //TODO [.NET Core]: Removed temporarily (ef core)
+            // can't find a replacement for ObjectContext.GetObjectType to get the actual entity type rather than for example the generated lazy loaded proxy type
+            // not sure how it works in ef core, but changing this line to make it compile. VotingManager is unused code.
+            //var type = ObjectContext.GetObjectType(vote.GetType());
+            var type = vote.GetType();
             try
             {
                 handler = _scope.Resolve(typeof(IVoteHandler<>).MakeGenericType(type), new TypedParameter(typeof(Database.Model.Vote), vote)) as IVoteHandler;

@@ -1,21 +1,26 @@
 ﻿using ArkBot.Configuration.Model;
 using ArkBot.WebApi.Model;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 
 namespace ArkBot.Helpers
 {
     public static class WebApiHelper
     {
-        public static UserViewModel GetUser(HttpRequestMessage request, IConfig config)
+        public static UserViewModel GetUser(HttpContext ctx, IConfig config)
         {
-            var ctx = request.GetOwinContext();
-            var authuser = ctx.Authentication.User;
+            var authuser = ctx.User;
 
             return GetUser(authuser, config);
         }
@@ -57,7 +62,7 @@ namespace ArkBot.Helpers
             //default roles
             roles.Add("guest");
             roles.Add("user");
-            
+
 
             return roles.Distinct().OrderBy(x => x).ToArray();
         }

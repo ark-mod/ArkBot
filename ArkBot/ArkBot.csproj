@@ -1,996 +1,184 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props" Condition="Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props')" />
-  <Import Project="..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props" Condition="Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props')" />
-  <Import Project="WebAppFiles.props" Condition="Exists('WebAppFiles.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BB61C4D0-0060-401B-BF8F-4747CBD86D9D}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ArkBot</RootNamespace>
-    <AssemblyName>ArkBot</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>true</UseVSHostingProcess>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x64</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
-  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Platforms>x64</Platforms>
     <ApplicationIcon>basket_empty.ico</ApplicationIcon>
+    <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PreserveCompilationContext>true</PreserveCompilationContext><!-- used for razor -->
+    <!--<CefSharpTargetDir>.\bin</CefSharpTargetDir>-->
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!--<ItemDefinitionGroup>
+    <ReferenceCopyLocalPaths>
+      <DestinationSubDirectory>bin\</DestinationSubDirectory>
+    </ReferenceCopyLocalPaths>
+  </ItemDefinitionGroup>-->
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PlatformTarget>x64</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Accord, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.3.5.0\lib\net46\Accord.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Accord.MachineLearning, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.MachineLearning.3.5.0\lib\net46\Accord.MachineLearning.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Accord.Math, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.Math.3.5.0\lib\net46\Accord.Math.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Accord.Math.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.Math.3.5.0\lib\net46\Accord.Math.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Accord.Statistics, Version=3.5.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
-      <HintPath>..\packages\Accord.Statistics.3.5.0\lib\net46\Accord.Statistics.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ArkSavegameToolkitNet, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ArkSavegameToolkitNet.1.9.0\lib\net461\ArkSavegameToolkitNet.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ArkSavegameToolkitNet.Domain, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ArkSavegameToolkitNet.1.9.0\lib\net461\ArkSavegameToolkitNet.Domain.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Autofac.Integration.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.Owin.4.0.0\lib\net45\Autofac.Integration.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Autofac.Integration.SignalR, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.SignalR.3.0.2\lib\net40\Autofac.Integration.SignalR.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.WebApi2.4.0.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Autofac.Integration.WebApi.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.WebApi2.Owin.4.0.0\lib\net45\Autofac.Integration.WebApi.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
-      <HintPath>..\packages\Portable.BouncyCastle.1.8.1.2\lib\net4\BouncyCastle.Crypto.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Certes, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Certes.1.0.7\lib\net45\Certes.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="CoreRCON.NET-4.6, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CoreRCON.NET-4.6.1.0.0-CI00004\lib\net46\CoreRCON.NET-4.6.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Discord.Net.Commands, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Discord.Net.Commands.2.1.1\lib\net46\Discord.Net.Commands.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Discord.Net.Core, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Discord.Net.Core.2.1.1\lib\net46\Discord.Net.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Discord.Net.Providers.WS4Net, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Discord.Net.Providers.WS4Net.2.1.1\lib\netstandard1.3\Discord.Net.Providers.WS4Net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Discord.Net.Rest, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Discord.Net.Rest.2.1.1\lib\net46\Discord.Net.Rest.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Discord.Net.Webhook, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Discord.Net.Webhook.2.1.1\lib\netstandard1.3\Discord.Net.Webhook.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Discord.Net.WebSocket, Version=2.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Discord.Net.WebSocket.2.1.1\lib\net46\Discord.Net.WebSocket.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="dotNetRDF, Version=1.0.9.3683, Culture=neutral, PublicKeyToken=6055ffe4c97cc780, processorArchitecture=MSIL">
-      <HintPath>..\packages\dotNetRDF.1.0.9.3683\lib\net40\dotNetRDF.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServerCompact, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.SqlServerCompact.6.1.3\lib\net45\EntityFramework.SqlServerCompact.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FSharp.Core.4.1.12\lib\net45\FSharp.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlAgilityPack.1.4.9\lib\Net45\HtmlAgilityPack.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ionic.Zip.1.9.1.8\lib\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Markdig, Version=0.14.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Markdig.0.14.8\lib\net40\Markdig.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.1.1.1\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Cors, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Cors.3.1.0\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Diagnostics, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Diagnostics.2.1.0\lib\net40\Microsoft.Owin.Diagnostics.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.FileSystems, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.FileSystems.3.1.0\lib\net45\Microsoft.Owin.FileSystems.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.HttpListener, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Host.HttpListener.2.1.0\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Hosting, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Hosting.2.1.0\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.Jwt.3.1.0\lib\net45\Microsoft.Owin.Security.Jwt.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Owin.StaticFiles, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.StaticFiles.3.1.0\lib\net45\Microsoft.Owin.StaticFiles.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommonServiceLocator.1.3\lib\portable-net4+sl5+netcore45+wpa81+wp8\Microsoft.Practices.ServiceLocation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Threading.Tasks, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Threading.Tasks.Extensions, Version=1.0.12.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Threading.Tasks.Extensions.Desktop, Version=1.0.168.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Async.1.0.168\lib\net40\Microsoft.Threading.Tasks.Extensions.Desktop.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="Nancy, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nancy.1.4.1\lib\net40\Nancy.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Nancy.Bootstrappers.Autofac, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nancy.Bootstrappers.Autofac.1.4.1\lib\net40\Nancy.Bootstrappers.Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="Nancy.Owin, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nancy.Owin.1.4.1\lib\net40\Nancy.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Nito.AsyncEx, Version=4.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.AsyncEx.4.0.1\lib\net45\Nito.AsyncEx.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Nito.AsyncEx.Concurrent, Version=4.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.AsyncEx.4.0.1\lib\net45\Nito.AsyncEx.Concurrent.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Nito.AsyncEx.Enlightenment, Version=4.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nito.AsyncEx.4.0.1\lib\net45\Nito.AsyncEx.Enlightenment.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Owin.Compression, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.Compression.1.0.15\lib\net45\Owin.Compression.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Owin.Security.Providers.OpenIDBase, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.Security.Providers.OpenIDBase.2.1.1\lib\net45\Owin.Security.Providers.OpenIDBase.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Owin.Security.Providers.Steam, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.Security.Providers.Steam.2.15.1\lib\net45\Owin.Security.Providers.Steam.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="Prism, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Prism.Core.6.3.0\lib\net45\Prism.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Prism.Wpf, Version=6.3.0.0, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
-      <HintPath>..\packages\Prism.Wpf.6.3.0\lib\net45\Prism.Wpf.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="PropertyChanged, Version=2.2.4.0, Culture=neutral, PublicKeyToken=ee3ee20bcf148ddd, processorArchitecture=MSIL">
-      <HintPath>..\packages\PropertyChanged.Fody.2.2.4.0\lib\net452\PropertyChanged.dll</HintPath>
-    </Reference>
-    <Reference Include="QueryMaster, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\QueryMaster.2.0.0-CI00007\lib\net461\QueryMaster.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="RazorEngine, Version=3.9.3.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
-      <HintPath>..\packages\RazorEngine.3.9.3\lib\net45\RazorEngine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.ClientEngine, Version=0.10.0.0, Culture=neutral, PublicKeyToken=ee9af13f57f00acc">
-      <HintPath>..\packages\SuperSocket.ClientEngine.Core.0.10.0\lib\net45\SuperSocket.ClientEngine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Collections.Specialized, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Collections.Specialized.4.3.0\lib\net46\System.Collections.Specialized.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.SqlServerCe, Version=4.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.SqlServer.Compact.4.0.8876.1\lib\net40\System.Data.SqlServerCe.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.3.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Globalization.Calendars, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Globalization.Calendars.4.3.0\lib\net46\System.Globalization.Calendars.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IdentityModel" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263">
-      <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.FileSystem, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.4.3.0\lib\net46\System.IO.FileSystem.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Management" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.NameResolution, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Net.NameResolution.4.3.0\lib\net46\System.Net.NameResolution.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Security, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>..\packages\System.Net.Security.4.3.0\lib\net46\System.Net.Security.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Sockets, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Dataflow, Version=4.6.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.7.0\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Cors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Cors.5.0.0\lib\net45\System.Web.Cors.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Http.Owin, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.3\lib\net45\System.Web.Http.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Razor.3.0.0\lib\net45\System.Web.Razor.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Forms.DataVisualization" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Prism.Wpf.6.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Validar, Version=1.6.0.0, Culture=neutral, PublicKeyToken=409b3227471b0f0d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Validar.Fody.1.6.0.0\lib\net452\Validar.dll</HintPath>
-    </Reference>
-    <Reference Include="VDS.Common, Version=1.6.0.0, Culture=neutral, PublicKeyToken=ab5f4eb908061bf0, processorArchitecture=MSIL">
-      <HintPath>..\packages\VDS.Common.1.6.0\lib\net40-client\VDS.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WebSocket4Net, Version=0.15.2.11, Culture=neutral, PublicKeyToken=eb4e154b696bf72a">
-      <HintPath>..\packages\WebSocket4Net.0.15.2\lib\net45\WebSocket4Net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    <Compile Remove="WebApp\**" />
+    <EmbeddedResource Remove="WebApp\**" />
+    <None Remove="WebApp\**" />
+    <Page Remove="WebApp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="basket_empty.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
+    <PackageReference Include="AspNet.Security.OpenId.Steam" Version="3.0.0" />
+    <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="CefSharp.Wpf" Version="75.1.143" />
+    <PackageReference Include="Certes" Version="2.3.3" />
+    <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="Ionic.Zip" Version="1.9.1.8" />
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Markdig" Version="0.18.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.3" />
+    <PackageReference Include="MiqM.Xceed.Wpf.Toolkit.NETCore" Version="3.4.0.1" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
+    <PackageReference Include="Prism.Wpf" Version="7.2.0.1422" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.2.2" />
+    <PackageReference Include="QueryMaster" Version="1.1.0" />
+    <PackageReference Include="RazorLight" Version="2.0.0-beta4" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Management" Version="4.7.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="4.7.0" />
+    <PackageReference Include="Validar.Fody" Version="1.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- TODO: These updates are currently required because CefSharp.Wpf specifies
+         <Private>false</Private>, which means these libraries will not be specified in
+         the .deps.json file, and so the CoreCLR wouldn't load these. -->
+    <Reference Update="CefSharp">
+      <Private>true</Private>
+    </Reference>
+    <Reference Update="CefSharp.Core">
+      <Private>true</Private>
+    </Reference>
+    <Reference Update="CefSharp.Wpf">
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ArkSaveFileWatcherTimer.cs" />
-    <Compile Include="Ark\ArkBotAnonymizeData.cs" />
-    <Compile Include="Ark\IArkUpdateableContext.cs" />
-    <Compile Include="Browser\Behaviours\HoverLinkBehaviour.cs" />
-    <Compile Include="Browser\EventArgs\BaseRequestEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\GetAuthCredentialsEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\GetResourceResponseFilterEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnBeforeBrowseEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnBeforeResourceLoadEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnCertificateErrorEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnOpenUrlFromTabEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnPluginCrashedEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnProtocolExecutionEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnQuotaRequestEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnRenderProcessTerminatedEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnRenderViewReadyEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnResourceLoadCompleteEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnResourceRedirectEventArgs.cs" />
-    <Compile Include="Browser\EventArgs\OnResourceResponseEventArgs.cs" />
-    <Compile Include="Browser\RequestEventHandler.cs" />
-    <Compile Include="Commands\Admin\AdminCheckCommand.cs" />
-    <Compile Include="Commands\Admin\AdminCommand.cs" />
-    <Compile Include="Commands\Admin\CloudCommand.cs" />
-    <Compile Include="Commands\Admin\RconCommand.cs" />
-    <Compile Include="Commands\CheckFoodCommand.cs" />
-    <Compile Include="Commands\CommandListCommand.cs" />
-    <Compile Include="Commands\DisabledCommands.cs" />
-    <Compile Include="Commands\Experimental\DebugCommand.cs" />
-    <Compile Include="Commands\Experimental\ImprintCheckCommand.cs" />
-    <Compile Include="Commands\FindTameCommand.cs" />
-    <Compile Include="Commands\LinkSteamCommand.cs" />
-    <Compile Include="Commands\MyDinos.cs" />
-    <Compile Include="Commands\MyKibblesCommand.cs" />
-    <Compile Include="Commands\MyResourcesCommand.cs" />
-    <Compile Include="Commands\PlayerListCommand.cs" />
-    <Compile Include="Commands\ServersCommand.cs" />
-    <Compile Include="Commands\StatsCommand.cs" />
-    <Compile Include="Commands\StatusCommand.cs" />
-    <Compile Include="Commands\UnlinkSteamCommand.cs" />
-    <Compile Include="Commands\WebAppCommand.cs" />
-    <Compile Include="Commands\VoteCommand.cs" />
-    <Compile Include="Commands\WhoAmICommand.cs" />
-    <Compile Include="Commands\WildCommand.cs" />
-    <Compile Include="Configuration\Model\WebAppConfigSection.cs" />
-    <Compile Include="Configuration\Model\UsersInRoleConfig.cs" />
-    <Compile Include="Configuration\Model\UserRolesConfigSection.cs" />
-    <Compile Include="Configuration\Model\BackupsConfigSection.cs" />
-    <Compile Include="Configuration\Model\AccessControlConfigSection.cs" />
-    <Compile Include="Configuration\Model\AccessControlFeatureGroup.cs" />
-    <Compile Include="Configuration\Model\ArkMultipliersConfigSection.cs" />
-    <Compile Include="Configuration\Model\ClustersConfigSection.cs" />
-    <Compile Include="Configuration\Model\ClusterConfigSection.cs" />
-    <Compile Include="Configuration\Model\ServerManagementConfigSection.cs" />
-    <Compile Include="Configuration\Model\ServersConfigSection.cs" />
-    <Compile Include="Configuration\Model\ServerConfigSection.cs" />
-    <Compile Include="Configuration\Model\AccessControlFeatureRoles.cs" />
-    <Compile Include="Configuration\Model\SslConfigSection.cs" />
-    <Compile Include="Configuration\Model\DiscordConfigSection.cs" />
-    <Compile Include="Configuration\Model\ConfigurationCategories.cs" />
-    <Compile Include="Configuration\Model\_temp_test.cs" />
-    <Compile Include="Configuration\TypeToDisplayNameConverter.cs" />
-    <Compile Include="Configuration\CustomCollectionEditor.cs" />
-    <Compile Include="Configuration\ConfigurationHelpAttribute.cs" />
-    <Compile Include="Configuration\DirectoryPathEditor.cs" />
-    <Compile Include="Configuration\AccessControlFeatureGroupPropertyDescriptor.cs" />
-    <Compile Include="Configuration\AccessControlFeatureGroupConverter.cs" />
-    <Compile Include="Configuration\AccessControlFeaturePropertyDescriptor.cs" />
-    <Compile Include="Configuration\AccessControlConfigSectionConverter.cs" />
-    <Compile Include="Configuration\StringArrayEditorWithPreview.cs" />
-    <Compile Include="Configuration\OpenFilePathEditor.cs" />
-    <Compile Include="Configuration\PrimitiveTypeCollectionControlWithPreview.cs" />
-    <Compile Include="Configuration\Validation\DirectoryPathIsValidAttribute.cs" />
-    <Compile Include="Configuration\Validation\FileExistsAttribute.cs" />
-    <Compile Include="Configuration\Validation\IfValidationAttribute.cs" />
-    <Compile Include="Configuration\Validation\MinLengthOptionalAttribute.cs" />
-    <Compile Include="Configuration\Validation\RegularExpressionCustomAttribute.cs" />
-    <Compile Include="Configuration\Validation\ValidateExpandableAttribute.cs" />
-    <Compile Include="Configuration\Validation\ValidateCollectionAttribute.cs" />
-    <Compile Include="Configuration\Validation\RangeOptionalAttribute.cs" />
-    <Compile Include="Configuration\Validation\ValidUrlAttribute.cs" />
-    <Compile Include="Configuration\Validation\DirectoryExistsAttribute.cs" />
-    <Compile Include="Configuration\Validation\ValidationTemplate.cs" />
-    <Compile Include="Controls\About.xaml.cs">
-      <DependentUpon>About.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\Configuration.xaml.cs">
-      <DependentUpon>Configuration.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Data\ArkServerMultipliers.cs" />
-    <Compile Include="Discord\ArkDiscordBot.cs" />
-    <Compile Include="ArkContext.cs" />
-    <Compile Include="ArkSaveFileChangedEventArgs.cs" />
-    <Compile Include="Ark\ArkClusterContext.cs" />
-    <Compile Include="Ark\ArkServerContext.cs" />
-    <Compile Include="Ark\ArkContextManager.cs" />
-    <Compile Include="Controls\Console.xaml.cs">
-      <DependentUpon>Console.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Database\Model\DestroyWildDinosVote.cs" />
-    <Compile Include="Database\Model\RestartServerVote.cs" />
-    <Compile Include="Database\Model\UpdateServerVote.cs" />
-    <Compile Include="Database\Model\UnbanVote.cs" />
-    <Compile Include="Database\Model\SetTimeOfDayVote.cs" />
-    <Compile Include="Database\Model\UserVote.cs" />
-    <Compile Include="Database\Model\BanVote.cs" />
-    <Compile Include="Database\Model\Vote.cs" />
-    <Compile Include="DebugFakeSaveFileWatcher.cs" />
-    <Compile Include="ArkSaveFileWatcher.cs" />
-    <Compile Include="Commands\VersionCommand.cs" />
-    <Compile Include="Database\EfDatabaseContextFactory.cs" />
-    <Compile Include="Database\Model\PlayedEntry.cs" />
-    <Compile Include="Discord\AutofacDiscordServiceProvider.cs" />
-    <Compile Include="Discord\Command\CommandExtensions.cs" />
-    <Compile Include="Discord\Command\UsageExamplesAttribute.cs" />
-    <Compile Include="Discord\Command\SyntaxHelpAttribute.cs" />
-    <Compile Include="Discord\Command\RoleRestrictedPreconditionAttribute.cs" />
-    <Compile Include="Discord\Command\CommandHiddenAttribute.cs" />
-    <Compile Include="Discord\DiscordCommandParser.cs" />
-    <Compile Include="Discord\DiscordManager.cs" />
-    <Compile Include="Discord\DiscordMessage.cs" />
-    <Compile Include="Extensions\DiscordChannelExtensions.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Extensions\DependencyObjectExtensions.cs" />
-    <Compile Include="Extensions\NumberExtensions.cs" />
-    <Compile Include="Extensions\ProcessExtensions.cs" />
-    <Compile Include="Helpers\ArkDataHelper.cs" />
-    <Compile Include="Helpers\ProcessHelper.cs" />
-    <Compile Include="Helpers\WebApiHelper.cs" />
-    <Compile Include="Interop\Kernel32.cs" />
-    <Compile Include="OpenID\SteamOpenIdOwin_temp.cs" />
-    <Compile Include="PlayerLastActiveSavedState.cs" />
-    <Compile Include="Layout\LayoutInitializer.cs" />
-    <Compile Include="Layout\PaneStyleSelector.cs" />
-    <Compile Include="Layout\PaneTemplateSelector.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201704281757362_Vote_ServerKey.cs" />
-    <Compile Include="Migrations\201704281757362_Vote_ServerKey.Designer.cs">
-      <DependentUpon>201704281757362_Vote_ServerKey.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Notifications\NotificationManager.cs" />
-    <Compile Include="ScheduledTasks\ScheduledTasksManager.cs" />
-    <Compile Include="Services\IPlayerLastActiveService.cs" />
-    <Compile Include="Services\PlayerLastActiveService.cs" />
-    <Compile Include="Services\ArkServerService.cs" />
-    <Compile Include="IArkSaveFileWatcher.cs" />
-    <Compile Include="ISavedState.cs" />
-    <Compile Include="Migrations\201702280520255_UserPlayed.cs" />
-    <Compile Include="Migrations\201702280520255_UserPlayed.Designer.cs">
-      <DependentUpon>201702280520255_UserPlayed.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201703061349270_TamesLogHealthPercentage.cs" />
-    <Compile Include="Migrations\201703061349270_TamesLogHealthPercentage.Designer.cs">
-      <DependentUpon>201703061349270_TamesLogHealthPercentage.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201703262316086_Voting.cs" />
-    <Compile Include="Migrations\201703262316086_Voting.Designer.cs">
-      <DependentUpon>201703262316086_Voting.cs</DependentUpon>
-    </Compile>
-    <Compile Include="SavedState.cs" />
-    <Compile Include="Configuration\Model\Config.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Database\EfDatabaseContext.cs" />
-    <Compile Include="Database\IEfDatabaseContext.cs" />
-    <Compile Include="Database\Model\User.cs" />
-    <Compile Include="Database\Model\TamedCreatureLogEntry.cs" />
-    <Compile Include="Database\Model\WildCreatureLog.cs" />
-    <Compile Include="Database\Model\WildCreatureLogEntry.cs" />
-    <Compile Include="Database\NonPublicColumnAttributeConvention.cs" />
-    <Compile Include="Data\ArkSpeciesAliases.cs" />
-    <Compile Include="Data\Cluster.cs" />
-    <Compile Include="Data\Creature.cs" />
-    <Compile Include="Data\CreatureClass.cs" />
-    <Compile Include="Data\CreatureStats.cs" />
-    <Compile Include="Data\ArkSpeciesStats.cs" />
-    <Compile Include="Data\TribeLog.cs" />
-    <Compile Include="Data\Tribe_Extensions.cs" />
-    <Compile Include="Data\Creature_Extensions.cs" />
-    <Compile Include="Data\EntityNameWithCount.cs" />
-    <Compile Include="Data\Player.cs" />
-    <Compile Include="Data\Tribe.cs" />
-    <Compile Include="Logging.cs" />
-    <Compile Include="Extensions\DateTimeExtensions.cs" />
-    <Compile Include="Extensions\RegexExtensions.cs" />
-    <Compile Include="Extensions\SqlCeResultSetExtensions.cs" />
-    <Compile Include="Helpers\CommandHelper.cs" />
-    <Compile Include="Helpers\FixedWidthTableHelper.cs" />
-    <Compile Include="Helpers\TimeSpanHelper.cs" />
-    <Compile Include="Helpers\FileHelper.cs" />
-    <Compile Include="Extensions\GraphicsExtensions.cs" />
-    <Compile Include="Helpers\DownloadHelper.cs" />
-    <Compile Include="Helpers\StatisticsHelper.cs" />
-    <Compile Include="Helpers\ValidationHelper.cs" />
-    <Compile Include="IArkContext.cs" />
-    <Compile Include="Configuration\Model\IConfig.cs" />
-    <Compile Include="IConstants.cs" />
-    <Compile Include="Migrations\201702251216156_InitialCreate.cs" />
-    <Compile Include="Migrations\201702251216156_InitialCreate.Designer.cs">
-      <DependentUpon>201702251216156_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="OpenID\BarebonesSteamOpenId.cs" />
-    <Compile Include="OpenID\IBarebonesSteamOpenId.cs" />
-    <Compile Include="OpenID\SteamOpenIdCallbackEventArgs.cs" />
-    <Compile Include="OpenID\SteamOpenIdOptions.cs" />
-    <Compile Include="OpenID\SteamOpenIdState.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Extensions\TimeSpanExtensions.cs" />
-    <Compile Include="Services\Data\BackupListEntity.cs" />
-    <Compile Include="Services\Data\SavegameBackupResult.cs" />
-    <Compile Include="Services\IArkServerService.cs" />
-    <Compile Include="Services\IPlayedTimeWatcher.cs" />
-    <Compile Include="Services\ISavegameBackupService.cs" />
-    <Compile Include="Services\PlayedTimeWatcher.cs" />
-    <Compile Include="Services\SavegameBackupService.cs" />
-    <Compile Include="Steam\SteamManager.cs" />
-    <Compile Include="Threading\SingleRunningTaskCancelPrevious.cs" />
-    <Compile Include="Threading\Signaler.cs" />
-    <Compile Include="TimedTask.cs" />
-    <Compile Include="ContextUpdatingEventArgs.cs" />
-    <Compile Include="ViewModel\AboutViewModel.cs" />
-    <Compile Include="ViewModel\ConfigurationViewModel.cs" />
-    <Compile Include="ViewModel\MenuItemViewModel.cs" />
-    <Compile Include="ViewModel\PaneViewModel.cs" />
-    <Compile Include="ViewModel\TabViewModel.cs" />
-    <Compile Include="ViewModel\ToolViewModel.cs" />
-    <Compile Include="ViewModel\ViewModelBase.cs" />
-    <Compile Include="ViewModel\ConsoleViewModel.cs" />
-    <Compile Include="ViewModel\Workspace.cs" />
-    <Compile Include="VoteResultForcedEventArgs.cs" />
-    <Compile Include="VoteInitiatedEventArgs.cs" />
-    <Compile Include="Voting\Handlers\DestroyWildDinosVoteHandler.cs" />
-    <Compile Include="Voting\Handlers\UpdateServerVoteHandler.cs" />
-    <Compile Include="Voting\Handlers\RestartServerVoteHandler.cs" />
-    <Compile Include="Voting\Handlers\UnbanVoteHandler.cs" />
-    <Compile Include="Voting\Handlers\SetTimeOfDayVoteHandler.cs" />
-    <Compile Include="Voting\Handlers\BanVoteHandler.cs" />
-    <Compile Include="Voting\Handlers\IVoteHandler.cs" />
-    <Compile Include="Voting\VoteStateChangeResult.cs" />
-    <Compile Include="Voting\InitiateVoteResult.cs" />
-    <Compile Include="Voting\VotingManager.cs" />
-    <Compile Include="WebApi\Controllers\WildCreaturesController.cs" />
-    <Compile Include="WebApi\DemoMode.cs" />
-    <Compile Include="WebApi\Model\FertilizedEggsResponseViewModel.cs" />
-    <Compile Include="WebApi\Model\FertilizedEggViewModel.cs" />
-    <Compile Include="WebApi\Model\WildCreatureSpeciesStatistics.cs" />
-    <Compile Include="WebApi\Model\WildCreatureStatistics.cs" />
-    <Compile Include="WebApi\Model\WildCreatureSpeciesViewModel.cs" />
-    <Compile Include="WebApi\Model\WildCreatureViewModel.cs" />
-    <Compile Include="WebApi\Model\WildCreaturesViewModel.cs" />
-    <Compile Include="WebApi\Model\TribeLogEntryViewModel.cs" />
-    <Compile Include="WebApi\PlayerIdAttribute.cs" />
-    <Compile Include="WebApi\AccessControlAuthorizationFilter.cs" />
-    <Compile Include="WebApi\Controllers\AdministerController.cs" />
-    <Compile Include="WebApi\Controllers\AuthenticationController.cs" />
-    <Compile Include="WebApi\Controllers\BaseApiController.cs" />
-    <Compile Include="WebApi\Controllers\MapController.cs" />
-    <Compile Include="WebApi\Controllers\BulkController.cs" />
-    <Compile Include="WebApi\Controllers\AdminServerController.cs" />
-    <Compile Include="WebApi\Controllers\StructuresController.cs" />
-    <Compile Include="WebApi\Controllers\ServerController.cs" />
-    <Compile Include="WebApi\Controllers\TribeController.cs" />
-    <Compile Include="WebApi\Controllers\ServersController.cs" />
-    <Compile Include="WebApi\Controllers\PlayerController.cs" />
-    <Compile Include="WebApi\AccessControlAttribute.cs" />
-    <Compile Include="WebApi\WebApiExceptionLogger.cs" />
-    <Compile Include="WebApi\Hubs\ServerUpdateHub.cs" />
-    <Compile Include="WebApi\Model\AdministerResponseViewModel.cs" />
-    <Compile Include="WebApi\Model\ClusterStatusViewModel.cs" />
-    <Compile Include="WebApi\Model\CreatureBaseStatsViewModel.cs" />
-    <Compile Include="WebApi\Model\ElectricalGeneratorViewModel.cs" />
-    <Compile Include="WebApi\Model\CropPlotViewModel.cs" />
-    <Compile Include="WebApi\Model\KibbleAndEggViewModel.cs" />
-    <Compile Include="WebApi\Model\OnlinePlayerViewModel.cs" />
-    <Compile Include="WebApi\Model\PlayerClusterViewModely.cs" />
-    <Compile Include="WebApi\Model\CloudCreatureViewModel.cs" />
-    <Compile Include="WebApi\Model\AdminServerViewModel.cs" />
-    <Compile Include="WebApi\Model\AdminPlayerReferenceViewModel.cs" />
-    <Compile Include="WebApi\Model\AdminTribeReferenceViewModel.cs" />
-    <Compile Include="WebApi\Model\AccessControlViewModel.cs" />
-    <Compile Include="WebApi\Model\StructureBase.cs" />
-    <Compile Include="WebApi\Model\StructureOwnerViewModel.cs" />
-    <Compile Include="WebApi\Model\StructuresViewModel.cs" />
-    <Compile Include="WebApi\Model\StructureTypeViewModel.cs" />
-    <Compile Include="WebApi\Model\StructureAreaViewModel.cs" />
-    <Compile Include="WebApi\Model\StructureViewModel.cs" />
-    <Compile Include="WebApi\Model\TribeReferenceViewModel.cs" />
-    <Compile Include="WebApi\Model\PlayerReferenceViewModel.cs" />
-    <Compile Include="WebApi\Model\PlayerServerViewModel.cs" />
-    <Compile Include="WebApi\Model\BulkViewModel.cs" />
-    <Compile Include="WebApi\Model\ServerViewModel.cs" />
-    <Compile Include="WebApi\Model\TribeViewModel.cs" />
-    <Compile Include="WebApi\Model\ServerStatusViewModel.cs" />
-    <Compile Include="WebApi\Model\ServerStatusAllViewModel.cs" />
-    <Compile Include="WebApi\Model\PlayerViewModel.cs" />
-    <Compile Include="WebApi\Model\TamedCreatureViewModel.cs" />
-    <Compile Include="WebApi\Model\UserViewModel.cs" />
-    <Compile Include="WebApi\WebApiStartup.cs" />
-    <Compile Include="WebApp\WebAppRedirectStartup.cs" />
-    <Compile Include="WebApp\WebAppStartup.cs" />
-    <Compile Include="WpfCommands\RelayCommand.cs" />
+    <Reference Include="ArkSavegameToolkitNet">
+      <HintPath>..\..\ArkSavegameToolkitNet\ArkSavegameToolkitNet\bin\$(Configuration)\netcoreapp3.1\ArkSavegameToolkitNet.dll</HintPath>
+    </Reference>
+    <Reference Include="ArkSavegameToolkitNet.Domain">
+      <HintPath>..\..\ArkSavegameToolkitNet\ArkSavegameToolkitNet.Domain\bin\$(Configuration)\netcoreapp3.1\ArkSavegameToolkitNet.Domain.dll</HintPath>
+    </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="aliases.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="any\netstandard1.6\FSharp.Core.optdata" />
-    <None Include="any\netstandard1.6\FSharp.Core.sigdata" />
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="app.manifest" />
-    <None Include="defaultconfig.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="packages.config" />
-  </ItemGroup>
+
   <ItemGroup>
     <Resource Include="basket_empty.ico" />
-    <!--<Content Include="ExternalBin\Newtonsoft.Json.dll" />
-    <Content Include="ExternalBin\Newtonsoft.Json.xml" />-->
-    <Content Include="ExternalBin\Ionic.BZip2.dll" />
-    <None Include="FodyWeavers.xml" />
-    <Content Include="Resources\about.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\configurationHelp.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\Aberration_P.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\BC.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\CrystalIsles.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\EbenusAstrum.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\Extinction.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\Ragnarok.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\ScorchedEarth_P.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\ShigoIslands.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\TheCenter.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\TheIsland.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\TheVolcano.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\MapImages\Valguero_P.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\openidresponse.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\theisland-template.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\theisland-template2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="todo.txt" />
   </ItemGroup>
+
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <None Update="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="defaultconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\about.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\configurationHelp.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\Aberration_P.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\BC.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\CrystalIsles.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\EbenusAstrum.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\Extinction.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\Ragnarok.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\ScorchedEarth_P.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\ShigoIslands.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\TheCenter.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\TheIsland.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\TheVolcano.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\MapImages\Valguero_P.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\openidresponse.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\theisland-template.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\theisland-template2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201702251216156_InitialCreate.resx">
-      <DependentUpon>201702251216156_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201702280520255_UserPlayed.resx">
-      <DependentUpon>201702280520255_UserPlayed.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201703061349270_TamesLogHealthPercentage.resx">
-      <DependentUpon>201703061349270_TamesLogHealthPercentage.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201703262316086_Voting.resx">
-      <DependentUpon>201703262316086_Voting.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201704281757362_Vote_ServerKey.resx">
-      <DependentUpon>201704281757362_Vote_ServerKey.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Page Include="Controls\About.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\Configuration.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Controls\Console.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Themes\CollectionControlDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
+
+  <!--<PropertyGroup>
     <CefSharpTargetDir>$(TargetDir)\lib</CefSharpTargetDir>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <Import Project="WebAppFiles.targets" Condition="Exists('WebAppFiles.targets')" />
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <PostBuildEvent>
-    if not exist "$(TargetDir)x86" md "$(TargetDir)x86"
-    xcopy /c /s /y "$(SolutionDir)packages\Microsoft.SqlServer.Compact.4.0.8876.1\NativeBinaries\x86\*.*" "$(TargetDir)x86"
-    if not exist "$(TargetDir)amd64" md "$(TargetDir)amd64"
-    xcopy /c /s /y "$(SolutionDir)packages\Microsoft.SqlServer.Compact.4.0.8876.1\NativeBinaries\amd64\*.*" "$(TargetDir)amd64"</PostBuildEvent>
-  </PropertyGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-    <Error Condition="!Exists('..\packages\Accord.3.5.0\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.5.0\build\Accord.targets'))" />
-    <Error Condition="!Exists('..\packages\Fody.2.2.1.0\build\net452\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.2.1.0\build\net452\Fody.targets'))" />
-    <Error Condition="!Exists('..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets'))" />
-    <Error Condition="!Exists('..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets'))" />
-    <Error Condition="!Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.props'))" />
-    <Error Condition="!Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets'))" />
-    <Error Condition="!Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.props'))" />
-    <Error Condition="!Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets'))" />
-  </Target>
-  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
-  <Import Project="..\packages\Accord.3.5.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.5.0\build\Accord.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Target Name="AfterBuild">
+      if not exist "$(TargetDir)x86" md "$(TargetDir)x86"
+      xcopy /c /s /y "$(SolutionDir)packages\Microsoft.SqlServer.Compact.4.0.8876.1\NativeBinaries\x86\*.*" "$(TargetDir)x86"
+      if not exist "$(TargetDir)amd64" md "$(TargetDir)amd64"
+      xcopy /c /s /y "$(SolutionDir)packages\Microsoft.SqlServer.Compact.4.0.8876.1\NativeBinaries\amd64\*.*" "$(TargetDir)amd64"
+    </PostBuildEvent>
+  </PropertyGroup>-->
+
+  <!--<Target Name="CustomAfterBuild" AfterTargets="AfterBuild">
     <ItemGroup>
       <MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />
-      <!--<MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\*.pak ; $(OutputPath)**\*.dat ; $(OutputPath)**\*.bin ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt ; $(OutputPath)**\CefSharp.BrowserSubprocess.exe" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />-->
+      --><!--<MoveToLibFolder Include="$(OutputPath)**\*.dll ; $(OutputPath)**\*.pdb ; $(OutputPath)**\*.xml ; $(OutputPath)**\*.dll.config ; $(OutputPath)**\*.pak ; $(OutputPath)**\*.dat ; $(OutputPath)**\*.bin ; $(OutputPath)**\Microsoft.VC90.CRT.manifest ; $(OutputPath)**\README_ENU.txt ; $(OutputPath)**\CefSharp.BrowserSubprocess.exe" Exclude="$(OutputPath)lib\**\*.* ; $(OutputPath)Database\**\*.* ; $(OutputPath)Resources\**\*.* ; $(OutputPath)WebApp\**\*.*" />--><!--
     </ItemGroup>
     <Move SourceFiles="@(MoveToLibFolder)" DestinationFiles="@(MoveToLibFolder->'$(OutputPath)lib\%(RecursiveDir)%(Filename)%(Extension)')" OverwriteReadOnlyFiles="true" ContinueOnError="true" />
     <ItemGroup>
@@ -1000,10 +188,6 @@
       </EmptyDirectories>
     </ItemGroup>
     <RemoveDir Directories="@(EmptyDirectories)" Condition="%(Files)=='0'" />
-  </Target>
-  <Import Project="..\packages\Fody.2.2.1.0\build\net452\Fody.targets" Condition="Exists('..\packages\Fody.2.2.1.0\build\net452\Fody.targets')" />
-  <Import Project="..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets" Condition="Exists('..\packages\cef.redist.x64.3.3202.1686\build\cef.redist.x64.targets')" />
-  <Import Project="..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets" Condition="Exists('..\packages\cef.redist.x86.3.3202.1686\build\cef.redist.x86.targets')" />
-  <Import Project="..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.62.0.0-pre01\build\CefSharp.Common.targets')" />
-  <Import Project="..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets" Condition="Exists('..\packages\CefSharp.Wpf.62.0.0-pre01\build\CefSharp.Wpf.targets')" />
+  </Target>-->
+
 </Project>

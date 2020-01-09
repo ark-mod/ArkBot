@@ -1,16 +1,13 @@
 ﻿using ArkBot.Interop;
 using ArkBot.ViewModel;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using CefSharp;
+using System.Configuration;
+using CefSharp.Wpf;
+using System.Diagnostics;
 
 namespace ArkBot
 {
@@ -30,7 +27,9 @@ namespace ArkBot
             {
                 //LogSeverity = LogSeverity.Verbose,
                 LogFile = "logs\\cefsharp.log",
-                BrowserSubprocessPath = "lib\\CefSharp.BrowserSubprocess.exe",
+                //TODO [.NET Core]: Changed temporarily (could not get moving additional dll to /lib to work)
+                //BrowserSubprocessPath = "lib\\CefSharp.BrowserSubprocess.exe",
+                BrowserSubprocessPath = "CefSharp.BrowserSubprocess.exe",
             };
 
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
@@ -71,7 +70,7 @@ namespace ArkBot
 
                     if (index < value.Length - 1)
                     {
-                        Write(value.Substring(index));
+                        Write(value.Substring(index + 1));
                     }
                 }
             }

@@ -1,11 +1,10 @@
-﻿using Nito.AsyncEx;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using Nito.AsyncEx;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -123,12 +122,12 @@ namespace ArkBot.OpenID
                     return;
                 }
 
-                var query = UriExtensions.ParseQueryString(state.ReturnTo);
+                var query = QueryHelpers.ParseQuery(state.ReturnTo.Query);
 
                 if (request.Url.Scheme != state.ReturnTo.Scheme
                     || request.Url.Authority != state.ReturnTo.Authority
                     || request.Url.AbsolutePath != state.ReturnTo.AbsolutePath
-                    || query.AllKeys.Any(x => qs[x] == null || qs[x].Equals(query[x], StringComparison.Ordinal) == false)
+                    || query.Keys.Any(x => qs[x] == null || qs[x].Equals(query[x], StringComparison.Ordinal) == false)
                     || qs["openid.mode"]?.Equals("id_res") != true
                     || qs["openid.claimed_id"]?.StartsWith(state.Authority) != true)
                 {

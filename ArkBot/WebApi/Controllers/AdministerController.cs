@@ -1,24 +1,14 @@
 ﻿using ArkBot.Ark;
 using ArkBot.Configuration.Model;
 using ArkBot.Data;
-using ArkBot.Database;
-using ArkBot.Extensions;
-using ArkBot.Helpers;
-using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
-using ArkSavegameToolkitNet.Domain;
-using Discord;
-using QueryMaster.GameServer;
-using System;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Results;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -38,67 +28,67 @@ namespace ArkBot.WebApi.Controllers
             _contextManager = contextManager;
         }
 
-        [HttpGet]
+        [HttpGet("saveworld/{id}")]
         [AccessControl("admin-server", "structures-rcon")]
-        public async Task<HttpResponseMessage> SaveWorld(string id)
+        public async Task<IActionResult> SaveWorld(string id)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"SaveWorld");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
-            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            return Ok(new AdministerResponseViewModel
             {
                 Message = "World saved! Please wait for server update (new data)..."
             });
         }
 
-        [HttpGet]
+        [HttpGet("destroyspoiledeggs/{id}")]
         [AccessControl("admin-server", "structures-rcon")]
-        public async Task<HttpResponseMessage> DestroySpoiledEggs(string id)
+        public async Task<IActionResult> DestroySpoiledEggs(string id)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"DroppedEggs destroy_spoiled_including_dropped_by_player");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
-            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            return Ok(new AdministerResponseViewModel
             {
                 Message = "All spoiled eggs destroyed!"
             });
         }
 
-        [HttpGet]
+        [HttpGet("destroyalleggs/{id}")]
         [AccessControl("admin-server", "structures-rcon")]
-        public async Task<HttpResponseMessage> DestroyAllEggs(string id)
+        public async Task<IActionResult> DestroyAllEggs(string id)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"DroppedEggs destroy_all_including_dropped_by_player");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
-            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            return Ok(new AdministerResponseViewModel
             {
                 Message = "All eggs destroyed!"
             });
         }
 
-        [HttpGet]
+        [HttpGet("droppedeggslist/{id}")]
         [AccessControl("admin-server", "fertilized-eggs")]
-        public async Task<HttpResponseMessage> DroppedEggsList(string id)
+        public async Task<IActionResult> DroppedEggsList(string id)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"DroppedEggs list");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
             if (result.TrimEnd('\n').Equals("There are no fertilized eggs on the map."))
             {
-                return Request.CreateResponse(HttpStatusCode.OK, new FertilizedEggsResponseViewModel
+                return Ok(new FertilizedEggsResponseViewModel
                 {
                     Message = result?.TrimEnd('\n'),
                     FertilizedEggsCount = 0,
@@ -162,7 +152,7 @@ namespace ArkBot.WebApi.Controllers
             }
 
 
-            return Request.CreateResponse(HttpStatusCode.OK, new FertilizedEggsResponseViewModel
+            return Ok(new FertilizedEggsResponseViewModel
             {
                 Message = result?.TrimEnd('\n'),
                 FertilizedEggsCount = fertilizedEggList.Count,
@@ -173,53 +163,53 @@ namespace ArkBot.WebApi.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("destroyallstructuresforteamid/{id}")]
         [AccessControl("admin-server", "structures-rcon")]
-        public async Task<HttpResponseMessage> DestroyAllStructuresForTeamId(string id, string teamId)
+        public async Task<IActionResult> DestroyAllStructuresForTeamId(string id, string teamId)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"DestroyAllStructuresForTeamId {teamId}");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
             var m = _rDestroyedStructureCount.Match(result);
-            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            return Ok(new AdministerResponseViewModel
             {
                 Message = result?.TrimEnd('\n'),
                 DestroyedStructureCount = m.Success ? int.Parse(m.Groups["num"].Value) : (int?)null
             });
         }
 
-        [HttpGet]
+        [HttpGet("destroystructuresforteamidatposition/{id}")]
         [AccessControl("admin-server", "structures-rcon")]
-        public async Task<HttpResponseMessage> DestroyStructuresForTeamIdAtPosition(string id, string teamId, float x, float y, float radius, int rafts)
+        public async Task<IActionResult> DestroyStructuresForTeamIdAtPosition(string id, string teamId, float x, float y, float radius, int rafts)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"DestroyStructuresForTeamIdAtPosition {teamId} {x} {y} {radius} {rafts}");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
             var m = _rDestroyedStructureCount.Match(result);
-            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            return Ok(new AdministerResponseViewModel
             {
                 Message = result?.TrimEnd('\n'),
                 DestroyedStructureCount = m.Success ? int.Parse(m.Groups["num"].Value) : (int?)null
             });
         }
 
-        [HttpGet]
+        [HttpGet("destroydinosforteamid/{id}")]
         [AccessControl("admin-server", "structures-rcon")]
-        public async Task<HttpResponseMessage> DestroyDinosForTeamId(string id, string teamId)
+        public async Task<IActionResult> DestroyDinosForTeamId(string id, string teamId)
         {
             var serverContext = _contextManager.GetServer(id);
-            if (serverContext == null) return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Server instance key not found!");
+            if (serverContext == null) return BadRequest("Server instance key not found!");
 
             var result = await serverContext.Steam.SendRconCommand($"DestroyDinosForTeamId {teamId}");
-            if (result == null) return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Timeout while waiting for command response...");
+            if (result == null) return InternalServerError("Timeout while waiting for command response...");
 
-            return Request.CreateResponse(HttpStatusCode.OK, new AdministerResponseViewModel
+            return Ok(new AdministerResponseViewModel
             {
                 Message = result?.TrimEnd('\n')
             });

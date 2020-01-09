@@ -1,8 +1,7 @@
-﻿using System.Data.Entity;
-using ArkBot.Database.Model;
+﻿using ArkBot.Database.Model;
 using System.Threading.Tasks;
 using System.Threading;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace ArkBot.Database
 {
@@ -17,8 +16,8 @@ namespace ArkBot.Database
 
         int SaveChanges();
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
-        DbEntityEntry Entry(object entity);
+        //DbEntityEntry Entry(object entity);
 
-        System.Data.Entity.Database Database { get; }
+        //System.Data.Entity.Database Database { get; }
     }
 }

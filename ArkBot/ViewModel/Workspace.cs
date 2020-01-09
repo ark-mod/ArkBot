@@ -4,31 +4,33 @@ using ArkBot.Database;
 using ArkBot.Database.Model;
 using ArkBot.Discord;
 using ArkBot.Helpers;
-using ArkBot.Notifications;
-using ArkBot.OpenID;
+//TODO [.NET Core]: Removed temporarily
+//using ArkBot.Notifications;
+//using ArkBot.OpenID;
+//using ArkBot.WebApi;
+
+using ArkBot.WebHost;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+
 using ArkBot.ScheduledTasks;
 using ArkBot.Services;
 using ArkBot.Voting;
 using ArkBot.Voting.Handlers;
-using ArkBot.WebApi;
 using ArkBot.WpfCommands;
 using Autofac;
-using Autofac.Integration.SignalR;
-using Autofac.Integration.WebApi;
 using Certes;
 using Certes.Acme;
 using Certes.Pkcs;
-using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Hubs;
-using Microsoft.Owin;
-using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Prism.Commands;
-using RazorEngine.Configuration;
-using RazorEngine.Templating;
+//using RazorEngine.Configuration;
+//using RazorEngine.Templating;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -41,18 +43,19 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using ArkSavegameToolkitNet.Domain;
-using Discord.Net.Providers.WS4Net;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 using Nito.AsyncEx;
 using Markdig;
-using PropertyChanged;
 using ArkBot.Configuration.Model;
+using log4net;
+using log4net.Config;
+using Autofac.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ArkBot.ViewModel
 {
@@ -144,10 +147,10 @@ namespace ArkBot.ViewModel
             return this;
         }
 
-        private static Task<Workspace> CreateAsync()
+        private async static Task<Workspace> CreateAsync()
         {
             _instance = new Workspace();
-            return _instance.InitializeAsync();
+            return await _instance.InitializeAsync();
         }
 
         private void Workspace_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -219,7 +222,11 @@ namespace ArkBot.ViewModel
 
         private void OnOpenWebApp(object parameter)
         {
-            Process.Start(_config.AppUrl);
+            Process.Start(new ProcessStartInfo(_config.AppUrl)
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
 
         private bool CanReloadPartialConfig(object parameter)
@@ -264,7 +271,8 @@ namespace ArkBot.ViewModel
             System.Console.WriteLine("------------------------------------------------------");
             System.Console.WriteLine();
 
-            log4net.Config.XmlConfigurator.Configure();
+            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            XmlConfigurator.Configure(logRepository, new FileInfo("App.config")); //"log4net.config"
 
             if (!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
             {
@@ -364,35 +372,36 @@ namespace ArkBot.ViewModel
 
             //var playedTimeWatcher = new PlayedTimeWatcher(_config);
 
-            BarebonesSteamOpenId openId = null;
-            if (_config.Discord.DiscordBotEnabled)
-            {
-                var options = new SteamOpenIdOptions
-                {
-                    ListenPrefixes = new[] { _config.Discord.SteamOpenIdRelyingServiceListenPrefix },
-                    RedirectUri = _config.Discord.SteamOpenIdRedirectUri,
-                };
-                openId = new BarebonesSteamOpenId(options,
-                    new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
-                    {
-                        var razorConfig = new TemplateServiceConfiguration
-                        {
-                            DisableTempFileLocking = true,
-                            CachingProvider = new DefaultCachingProvider(t => { })
-                        };
+            //TODO [.NET Core]: Removed temporarily (Discord module Steam OpenID Barebones endpoint)
+            //BarebonesSteamOpenId openId = null;
+            //if (_config.Discord.DiscordBotEnabled)
+            //{
+            //    var options = new SteamOpenIdOptions
+            //    {
+            //        ListenPrefixes = new[] { _config.Discord.SteamOpenIdRelyingServiceListenPrefix },
+            //        RedirectUri = _config.Discord.SteamOpenIdRedirectUri,
+            //    };
+            //    openId = new BarebonesSteamOpenId(options,
+            //        new Func<bool, ulong, ulong, Task<string>>(async (success, steamId, discordId) =>
+            //        {
+            //            var razorConfig = new TemplateServiceConfiguration
+            //            {
+            //                DisableTempFileLocking = true,
+            //                CachingProvider = new DefaultCachingProvider(t => { })
+            //            };
 
-                        using (var service = RazorEngineService.Create(razorConfig))
-                        {
-                            var html = await FileHelper.ReadAllTextTaskAsync(constants.OpenidresponsetemplatePath);
-                            return service.RunCompile(html, constants.OpenidresponsetemplatePath, null,
-                                new { Success = success, botName = _config.BotName, botUrl = _config.BotUrl });
-                        }
-                    }));
-            }
+            //            using (var service = RazorEngineService.Create(razorConfig))
+            //            {
+            //                var html = await FileHelper.ReadAllTextTaskAsync(constants.OpenidresponsetemplatePath);
+            //                return service.RunCompile(html, constants.OpenidresponsetemplatePath, null,
+            //                    new { Success = success, botName = _config.BotName, botUrl = _config.BotUrl });
+            //            }
+            //        }));
+            //}
 
             var discord = new DiscordSocketClient(new DiscordSocketConfig
             {
-                WebSocketProvider = WS4NetProvider.Instance, //required for Win 7
+                //WebSocketProvider = WS4NetProvider.Instance, //required for Win 7 in .NET Core 1.1 (This issue has been fixed since the release of .NET Core 2.1)
                 LogLevel = _config.DiscordLogLevel
             });
             discord.Log += msg =>
@@ -407,7 +416,6 @@ namespace ArkBot.ViewModel
 
             var anonymizeData = new ArkBotAnonymizeData();
 
-            //setup dependency injection
             var thisAssembly = Assembly.GetExecutingAssembly();
             var builder = new ContainerBuilder();
 
@@ -419,16 +427,21 @@ namespace ArkBot.ViewModel
             builder.RegisterInstance(discordCommands).AsSelf();
             builder.RegisterType<AutofacDiscordServiceProvider>().As<IServiceProvider>().SingleInstance();
             builder.RegisterType<ArkDiscordBot>();
-            builder.RegisterType<WebApp.SinglePageApplicationModule>().AsSelf();
+            //TODO [.NET Core]: Removed temporarily
+            //builder.RegisterType<WebApp.SinglePageApplicationModule>().AsSelf();
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(_config as Config).As<IConfig>();
             //builder.RegisterInstance(playedTimeWatcher).As<IPlayedTimeWatcher>();
-            if (openId != null) builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
+            //TODO [.NET Core]: Removed temporarily
+            //if (openId != null) builder.RegisterInstance(openId).As<IBarebonesSteamOpenId>();
             builder.RegisterType<EfDatabaseContext>().AsSelf().As<IEfDatabaseContext>()
                 .WithParameter(new TypedParameter(typeof(string), constants.DatabaseConnectionString));
             builder.RegisterType<EfDatabaseContextFactory>();
-            builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
+            //TODO [.NET Core]: Removed temporarily
+            //builder.RegisterType<Migrations.Configuration>().PropertiesAutowired();
+
+
             builder.RegisterType<ArkServerService>().As<IArkServerService>().SingleInstance();
             builder.RegisterType<SavegameBackupService>().As<ISavegameBackupService>().SingleInstance();
             builder.RegisterType<PlayerLastActiveService>().As<IPlayerLastActiveService>().SingleInstance();
@@ -440,28 +453,33 @@ namespace ArkBot.ViewModel
             builder.RegisterType<UpdateServerVoteHandler>().As<IVoteHandler<UpdateServerVote>>();
             builder.RegisterType<DestroyWildDinosVoteHandler>().As<IVoteHandler<DestroyWildDinosVote>>();
             builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
-            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-            builder.RegisterHubs(Assembly.GetExecutingAssembly());
+            //TODO [.NET Core]: Removed temporarily
+            //builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            //builder.RegisterHubs(Assembly.GetExecutingAssembly());
+
             builder.RegisterType<ArkContextManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<VotingManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<DiscordManager>().AsSelf().SingleInstance();
             builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance();
-            builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
 
-            builder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>().SingleInstance();
 
-            builder.RegisterType<WebApiStartup>().AsSelf();
-            builder.RegisterType<WebApp.WebAppStartup>().AsSelf();
+            //TODO [.NET Core]: Removed temporarily
+            //builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
+            //builder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>().SingleInstance();
+            //builder.RegisterType<WebApiStartup>().AsSelf();
+            //builder.RegisterType<WebApp.WebAppStartup>().AsSelf();
 
-            var webapiConfig = new System.Web.Http.HttpConfiguration();
-            var webappConfig = new System.Web.Http.HttpConfiguration();
-            builder.RegisterInstance(webapiConfig).Keyed<System.Web.Http.HttpConfiguration>("webapi");
-            builder.RegisterInstance(webappConfig).Keyed<System.Web.Http.HttpConfiguration>("webapp");
+            //var webapiConfig = new System.Web.Http.HttpConfiguration();
+            //var webappConfig = new System.Web.Http.HttpConfiguration();
+            //builder.RegisterInstance(webapiConfig).Keyed<System.Web.Http.HttpConfiguration>("webapi");
+            //builder.RegisterInstance(webappConfig).Keyed<System.Web.Http.HttpConfiguration>("webapp");
 
-            builder.RegisterWebApiFilterProvider(webapiConfig);
-            builder.Register(c => new AccessControlAuthorizationFilter(c.Resolve<IConfig>()))
-                .AsWebApiAuthorizationFilterFor<WebApi.Controllers.BaseApiController>()
-                .InstancePerRequest();
+            //builder.RegisterWebApiFilterProvider(webapiConfig);
+            //builder.Register(c => new AccessControlAuthorizationFilter(c.Resolve<IConfig>()))
+            //    .AsWebApiAuthorizationFilterFor<WebApi.Controllers.BaseApiController>()
+            //    .InstancePerRequest();
+            //END [.NET Core]
+
 
             //kernel.Bind(typeof(IHubConnectionContext<dynamic>)).ToMethod(context =>
             //        resolver.Resolve<IConnectionManager>().GetHubContext<StockTickerHub>().Clients
@@ -469,17 +487,19 @@ namespace ArkBot.ViewModel
 
             Container = builder.Build();
 
-            var dir = Path.GetDirectoryName(constants.DatabaseFilePath);
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            //TODO [.NET Core]: Removed temporarily (EF database - using SQL Compact 4.0) 
+            //var dir = Path.GetDirectoryName(constants.DatabaseFilePath);
+            //if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            //update database
-            System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
+            ////update database
+            //System.Data.Entity.Database.SetInitializer(new System.Data.Entity.MigrateDatabaseToLatestVersion<EfDatabaseContext, Migrations.Configuration>(true, Container.Resolve<Migrations.Configuration>()));
 
-            //create database immediately to support direct (non-ef) access in application
-            using (var db = Container.Resolve<IEfDatabaseContext>())
-            {
-                db.Database.Initialize(false);
-            }
+            ////create database immediately to support direct (non-ef) access in application
+            //using (var db = Container.Resolve<IEfDatabaseContext>())
+            //{
+            //    db.Database.Initialize(false);
+            //}
+            //END [.NET Core]
 
             _contextManager = Container.Resolve<ArkContextManager>();
             //server/cluster contexts
@@ -508,8 +528,10 @@ namespace ArkBot.ViewModel
 
                 // Initialize managers so that they are ready to handle events such as ArkContextManager.InitializationCompleted-event.
                 var scheduledTasksManager = Container.Resolve<ScheduledTasksManager>();
-                var votingManager = Container.Resolve<VotingManager>();
-                var notificationMangager = Container.Resolve<NotificationManager>();
+                //TODO [.NET Core]: Removed temporarily (voting manager)
+                //var votingManager = Container.Resolve<VotingManager>();
+                //TODO [.NET Core]: Removed temporarily
+                //var notificationMangager = Container.Resolve<NotificationManager>();
 
                 // Trigger manual updates for all servers (initialization)
                 foreach (var context in _contextManager.Servers)
@@ -579,84 +601,88 @@ namespace ArkBot.ViewModel
                 }
                 else renew = true;
 
-                if (renew)
-                {
-                    var success = false;
-                    Console.AddLog(@"SSL Certificate request issued...");
-                    try
-                    {
-                        using (var client = new AcmeClient(WellKnownServers.LetsEncrypt))
-                        {
-                            var account = await client.NewRegistraton($"mailto:{_config.Ssl.Email}");
-                            account.Data.Agreement = account.GetTermsOfServiceUri();
-                            account = await client.UpdateRegistration(account);
 
-                            var authz = await client.NewAuthorization(new AuthorizationIdentifier
-                            {
-                                Type = AuthorizationIdentifierTypes.Dns,
-                                Value = _config.Ssl.Domains.First()
-                            });
+                //TODO [.NET Core]: Removed temporarily (SSL renewal - requires owin hosting)
+                //if (renew)
+                //{
+                //    var success = false;
+                //    Console.AddLog(@"SSL Certificate request issued...");
+                //    try
+                //    {
+                //        using (var client = new AcmeClient(WellKnownServers.LetsEncrypt))
+                //        {
+                //            var account = await client.NewRegistraton($"mailto:{_config.Ssl.Email}");
+                //            account.Data.Agreement = account.GetTermsOfServiceUri();
+                //            account = await client.UpdateRegistration(account);
 
-                            var httpChallengeInfo = authz.Data.Challenges.Where(c => c.Type == ChallengeTypes.Http01).First();
-                            var keyAuthString = client.ComputeKeyAuthorization(httpChallengeInfo);
+                //            var authz = await client.NewAuthorization(new AuthorizationIdentifier
+                //            {
+                //                Type = AuthorizationIdentifierTypes.Dns,
+                //                Value = _config.Ssl.Domains.First()
+                //            });
 
-                            using (var webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.Ssl.ChallengeListenPrefix, (appBuilder) =>
-                            {
-                                var challengePath = new PathString("/.well-known/acme-challenge/");
-                                appBuilder.Use(new Func<AppFunc, AppFunc>((next) =>
-                                {
-                                    AppFunc appFunc = async environment =>
-                                    {
-                                        IOwinContext context = new OwinContext(environment);
-                                        if (!context.Request.Path.Equals(challengePath)) await next.Invoke(environment);
+                //            var httpChallengeInfo = authz.Data.Challenges.Where(c => c.Type == ChallengeTypes.Http01).First();
+                //            var keyAuthString = client.ComputeKeyAuthorization(httpChallengeInfo);
 
-                                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
-                                        context.Response.ContentType = "application/text";
-                                        await context.Response.WriteAsync(keyAuthString);
-                                    };
-                                    return appFunc;
-                                }));
-                            }))
-                            {
-                                var httpChallenge = await client.CompleteChallenge(httpChallengeInfo);
+                //            using (var webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.Ssl.ChallengeListenPrefix, (appBuilder) =>
+                //            {
+                //                var challengePath = new PathString("/.well-known/acme-challenge/");
+                //                appBuilder.Use(new Func<AppFunc, AppFunc>((next) =>
+                //                {
+                //                    AppFunc appFunc = async environment =>
+                //                    {
+                //                        IOwinContext context = new OwinContext(environment);
+                //                        if (!context.Request.Path.Equals(challengePath)) await next.Invoke(environment);
 
-                                authz = await client.GetAuthorization(httpChallenge.Location);
-                                while (authz.Data.Status == EntityStatus.Pending)
-                                {
-                                    await Task.Delay(500);
-                                    authz = await client.GetAuthorization(httpChallenge.Location);
-                                }
+                //                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                //                        context.Response.ContentType = "application/text";
+                //                        await context.Response.WriteAsync(keyAuthString);
+                //                    };
+                //                    return appFunc;
+                //                }));
+                //            }))
+                //            {
+                //                var httpChallenge = await client.CompleteChallenge(httpChallengeInfo);
 
-                                if (authz.Data.Status == EntityStatus.Valid)
-                                {
-                                    if (revoke)
-                                    {
-                                        //await client.RevokeCertificate(path); //todo: how to revoke a cert when we do not have the AcmeCertificate-object?
-                                        if (File.Exists(path)) File.Delete(path);
-                                    }
+                //                authz = await client.GetAuthorization(httpChallenge.Location);
+                //                while (authz.Data.Status == EntityStatus.Pending)
+                //                {
+                //                    await Task.Delay(500);
+                //                    authz = await client.GetAuthorization(httpChallenge.Location);
+                //                }
 
-                                    var csr = new CertificationRequestBuilder();
-                                    foreach (var domain in _config.Ssl.Domains) csr.AddName("CN", domain);
-                                    var cert = await client.NewCertificate(csr);
+                //                if (authz.Data.Status == EntityStatus.Valid)
+                //                {
+                //                    if (revoke)
+                //                    {
+                //                        //await client.RevokeCertificate(path); //todo: how to revoke a cert when we do not have the AcmeCertificate-object?
+                //                        if (File.Exists(path)) File.Delete(path);
+                //                    }
 
-                                    var pfxBuilder = cert.ToPfx();
-                                    var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
-                                    File.WriteAllBytes(path, pfx);
+                //                    var csr = new CertificationRequestBuilder();
+                //                    foreach (var domain in _config.Ssl.Domains) csr.AddName("CN", domain);
+                //                    var cert = await client.NewCertificate(csr);
 
-                                    success = true;
-                                }
-                            }
-                        }
+                //                    var pfxBuilder = cert.ToPfx();
+                //                    var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
+                //                    File.WriteAllBytes(path, pfx);
 
-                        if (success) Console.AddLog(@"SSL Certificate request completed!");
-                        else Console.AddLog(@"SSL Certificate challenge failed!");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
-                        Logging.LogException("Failed to issue ssl certificate.", ex, this.GetType());
-                    }
-                }
+                //                    success = true;
+                //                }
+                //            }
+                //        }
+
+                //        if (success) Console.AddLog(@"SSL Certificate request completed!");
+                //        else Console.AddLog(@"SSL Certificate challenge failed!");
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
+                //        Logging.LogException("Failed to issue ssl certificate.", ex, this.GetType());
+                //    }
+                //}
+                //END [.NET Core]
+
 
                 if (File.Exists(path))
                 {
@@ -724,32 +750,55 @@ namespace ArkBot.ViewModel
                 }
             }
 
-            //webapi
-            _webapi = Microsoft.Owin.Hosting.WebApp.Start(_config.WebApiListenPrefix, app =>
-            {
-                var startup = Container.Resolve<WebApiStartup>();
-                startup.Configuration(app, _config, Container, webapiConfig);
-            });
-            Console.AddLog("Web API started");
-
-
-
-            //webapp
-            _webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.WebAppListenPrefix, app =>
-            {
-                var startup = Container.Resolve<WebApp.WebAppStartup>();
-                startup.Configuration(app, _config, Container, webappConfig);
-            });
+            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/web-host?view=aspnetcore-3.1
+            _webapp = Host.CreateDefaultBuilder()
+                .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder
+                        .ConfigureLogging(logging =>
+                        {
+                            logging.ClearProviders();
+                            logging.AddDebug();
+                            logging.AddEventLog();
+                            logging.AddEventSourceLogger();
+                        })
+                        .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
+                        .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))
+                        .UseUrls(_config.WebAppListenPrefix)
+                        .UseStartup<WebAppStartup>();
+                }).Build();
+            (_webapp as IHost).Start();
             Console.AddLog("Web App started");
 
-            if (_config.WebAppRedirectListenPrefix?.Length > 0)
-            {
-                foreach (var redir in _config.WebAppRedirectListenPrefix)
-                {
-                    _webappRedirects.Add(Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppRedirectStartup>(url: redir));
-                    Console.AddLog("Web App redirect added");
-                }
-            }
+            //TODO [.NET Core]: Removed temporarily (Web API, Web App)
+            //webapi
+            //_webapi = Microsoft.Owin.Hosting.WebApp.Start(_config.WebApiListenPrefix, app =>
+            //{
+            //    var startup = Container.Resolve<WebApiStartup>();
+            //    startup.Configuration(app, _config, Container, webapiConfig);
+            //});
+            //Console.AddLog("Web API started");
+
+
+
+            ////webapp
+            //_webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.WebAppListenPrefix, app =>
+            //{
+            //    var startup = Container.Resolve<WebApp.WebAppStartup>();
+            //    startup.Configuration(app, _config, Container, webappConfig);
+            //});
+            //Console.AddLog("Web App started");
+
+            //if (_config.WebAppRedirectListenPrefix?.Length > 0)
+            //{
+            //    foreach (var redir in _config.WebAppRedirectListenPrefix)
+            //    {
+            //        _webappRedirects.Add(Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppRedirectStartup>(url: redir));
+            //        Console.AddLog("Web App redirect added");
+            //    }
+            //}
+            //END [.NET Core]
 
             //Indicates the application started without errors, required for auto hide on startup
             _startedWithoutErrors = true;

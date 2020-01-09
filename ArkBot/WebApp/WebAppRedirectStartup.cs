@@ -1,13 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ArkBot.ViewModel;
-using Microsoft.Owin;
-using Microsoft.Owin.Cors;
-using Owin;
 
 namespace ArkBot.WebApp
 {
-    public class WebAppRedirectStartup
+  public class WebAppRedirectStartup
     {
         public void Configuration(IAppBuilder appBuilder)
         {

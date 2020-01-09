@@ -1,16 +1,4 @@
-﻿using ArkBot.Ark;
-using ArkBot.Data;
-using ArkBot.ViewModel;
-using ArkBot.WebApi.Model;
-using ArkSavegameToolkitNet.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
-
-namespace ArkBot.WebApi.Controllers
+﻿namespace ArkBot.WebApi.Controllers
 {
     //public class BulkController : BaseApiController
     //{
@@ -47,7 +35,7 @@ namespace ArkBot.WebApi.Controllers
     //            result.Servers.Add(context.Config.Key, players);
     //            result.MapNames.Add(context.Config.Key, context.SaveState?.MapName);
     //        }
-            
+
     //        return result;
     //    }
     //}

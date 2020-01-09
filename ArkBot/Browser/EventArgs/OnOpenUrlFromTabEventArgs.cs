@@ -1,4 +1,4 @@
-﻿// Copyright © 2010-2017 The CefSharp Authors. All rights reserved.
+﻿// Copyright © 2017 The CefSharp Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
@@ -8,8 +8,8 @@ namespace ArkBot.Browser.EventArgs
 {
     public class OnOpenUrlFromTabEventArgs : BaseRequestEventArgs
     {
-        public OnOpenUrlFromTabEventArgs(IWebBrowser browserControl, IBrowser browser, IFrame frame, string targetUrl, WindowOpenDisposition targetDisposition, bool userGesture)
-            : base(browserControl, browser)
+        public OnOpenUrlFromTabEventArgs(IWebBrowser chromiumWebBrowser, IBrowser browser, IFrame frame, string targetUrl, WindowOpenDisposition targetDisposition, bool userGesture)
+            : base(chromiumWebBrowser, browser)
         {
             Frame = frame;
             TargetUrl = targetUrl;

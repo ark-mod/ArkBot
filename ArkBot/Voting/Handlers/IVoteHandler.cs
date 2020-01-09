@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ArkBot.Database;
-using ArkBot.Database.Model;
-using Discord;
 using ArkBot.Ark;
 using ArkBot.Configuration.Model;
 

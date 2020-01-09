@@ -2,15 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
-using ArkBot.Configuration;
 using ArkBot.Configuration.Model;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace ArkBot.WebApi.Controllers
 {
-    public abstract class BaseApiController : ApiController
+    [ApiController]
+    [Route("api/[controller]")]
+    public abstract class BaseApiController : ControllerBase
     {
         protected IConfig _config;
 
@@ -19,22 +27,22 @@ namespace ArkBot.WebApi.Controllers
             _config = config;
         }
 
+        [NonAction]
         public bool IsDemoMode()
         {
             const string key = "demoMode";
 
-            var obj = (object)null;
-            if (Request.Properties.TryGetValue(key, out obj)) return (bool)obj;
+            if (HttpContext.Items.TryGetValue(key, out var obj)) return (bool)obj;
 
-            var demoMode = (IEnumerable<string>)null;
-            Request.Headers.TryGetValues(key, out demoMode);
+            Request.Headers.TryGetValue(key, out var demoMode);
 
-            var result = demoMode?.SingleOrDefault()?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
-            Request.Properties.Add(key, result);
+            var result = demoMode.SingleOrDefault()?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+            HttpContext.Items.Add(key, result);
 
             return result;
         }
 
+        [NonAction]
         public bool HasFeatureAccess(string featureGroup, string featureName, string forSteamId = null)
         {
             if (featureGroup == null) return false;
@@ -47,11 +55,18 @@ namespace ArkBot.WebApi.Controllers
             var rf = (AccessControlFeatureRoles)null;
             if (!fg.TryGetValue(featureName, out rf)) return false;
 
-            var user = WebApiHelper.GetUser(Request, _config);
+            var user = WebApiHelper.GetUser(HttpContext, _config);
             if (user == null) return false;
             if (forSteamId != null && user.SteamId?.Equals(forSteamId, StringComparison.OrdinalIgnoreCase) == true) user.Roles = user.Roles.Concat(new[] { "self" }).Distinct().OrderBy(x => x).ToArray();
 
             return rf.Intersect(user.Roles, StringComparer.OrdinalIgnoreCase).Any();
         }
+
+        [NonAction]
+        public InternalServerErrorResult InternalServerError() => new InternalServerErrorResult();
+        [NonAction]
+        public InternalServerErrorObjectResult InternalServerError([ActionResultObjectValue] ModelStateDictionary modelState) => new InternalServerErrorObjectResult(modelState);
+        [NonAction]
+        public InternalServerErrorObjectResult InternalServerError([ActionResultObjectValue] object error) => new InternalServerErrorObjectResult(error);
     }
 }

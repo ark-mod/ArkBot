@@ -1,5 +1,4 @@
 ﻿using ArkBot.Extensions;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Xceed.Wpf.Toolkit;

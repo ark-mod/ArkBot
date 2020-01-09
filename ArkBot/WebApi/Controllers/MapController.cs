@@ -1,4 +1,5 @@
 ﻿using ArkBot.Configuration.Model;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -9,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Resources;
+using System.Threading.Tasks;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -23,9 +25,10 @@ namespace ArkBot.WebApi.Controllers
 
         /// <param name="id">MapName</param>
         /// <returns></returns>
-        public HttpResponseMessage Get(string id)
+        [Route("{id}")]
+        public async Task<IActionResult> Get(string id)
         {
-            var notfound = new HttpResponseMessage(HttpStatusCode.NotFound) { ReasonPhrase = $@"Map ""{id}"" does not exist!" };
+            var notfound = NotFound($@"Map ""{id}"" does not exist!");
             Bitmap bmp = null;
             string imageExtension;
             var ms = new MemoryStream();
@@ -39,7 +42,7 @@ namespace ArkBot.WebApi.Controllers
                 var imageFormat = GetImageFormatGuid(imageExtension);
                 var imageEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == imageFormat);
                 var encParams = new EncoderParameters { Param = new[] { new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L) } };
-                if (imageEncoder == null) return new HttpResponseMessage(HttpStatusCode.InternalServerError) { ReasonPhrase = "Could not find " + imageExtension + " encoder." };
+                if (imageEncoder == null) return InternalServerError("Could not find " + imageExtension + " encoder.");
 
                 bmp.Save(ms, imageEncoder, encParams);
                 ms.Seek(0, SeekOrigin.Begin);
@@ -57,13 +60,14 @@ namespace ArkBot.WebApi.Controllers
                 bmp?.Dispose();
             }
 
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StreamContent(ms)
-            };
-            result.Content.Headers.ContentType = new MediaTypeHeaderValue("image/" + imageExtension);
+            //var result = new HttpResponseMessage(HttpStatusCode.OK)
+            //{
+            //    Content = new StreamContent(ms)
+            //};
+            //result.Content.Headers.ContentType = new MediaTypeHeaderValue("image/" + imageExtension);
 
-            return result;
+            //return result;
+            return File(ms, "image/" + imageExtension);
         }
 
         private static Guid GetImageFormatGuid(string imageExtension)

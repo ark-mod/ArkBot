@@ -2,17 +2,14 @@
 using ArkBot.Data;
 using ArkBot.Helpers;
 using ArkBot.Extensions;
-using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
 using ArkSavegameToolkitNet.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web.Http;
 using ArkBot.Configuration.Model;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -28,14 +25,15 @@ namespace ArkBot.WebApi.Controllers
         /// <param name="id">steamId</param>
         /// <returns></returns>
         [AccessControl("pages", "player")]
-        public PlayerViewModel Get([PlayerId] string id)
+        [Route("{id}")]
+        public ActionResult<PlayerViewModel> Get([PlayerId] string id)
         {
             var demoMode = IsDemoMode() ? new DemoMode() : null;
             var result = new PlayerViewModel
             {
             };
 
-            var uservm = WebApiHelper.GetUser(Request, _config);
+            var uservm = WebApiHelper.GetUser(HttpContext, _config);
 
             // access control
             var incProfile = HasFeatureAccess("player", "profile", id);

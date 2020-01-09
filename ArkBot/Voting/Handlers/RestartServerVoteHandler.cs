@@ -6,10 +6,7 @@ using ArkBot.Extensions;
 using ArkBot.Helpers;
 using Discord;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ArkBot.Voting.Handlers

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using PropertyChanged;
 using Validar;
-using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace ArkBot.Configuration.Model
 {

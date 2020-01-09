@@ -1,14 +1,10 @@
-﻿using System.Linq;
-using ArkBot.Ark;
+﻿using ArkBot.Ark;
 using ArkBot.Helpers;
 using Discord;
 using Discord.Commands;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ArkBot.Discord.Command;
-using Discord.Commands.Builders;
-using Discord.Net;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands

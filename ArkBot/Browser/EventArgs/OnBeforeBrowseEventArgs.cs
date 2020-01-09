@@ -1,4 +1,4 @@
-// Copyright © 2010-2017 The CefSharp Authors. All rights reserved.
+// Copyright © 2017 The CefSharp Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
@@ -8,12 +8,13 @@ namespace ArkBot.Browser.EventArgs
 {
     public class OnBeforeBrowseEventArgs : BaseRequestEventArgs
     {
-        public OnBeforeBrowseEventArgs(IWebBrowser browserControl, IBrowser browser, IFrame frame, IRequest request, bool isRedirect)
-            : base(browserControl, browser)
+        public OnBeforeBrowseEventArgs(IWebBrowser chromiumWebBrowser, IBrowser browser, IFrame frame, IRequest request, bool userGesture, bool isRedirect)
+            : base(chromiumWebBrowser, browser)
         {
             Frame = frame;
             Request = request;
             IsRedirect = isRedirect;
+            UserGesture = userGesture;
 
             CancelNavigation = false; // default
         }
@@ -21,6 +22,7 @@ namespace ArkBot.Browser.EventArgs
         public IFrame Frame { get; private set; }
         public IRequest Request { get; private set; }
         public bool IsRedirect { get; private set; }
+        public bool UserGesture { get; private set; }
 
         /// <summary>
         ///     Set to true to cancel the navigation or false to allow the navigation to proceed.

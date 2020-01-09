@@ -7,13 +7,10 @@ using Discord.Commands;
 using ArkBot.Helpers;
 using Autofac;
 using ArkBot.Database;
-using Discord;
 using ArkBot.Services;
 using ArkBot.Ark;
 using ArkBot.Discord.Command;
 using ArkBot.ScheduledTasks;
-using Discord.Commands.Builders;
-using RestSharp;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands.Admin

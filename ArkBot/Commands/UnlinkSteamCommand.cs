@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using ArkBot.Database;
 using ArkBot.Discord.Command;
-using Discord;
 using Discord.Net;
 using ArkBot.Configuration.Model;
 

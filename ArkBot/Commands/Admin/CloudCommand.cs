@@ -10,15 +10,12 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
 using Autofac;
-using Discord;
 using ArkBot.Services;
 using ArkBot.Ark;
 using ArkBot.Services.Data;
 using ArkSavegameToolkitNet.Domain;
 using System.Threading;
 using ArkBot.Discord.Command;
-using Discord.Commands.Builders;
-using RestSharp;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands.Admin

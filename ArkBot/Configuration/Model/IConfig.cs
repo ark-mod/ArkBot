@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using ArkBot.Configuration;
-using Discord;
+﻿using Discord;
 
 namespace ArkBot.Configuration.Model
 {

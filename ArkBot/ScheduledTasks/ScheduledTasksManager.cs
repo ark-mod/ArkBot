@@ -5,7 +5,6 @@ using ArkBot.Extensions;
 using ArkBot.Voting;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -30,7 +29,8 @@ namespace ArkBot.ScheduledTasks
         private IConfig _config;
 
         // Required properties due to circular dependency
-        public VotingManager VotingManager { get { return _votingManager; } set { _votingManager = value; } }
+        //TODO [.NET Core]: Removed temporarily (voting manager)
+        //public VotingManager VotingManager { get { return _votingManager; } set { _votingManager = value; } }
 
         public ScheduledTasksManager(
             ArkContextManager contextManager,
@@ -166,11 +166,12 @@ namespace ArkBot.ScheduledTasks
                     });
                 }
 
-                if (DateTime.Now - _prevTimedBansUpdate > TimeSpan.FromMinutes(5))
-                {
-                    _prevTimedBansUpdate = DateTime.Now;
-                    var banUpdateTask = Task.Run(async () => await _votingManager.TimerUpdateVotes());
-                }
+                //TODO [.NET Core]: Removed temporarily (schedudled task for votingmanager (processing bans etc.)
+                //if (DateTime.Now - _prevTimedBansUpdate > TimeSpan.FromMinutes(5))
+                //{
+                //    _prevTimedBansUpdate = DateTime.Now;
+                //    var banUpdateTask = Task.Run(async () => await _votingManager.TimerUpdateVotes());
+                //}
             }
             catch (Exception ex)
             {

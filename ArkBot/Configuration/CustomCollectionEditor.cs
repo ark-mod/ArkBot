@@ -1,24 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Windows;
 using Xceed.Wpf.Toolkit.PropertyGrid;
 using Xceed.Wpf.Toolkit.PropertyGrid.Editors;
-using Xceed.Wpf.Toolkit.Core.Utilities;
 using System.Windows.Controls.Primitives;
 using System.Reflection;
 using System.Windows.Controls;
 using Xceed.Wpf.Toolkit;
 using ArkBot.Extensions;
 using ArkBot.ViewModel;
-using System.Windows.Data;
-using System.Collections.Concurrent;
 using System.Windows.Media;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
-using System.Windows.Threading;
 using Nito.AsyncEx;
 
 namespace ArkBot.Configuration

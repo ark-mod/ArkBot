@@ -15,8 +15,6 @@ using ArkBot.Ark;
 using ArkBot.Discord;
 using ArkBot.Discord.Command;
 using ArkBot.ScheduledTasks;
-using Discord.Commands.Builders;
-using RestSharp;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands.Admin

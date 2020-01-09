@@ -1,42 +1,40 @@
-namespace ArkBot.Migrations
-{
-    using Autofac;
-    using System;
-    using System.Data.Entity;
-    using System.Data.Entity.Migrations;
-    using System.Linq;
+//TODO [.NET Core]: Removed temporarily (database migrations)
 
-    /* NOTE that x64 binary build is not supported by these commands in Package Manager Console
-     * ----------------------------------------------------------------------------------------
-     * Add new Migration: $ Add-Migration <name>
-     * Update database: $ Update-Database
-     * Update database to a specific migration: $ Update-Database 傍argetMigration: <name>
-     * Update database to base: $ Update-Database 傍argetMigration: $InitialDatabase
-     */
+//namespace ArkBot.Migrations
+//{
+//    using System.Data.Entity.Migrations;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<ArkBot.Database.EfDatabaseContext>
-    {
-        public IConstants Constants { get; set; }
+//    /* NOTE that x64 binary build is not supported by these commands in Package Manager Console
+//     * ----------------------------------------------------------------------------------------
+//     * Add new Migration: $ Add-Migration <name>
+//     * Update database: $ Update-Database
+//     * Update database to a specific migration: $ Update-Database 傍argetMigration: <name>
+//     * Update database to base: $ Update-Database 傍argetMigration: $InitialDatabase
+//     */
 
-        public Configuration()
-        {
-            AutomaticMigrationsEnabled = false;
-        }
+//    internal sealed class Configuration : DbMigrationsConfiguration<ArkBot.Database.EfDatabaseContext>
+//    {
+//        public IConstants Constants { get; set; }
 
-        protected override void Seed(ArkBot.Database.EfDatabaseContext context)
-        {
-            //  This method will be called after migrating to the latest version.
+//        public Configuration()
+//        {
+//            AutomaticMigrationsEnabled = false;
+//        }
 
-            //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
-            //  to avoid creating duplicate seed data. E.g.
-            //
-            //    context.People.AddOrUpdate(
-            //      p => p.FullName,
-            //      new Person { FullName = "Andrew Peters" },
-            //      new Person { FullName = "Brice Lambson" },
-            //      new Person { FullName = "Rowan Miller" }
-            //    );
-            //
-        }
-    }
-}
+//        protected override void Seed(ArkBot.Database.EfDatabaseContext context)
+//        {
+//            //  This method will be called after migrating to the latest version.
+
+//            //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
+//            //  to avoid creating duplicate seed data. E.g.
+//            //
+//            //    context.People.AddOrUpdate(
+//            //      p => p.FullName,
+//            //      new Person { FullName = "Andrew Peters" },
+//            //      new Person { FullName = "Brice Lambson" },
+//            //      new Person { FullName = "Rowan Miller" }
+//            //    );
+//            //
+//        }
+//    }
+//}

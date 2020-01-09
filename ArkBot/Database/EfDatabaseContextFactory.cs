@@ -1,14 +1,9 @@
 ﻿using Autofac;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace ArkBot.Database
 {
-    public class EfDatabaseContextFactory : IDbContextFactory<EfDatabaseContext>
+    public class EfDatabaseContextFactory : IDesignTimeDbContextFactory<EfDatabaseContext>
     {
         private ILifetimeScope _scope;
 
@@ -24,9 +19,14 @@ namespace ArkBot.Database
             _scope = scope;
         }
 
-        public EfDatabaseContext Create()
+        public EfDatabaseContext CreateDbContext(string[] args)
         {
             return _scope != null ? _scope.Resolve<EfDatabaseContext>() : /*Only for Migrations*/ new EfDatabaseContext(new Constants().DatabaseConnectionString);
+        }
+
+        public EfDatabaseContext Create()
+        {
+            return _scope.Resolve<EfDatabaseContext>();
         }
     }
 }

@@ -1,17 +1,14 @@
 ﻿using ArkBot.Configuration.Model;
 using ArkBot.Helpers;
-using Microsoft.Owin.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Results;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -21,40 +18,39 @@ namespace ArkBot.WebApi.Controllers
         {
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<HttpResponseMessage> Login(FormDataCollection formData)
+        public async Task<IActionResult> Login([FromForm] string returnUrl = null)
         {
-            var returnUrl = formData?["returnUrl"];
-            var properties = new AuthenticationProperties() { RedirectUri = Url.Link("DefaultAuth", new { Controller = "Authentication", Action = "LoginCallback", returnUrl = returnUrl }) };
-            Request.GetOwinContext().Authentication.Challenge(properties, "Steam");
+            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl ?? "/" }, "Steam");
 
-            return new HttpResponseMessage(HttpStatusCode.Unauthorized) { RequestMessage = Request };
+            //var properties = new AuthenticationProperties() { RedirectUri = Url.Link("DefaultAuth", new { Controller = "Authentication", Action = "LoginCallback", returnUrl = returnUrl }) };
+            //await HttpContext.ChallengeAsync("Steam", properties);
+
+            //return Unauthorized(); //{ RequestMessage = Request }
         }
 
-        [HttpGet]
+        [HttpGet("logout")]
         [AllowAnonymous]
-        public HttpResponseMessage Logout(string returnUrl)
+        public async Task<IActionResult> Logout(string returnUrl)
         {
-            var ctx = Request.GetOwinContext();
-            ctx.Authentication.SignOut("Cookie");
+            var ctx = HttpContext;
+            await ctx.SignOutAsync("Cookie");
 
-            var response = Request.CreateResponse(HttpStatusCode.Redirect);
-            response.Headers.Location = new Uri(returnUrl);
-            return response;
+            return Redirect(returnUrl);
         }
 
-        [HttpGet]
+        [HttpGet("logincallback")]
         [AllowAnonymous]
-        public async Task<HttpResponseMessage> LoginCallback(string returnUrl)
+        public async Task<IActionResult> LoginCallback(string returnUrl)
         {
-            var ctx = Request.GetOwinContext();
-            var result = await ctx.Authentication.AuthenticateAsync("ExternalCookie");
-            if (result == null) return new HttpResponseMessage(HttpStatusCode.BadRequest) { RequestMessage = Request };
+            var ctx = HttpContext;
+            var result = await ctx.AuthenticateAsync("ExternalCookie");
+            if (result == null) return BadRequest(); //{ RequestMessage = Request }
 
-            ctx.Authentication.SignOut("ExternalCookie");
+            await ctx.SignOutAsync("ExternalCookie");
 
-            var claims = result?.Identity.Claims.ToList();
+            var claims = result?.Principal.Claims.ToList();
             claims.Add(new Claim(ClaimTypes.AuthenticationMethod, "Steam"));
 
             var steamId = claims?.FirstOrDefault(x => x.Type.Equals("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", StringComparison.OrdinalIgnoreCase))?.Value;
@@ -71,11 +67,9 @@ namespace ArkBot.WebApi.Controllers
             }
 
             var ci = new ClaimsIdentity(claims, "Cookie");
-            ctx.Authentication.SignIn(ci);
+            await ctx.SignInAsync(new ClaimsPrincipal(ci));
 
-            var response = Request.CreateResponse(HttpStatusCode.Redirect);
-            response.Headers.Location = new Uri(returnUrl);
-            return response;
+            return Redirect(returnUrl);
         }
     }
 }

@@ -1,22 +1,13 @@
 ﻿using Accord.Collections;
 using ArkBot.Ark;
 using ArkBot.Configuration.Model;
-using ArkBot.Database;
-using ArkBot.Extensions;
-using ArkBot.Helpers;
-using ArkBot.ViewModel;
 using ArkBot.WebApi.Model;
 using ArkSavegameToolkitNet.Domain;
-using Discord;
-using QueryMaster.GameServer;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web.Http;
 
 namespace ArkBot.WebApi.Controllers
 {
@@ -226,6 +217,7 @@ namespace ArkBot.WebApi.Controllers
             _contextManager = contextManager;
         }
 
+        [Route("{id}")]
         [AccessControl("admin-server", "structures")]
         public StructuresViewModel Get(string id)
         {

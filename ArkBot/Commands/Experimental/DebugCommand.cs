@@ -8,13 +8,8 @@ using ArkBot.Helpers;
 using System.IO;
 using System.Reflection;
 using ArkBot.Ark;
-using ArkBot.Database;
 using ArkBot.Discord.Command;
 using Newtonsoft.Json;
-using Discord;
-using Discord.Commands.Builders;
-using Discord.Net;
-using RestSharp;
 using ArkBot.Configuration.Model;
 
 namespace ArkBot.Commands.Experimental
@@ -64,7 +59,8 @@ namespace ArkBot.Commands.Experimental
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("**ARK Survival Discord Bot Statistics**");
-                if (File.Exists(_constants.DatabaseFilePath)) sb.AppendLine($"● **Database size:** {FileHelper.ToFileSize(new FileInfo(_constants.DatabaseFilePath).Length)}");
+                //TODO [.NET Core]: Removed temporarily
+                //if (File.Exists(_constants.DatabaseFilePath)) sb.AppendLine($"● **Database size:** {FileHelper.ToFileSize(new FileInfo(_constants.DatabaseFilePath).Length)}");
 
                 await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
             }
@@ -266,35 +262,37 @@ namespace ArkBot.Commands.Experimental
             }
             else if (args.database)
             {
-                var file = File.Exists(_constants.DatabaseFilePath) ? _constants.DatabaseFilePath : null;
-                if (file == null)
-                {
-                    await Context.Channel.SendMessageAsync("Could not find the database filContext... :(");
-                    return;
-                }
+                //TODO [.NET Core]: Removed temporarily
+                await Context.Channel.SendMessageAsync("Currently unsupported command...");
+                //var file = File.Exists(_constants.DatabaseFilePath) ? _constants.DatabaseFilePath : null;
+                //if (file == null)
+                //{
+                //    await Context.Channel.SendMessageAsync("Could not find the database filContext... :(");
+                //    return;
+                //}
 
-                var path = Path.Combine(_config.TempFileOutputDirPath, "database_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
-                string[] results = null;
-                try
-                {
-                    results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>("", "", new[] { file }) }, path, 5 * 1024 * 1024);
-                    foreach (var item in results) await Context.Channel.SendFileAsync(item);
-                }
-                catch
-                {
-                    await Context.Channel.SendMessageAsync("Failed to archive database filContext... :(");
-                    return;
-                }
-                finally
-                {
-                    if (results != null)
-                    {
-                        foreach (var item in results)
-                        {
-                            if (File.Exists(item)) File.Delete(item);
-                        }
-                    }
-                }
+                //var path = Path.Combine(_config.TempFileOutputDirPath, "database_" + DateTime.Now.ToString("yyyy-MM-dd.HH.mm.ss.ffff") + ".zip");
+                //string[] results = null;
+                //try
+                //{
+                //    results = FileHelper.CreateDotNetZipArchive(new[] { new Tuple<string, string, string[]>("", "", new[] { file }) }, path, 5 * 1024 * 1024);
+                //    foreach (var item in results) await Context.Channel.SendFileAsync(item);
+                //}
+                //catch
+                //{
+                //    await Context.Channel.SendMessageAsync("Failed to archive database filContext... :(");
+                //    return;
+                //}
+                //finally
+                //{
+                //    if (results != null)
+                //    {
+                //        foreach (var item in results)
+                //        {
+                //            if (File.Exists(item)) File.Delete(item);
+                //        }
+                //    }
+                //}
             }
         }
     }

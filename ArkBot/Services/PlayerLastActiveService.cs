@@ -1,19 +1,6 @@
 ﻿using ArkBot.Ark;
-using ArkBot.Services.Data;
-using ArkBot.Threading;
-using Autofac;
-using Discord;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Management;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
 namespace ArkBot.Helpers

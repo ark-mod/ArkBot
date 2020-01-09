@@ -1,11 +1,5 @@
-﻿using ArkBot.Ark;
-using ArkBot.Database;
-using ArkBot.Database.Model;
-using Discord;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using ArkBot.Configuration.Model;
