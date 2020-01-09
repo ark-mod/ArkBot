@@ -6,6 +6,12 @@
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
     <ApplicationIcon>basket_empty.ico</ApplicationIcon>
+    <AssemblyTitle>ARK Bot</AssemblyTitle>
+    <Description>ARK Survival Evolved application that monitors and extracts data from local ARK servers and exposes this data through a Web App, Web API and Discord Bot.</Description>
+    <Product>ArkBot</Product>
+    <Copyright>Copyright © 2020</Copyright>
+    <Version>1.9.1.0</Version>
+    <FileVersion>1.9.1.0</FileVersion>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

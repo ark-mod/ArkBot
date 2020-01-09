@@ -1,6 +1,7 @@
 ﻿using ArkBot.ViewModel;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 
 namespace ArkBot
@@ -15,6 +16,7 @@ namespace ArkBot
             Initialized += MainWindow_Initialized;
             InitializeComponent();
 
+            Title = $"ARK Bot {Assembly.GetExecutingAssembly().GetName().Version.ToString(2)}";
 
             Loaded += new RoutedEventHandler(MainWindow_Loaded);
             Unloaded += new RoutedEventHandler(MainWindow_Unloaded);
