@@ -7,5 +7,5 @@ export const environment = {
   configJsOverride: null,
   configJsDefault: commonEnvironment.configJs,
   apiBaseUrl: "<protocol>//<hostname>:<webapi_port>/api",
-  signalrBaseUrl: "<protocol>//<hostname>:<webapi_port>/signalr"
+  signalrBaseUrl: "<protocol>//<hostname>:<webapi_port>"
 };

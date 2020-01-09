@@ -260,7 +260,7 @@ namespace ArkBot.WebHost
 
                 //endpoints.MapGet("/", context => context.Response.Write("Hello world"));
 
-                endpoints.MapHub<ServerUpdateHub>("serverupdatehub", options =>
+                endpoints.MapHub<ServerUpdateHub>("/hub", options =>
                 {
                 });
 
