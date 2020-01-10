@@ -32,6 +32,10 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "Default Theme", Description = "Default theme to use in the Web App")]
         public WebAppTheme DefaultTheme { get; set; } = WebAppTheme.Dark;
 
+        [JsonProperty(PropertyName = "topMenu")]
+        [Display(Name = "Top Menu", Description = "Use top menu in the Web App")]
+        public bool TopMenu { get; set; } = false;
+
         [JsonProperty(PropertyName = "tribeLogLimit")]
         [Display(Name = "Tribe Log Limit", Description = "Limit for how many tribe logs are displayed in the Web App")]
         [RangeOptional(1, 1000, Optional = false, ErrorMessage = "{0} must be between 1-1000")]

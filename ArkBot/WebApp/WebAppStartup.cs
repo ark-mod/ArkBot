@@ -107,7 +107,8 @@ namespace ArkBot.WebApp
                     },
                     webapp = new
                     {
-                        defaultTheme = _config.WebApp.DefaultTheme.ToString()
+                        defaultTheme = _config.WebApp.DefaultTheme.ToString(),
+                        topMenu = _config.WebApp.TopMenu
                     }
                 };
                 var json = JsonConvert.SerializeObject(obj, Formatting.None);

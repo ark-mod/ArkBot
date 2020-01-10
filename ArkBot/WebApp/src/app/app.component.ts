@@ -12,7 +12,7 @@ declare var config: any;
 
 @Component({
   selector: 'body',
-  host: {'[class]': 'getTheme()'},
+  host: {'[class]': 'getBodyClasses()'},
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -92,6 +92,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   getNameForPlayer(id:string):string {
     return `Player`;
+  }
+
+  getBodyClasses(): string {
+    let classes = this.getTheme();
+    if (typeof config !== 'undefined' && config.webapp !== 'undefined' && config.webapp.topMenu === true)
+      classes += " topmenu";
+    return classes;
   }
 
   getDefaultTheme(): string {
