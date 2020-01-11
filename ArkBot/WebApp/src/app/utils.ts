@@ -38,3 +38,16 @@ export function nullCompare(v1: any, v2: any, asc: boolean): number {
 // ----------------------------------------------------
 // Assorted functions
 // ----------------------------------------------------
+export function copyToClipboard(doc: any, str: string): void {
+  const copy = doc.createElement('textarea');
+  copy.style.position = 'fixed';
+  copy.style.left = '0';
+  copy.style.top = '0';
+  copy.style.opacity = '0';
+  copy.value = str;
+  doc.body.appendChild(copy);
+  copy.focus();
+  copy.select();
+  doc.execCommand('copy');
+  doc.body.removeChild(copy);
+}

@@ -108,7 +108,8 @@ namespace ArkBot.WebApp
                     webapp = new
                     {
                         defaultTheme = _config.WebApp.DefaultTheme.ToString(),
-                        topMenu = _config.WebApp.TopMenu
+                        topMenu = _config.WebApp.TopMenu,
+                        useCustomCssFile = !string.IsNullOrEmpty(_config.WebApp.CustomCssFilePath)
                     }
                 };
                 var json = JsonConvert.SerializeObject(obj, Formatting.None);
@@ -122,7 +123,12 @@ namespace ArkBot.WebApp
 
             Get[@"^(?<path>.*)$"] = parameters =>
             {
-                if (File.Exists(Path.Combine(Response.RootPath, parameters["path"].Value))) return Response.AsFile((string)parameters["path"].Value);
+              if (parameters["path"].Value.Equals("custom.css") && !string.IsNullOrEmpty(_config.WebApp.CustomCssFilePath) && File.Exists(_config.WebApp.CustomCssFilePath))
+              {
+                return Response.AsText(File.ReadAllText(_config.WebApp.CustomCssFilePath), "text/css");
+              }
+
+              if (File.Exists(Path.Combine(Response.RootPath, parameters["path"].Value))) return Response.AsFile((string)parameters["path"].Value);
                 return getIndex();
             };
         }
