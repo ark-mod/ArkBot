@@ -34,4 +34,4 @@
     </div>
   </div>
 </div>
-<custom-theme #customTheme></custom-theme>
+<custom-theme #customTheme *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')"></custom-theme>

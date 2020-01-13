@@ -122,7 +122,7 @@
     </table> 
   </div>
 
-  <div *ngIf="spoiledEggsCount &amp;&amp; spoiledEggsCount != 0" class="w3-cell-row">
+  <div *ngIf="false &amp;&amp; spoiledEggsCount &amp;&amp; spoiledEggsCount != 0" class="w3-cell-row">
       <div class="w3-cell"><h2 class="theme-text-d1 w3-left">Spoiled Eggs</h2></div>
       <div class="w3-cell w3-cell-middle" *ngIf="dataService.hasFeatureAccess('admin-server', 'structures-rcon')"><confirm-button (callback)="destroySpoiledEggs($event)" class="w3-right" [width]="undefined">Destroy Spoiled Eggs</confirm-button></div>
   </div>

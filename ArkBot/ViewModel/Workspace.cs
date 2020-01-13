@@ -273,18 +273,23 @@ namespace ArkBot.ViewModel
             }
 
             _config = null;
-            string exceptionMessage = null;
+            string validationMessage = null;
+            string errorMessage = null;
             if (File.Exists(Constants.ConfigFilePath))
             {
                 try
                 {
                     _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(Constants.ConfigFilePath));
-                    if (_config.Discord == null) _config.Discord = new DiscordConfigSection();
-                    _config.SetupDefaults();
+                    if (_config != null)
+                    {
+                        if (_config.Discord == null) _config.Discord = new DiscordConfigSection();
+                        _config.SetupDefaults();
+                    }
+                    else errorMessage = "Config.json is empty. Please delete it and restart the application.";
                 }
                 catch (Exception ex)
                 {
-                    exceptionMessage = ex.Message;
+                    validationMessage = ex.Message;
                 }
             }
             var hasValidConfig = _config != null;
@@ -307,11 +312,13 @@ namespace ArkBot.ViewModel
 
                 WriteAndWaitForKey(
                     $@"The file config.json is empty or contains errors. Skipping automatic startup...",
-                    exceptionMessage);
+                    validationMessage);
             }
 
             Configuration.Config = _config as Config;
             About.HasValidConfig = hasValidConfig;
+            About.ValidationError = validationMessage;
+            About.ConfigError = errorMessage;
 
             if (!hasValidConfig)
             {

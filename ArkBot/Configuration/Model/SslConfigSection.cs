@@ -55,7 +55,7 @@ namespace ArkBot.Configuration.Model
 
         [JsonProperty(PropertyName = "ports")]
         [Display(Name = "Ports", Description = "Ports to bind the ssl certificate to")]
-        public int[] Ports { get; set; }
+        public List<int> Ports { get; set; }
 
         [JsonProperty(PropertyName = "useCompatibilityNonSNIBindings")]
         [Display(Name = "Use Compatibility non-SNI Bindings", Description = "Use non SNI SSL bindings for previous Windows OS (before Windows 8/2012)")]
