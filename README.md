@@ -1,12 +1,12 @@
-# Project status last updated Dec 31th 2019
+# Project status last updated Jan 21st 2020
 
 ### Support
 Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
 
 
-## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
+## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and feature requests.  Please read through existing issues before making a new one.  If you need support with setup, have general questions, would like to be up-to-date on development, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
 
-Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
+Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind currently and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
 We are actively developing this tool again!  We have assembled a team with past and new members.  Users can follow development progress here or get updates on Discord (link found above)
@@ -15,13 +15,13 @@ We are actively developing this tool again!  We have assembled a team with past 
 Important Dependency Note: 
 ArkBot relies upon certain VS C++ runtimes installed. It requires [.NET 3.5 with service pack 1](https://www.microsoft.com/en-us/download/details.aspx?id=25150), [.NET 4.7](https://www.microsoft.com/en-us/download/details.aspx?id=55170), and [Microsoft Visual C++ Redistributable 2013](https://support.microsoft.com/en-us/help/4032938/update-for-visual-c-2013-redistributable-package). Please note: If you are running a windows server install, you must install the [.NET 3.5 and 4.7(or 4.8) from the server admin panel.](https://www.interserver.net/tips/kb/enable-net-framework-3-5-windows-server/)
 
-This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
+This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk.
 
 #### INSTALLATION INSTRUCTIONS
 First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
 
 #### Suggestions/improvments/bugs
-Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/wiki/Roadmap)
+Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/projects/2)
 
 If you think something is wrong with the project - help improve it. If you find a bug - help fix it. Don't know how to program? Start learning. This is the way of open source!
 
@@ -79,7 +79,7 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 * [Companion App (Web App)](https://github.com/tsebring/ArkBot/wiki/Companion-App-(Web-App))
 * [Web API](https://github.com/tsebring/ArkBot/wiki/Web-API)
-* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently not working properly and needs updating as of 9/5/2019)
+* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot)
 
 ## Acknowledgements
 
