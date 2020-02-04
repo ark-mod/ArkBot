@@ -5,6 +5,7 @@ import { BreadcrumbService } from 'ng2-breadcrumb/ng2-breadcrumb';
 import { MessageService } from './message.service';
 import { DataService } from './data.service';
 import { HttpService } from './http.service';
+import { HotkeysService } from './hotkeys.service';
 import { environment } from '../environments/environment';
 import { DOCUMENT } from '@angular/common';
 
@@ -12,7 +13,7 @@ declare var config: any;
 
 @Component({
   selector: 'body',
-  host: {'[class]': 'getTheme()'},
+  host: {'[class]': 'getBodyClasses()'},
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -23,10 +24,12 @@ export class AppComponent implements OnInit, OnDestroy {
       lastOnBottom: false
   };
   public showLogin: boolean = false;
+  public showAdmin: boolean = false;
   public currentUrl: string = "/";
   private serversUpdatedSubscription: any;
   private serversUpdatedBefore: boolean = false;
   private routerEventsSubscription: any;
+  private adminOptionsHotkeySubscription: any;
   private loading: boolean = true;
 
   constructor(
@@ -34,6 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
     public messageService: MessageService,
     public dataService: DataService,
     private httpService: HttpService,
+    private hotkeysService: HotkeysService,
     private breadcrumbService: BreadcrumbService,
     private notificationsService: NotificationsService,
     private router: Router) { 
@@ -48,6 +52,13 @@ export class AppComponent implements OnInit, OnDestroy {
         s.id = "configjs";
         s.text = contents;
         script_configjs.parentNode.replaceChild(s, script_configjs);
+      }
+
+      if (typeof config !== 'undefined' && config.webapp !== 'undefined' && config.webapp.useCustomCssFile === true) {
+        const l = this.doc.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = '/custom.css';
+        this.doc.getElementsByTagName("head")[0].appendChild(l);
       }
 
       breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
@@ -76,11 +87,16 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       this.serversUpdatedBefore = true;
     });
+
+    this.adminOptionsHotkeySubscription = this.hotkeysService.add({ keys: 'control.shift.a' }).subscribe(() => {
+      if (this.dataService.hasFeatureAccess('pages', 'admin-server')) this.showAdmin = true;
+    });
   }
 
   ngOnDestroy(): void {
     this.routerEventsSubscription.unsubscribe();
     this.serversUpdatedSubscription.unsubscribe();
+    this.adminOptionsHotkeySubscription.unsubscribe();
   }
 
   navigationInterceptor(event: RouterEvent): void {
@@ -92,6 +108,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   getNameForPlayer(id:string):string {
     return `Player`;
+  }
+
+  getBodyClasses(): string {
+    let classes = this.getTheme();
+    if (typeof config !== 'undefined' && config.webapp !== 'undefined' && config.webapp.topMenu === true)
+      classes += " topmenu";
+    return classes;
   }
 
   getDefaultTheme(): string {
@@ -117,6 +140,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   closeLogin(event: any): void {
     this.showLogin = false;
+  }
+
+  openCustomTheme(event: any, customTheme: any): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    this.showAdmin = false;
+    customTheme.show();
   }
 
   getLoginUrl(): string {

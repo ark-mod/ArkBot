@@ -26,9 +26,13 @@ namespace ArkBot.ViewModel
         public class AboutTemplateViewModel
         {
             public bool hasConfig { get; set; }
+            public string validationError { get; set; }
+            public string configError { get; set; }
         }
 
         public bool HasValidConfig { get; set; }
+        public string ValidationError { get; set; }
+        public string ConfigError { get; set; }
 
         private Lazy<IRazorEngineService> _razorEngineService = new Lazy<IRazorEngineService>(() =>
         {

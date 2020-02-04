@@ -23,3 +23,15 @@
     </form>
   </div>
 </div>
+<div id="modal_admin" class="w3-modal" [style.display]="showAdmin ? 'block' : 'none'">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="showAdmin = false" style="font-size: 0;">
+    <header class="w3-container theme-d1"> 
+      <span (click)="showAdmin = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+      <h2>Admin Options</h2>
+    </header>
+    <div class="w3-container w3-medium theme-l2">
+      <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="openCustomTheme($event, customTheme)">Create Custom Theme</button></div>
+    </div>
+  </div>
+</div>
+<custom-theme #customTheme *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')"></custom-theme>

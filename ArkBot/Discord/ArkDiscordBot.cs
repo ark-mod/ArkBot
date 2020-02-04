@@ -131,7 +131,7 @@ namespace ArkBot.Discord
 
                     //check if command is allowed in this channel
                     if(!(context.Channel is ISocketPrivateChannel) 
-                        && _config.Discord.EnabledChannels?.Length > 0 
+                        && _config.Discord.EnabledChannels?.Count > 0 
                         && !_config.Discord.EnabledChannels.Contains(context.Channel.Name, StringComparer.OrdinalIgnoreCase))
                     {
                         return;

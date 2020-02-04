@@ -114,7 +114,7 @@
               <td><span *ngIf="creature.BaseLevel != creature.Level">{{creature.Level}}</span></td>
               <td>{{creature.Imprint | percent:'1.0-0'}}</td>
               <td>
-                <div *ngIf="creature.FoodStatus != null" class="app-green-light w3-round" style="width: 6em; position: relative;">
+                <div *ngIf="creature.FoodStatus != null" class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
                   <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.FoodStatus | percent:'1.0-0'}}</div>
                   <div class="theme-c1 w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
                 </div>
@@ -127,7 +127,7 @@
                   <div>
                     <div class="w3-cell w3-cell-middle">Baby</div>
                     <div class="w3-cell w3-cell-middle">
-                      <div class="app-green-light w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
+                      <div class="theme-lighter-c1-bg w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
                         <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
                         <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
                       </div>
@@ -180,14 +180,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let creature of imprintCreatures; let index = index" [ngClass]="{'odd': index % 2 == 1}">
+        <tr *ngFor="let creature of imprintCreatures; let index = index" [ngClass]="{'even': index % 2 == 1}">
           <td>{{creature.Name}}</td>
           <td>{{creature.Species}}</td>
           <td>{{creature.Gender}}</td>
           <td>{{creature.BaseLevel}}</td>
           <td>{{creature.Imprint | percent:'1.0-0'}}</td>
           <td>
-            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+            <div class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
               <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
             </div>
@@ -293,7 +293,7 @@
           <td>{{(cp.PlantedCropName || cp.PlantedCropClassName)}}</td>
           <td>{{cp.Size}}</td>
           <td>
-            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+            <div class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(cp.FertilizerQuantity / cp.FertilizerMax) | percent:'1.0-0'}}</div>
               <div class="theme-c1 w3-round" [style.width.%]="(cp.FertilizerQuantity / cp.FertilizerMax) * 100">&nbsp;</div>
             </div>
@@ -326,7 +326,7 @@
       <tbody>
         <tr *ngFor="let eg of player.Servers[serverKey].ElectricalGenerators">
           <td>
-            <div *ngIf="eg.Activated == true" class="app-green-light w3-round" style="width: 6em; position: relative;">
+            <div *ngIf="eg.Activated == true" class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>
               <div class="theme-c1 w3-round" [style.width.%]="(eg.GasolineQuantity / 800.0) * 100">&nbsp;</div>
             </div>

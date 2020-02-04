@@ -6,8 +6,10 @@
   "steamApiKey": "",
   "webApp": {
     "defaultTheme": "Dark",
+    "topMenu":  false,
     "tribeLogLimit": 100,
-    "tribeLogColors": false
+    "tribeLogColors": false,
+    "customCssFilePath":  null
   },
   "discord": {
     "discordBotEnabled": true,

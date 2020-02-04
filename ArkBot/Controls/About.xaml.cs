@@ -76,7 +76,12 @@ namespace ArkBot.Controls
             if ((bool) e.NewValue)
             {
                 // Note: For these to work, make sure Address is not set in Browser Control
-                string html = await Model.RunCompileTemplate(new AboutViewModel.AboutTemplateViewModel { hasConfig = Model.HasValidConfig });
+                string html = await Model.RunCompileTemplate(new AboutViewModel.AboutTemplateViewModel
+                {
+                    hasConfig = Model.HasValidConfig,
+                    validationError = Model.ValidationError,
+                    configError = Model.ConfigError
+                });
                 AboutBrowser.LoadHtml(html, "http://tmp/");
             }
         }

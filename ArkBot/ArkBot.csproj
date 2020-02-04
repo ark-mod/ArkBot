@@ -117,12 +117,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
-      <HintPath>..\packages\Portable.BouncyCastle.1.8.1.2\lib\net4\BouncyCastle.Crypto.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Portable.BouncyCastle.1.8.1.4\lib\net40\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="Certes, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Certes.1.0.7\lib\net45\Certes.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Certes, Version=2.3.3.0, Culture=neutral, PublicKeyToken=308b9c08e7effcb1, processorArchitecture=MSIL">
+      <HintPath>..\packages\Certes.2.3.3\lib\net45\Certes.dll</HintPath>
     </Reference>
     <Reference Include="CoreRCON.NET-4.6, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CoreRCON.NET-4.6.1.0.0-CI00004\lib\net46\CoreRCON.NET-4.6.dll</HintPath>
@@ -455,9 +453,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Cors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Cors.5.0.0\lib\net45\System.Web.Cors.dll</HintPath>
