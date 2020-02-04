@@ -53,6 +53,7 @@ using Nito.AsyncEx;
 using Markdig;
 using PropertyChanged;
 using ArkBot.Configuration.Model;
+using System.Globalization;
 
 namespace ArkBot.ViewModel
 {
@@ -590,68 +591,83 @@ namespace ArkBot.ViewModel
                 {
                     var success = false;
                     Console.AddLog(@"SSL Certificate request issued...");
+                    AcmeContext acme = null;
                     try
                     {
-                        using (var client = new AcmeClient(WellKnownServers.LetsEncrypt))
+                        var pathAccountKey = $"{_config.Ssl.Name}-account.pem";
+                        //var pathPrivateKey = $"{_config.Ssl.Name}-privatekey.pem";
+                        if (File.Exists(pathAccountKey))
                         {
-                            var account = await client.NewRegistraton($"mailto:{_config.Ssl.Email}");
-                            account.Data.Agreement = account.GetTermsOfServiceUri();
-                            account = await client.UpdateRegistration(account);
+                            var accountKey = KeyFactory.FromPem(File.ReadAllText(pathAccountKey));
 
-                            var authz = await client.NewAuthorization(new AuthorizationIdentifier
+                            acme = new AcmeContext(WellKnownServers.LetsEncryptV2, accountKey);
+                            var account = await acme.Account();
+                        }
+                        else
+                        {
+                            acme = new AcmeContext(WellKnownServers.LetsEncryptV2);
+                            var account = await acme.NewAccount(_config.Ssl.Email, true);
+
+                            var pemKey = acme.AccountKey.ToPem();
+                            File.WriteAllText(pathAccountKey, pemKey);
+                        }
+
+                        var order = await acme.NewOrder(_config.Ssl.Domains);
+
+                        var authz = (await order.Authorizations()).First();
+                        var httpChallenge = await authz.Http();
+                        var keyAuthz = httpChallenge.KeyAuthz;
+                        using (var webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.Ssl.ChallengeListenPrefix, (appBuilder) =>
+                        {
+                            var challengePath = new PathString($"/.well-known/acme-challenge/{httpChallenge.Token}");
+                            appBuilder.Use(new Func<AppFunc, AppFunc>((next) =>
                             {
-                                Type = AuthorizationIdentifierTypes.Dns,
-                                Value = _config.Ssl.Domains.First()
-                            });
-
-                            var httpChallengeInfo = authz.Data.Challenges.Where(c => c.Type == ChallengeTypes.Http01).First();
-                            var keyAuthString = client.ComputeKeyAuthorization(httpChallengeInfo);
-
-                            using (var webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.Ssl.ChallengeListenPrefix, (appBuilder) =>
-                            {
-                                var challengePath = new PathString("/.well-known/acme-challenge/");
-                                appBuilder.Use(new Func<AppFunc, AppFunc>((next) =>
+                                AppFunc appFunc = async environment =>
                                 {
-                                    AppFunc appFunc = async environment =>
-                                    {
-                                        IOwinContext context = new OwinContext(environment);
-                                        if (!context.Request.Path.Equals(challengePath)) await next.Invoke(environment);
+                                    IOwinContext context = new OwinContext(environment);
+                                    if (!context.Request.Path.Equals(challengePath)) await next.Invoke(environment);
 
-                                        context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
-                                        context.Response.ContentType = "application/text";
-                                        await context.Response.WriteAsync(keyAuthString);
-                                    };
-                                    return appFunc;
-                                }));
-                            }))
+                                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
+                                    context.Response.ContentType = "application/text";
+                                    await context.Response.WriteAsync(keyAuthz);
+                                };
+                                return appFunc;
+                            }));
+                        }))
+                        {
+                            var result = await httpChallenge.Validate();
+                            while (result.Status == Certes.Acme.Resource.ChallengeStatus.Pending || result.Status == Certes.Acme.Resource.ChallengeStatus.Processing)
                             {
-                                var httpChallenge = await client.CompleteChallenge(httpChallengeInfo);
+                                await Task.Delay(500);
+                                result = await httpChallenge.Resource();
+                            }
 
-                                authz = await client.GetAuthorization(httpChallenge.Location);
-                                while (authz.Data.Status == EntityStatus.Pending)
+                            if (result.Status == Certes.Acme.Resource.ChallengeStatus.Valid)
+                            {
+                                var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
+                                var cert = await order.Generate(new CsrInfo
                                 {
-                                    await Task.Delay(500);
-                                    authz = await client.GetAuthorization(httpChallenge.Location);
+                                    CountryName = new RegionInfo(CultureInfo.CurrentCulture.Name).TwoLetterISORegionName,
+                                    Locality = "Web",
+                                    Organization = "ARK Bot",
+                                }, privateKey);
+
+                                if (revoke)
+                                {
+                                    //await acme.RevokeCertificate(
+                                    //    File.ReadAllBytes(path), 
+                                    //    Certes.Acme.Resource.RevocationReason.Superseded, 
+                                    //    KeyFactory.FromPem(File.ReadAllText(pathPrivateKey)));
+
+                                    if (File.Exists(path)) File.Delete(path);
                                 }
 
-                                if (authz.Data.Status == EntityStatus.Valid)
-                                {
-                                    if (revoke)
-                                    {
-                                        //await client.RevokeCertificate(path); //todo: how to revoke a cert when we do not have the AcmeCertificate-object?
-                                        if (File.Exists(path)) File.Delete(path);
-                                    }
+                                //File.WriteAllText(pathPrivateKey, privateKey.ToPem());
+                                var pfxBuilder = cert.ToPfx(privateKey);
+                                var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
+                                File.WriteAllBytes(path, pfx);
 
-                                    var csr = new CertificationRequestBuilder();
-                                    foreach (var domain in _config.Ssl.Domains) csr.AddName("CN", domain);
-                                    var cert = await client.NewCertificate(csr);
-
-                                    var pfxBuilder = cert.ToPfx();
-                                    var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
-                                    File.WriteAllBytes(path, pfx);
-
-                                    success = true;
-                                }
+                                success = true;
                             }
                         }
 
