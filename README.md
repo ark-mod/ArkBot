@@ -1,7 +1,9 @@
+[![Build Status](https://dev.azure.com/ark-mod/ArkBot/_apis/build/status/ark-mod.ArkBot?branchName=master)](https://dev.azure.com/ark-mod/ArkBot/_build/latest?definitionId=2&branchName=master)
+
 # Project status last updated Jan 21st 2020
 
 ### Support
-Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
+Support [Wiki](https://github.com/ark-mod/ArkBot/wiki)
 
 
 ## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and feature requests.  Please read through existing issues before making a new one.  If you need support with setup, have general questions, would like to be up-to-date on development, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
@@ -49,10 +51,11 @@ It aims to provide important functions to players: dino listings, food-status, b
 ## Latest release
 ### Stable Branch
 
-https://github.com/tsebring/ArkBot/releases
+https://github.com/ark-mod/ArkBot/releases
 
 ### Development Branch
 
+https://github.com/mxtsdev/ArkBot/releases
 https://github.com/johnthegreat/ArkBot/releases
 
 
@@ -67,19 +70,19 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 ### What does it do?
 
-*  [More Information](https://github.com/tsebring/ArkBot/wiki)
+*  [More Information](https://github.com/ark-mod/ArkBot/wiki)
 
 ### How to setup?
 
-* [Getting Started](https://github.com/tsebring/ArkBot/wiki/Getting-Started)
-* [Configuration](https://github.com/tsebring/ArkBot/wiki/Configuration)
-* [Port Forwarding](https://github.com/tsebring/ArkBot/wiki/Port-Forwarding)
+* [Getting Started](https://github.com/ark-mod/ArkBot/wiki/Getting-Started)
+* [Configuration](https://github.com/ark-mod/ArkBot/wiki/Configuration)
+* [Port Forwarding](https://github.com/ark-mod/ArkBot/wiki/Port-Forwarding)
 
 ### How to use?
 
-* [Companion App (Web App)](https://github.com/tsebring/ArkBot/wiki/Companion-App-(Web-App))
-* [Web API](https://github.com/tsebring/ArkBot/wiki/Web-API)
-* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot)
+* [Companion App (Web App)](https://github.com/ark-mod/ArkBot/wiki/Companion-App-(Web-App))
+* [Web API](https://github.com/ark-mod/ArkBot/wiki/Web-API)
+* [Discord Bot](https://github.com/ark-mod/ArkBot/wiki/Discord-Bot)
 
 ## Acknowledgements
 
@@ -93,7 +96,7 @@ Creature stat data is sourced from Cadons [ARK Smart Breeding](https://github.co
 
 Library for reading ARK Survival Evolved savegame files in .NET
 
-https://github.com/tsebring/ArkSavegameToolkitNet
+https://github.com/ark-mod/ArkSavegameToolkitNet
 
 #### ARK-Server-API 
 
@@ -106,15 +109,3 @@ https://arkserverapi.com/resources/ark-server-api.4/
 Used to facilitate map clean-up from the companion app (web app) for administrators.
 
 https://arkserverapi.com/resources/ark-bot-helper.142/
-
-#### ARK Beyond API: Imprinting Mod (Plugin)
-
-Used for advance imprinting/cuddle support.
-
-https://github.com/tsebring/ImprintingMod
-
-#### ARK Beyond API: Modified Spawn Level Distribution (Plugin)
-
-Used to change spawn level distribution on The Island and Scorched Earth (can be used on others as well) to match the official spawn level distribution on Ragnarok and The Center.
-
-https://github.com/tsebring/ArkModifiedSpawnLevelDistribution
