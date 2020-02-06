@@ -23,8 +23,8 @@ steps:
   clean: true
 
 - powershell: |
-    $date_rev = "$(Build.BuildNumber)" -replace '^.*_', ''
-    echo "##vso[task.setvariable variable=dateRev;isOutput=true]$date_rev"
+    $tmp = "$(Build.BuildNumber)" -replace '^.*_', ''
+    echo "##vso[task.setvariable variable=dateRev;]$tmp"
 
 - task: NuGetToolInstaller@1
 
