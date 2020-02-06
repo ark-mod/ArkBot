@@ -25,6 +25,8 @@ export class AppComponent implements OnInit, OnDestroy {
   };
   public showLogin: boolean = false;
   public showAdmin: boolean = false;
+  public previewOverrideMenuOption: boolean = false;
+  public previewMenuName: string;
   public currentUrl: string = "/";
   private serversUpdatedSubscription: any;
   private serversUpdatedBefore: boolean = false;
@@ -60,6 +62,9 @@ export class AppComponent implements OnInit, OnDestroy {
         l.href = '/custom.css';
         this.doc.getElementsByTagName("head")[0].appendChild(l);
       }
+
+      if (typeof config !== 'undefined' && config.webapp !== 'undefined' && config.webapp.topMenu === true) this.previewMenuName = "Sidebar Menu";
+      else this.previewMenuName = "Top Menu";
 
       breadcrumbService.addFriendlyNameForRoute('/accessdenied', 'Access Denied');
       breadcrumbService.addFriendlyNameForRoute('/connectionerror', 'Connection error');
@@ -112,7 +117,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   getBodyClasses(): string {
     let classes = this.getTheme();
-    if (typeof config !== 'undefined' && config.webapp !== 'undefined' && config.webapp.topMenu === true)
+    let topmenu = typeof config !== 'undefined' && config.webapp !== 'undefined' && config.webapp.topMenu === true;
+    if (topmenu !== this.previewOverrideMenuOption)
       classes += " topmenu";
     return classes;
   }
@@ -140,6 +146,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   closeLogin(event: any): void {
     this.showLogin = false;
+  }
+
+  openAdminOptions(event: any) {
+    this.showAdmin = true;
+    event.stopPropagation();
+    event.preventDefault();
   }
 
   openCustomTheme(event: any, customTheme: any): void {

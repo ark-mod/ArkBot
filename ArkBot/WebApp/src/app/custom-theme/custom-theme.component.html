@@ -1,4 +1,4 @@
-<div id="modal_custom_theme" class="w3-modal" [style.display]="_show ? 'block' : 'none'" [style.opacity]="_hoverHide ? 0 : 1">
+<div *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')" id="modal_custom_theme" class="w3-modal" [style.display]="_show ? 'block' : 'none'" [style.opacity]="_hoverHide ? 0 : 1">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="_show = false" style="font-size: 0;">
     <header class="w3-container theme-d1"> 
       <span (click)="_show = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>

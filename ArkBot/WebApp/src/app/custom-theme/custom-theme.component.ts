@@ -2,6 +2,7 @@ import { Component, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationsService } from 'angular2-notifications';
 import { DOCUMENT } from '@angular/common';
+import { DataService } from '../data.service';
 import { copyToClipboard } from '../utils'
 
 type CustomTheme = {
@@ -38,7 +39,8 @@ export class CustomThemeComponent {
   public currentCustomThemeGroup: CustomThemeGroup = this.customThemeGroups[0];
 
   constructor(@Inject(DOCUMENT) private doc: any,
-    private notificationsService: NotificationsService) {}
+    private notificationsService: NotificationsService,
+    private dataService: DataService) {}
 
   private toHexColor(colorStr: string): string {
     let a = this.doc.createElement('div');
