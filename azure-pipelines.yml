@@ -41,12 +41,14 @@ steps:
     action: 'edit'
     target: '$(Build.SourceVersion)'
     tag: 'latest-master'
-    title: 'Automated Build from Latest Sources (master branch)'
+    title: 'Automated Build (master branch)'
     releaseNotesSource: 'inline'
     releaseNotesInline: |
       This is an automated build compiled from the latest sources in the master branch.
       
       Use this if you want to try the latest features and enhancements and don't mind running a pre-release build.
     isPreRelease: true
-    changeLogCompareToRelease: 'lastFullRelease'
+    changeLogCompareToRelease: 'lastNonDraftRelease'
     changeLogType: 'commitBased'
+    assets: '$(Build.ArtifactStagingDirectory)/*'
+    assetUploadMode: 'delete'
