@@ -9,7 +9,7 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
-name: $(TeamProject)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+name: $(TeamProject)_CIBuild_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
   solution: '**/*.sln'
@@ -38,8 +38,8 @@ steps:
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    includeRootFolder: true
+    rootFolderOrFile: 'ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+    includeRootFolder: false
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
     replaceExistingArchive: true
