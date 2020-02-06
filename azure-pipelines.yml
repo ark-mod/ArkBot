@@ -34,6 +34,14 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
 - task: GitHubRelease@1
   inputs:
     gitHubConnection: 'mxtsdev-pat'
@@ -50,5 +58,5 @@ steps:
     isPreRelease: true
     changeLogCompareToRelease: 'lastNonDraftRelease'
     changeLogType: 'commitBased'
-    assets: '$(Build.ArtifactStagingDirectory)/*'
+    assets: '$(Build.ArtifactStagingDirectory)/*.zip'
     assetUploadMode: 'delete'
