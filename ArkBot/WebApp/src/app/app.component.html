@@ -3,7 +3,7 @@
 <div id="page">
   <div class="w3-bar">
     <breadcrumb prefix="Home" [useBootstrap]="false" class="breadcrumb w3-bar-item"></breadcrumb>
-    <div class="w3-bar-item w3-right w3-tiny theme-l1"><span *ngIf="dataService.Servers?.User?.SteamId">Logged in as {{dataService.Servers.User.Name}} | <a [href]="getLogoutUrl()">Logout</a> | </span><span *ngIf="!dataService.Servers?.User?.SteamId"><a href="#" (click)="openLogin($event)">Login</a> | </span>Theme: <a href="#" (click)="setTheme('light')">Light</a> | <a href="#" (click)="setTheme('dark')">Dark</a></div>
+    <div class="w3-bar-item w3-right w3-tiny theme-l1"><span *ngIf="dataService.Servers?.User?.SteamId">Logged in as {{dataService.Servers.User.Name}} | <a [href]="getLogoutUrl()">Logout</a> | </span><span *ngIf="!dataService.Servers?.User?.SteamId"><a href="#" (click)="openLogin($event)">Login</a> | </span><span *ngIf="this.dataService.hasFeatureAccess('pages', 'admin-server')"><a href="#" (click)="openAdminOptions($event)">Admin Options</a> | </span>Theme: <a href="#" (click)="setTheme('light')">Light</a> | <a href="#" (click)="setTheme('dark')">Dark</a></div>
   </div>
   <router-outlet></router-outlet>
 </div>
@@ -30,8 +30,16 @@
       <h2>Admin Options</h2>
     </header>
     <div class="w3-container w3-medium theme-l2">
+      <div class="w3-section">
+        These setting are configured in the application configuration editor/config.json but can be generated and previewed here.
+      </div>
+    </div>
+    <div class="w3-container w3-medium theme-l2">
       <div class="w3-section"><button class="w3-button theme-d1" style="width: 100%;" (click)="openCustomTheme($event, customTheme)">Create Custom Theme</button></div>
+      <div class="w3-section">
+        <button class="w3-button theme-d1" style="width: 100%;" (click)="previewOverrideMenuOption = !previewOverrideMenuOption"><i [ngClass]="{'w3-hide': !previewOverrideMenuOption}" class="material-icons" style="margin: -5px 5px -5px -5px; vertical-align: middle;">check</i>{{(previewOverrideMenuOption ? previewMenuName + " Preview Enabled" : "Preview " + previewMenuName )}}</button>
+      </div>
     </div>
   </div>
 </div>
-<custom-theme #customTheme *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')"></custom-theme>
+<custom-theme #customTheme></custom-theme>

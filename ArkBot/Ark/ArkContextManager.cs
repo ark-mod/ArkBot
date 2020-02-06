@@ -226,7 +226,7 @@ namespace ArkBot.Ark
         {
             if (key == null) return null;
 
-            return Servers.Where(x => x.Config.ClusterKey.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray();
+            return Servers.Where(x => x.Config.ClusterKey?.Equals(key, StringComparison.OrdinalIgnoreCase) == true).ToArray();
         }
 
         public ArkClusterContext GetCluster(string key)
