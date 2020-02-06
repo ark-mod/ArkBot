@@ -30,7 +30,7 @@ namespace ArkBot
 
             InitializeComponent();
 
-            Title = $"ARK Bot {Assembly.GetExecutingAssembly().GetName().Version.ToString(2)}";
+            Title = $"ARK Bot {Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}";
 
             Loaded += new RoutedEventHandler(MainWindow_Loaded);
             Unloaded += new RoutedEventHandler(MainWindow_Unloaded);

@@ -16,7 +16,7 @@ namespace ArkBot.Commands
         public async Task Version()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"**My operational instructions indicate that I am version {Assembly.GetExecutingAssembly().GetName().Version}. But what does it mean?**");
+            sb.AppendLine($"**My operational instructions indicate that I am version {Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}. But what does it mean?**");
             await CommandHelper.SendPartitioned(Context.Channel, sb.ToString());
         }
     }

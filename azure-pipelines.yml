@@ -25,6 +25,26 @@ steps:
     nugetConfigPath: NuGet.config
     restoreSolution: '$(solution)'
 
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $buildNumber = "$env:Build_BuildNumber" -replace '^.*?_', ''
+      $pattern = '\[assembly: AssemblyInformationalVersion\("(.*)"\)\]'
+      $AssemblyFiles = Get-ChildItem . AssemblyInfo.cs -rec
+
+      foreach ($file in $AssemblyFiles)
+      {
+        (Get-Content $file.PSPath) | ForEach-Object{
+            if($_ -match $pattern){
+                '[assembly: AssemblyInformationalVersion("{0}.{1}")]' -f  $Matches[1], $buildNumber
+            } else {
+                # Output line as is
+                $_
+            }
+        } | Set-Content $file.PSPath
+      }
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
@@ -45,13 +65,22 @@ steps:
     replaceExistingArchive: true
 
 - task: GitHubRelease@1
+  displayName: 'Delete GitHub Release'
   inputs:
-    gitHubConnection: 'mxtsdev-pat'
+    gitHubConnection: 'arkbot'
     repositoryName: '$(Build.Repository.Name)'
-    action: 'edit'
+    action: 'delete'
+    tag: 'latest-master'
+
+- task: GitHubRelease@1
+  displayName: 'Create GitHub Release'   
+  inputs:
+    gitHubConnection: 'arkbot'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'create'
     target: '$(Build.SourceVersion)'
     tag: 'latest-master'
-    title: 'Automated Build (master)'
+    title: 'Automated Build (master) - $(Date:yyyyMMdd)$(Rev:.r)'
     releaseNotesSource: 'inline'
     releaseNotesInline: |
       This is an automated build compiled from the latest sources in the master branch.
