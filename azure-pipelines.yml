@@ -22,6 +22,10 @@ steps:
   persistCredentials: true
   clean: true
 
+- powershell: |
+    $date_rev = "$(Build.BuildNumber)" -replace '^.*_', ''
+    echo "##vso[task.setvariable variable=dateRev;isOutput=true]$date_rev"
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
@@ -82,7 +86,7 @@ steps:
     action: 'edit'
     target: '$(Build.SourceVersion)'
     tag: 'latest-master'
-    title: 'Automated Build (master) - $(Date:yyyyMMdd)$(Rev:.r)'
+    title: 'Automated Build (master) - $(dateRev)'
     releaseNotesSource: 'inline'
     releaseNotesInline: |
       This is an automated build compiled from the latest sources in the master branch.
