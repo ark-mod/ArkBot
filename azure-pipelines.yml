@@ -15,6 +15,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'x64'
   buildConfiguration: 'Release'
+  sourceVersion: '$(Build.SourceVersion)'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -71,6 +72,13 @@ steps:
     repositoryName: '$(Build.Repository.Name)'
     action: 'delete'
     tag: 'latest-master'
+
+- script: |
+      git config user.email "arkbot@devops.azure"
+      git config user.name "ARK Bot Azure DevOps"
+      git tag --force latest-master $(sourceVersion)
+      git push --force --tags
+  displayName: 'Moving GitHub latest-master Tag'
 
 - task: GitHubRelease@1
   displayName: 'Create GitHub Release'   
