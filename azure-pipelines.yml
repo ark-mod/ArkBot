@@ -9,6 +9,8 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
+name: $(TeamProject)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
 variables:
   solution: '**/*.sln'
   buildPlatform: 'x64'
@@ -39,7 +41,7 @@ steps:
     rootFolderOrFile: '$(Build.BinariesDirectory)'
     includeRootFolder: true
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
     replaceExistingArchive: true
 
 - task: GitHubRelease@1
@@ -49,14 +51,14 @@ steps:
     action: 'edit'
     target: '$(Build.SourceVersion)'
     tag: 'latest-master'
-    title: 'Automated Build (master branch)'
+    title: 'Automated Build (master)'
     releaseNotesSource: 'inline'
     releaseNotesInline: |
       This is an automated build compiled from the latest sources in the master branch.
       
       Use this if you want to try the latest features and enhancements and don't mind running a pre-release build.
     isPreRelease: true
-    changeLogCompareToRelease: 'lastNonDraftRelease'
+    changeLogCompareToRelease: 'lastFullRelease'
     changeLogType: 'commitBased'
     assets: '$(Build.ArtifactStagingDirectory)/*.zip'
     assetUploadMode: 'delete'
