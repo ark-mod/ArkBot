@@ -69,15 +69,10 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
     replaceExistingArchive: true
 
-- script: |
-  git config user.email "arkbot@devops.azure"
-  git config user.name "ARK Bot Azure DevOps"
-
+- script: git config user.email "arkbot@devops.azure"
+- script: git config user.name "ARK Bot Azure DevOps"
 - script: git tag --force latest-master $(sourceVersion)
-  displayName: 'Moving git latest-master tag'
-
 - script: git push --force --tags
-  displayName: 'Push latest-master tag to GitHub'
 
 - task: GitHubRelease@1
   displayName: 'Create GitHub Release'   
