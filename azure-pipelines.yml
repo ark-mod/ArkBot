@@ -27,8 +27,11 @@ jobs:
   - task: PowerShell@2
     inputs:
       targetType: 'inline'
-      name: setVarStep
       script: Write-Host "##vso[task.setvariable variable=dateRev;isOutput=true]$("$(Build.BuildNumber)" -replace '^.*_', '')"
+      name: setVarStep
+
+    - script: echo $(setVarStep.dateRev)
+      name: echovar
 
   - task: NuGetToolInstaller@1
 
@@ -79,11 +82,14 @@ jobs:
   - Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   variables:
-    dateRev: $[ dependencies.Build.outputs['setVarStep.dateRev'] ]
+    dateRevFromBuild: $[ dependencies.Build.outputs['setVarStep.dateRev'] ]
   steps:
   - checkout: self
     persistCredentials: true
     clean: true
+
+  - script: echo $(dateRevFromBuild)
+    name: echovar2
 
   - task: DownloadBuildArtifacts@0
     displayName: 'Download Build Artifacts'
@@ -112,7 +118,7 @@ jobs:
       action: 'edit'
       target: '$(Build.SourceVersion)'
       tag: 'latest-master'
-      title: 'Automated Build (master) - $(dateRev)'
+      title: 'Automated Build (master) - $(dateRevFromBuild)'
       releaseNotesSource: 'inline'
       releaseNotesInline: |
         This is an automated build compiled from the latest sources in the master branch.
