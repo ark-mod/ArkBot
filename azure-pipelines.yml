@@ -83,19 +83,22 @@ jobs:
   variables:
     dateRev: $[ dependencies.Build.outputs['setVarStep.dateRev'] ]
   steps:
-  - checkout: none
+  - checkout: self
+    persistCredentials: true
+    clean: true
+
   - task: DownloadBuildArtifacts@0
     displayName: 'Download Build Artifacts'
     inputs:
       artifactName: Release
-      downloadPath: $(System.DefaultWorkingDirectory)
+      downloadPath: '$(System.DefaultWorkingDirectory)/ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
       includeRootFolder: false
       archiveType: 'zip'
-      archiveFile: '$(System.DefaultWorkingDirectory)/$(Build.BuildNumber).zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
       replaceExistingArchive: true
 
   - script: git config user.email "arkbot@devops.azure"
@@ -120,5 +123,5 @@ jobs:
       isPreRelease: true
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
-      assets: '$(System.DefaultWorkingDirectory)/*.zip'
+      assets: '$(Build.ArtifactStagingDirectory)/*.zip'
       assetUploadMode: 'delete'
