@@ -24,14 +24,26 @@ jobs:
     persistCredentials: true
     clean: true
 
-  - task: PowerShell@2
-    inputs:
-      targetType: 'inline'
-      script: Write-Host "##vso[task.setvariable variable=dateRev;isOutput=true]$("$(Build.BuildNumber)" -replace '^.*_', '')"
-      name: setVarStep
+  - powershell: Write-Host "##vso[task.setvariable variable=dateRev;isOutput=true]$("$(Build.BuildNumber)" -replace '^.*_', '')"
+    name: setVarStep
+
+  - powershell: Write-Output "##vso[task.setvariable variable=dateRev2;isOutput=true]$("$(Build.BuildNumber)" -replace '^.*_', '')"
+    name: setVarStep2
 
   - script: echo $(setVarStep.dateRev)
     name: echovar
+
+  - script: echo $(dateRev)
+    name: echovar2
+
+  - script: echo $(setVarStep2.dateRev2)
+    name: echovar3
+
+  - script: echo $(dateRev2)
+    name: echovar4
+
+  - script: echo "$(Build.BuildNumber)"
+    name: echovar5
 
   - task: NuGetToolInstaller@1
 
