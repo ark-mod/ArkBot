@@ -30,8 +30,8 @@ jobs:
       script: Write-Host "##vso[task.setvariable variable=dateRev;isOutput=true]$("$(Build.BuildNumber)" -replace '^.*_', '')"
       name: setVarStep
 
-    - script: echo $(setVarStep.dateRev)
-      name: echovar
+  - script: echo $(setVarStep.dateRev)
+    name: echovar
 
   - task: NuGetToolInstaller@1
 
