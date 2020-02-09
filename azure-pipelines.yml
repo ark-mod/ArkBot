@@ -92,6 +92,7 @@ jobs:
       archiveType: 'zip'
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
       replaceExistingArchive: true
+      sevenZipCompression: 'maximum'
 
   - script: git config user.email "arkbot@devops.azure"
   - script: git config user.name "ARK Bot Azure DevOps"
