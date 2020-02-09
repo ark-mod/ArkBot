@@ -24,10 +24,13 @@ jobs:
     persistCredentials: true
     clean: true
 
-  - powershell: |
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      name: setVarStep
+      script: |
         $tmp = "$(Build.BuildNumber)" -replace '^.*_', ''
         echo "##vso[task.setvariable variable=dateRev;isOutput=true]$tmp"
-      name: setVarStep
 
   - task: NuGetToolInstaller@1
 
