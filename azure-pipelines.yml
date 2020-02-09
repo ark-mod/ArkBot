@@ -28,9 +28,7 @@ jobs:
     inputs:
       targetType: 'inline'
       name: setVarStep
-      script: |
-        $tmp = "$(Build.BuildNumber)" -replace '^.*_', ''
-        echo "##vso[task.setvariable variable=dateRev;isOutput=true]$tmp"
+      script: Write-Host "##vso[task.setvariable variable=dateRev;isOutput=true]$("$(Build.BuildNumber)" -replace '^.*_', '')"
 
   - task: NuGetToolInstaller@1
 
