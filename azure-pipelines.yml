@@ -25,8 +25,9 @@ jobs:
     clean: true
 
   - powershell: |
-      $tmp = "$(Build.BuildNumber)" -replace '^.*_', ''
-      echo "##vso[task.setvariable variable=dateRev;]$tmp"
+        $tmp = "$(Build.BuildNumber)" -replace '^.*_', ''
+        echo "##vso[task.setvariable variable=dateRev;isOutput=true]$tmp"
+      name: setVarStep
 
   - task: NuGetToolInstaller@1
 
@@ -67,17 +68,31 @@ jobs:
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
 
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      artifactName: Release
+
 - job: CreateRelease
   dependsOn:
   - Build
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  variables:
+    dateRev: $[ dependencies.Build.outputs['setVarStep.dateRev'] ]
   steps:
+  - checkout: none
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build Artifacts'
+    inputs:
+      artifactName: Release
+      downloadPath: $(System.DefaultWorkingDirectory)
+
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: 'ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
       includeRootFolder: false
       archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
+      archiveFile: '$(System.DefaultWorkingDirectory)/$(Build.BuildNumber).zip'
       replaceExistingArchive: true
 
   - script: git config user.email "arkbot@devops.azure"
@@ -102,5 +117,5 @@ jobs:
       isPreRelease: true
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
-      assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+      assets: '$(System.DefaultWorkingDirectory)/*.zip'
       assetUploadMode: 'delete'
