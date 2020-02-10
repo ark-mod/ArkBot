@@ -214,9 +214,14 @@ namespace ArkBot.WebApi.Controllers
             {
                 var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
                 var playercreatures = context.NoRafts.Where(x => x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && x.OwningPlayerId == playerId)).ToArray();
+                var playercreatures_cryo = player?.Items?.OfType<ArkItemCryopod>().Where(x => x.Dino != null).Select(x => x.Dino).ToArray() ?? new ArkTamedCreature[] {};
                 var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains((int)playerId));
                 var tribecreatures = tribe != null ? context.NoRafts.Where(x => x.TargetingTeam == tribe.Id && !playercreatures.Any(y => y.Id == x.Id)).ToArray() : new ArkTamedCreature[] { };
-                foreach (var item in playercreatures.Select(x => new { c = x, o = "player" }).Concat(tribecreatures.Select(x => new { c = x, o = "tribe" })))
+                var tribecreatures_cryo = tribe?.Items?.OfType<ArkItemCryopod>().Where(x => x.Dino != null).Select(x => x.Dino).ToArray() ?? new ArkTamedCreature[] { };
+                foreach (var item in playercreatures.Select(x => new { c = x, o = "player", cryo = false })
+                    .Concat(playercreatures_cryo.Select(x => new { c = x, o = "player", cryo = true }))
+                    .Concat(tribecreatures.Select(x => new { c = x, o = "tribe", cryo = false }))
+                    .Concat(tribecreatures_cryo.Select(x => new { c = x, o = "tribe", cryo = true })))
                 {
 
                     var currentFood = item.c.CurrentStatusValues?.Length > 4 ? item.c.CurrentStatusValues[4] : null;
@@ -258,14 +263,15 @@ namespace ArkBot.WebApi.Controllers
                         BabyAge = item.c.IsBaby ? item.c.BabyAge : null,
                         Imprint = item.c.DinoImprintingQuality,
                         FoodStatus = foodStatus,
-                        Latitude = item.c.Location?.Latitude,
-                        Longitude = item.c.Location?.Longitude,
-                        TopoMapX = item.c.Location?.TopoMapX,
-                        TopoMapY = item.c.Location?.TopoMapY,
+                        Latitude = item.cryo ? null : item.c.Location?.Latitude,
+                        Longitude = item.cryo ? null : item.c.Location?.Longitude,
+                        TopoMapX = item.cryo ? null : item.c.Location?.TopoMapX,
+                        TopoMapY = item.cryo ? null : item.c.Location?.TopoMapY,
                         NextMating = !item.c.IsBaby && item.c.Gender == ArkCreatureGender.Female ? item.c.NextAllowedMatingTimeApprox : null,
                         BabyFullyGrown = babyFullyGrownTimeApprox,
                         BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
-                        OwnerType = item.o
+                        OwnerType = item.o,
+                        InCryopod = item.cryo
                     };
                     if (incBaseStats)
                     {
