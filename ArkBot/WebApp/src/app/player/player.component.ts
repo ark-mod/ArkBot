@@ -10,7 +10,7 @@ import { DataService } from '../data.service';
 import { MessageService } from '../message.service';
 import { HttpService } from '../http.service';
 
-import { floatCompare, intCompare, stringLocaleCompare, nullCompare } from '../utils'
+import { floatCompare, intCompare, stringLocaleCompare, nullCompare, fromHsvToRgb } from '../utils'
 import { Observable } from 'rxjs';
 
 @Component({
@@ -44,6 +44,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   creaturesMode: string = "status";
   creatureStates: any = {};
   tribeLogFilter: string;
+  speciesTopStats: any = {};
 
   creaturesSortField: string = "food";
   creaturesAltSortFields: string = "name";
@@ -57,7 +58,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
     "imprint": (o1, o2, asc) => floatCompare(o1.Imprint, o2.Imprint, !asc, 2),
     "latitude": (o1, o2, asc) => floatCompare(o1.Latitude, o2.Latitude, asc, 1),
     "longitude": (o1, o2, asc) => floatCompare(o1.Longitude, o2.Longitude, asc, 1),
+    "in_cryopod": (o1, o2, asc) => intCompare(o1.InCryopod, o2.InCryopod, !asc),
     "owner": (o1, o2, asc) => stringLocaleCompare(o1.OwnerType, o2.OwnerType, asc),
+    "num_top_stats": (o1, o2, asc) => intCompare(this.numTopStats(o1), this.numTopStats(o2), !asc),
     "stat_health": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Health : null, o2.BaseStats != undefined ? o2.BaseStats.Health : null, !asc),
     "stat_stamina": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Stamina : null, o2.BaseStats != undefined ? o2.BaseStats.Stamina : null, !asc),
     "stat_oxygen": (o1, o2, asc) => intCompare(o1.BaseStats != undefined ? o1.BaseStats.Oxygen : null, o2.BaseStats != undefined ? o2.BaseStats.Oxygen : null, !asc),
@@ -91,6 +94,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
           var clusterKeys = Object.keys(player.Clusters);
           if (!this.clusterKey || clusterKeys.find(k => k == this.clusterKey) == undefined) this.clusterKey = clusterKeys.length > 0 ? clusterKeys[0] : null;
           this.player = player;
+
+          this.calculateTopStats();
 
           this.filterAndSort();
 
@@ -130,6 +135,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return creature.NextMating != null ? new Date(creature.NextMating) > new Date() : false;
   }
 
+  readyForMating(creature: any): boolean {
+    return creature.BabyAge == null && creature.Gender == 'Female' && !this.haveMatingCooldown(creature) && !creature.InCryopod;
+  }
+
   active(serverKey: string): boolean {
     return this.serverKey == serverKey;
   }
@@ -157,6 +166,53 @@ export class PlayerComponent implements OnInit, OnDestroy {
   clusterWidth(): number {
     let len = Object.keys(this.player.Clusters).length;
     return 100.0/len;
+  }
+
+  numTopStats(creature: any) {
+    var stats = [ 'Health', 'Stamina', 'Oxygen', 'Food', 'Weight', 'Melee', 'MovementSpeed' ];
+    let max = this.speciesTopStats[creature.ClassName];
+    let current = creature.BaseStats;
+
+    let num = 0;
+    for (let s of stats) if (max[s] == current[s]) num++;
+
+    return num;
+  }
+
+  calculateTopStats() {
+    var speciesTopStats = <any> {};
+    var stats = [ 'Health', 'Stamina', 'Oxygen', 'Food', 'Weight', 'Melee', 'MovementSpeed' ];
+    var serverKeys = Object.keys(this.player.Servers);
+
+    for (let serverKey of serverKeys) {
+      let creatures = <any[]> this.player.Servers[serverKey].Creatures;
+
+      for (let c of creatures) {
+        if (speciesTopStats[c.ClassName] === undefined) speciesTopStats[c.ClassName] = {Health: 0, Stamina: 0, Oxygen: 0, Food: 0, Weight: 0, Melee: 0, MovementSpeed: 0};
+
+        let sts = speciesTopStats[c.ClassName];
+        for (let s of stats) {
+          if (sts[s] < c.BaseStats[s]) sts[s] = c.BaseStats[s];
+        }
+      }
+    }
+
+    this.speciesTopStats = speciesTopStats;
+  }
+
+  getColorForSpeciesStat(creature: any, stat: string) {
+    let max = this.speciesTopStats[creature.ClassName][stat];
+    let current = creature.BaseStats[stat];
+
+    let value = current;
+    var f = max > 0 ? (value / max) : 0.0;
+    var h = Math.pow(f, 2) * (1 / 3.0);
+    var s = 0.5 + (value == max ? 0.4 : 0);
+    if (s > 1) s = 1;
+
+    let rgb = this.theme != 'light' ? fromHsvToRgb(h, s + 0.1, 0.7) : fromHsvToRgb(h, s, 1.0);
+
+    return '#' + (((1 << 24) + (rgb.r << 16) + (rgb.g << 8) + rgb.b).toString(16).substr(1));
   }
 
   sort() {

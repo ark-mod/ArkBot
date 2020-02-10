@@ -34,6 +34,7 @@ namespace ArkBot.WebApi.Model
         public DateTime? BabyFullyGrown { get; set; }
         public DateTime? BabyNextCuddle { get; set; }
         public string OwnerType { get; set; }
+        public bool InCryopod { get; set; }
 
         // these fields are only set when creature is owned by the authenticated person making the request
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]

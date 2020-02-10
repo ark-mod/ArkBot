@@ -183,7 +183,7 @@ namespace ArkBot.Data
             var multipliers = ArkServerMultipliers.Instance.Data?.GetStatMultipliers(stat);
             var stats = SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase))?.Stats;
 
-            if (multipliers == null || multipliers.Length != 4 || stats == null) return null;
+            if (multipliers == null || multipliers.Length != 4 || stats == null || stats[index] == null) return null;
 
             //stats = new double[8].Select((x, i) =>
             //{
