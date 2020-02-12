@@ -440,6 +440,7 @@ namespace ArkBot.ViewModel
             builder.RegisterType<ArkServerService>().As<IArkServerService>().SingleInstance();
             builder.RegisterType<SavegameBackupService>().As<ISavegameBackupService>().SingleInstance();
             builder.RegisterType<PlayerLastActiveService>().As<IPlayerLastActiveService>().SingleInstance();
+            builder.RegisterType<LogCleanupService>().As<ILogCleanupService>().SingleInstance();
 
             //register vote handlers
             builder.RegisterType<BanVoteHandler>().As<IVoteHandler<BanVote>>();
@@ -504,6 +505,7 @@ namespace ArkBot.ViewModel
             {
                 var playerLastActiveService = Container.Resolve<IPlayerLastActiveService>();
                 var backupService = Container.Resolve<ISavegameBackupService>();
+                var logCleanupService = Container.Resolve<ILogCleanupService>();
                 foreach (var server in _config.Servers)
                 {
                     var clusterContext = _contextManager.GetCluster(server.ClusterKey);
