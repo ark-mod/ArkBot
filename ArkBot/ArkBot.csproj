@@ -666,7 +666,9 @@
     </Compile>
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="ScheduledTasks\ScheduledTasksManager.cs" />
+    <Compile Include="Services\ILogCleanupService.cs" />
     <Compile Include="Services\IPlayerLastActiveService.cs" />
+    <Compile Include="Services\LogCleanupService.cs" />
     <Compile Include="Services\PlayerLastActiveService.cs" />
     <Compile Include="Services\ArkServerService.cs" />
     <Compile Include="IArkSaveFileWatcher.cs" />
