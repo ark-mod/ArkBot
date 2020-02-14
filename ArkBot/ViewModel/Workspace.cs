@@ -54,6 +54,7 @@ using Markdig;
 using PropertyChanged;
 using ArkBot.Configuration.Model;
 using System.Globalization;
+using ArkSavegameToolkitNet;
 
 namespace ArkBot.ViewModel
 {
@@ -62,6 +63,7 @@ namespace ArkBot.ViewModel
         public struct Constants
         {
             public const string ConfigFilePath = @"config.json";
+            public const string ArkConfigFilePath = @"ark.json";
             public const string DefaultConfigFilePath = @"defaultconfig.json";
             public const string LayoutFilePath = @".\Layout.config";
         }
@@ -215,7 +217,7 @@ namespace ArkBot.ViewModel
 
         private bool CanOpenWebApp(object parameter)
         {
-            return true;
+            return !string.IsNullOrEmpty(_config?.AppUrl);
         }
 
         private void OnOpenWebApp(object parameter)
@@ -271,6 +273,31 @@ namespace ArkBot.ViewModel
             {
                 WriteAndWaitForKey($@"This application must be run as administrator in order to function properly.");
                 return;
+            }
+
+            //ArkToolkitDomain.Initialize();
+            //File.WriteAllText(@"ark.json", JsonConvert.SerializeObject(ArkSavegameToolkitNet.ArkToolkitSettings.Instance, Formatting.Indented));
+
+            var arkConfigCustom = false;
+            if (File.Exists(Constants.ArkConfigFilePath))
+            {
+                try
+                {
+                    // use custom settings from ark.json
+                    ArkToolkitSettings.Instance.Setup(JsonConvert.DeserializeObject<ArkToolkitSettings>(File.ReadAllText(Constants.ArkConfigFilePath)));
+                    arkConfigCustom = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.AddLog($@"Error loading 'ark.config'. Using default config. (""{ex.Message}"")");
+                    Logging.LogException("Error loading 'ark.config'. Using default config.", ex, this.GetType());
+                }
+            }
+
+            if (!arkConfigCustom)
+            {
+                // initialize default settings
+                ArkToolkitDomain.Initialize();
             }
 
             _config = null;

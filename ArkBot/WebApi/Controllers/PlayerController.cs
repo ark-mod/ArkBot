@@ -430,6 +430,9 @@ namespace ArkBot.WebApi.Controllers
 
         internal static List<ElectricalGeneratorViewModel> BuildElectricalGeneratorViewModelsForPlayerId(ArkServerContext context, int playerId)
         {
+            if (!ArkSavegameToolkitNet.ArkToolkitSettings.Instance.ObjectTypes.TryGetValue(ArkSavegameToolkitNet.ObjectType.ItemElectricGeneratorGasoline, out var classNames))
+                return new List<ElectricalGeneratorViewModel>();
+
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
             var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
 
@@ -441,7 +444,7 @@ namespace ArkBot.WebApi.Controllers
                 {
                     Activated = x.Activated,
                     //FuelTime = x.FuelTime, PrimalItemResource_Gasoline_C , PrimalItemResource_Gasoline_JStacks_C
-                    GasolineQuantity = (int)(x.Inventory?.Where(y => y.ClassName.Equals("PrimalItemResource_Gasoline_C", StringComparison.Ordinal)).Sum(y => y.Quantity) ?? 0)
+                    GasolineQuantity = (int)(x.Inventory?.Where(y => classNames.Contains(y.ClassName, StringComparer.Ordinal)).Sum(y => y.Quantity) ?? 0)
                 };
             }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
 
