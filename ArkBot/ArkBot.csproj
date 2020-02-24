@@ -612,6 +612,7 @@
       <DependentUpon>Configuration.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\ArkServerMultipliers.cs" />
+    <Compile Include="Data\ArkItems.cs" />
     <Compile Include="Discord\ArkDiscordBot.cs" />
     <Compile Include="ArkContext.cs" />
     <Compile Include="ArkSaveFileChangedEventArgs.cs" />
@@ -839,6 +840,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="app.manifest" />
+    <None Include="ark.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="defaultconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

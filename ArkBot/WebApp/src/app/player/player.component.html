@@ -115,7 +115,7 @@
           <tr *ngFor="let creature of filteredCreatures">
             <td>{{creature.Name}}</td>
             <!--<td>{{creature.ClassName}}</td>-->
-            <td>{{creature.Species}}</td>
+            <td>{{creature.Species || creature.ClassName}}</td>
             <!--<td>{{creature.Aliases}}</td>-->
             <ng-container *ngIf="!activeCreaturesMode('stats')">
               <td>{{creature.Gender}}</td>

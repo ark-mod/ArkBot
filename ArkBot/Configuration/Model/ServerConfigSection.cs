@@ -88,19 +88,25 @@ namespace ArkBot.Configuration.Model
         [RegularExpression(@"^[a-z0-9_\-]+$", ErrorMessage = "{0} must be empty or consist of letters (a-z), numbers (0-9), dashes (-) and underscores (_)")]
         public string ClusterKey { get; set; }
 
+        [JsonProperty(PropertyName = "modIds")]
+        [Display(Name = "Mod IDs", Description = "Mods that are enabled on this server")]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(1)]
+        public List<int> ModIds { get; set; } = new List<int>();
+
         [JsonProperty(PropertyName = "displayAddress")]
         [Display(Name = "Display Address", Description = "The public address used to connect to the server")]
         [ConfigurationHelp(remarks: new [] { "Used for displaying server urls and for steam connection links." }, 
             Example = "`arkserver.net:27015`")]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(1)]
+        [PropertyOrder(2)]
         public string DisplayAddress { get; set; }
 
         [JsonProperty(PropertyName = "rconPort")]
         [Display(Name = "RCON Port", Description = "The port used to connect to this server instance over rcon")]
         [ConfigurationHelp(remarks: new[] { "Use same value as `?RCONPort=` from the command used to start your server." }, Example = "`27020`")]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(2)]
+        [PropertyOrder(3)]
         [RangeOptional(1, 65535, Optional = true, ErrorMessage = "{0} must be empty or between 1-65635")]
         public int? RconPort { get; set; }
 
@@ -108,14 +114,14 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "RCON Password", Description = "The password used to connect to this server instance via rcon")]
         [ConfigurationHelp(remarks: new[] { "Use same value as `?ServerAdminPassword=` from the command used to start your server." }, Example = "`password`")]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(3)]
+        [PropertyOrder(4)]
         public string RconPassword { get; set; }
 
         [JsonProperty(PropertyName = "serverManagement")]
         [Display(Name = "Server Management", Description = "Configure server management features available through Discord commands")]
         [ConfigurationHelp(remarks: new[] { "Includes features like start, restart, stop, update etc." })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(4)]
+        [PropertyOrder(5)]
         [ExpandableObject]
         [Required(ErrorMessage = "{0} is not set")]
         public ServerManagementConfigSection ServerManagement { get; set; }

@@ -44,7 +44,14 @@ namespace ArkBot.Data
                 return null;
             }
 
-            return _aliasesByClassName.TryGetValue(className, out var aliases) ? aliases : default;
+            if (!_aliasesByClassName.TryGetValue(className, out var aliases))
+            {
+                // fall back to using obelisk data
+                var data = ArkSpeciesStats.Instance.Data?.GetSpecies(new[] { className });
+                if (data != null) aliases = new[] { data.Name, className };
+            }
+            
+            return aliases ?? default;
         }
 
         private void Load()

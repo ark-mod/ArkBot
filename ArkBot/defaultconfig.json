@@ -127,6 +127,8 @@
       "key": "server1",
       "clusterKey": "cluster1",
       "saveFilePath": "",
+      "modIds": [
+      ],
       "displayAddress": "",
       "ip": "127.0.0.1",
       "queryPort": 27015,
@@ -146,6 +148,8 @@
       "key": "server2",
       "clusterKey": "cluster1",
       "saveFilePath": "",
+      "modIds": [
+      ],
       "displayAddress": "",
       "ip": "127.0.0.1",
       "queryPort": 27016,

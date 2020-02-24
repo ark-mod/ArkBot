@@ -210,7 +210,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     var s = 0.5 + (value == max ? 0.4 : 0);
     if (s > 1) s = 1;
 
-    let rgb = this.theme != 'light' ? fromHsvToRgb(h, s + 0.1, 0.7) : fromHsvToRgb(h, s, 1.0);
+    let rgb = this.theme != 'light' ? fromHsvToRgb(h, s + 0.1, (value == max ? 0.7 : 0.4)) : fromHsvToRgb(h, s, 1.0);
 
     return '#' + (((1 << 24) + (rgb.r << 16) + (rgb.g << 8) + rgb.b).toString(16).substr(1));
   }
@@ -243,9 +243,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
     if (this.creaturesFilter == null || this.creaturesFilter.length == 0) this.filteredCreatures = this.player.Servers[this.serverKey].Creatures;
     else {
       let filter = this.creaturesFilter.toLowerCase();
+      let option_cryopod = undefined;
+
+      filter = filter.replace(/\s+(-?cryopod)\b/, (m, opt) => {
+        if (opt == "-cryopod") option_cryopod = false;
+        else if (opt == "cryopod") option_cryopod = true;
+
+        return "";
+      });
+
       this.filteredCreatures = this.player.Servers[this.serverKey].Creatures.filter(creature => 
-        (creature.Species != null && creature.Species.toLowerCase().indexOf(filter) >= 0) 
-        || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0));
+        (option_cryopod == undefined || creature.InCryopod == option_cryopod) && (
+          (creature.Species != null && creature.Species.toLowerCase().indexOf(filter) >= 0) 
+          || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0)));
     }
 
     let imprintCreatures = this.player.Servers[this.serverKey].Creatures.filter(creature => creature.BabyAge != null);
@@ -262,6 +272,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     let points = [];
     for(let creature of this.filteredCreatures) {
+      if (creature.TopoMapX == null || creature.TopoMapY == null) continue;
+      
       let point = {} as any;
       point.x = creature.TopoMapX;
       point.y = creature.TopoMapY;
@@ -383,6 +395,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     if (field == "latitude") this.creaturesAltSortFields = !reverse ? "longitude,name" : "-longitude,name";
     else if (field == "longitude") this.creaturesAltSortFields = !reverse ? "latitude,name" : "-latitude,name";
+    else if (field == "num_top_stats") this.creaturesAltSortFields = !reverse ? "gender,base_level,name" : "gender,-base_level,name";
     else this.creaturesAltSortFields = "name";
 
     this.sort();
