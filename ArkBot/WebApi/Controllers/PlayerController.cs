@@ -347,9 +347,11 @@ namespace ArkBot.WebApi.Controllers
                 .GroupBy(x => x.ClassName)
                 .Select(x =>
                 {
-                    var name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
-                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
-                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                    //var name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    //var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    //return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+
+                    return new { Name = ArkItems.Instance.Data?.GetItem(x.Key)?.Name ?? x.Key, Count = x.Sum(y => y.Quantity) };
                 })
                 .ToArray();
 
@@ -357,9 +359,11 @@ namespace ArkBot.WebApi.Controllers
                 .GroupBy(x => x.ClassName)
                 .Select(x =>
                 {
-                    var name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
-                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
-                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                    //var name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    //var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    //return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+
+                    return new { Name = ArkItems.Instance.Data?.GetItem(x.Key)?.Name ?? x.Key, Count = x.Sum(y => y.Quantity) };
                 })
                 .ToList();
 
@@ -396,6 +400,7 @@ namespace ArkBot.WebApi.Controllers
                     FertilizerQuantity = (int)Math.Round(GetFertilizerQuantityFromItems(x.Inventory), 0),
                     WaterAmount = x.WaterAmount,
                     PlantedCropClassName = x.PlantedCropClassName,
+                    PlantedCropName = ArkItems.Instance.Data?.GetItem(x.PlantedCropClassName, structuresPlusHack: true)?.Name?.Replace(" Seed", "") ?? x.PlantedCropClassName
                 };
             }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
 

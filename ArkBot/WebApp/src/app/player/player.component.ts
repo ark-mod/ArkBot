@@ -272,6 +272,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     let points = [];
     for(let creature of this.filteredCreatures) {
+      if (creature.TopoMapX == null || creature.TopoMapY == null) continue;
+      
       let point = {} as any;
       point.x = creature.TopoMapX;
       point.y = creature.TopoMapY;

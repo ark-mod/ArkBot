@@ -584,8 +584,13 @@ namespace ArkBot.ViewModel
             //load the server multipliers data
             await ArkServerMultipliers.Instance.LoadOrUpdate();
 
+            var modIds = _config.Servers?.SelectMany(x => x.ModIds).Distinct().ToArray() ?? new int[] { };
+
             //load the species stats data
-            await ArkSpeciesStats.Instance.LoadOrUpdate();
+            await ArkSpeciesStats.Instance.LoadOrUpdate(modIds);
+
+            //load the items data
+            await ArkItems.Instance.LoadOrUpdate(modIds);
 
             //ssl
             if (_config.Ssl?.Enabled == true)
