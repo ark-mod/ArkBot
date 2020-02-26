@@ -150,6 +150,21 @@
         }
       ]
     },
+    "Genesis": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 10500.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 10500.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Genesis.png",
+          "TopEdgeLatitude": 4.19,
+          "LeftEdgeLongitude": 0.51,
+          "RightEdgeLongitude": 96.69,
+          "BottomEdgeLatitude": 97.47
+        }
+      ]
+    },
     "Valhalla": {
       "LatitudeShift": 48.81356,
       "LatitudeDivisor": 14750.0,
