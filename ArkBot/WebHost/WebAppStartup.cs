@@ -215,7 +215,9 @@ namespace ArkBot.WebHost
                         },
                         webapp = new
                         {
-                            defaultTheme = _config.WebApp.DefaultTheme.ToString()
+                            defaultTheme = _config.WebApp.DefaultTheme.ToString(),
+                            topMenu = _config.WebApp.TopMenu,
+                            useCustomCssFile = !string.IsNullOrEmpty(_config.WebApp.CustomCssFilePath)
                         }
                     };
                     var json = JsonConvert.SerializeObject(obj, Formatting.None);
@@ -259,6 +261,16 @@ namespace ArkBot.WebHost
                 //    //var stream = File.OpenRead("webapp/index.html");
                 //    //return new FileStreamResult(stream, "application/octet-stream");
                 //});
+
+                if (!string.IsNullOrEmpty(_config.WebApp.CustomCssFilePath) && File.Exists(_config.WebApp.CustomCssFilePath))
+                {
+                    endpoints.MapGet("/custom.css", context =>
+                    {
+                        context.Response.ContentType = "text/css; charset=utf-8";
+                        context.Response.StatusCode = StatusCodes.Status200OK;
+                        return context.Response.WriteAsync(File.ReadAllText(_config.WebApp.CustomCssFilePath));
+                    });
+                }
 
                 endpoints.MapControllers();
                 //endpoints.MapControllerRoute("default", "api/{controller}/{action=Get}/{id?}");

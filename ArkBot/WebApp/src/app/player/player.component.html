@@ -74,25 +74,34 @@
             <!--<th>ClassName</th>-->
             <th style="cursor: pointer;" title="Sort by Species" (click)="setCreaturesSort('species')">Species</th>
             <!--<th>Aliases</th>-->
-            <th style="cursor: pointer;" title="Sort by Gender" (click)="setCreaturesSort('gender')">Gender</th>
+            <ng-container *ngIf="!activeCreaturesMode('stats')">
+              <th style="cursor: pointer;" title="Sort by Gender" (click)="setCreaturesSort('gender')">Gender</th>
+            </ng-container>
             <th style="cursor: pointer;" title="Sort by Base Level" (click)="setCreaturesSort('base_level')">Base Level</th>
+            <th style="cursor: pointer;" title="Sort by Level" (click)="setCreaturesSort('level')">Level</th>
             <ng-container *ngIf="activeCreaturesMode('status')">
-              <th style="cursor: pointer;" title="Sort by Level" (click)="setCreaturesSort('level')">Level</th>
               <th style="cursor: pointer;" title="Sort by Imprint" (click)="setCreaturesSort('imprint')">Imprint</th>
               <th style="cursor: pointer;" title="Sort by Food" (click)="setCreaturesSort('food')">Food</th>
               <th style="cursor: pointer;" title="Sort by Latitude" (click)="setCreaturesSort('latitude')">Lat</th>
               <th style="cursor: pointer;" title="Sort by Longitude" (click)="setCreaturesSort('longitude')">Lng</th>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('status') || activeCreaturesMode('stats')">
+              <th style="cursor: pointer;" title="Sort by In Cryopod" (click)="setCreaturesSort('in_cryopod')">Cryopod</th>
               <th>Status</th>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('status')">
               <th style="cursor: pointer;" title="Sort by Owner" (click)="setCreaturesSort('owner')">Owner</th>
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('stats')">
-              <th style="cursor: pointer;" title="Sort by Health" (click)="setCreaturesSort('stat_health')">HP</th>
-              <th style="cursor: pointer;" title="Sort by Stamina" (click)="setCreaturesSort('stat_stamina')">ST</th>
-              <th style="cursor: pointer;" title="Sort by Oxygen" (click)="setCreaturesSort('stat_oxygen')">OX</th>
-              <th style="cursor: pointer;" title="Sort by Food" (click)="setCreaturesSort('stat_food')">FO</th>
-              <th style="cursor: pointer;" title="Sort by Weight" (click)="setCreaturesSort('stat_weight')">WE</th>
-              <th style="cursor: pointer;" title="Sort by Melee" (click)="setCreaturesSort('stat_melee')">ME</th>
-              <th style="cursor: pointer;" title="Sort by Speed" (click)="setCreaturesSort('stat_speed')">SP</th>
+              <th style="cursor: pointer;" title="Sort by Num Top Stats" (click)="setCreaturesSort('num_top_stats')">Top</th>
+              <th style="cursor: pointer;" title="Sort by Gender" (click)="setCreaturesSort('gender')">Gender</th>
+              <th style="cursor: pointer; text-align: center;" title="Sort by Health" (click)="setCreaturesSort('stat_health')">HP</th>
+              <th style="cursor: pointer; text-align: center" title="Sort by Stamina" (click)="setCreaturesSort('stat_stamina')">ST</th>
+              <th style="cursor: pointer; text-align: center" title="Sort by Oxygen" (click)="setCreaturesSort('stat_oxygen')">OX</th>
+              <th style="cursor: pointer; text-align: center" title="Sort by Food" (click)="setCreaturesSort('stat_food')">FO</th>
+              <th style="cursor: pointer; text-align: center" title="Sort by Weight" (click)="setCreaturesSort('stat_weight')">WE</th>
+              <th style="cursor: pointer; text-align: center" title="Sort by Melee" (click)="setCreaturesSort('stat_melee')">ME</th>
+              <th style="cursor: pointer; text-align: center" title="Sort by Speed" (click)="setCreaturesSort('stat_speed')">SP</th>
               <!--<th></th>-->
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('ids')">
@@ -102,32 +111,38 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="!(filteredCreatures?.length > 0)"><td [colSpan]="(activeCreaturesMode('ids') ? 6 : 11)">No matching creatures...</td></tr>
+          <tr *ngIf="!(filteredCreatures?.length > 0)"><td [colSpan]="(activeCreaturesMode('ids') ? 6 : activeCreaturesMode('stats') ? 14 : 12)">No matching creatures...</td></tr>
           <tr *ngFor="let creature of filteredCreatures">
             <td>{{creature.Name}}</td>
             <!--<td>{{creature.ClassName}}</td>-->
-            <td>{{creature.Species}}</td>
+            <td>{{creature.Species || creature.ClassName}}</td>
             <!--<td>{{creature.Aliases}}</td>-->
-            <td>{{creature.Gender}}</td>
+            <ng-container *ngIf="!activeCreaturesMode('stats')">
+              <td>{{creature.Gender}}</td>
+            </ng-container>
             <td>{{creature.BaseLevel}}</td>
+            <td><span *ngIf="creature.BaseLevel != creature.Level">{{creature.Level}}</span></td>
             <ng-container *ngIf="activeCreaturesMode('status')">
-              <td><span *ngIf="creature.BaseLevel != creature.Level">{{creature.Level}}</span></td>
               <td>{{creature.Imprint | percent:'1.0-0'}}</td>
               <td>
-                <div *ngIf="creature.FoodStatus != null" class="app-green-light w3-round" style="width: 6em; position: relative;">
+                <div *ngIf="creature.FoodStatus != null" class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
                   <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.FoodStatus | percent:'1.0-0'}}</div>
                   <div class="theme-c1 w3-round" [style.width.%]="creature.FoodStatus * 100">&nbsp;</div>
                 </div>
               </td>
               <td>{{creature.Latitude | number:'1.1-1'}}</td>
               <td>{{creature.Longitude | number:'1.1-1'}}</td>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('status') || activeCreaturesMode('stats')">
+              <td>{{creature.InCryopod ? 'Yes' : ''}}</td>
               <td>
                 <span *ngIf="haveMatingCooldown(creature)">Next mating {{dataService.toRelativeDate(creature.NextMating)}}</span>
+                <span *ngIf="readyForMating(creature)">Ready for mating</span>
                 <div *ngIf="creature.BabyAge != null">
                   <div>
                     <div class="w3-cell w3-cell-middle">Baby</div>
                     <div class="w3-cell w3-cell-middle">
-                      <div class="app-green-light w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
+                      <div class="theme-lighter-c1-bg w3-round" style="width: 4em; position: relative; margin: 0em 0.5em;">
                         <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
                         <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
                       </div>
@@ -136,17 +151,55 @@
                   </div>
                 </div>
               </td>
+            </ng-container>
+            <ng-container *ngIf="activeCreaturesMode('status')">
               <td>{{creature.OwnerType}}</td>
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('stats')">
-              <td>{{creature.BaseStats?.Health}}</td>
-              <td>{{creature.BaseStats?.Stamina}}</td>
-              <td>{{creature.BaseStats?.Oxygen}}</td>
-              <td>{{creature.BaseStats?.Food}}</td>
-              <td>{{creature.BaseStats?.Weight}}</td>
-              <td>{{creature.BaseStats?.Melee}}</td>
-              <td>{{creature.BaseStats?.MovementSpeed}}</td>
-              <!--<td><i class="material-icons w3-medium" style="cursor: pointer;" (click)="copyCreature(creature)">content_copy</i></td>-->
+              <td>{{numTopStats(creature)}}</td>
+              <td>{{creature.Gender}}</td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Health}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Health')">&nbsp;</div>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Stamina}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Stamina')">&nbsp;</div>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Oxygen}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Oxygen')">&nbsp;</div>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Food}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Food')">&nbsp;</div>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Weight}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Weight')">&nbsp;</div>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Melee}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Melee')">&nbsp;</div>
+                </div>
+              </td>
+              <td class="stat-cell">
+                <div class="w3-round" style="position: relative;">
+                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.MovementSpeed}}</div>
+                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'MovementSpeed')">&nbsp;</div>
+                </div>
+              </td>
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('ids')">
               <td>{{creature.Id1}}</td>
@@ -180,14 +233,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let creature of imprintCreatures; let index = index" [ngClass]="{'odd': index % 2 == 1}">
+        <tr *ngFor="let creature of imprintCreatures; let index = index" [ngClass]="{'even': index % 2 == 1}">
           <td>{{creature.Name}}</td>
           <td>{{creature.Species}}</td>
           <td>{{creature.Gender}}</td>
           <td>{{creature.BaseLevel}}</td>
           <td>{{creature.Imprint | percent:'1.0-0'}}</td>
           <td>
-            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+            <div class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{creature.BabyAge | percent:'1.0-0'}}</div>
               <div class="theme-c1 w3-round" [style.width.%]="creature.BabyAge * 100">&nbsp;</div>
             </div>
@@ -293,7 +346,7 @@
           <td>{{(cp.PlantedCropName || cp.PlantedCropClassName)}}</td>
           <td>{{cp.Size}}</td>
           <td>
-            <div class="app-green-light w3-round" style="width: 6em; position: relative;">
+            <div class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(cp.FertilizerQuantity / cp.FertilizerMax) | percent:'1.0-0'}}</div>
               <div class="theme-c1 w3-round" [style.width.%]="(cp.FertilizerQuantity / cp.FertilizerMax) * 100">&nbsp;</div>
             </div>
@@ -326,7 +379,7 @@
       <tbody>
         <tr *ngFor="let eg of player.Servers[serverKey].ElectricalGenerators">
           <td>
-            <div *ngIf="eg.Activated == true" class="app-green-light w3-round" style="width: 6em; position: relative;">
+            <div *ngIf="eg.Activated == true" class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
               <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>
               <div class="theme-c1 w3-round" [style.width.%]="(eg.GasolineQuantity / 800.0) * 100">&nbsp;</div>
             </div>

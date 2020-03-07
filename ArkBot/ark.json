@@ -1,0 +1,207 @@
+{
+  "Maps": {
+    "TheIsland": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 8000.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 8000.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\TheIsland.jpg",
+          "TopEdgeLatitude": 7.2,
+          "LeftEdgeLongitude": 7.2,
+          "RightEdgeLongitude": 92.8,
+          "BottomEdgeLatitude": 92.8
+        }
+      ]
+    },
+    "TheCenter": {
+      "LatitudeShift": 30.3422375,
+      "LatitudeDivisor": 9584.0,
+      "LongitudeShift": 55.1041679,
+      "LongitudeDivisor": 9600.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\TheCenter.jpg",
+          "TopEdgeLatitude": -2.5,
+          "LeftEdgeLongitude": 1.0,
+          "RightEdgeLongitude": 104.5,
+          "BottomEdgeLatitude": 101.0
+        }
+      ]
+    },
+    "ScorchedEarth_P": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 8000.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 8000.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\ScorchedEarth_P.png",
+          "TopEdgeLatitude": 7.2,
+          "LeftEdgeLongitude": 7.2,
+          "RightEdgeLongitude": 92.8,
+          "BottomEdgeLatitude": 92.8
+        }
+      ]
+    },
+    "Aberration_P": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 8000.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 8000.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Aberration_P.jpg",
+          "TopEdgeLatitude": 0.0,
+          "LeftEdgeLongitude": 0.0,
+          "RightEdgeLongitude": 100.0,
+          "BottomEdgeLatitude": 100.0
+        }
+      ]
+    },
+    "Extinction": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 8000.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 8000.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Extinction.jpg",
+          "TopEdgeLatitude": 0.0,
+          "LeftEdgeLongitude": 0.0,
+          "RightEdgeLongitude": 100.0,
+          "BottomEdgeLatitude": 100.0
+        }
+      ]
+    },
+    "ShigoIslands": {
+      "LatitudeShift": 50.0017776,
+      "LatitudeDivisor": 9562.0,
+      "LongitudeShift": 50.0017776,
+      "LongitudeDivisor": 9562.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\ShigoIslands.jpg",
+          "TopEdgeLatitude": -2.0,
+          "LeftEdgeLongitude": -1.6,
+          "RightEdgeLongitude": 99.8,
+          "BottomEdgeLatitude": 101.0
+        }
+      ]
+    },
+    "Ragnarok": {
+      "LatitudeShift": 50.009388,
+      "LatitudeDivisor": 13100.0,
+      "LongitudeShift": 50.009388,
+      "LongitudeDivisor": 13100.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Ragnarok.png",
+          "TopEdgeLatitude": 0.0,
+          "LeftEdgeLongitude": 0.0,
+          "RightEdgeLongitude": 100.0,
+          "BottomEdgeLatitude": 100.0
+        }
+      ]
+    },
+    "TheVolcano": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 9181.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 9181.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\TheVolcano.jpg",
+          "TopEdgeLatitude": -1.95,
+          "LeftEdgeLongitude": -1.3,
+          "RightEdgeLongitude": 99.5,
+          "BottomEdgeLatitude": 100.7
+        }
+      ]
+    },
+    "CrystalIsles": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 13718.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 13718.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\CrystalIsles.jpg",
+          "TopEdgeLatitude": -1.7,
+          "LeftEdgeLongitude": -1.5,
+          "RightEdgeLongitude": 99.3,
+          "BottomEdgeLatitude": 101.0
+        }
+      ]
+    },
+    "Valguero_P": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 8161.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 8161.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Valguero_P.jpg",
+          "TopEdgeLatitude": -10.0,
+          "LeftEdgeLongitude": -10.0,
+          "RightEdgeLongitude": 110.0,
+          "BottomEdgeLatitude": 110.0
+        }
+      ]
+    },
+    "Genesis": {
+      "LatitudeShift": 50.0,
+      "LatitudeDivisor": 10500.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 10500.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Genesis.jpg",
+          "TopEdgeLatitude": 4.19,
+          "LeftEdgeLongitude": 0.51,
+          "RightEdgeLongitude": 96.69,
+          "BottomEdgeLatitude": 97.47
+        }
+      ]
+    },
+    "Valhalla": {
+      "LatitudeShift": 48.81356,
+      "LatitudeDivisor": 14750.0,
+      "LongitudeShift": 48.81356,
+      "LongitudeDivisor": 14750.0,
+      "Images": []
+    },
+    "MortemTupiu": {
+      "LatitudeShift": 32.47915,
+      "LatitudeDivisor": 20000.0,
+      "LongitudeShift": 40.598938,
+      "LongitudeDivisor": 16000.0,
+      "Images": []
+    },
+    "PGARK": {
+      "LatitudeShift": 0.0,
+      "LatitudeDivisor": 6080.0,
+      "LongitudeShift": 0.0,
+      "LongitudeDivisor": 6080.0,
+      "Images": []
+    }
+  },
+  "ObjectTypes": {
+    "StructureCropPlot": [
+      "CropPlotSmall_SM_C",
+      "CropPlotMedium_SM_C",
+      "CropPlotLarge_SM_C",
+      "BP_CropPlot_Small_C",
+      "BP_CropPlot_Medium_C",
+      "BP_CropPlot_Large_C"
+    ],
+    "StructureElectricGenerator": [
+      "ElectricGenerator_C",
+      "BP_Generator_C"
+    ],
+    "ItemElectricGeneratorGasoline": [
+      "PrimalItemResource_Gasoline_C"
+    ]
+  }
+}

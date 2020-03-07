@@ -25,6 +25,7 @@ export class DataTableComponent implements OnInit {
   _rows$: Observable<any[]> = Observable.of<any[]>([]);
   _orderByColumnKey: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
   _filter: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
+  _updateTap: BehaviorSubject<void> = new BehaviorSubject<void>(undefined);
   _sort: Subject<string> = new Subject<string>();
   _trackByProp: string;
   _modes: any[];
@@ -45,6 +46,7 @@ export class DataTableComponent implements OnInit {
     { 'value': 1000000, 'text': 'All' }
   ];
 
+  _forceUpdate: boolean = true;
   _prevColumnKey: string = undefined;
   _prevFilter: string = undefined;
   _prevSortedRows: any[] = undefined;
@@ -55,7 +57,7 @@ export class DataTableComponent implements OnInit {
   constructor(private ref: ChangeDetectorRef) { }
 
   ngOnInit() {
-    this._rows$ = Observable.combineLatest(this._orderByColumnKey, this._filter.debounceTime(250), (key: string, filter: string) => ({ key, filter }))
+    this._rows$ = Observable.combineLatest(this._orderByColumnKey, this._filter.debounceTime(250), this._updateTap, (key: string, filter: string) => ({ key, filter }))
       // skip the first emitted value (default value = (undefined, undefined)) which gets delayed by debounce
       // instead use a startWith value that get's emitted right away
       .skip(1)
@@ -132,6 +134,8 @@ export class DataTableComponent implements OnInit {
 
   @Input() set rows(val: any) {
     this._rows = val;
+    this._forceUpdate = true;
+    this._updateTap.next(undefined);
   }
 
   @Input() set trackByProp(val: string) {
@@ -201,7 +205,7 @@ export class DataTableComponent implements OnInit {
 
       rows = this.filterData(this._prevSortedRows, filter);
     } else { //if (columnKey != this._prevColumnKey && filter == this._prevFilter) {
-      if (this._prevFilteredRowsKey != filter) {
+      if (this._forceUpdate || this._prevFilteredRowsKey != filter) {
         this._prevFilteredRowsKey = filter;
         this._prevFilteredRows = this.filterData(this._rows, filter);
       }
@@ -212,12 +216,14 @@ export class DataTableComponent implements OnInit {
       } else rows = this.sortData(this._prevFilteredRows, columnKey);
     }
 
-    if (filter != this._prevFilter) this.setFirstPage();
+    if (this._forceUpdate || filter != this._prevFilter) this.setFirstPage();
 
     this._totalRows = rows.length;
 
     this._prevColumnKey = columnKey;
     this._prevFilter = filter;
+
+    this._forceUpdate = false;
 
     return rows;
   }

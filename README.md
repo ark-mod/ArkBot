@@ -1,12 +1,14 @@
-# Project status last updated Dec 31th 2019
+[![Build Status](https://dev.azure.com/ark-mod/ArkBot/_apis/build/status/ark-mod.ArkBot?branchName=master)](https://dev.azure.com/ark-mod/ArkBot/_build/latest?definitionId=2&branchName=master)
+
+# Project status last updated Jan 21st 2020
 
 ### Support
-Support [Wiki](https://github.com/tsebring/ArkBot/wiki)
+Support [Wiki](https://github.com/ark-mod/ArkBot/wiki)
 
 
-## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and error reporting.  If you need support with setup, have general questions, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
+## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and feature requests.  Please read through existing issues before making a new one.  If you need support with setup, have general questions, would like to be up-to-date on development, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
 
-Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind and as such are unsupported.  We will offer no support if you choose to go this route. 
+Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind currently and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
 We are actively developing this tool again!  We have assembled a team with past and new members.  Users can follow development progress here or get updates on Discord (link found above)
@@ -15,13 +17,13 @@ We are actively developing this tool again!  We have assembled a team with past 
 Important Dependency Note: 
 ArkBot relies upon certain VS C++ runtimes installed. It requires [.NET 3.5 with service pack 1](https://www.microsoft.com/en-us/download/details.aspx?id=25150), [.NET 4.7](https://www.microsoft.com/en-us/download/details.aspx?id=55170), and [Microsoft Visual C++ Redistributable 2013](https://support.microsoft.com/en-us/help/4032938/update-for-visual-c-2013-redistributable-package). Please note: If you are running a windows server install, you must install the [.NET 3.5 and 4.7(or 4.8) from the server admin panel.](https://www.interserver.net/tips/kb/enable-net-framework-3-5-windows-server/)
 
-This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk. Questions? Join our discord and one of us will try to help as we can. Be sure to click the reaction to join the proper discord channels. 
+This has been installed on WS 2012R2, WS 2016, WS 2019, and Windows 10. Other platforms may not work. Try it at your own risk.
 
 #### INSTALLATION INSTRUCTIONS
 First time? Check out [Installation](https://github.com/ark-mod/ArkBot/blob/master/README.md#installation)
 
 #### Suggestions/improvments/bugs
-Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/wiki/Roadmap)
+Have a look at our [Roadmap](https://github.com/ark-mod/ArkBot/projects/2)
 
 If you think something is wrong with the project - help improve it. If you find a bug - help fix it. Don't know how to program? Start learning. This is the way of open source!
 
@@ -49,10 +51,11 @@ It aims to provide important functions to players: dino listings, food-status, b
 ## Latest release
 ### Stable Branch
 
-https://github.com/tsebring/ArkBot/releases
+https://github.com/ark-mod/ArkBot/releases
 
 ### Development Branch
 
+https://github.com/mxtsdev/ArkBot/releases
 https://github.com/johnthegreat/ArkBot/releases
 
 
@@ -67,19 +70,19 @@ To enable map clean-up from the companion app (web app) for administrators, inst
 
 ### What does it do?
 
-*  [More Information](https://github.com/tsebring/ArkBot/wiki)
+*  [More Information](https://github.com/ark-mod/ArkBot/wiki)
 
 ### How to setup?
 
-* [Getting Started](https://github.com/tsebring/ArkBot/wiki/Getting-Started)
-* [Configuration](https://github.com/tsebring/ArkBot/wiki/Configuration)
-* [Port Forwarding](https://github.com/tsebring/ArkBot/wiki/Port-Forwarding)
+* [Getting Started](https://github.com/ark-mod/ArkBot/wiki/Getting-Started)
+* [Configuration](https://github.com/ark-mod/ArkBot/wiki/Configuration)
+* [Port Forwarding](https://github.com/ark-mod/ArkBot/wiki/Port-Forwarding)
 
 ### How to use?
 
-* [Companion App (Web App)](https://github.com/tsebring/ArkBot/wiki/Companion-App-(Web-App))
-* [Web API](https://github.com/tsebring/ArkBot/wiki/Web-API)
-* [Discord Bot](https://github.com/tsebring/ArkBot/wiki/Discord-Bot) (currently not working properly and needs updating as of 9/5/2019)
+* [Companion App (Web App)](https://github.com/ark-mod/ArkBot/wiki/Companion-App-(Web-App))
+* [Web API](https://github.com/ark-mod/ArkBot/wiki/Web-API)
+* [Discord Bot](https://github.com/ark-mod/ArkBot/wiki/Discord-Bot)
 
 ## Acknowledgements
 
@@ -93,7 +96,7 @@ Creature stat data is sourced from Cadons [ARK Smart Breeding](https://github.co
 
 Library for reading ARK Survival Evolved savegame files in .NET
 
-https://github.com/tsebring/ArkSavegameToolkitNet
+https://github.com/ark-mod/ArkSavegameToolkitNet
 
 #### ARK-Server-API 
 
@@ -106,15 +109,3 @@ https://arkserverapi.com/resources/ark-server-api.4/
 Used to facilitate map clean-up from the companion app (web app) for administrators.
 
 https://arkserverapi.com/resources/ark-bot-helper.142/
-
-#### ARK Beyond API: Imprinting Mod (Plugin)
-
-Used for advance imprinting/cuddle support.
-
-https://github.com/tsebring/ImprintingMod
-
-#### ARK Beyond API: Modified Spawn Level Distribution (Plugin)
-
-Used to change spawn level distribution on The Island and Scorched Earth (can be used on others as well) to match the official spawn level distribution on Ragnarok and The Center.
-
-https://github.com/tsebring/ArkModifiedSpawnLevelDistribution

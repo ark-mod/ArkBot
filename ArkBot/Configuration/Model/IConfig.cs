@@ -1,4 +1,5 @@
 ﻿using Discord;
+using System.Collections.Generic;
 
 namespace ArkBot.Configuration.Model
 {
@@ -19,7 +20,7 @@ namespace ArkBot.Configuration.Model
         BackupsConfigSection Backups { get; set; }
         string WebApiListenPrefix { get; set; }
         string WebAppListenPrefix { get; set; }
-        string[] WebAppRedirectListenPrefix { get; set; }
+        List<string> WebAppRedirectListenPrefix { get; set; }
         string PowershellFilePath { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
         SslConfigSection Ssl { get; set; }

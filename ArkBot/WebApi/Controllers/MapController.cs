@@ -1,7 +1,7 @@
 ﻿using ArkBot.Configuration.Model;
+using ArkSavegameToolkitNet;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -9,7 +9,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Resources;
 using System.Threading.Tasks;
 
 namespace ArkBot.WebApi.Controllers
@@ -30,84 +29,29 @@ namespace ArkBot.WebApi.Controllers
         {
             var notfound = NotFound($@"Map ""{id}"" does not exist!");
             Bitmap bmp = null;
-            string imageExtension;
             var ms = new MemoryStream();
             try
             {
-                var map = GetMapImage(id);
-                bmp = map.Value;
-                imageExtension = map.Key;
-                if (bmp == null || string.IsNullOrWhiteSpace(imageExtension)) return notfound;
+                if (!ArkToolkitSettings.Instance.Maps.TryGetValue(id, out var def)) return notfound;
 
-                var imageFormat = GetImageFormatGuid(imageExtension);
-                var imageEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == imageFormat);
+                bmp = def.Images?.FirstOrDefault()?.ImageProvider?.Invoke();
+
+                if (bmp == null) return notfound;
+
+                var jpegEncoder = ImageCodecInfo.GetImageEncoders().FirstOrDefault(x => x.FormatID == ImageFormat.Jpeg.Guid);
                 var encParams = new EncoderParameters { Param = new[] { new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 85L) } };
-                if (imageEncoder == null) return InternalServerError("Could not find " + imageExtension + " encoder.");
+                if (jpegEncoder == null) return InternalServerError("Could not find jpeg encoder.");
 
-                bmp.Save(ms, imageEncoder, encParams);
+                bmp.Save(ms, jpegEncoder, encParams);
                 ms.Seek(0, SeekOrigin.Begin);
             }
-            catch (MissingManifestResourceException)
-            {
-                return notfound;
-            }
-            catch (MissingSatelliteAssemblyException)
-            {
-                return notfound;
-            }
+            catch (Exception) { return notfound; }
             finally
             {
                 bmp?.Dispose();
             }
 
-            //var result = new HttpResponseMessage(HttpStatusCode.OK)
-            //{
-            //    Content = new StreamContent(ms)
-            //};
-            //result.Content.Headers.ContentType = new MediaTypeHeaderValue("image/" + imageExtension);
-
-            //return result;
-            return File(ms, "image/" + imageExtension);
-        }
-
-        private static Guid GetImageFormatGuid(string imageExtension)
-        {
-            switch (imageExtension)
-            {
-                case "jpeg":
-                    return ImageFormat.Jpeg.Guid;
-                case "jpg":
-                    return ImageFormat.Jpeg.Guid;
-                case "bmp":
-                    return ImageFormat.Bmp.Guid;
-                case "png":
-                    return ImageFormat.Png.Guid;
-                default:
-                    return ImageFormat.Jpeg.Guid;
-            }
-        }
-
-        private static KeyValuePair<string, Bitmap> GetMapImage(string imageName)
-        {
-            var imageDirectory = @"Resources\MapImages";
-            imageDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imageDirectory);
-            var filePath = Directory.GetFiles(imageDirectory).FirstOrDefault(x => Path.GetFileNameWithoutExtension(x) == imageName);
-            if (!string.IsNullOrWhiteSpace(filePath))
-            {
-                Bitmap bitmap;
-                using (Stream bmpStream = System.IO.File.Open(filePath, System.IO.FileMode.Open))
-                {
-                    Image image = Image.FromStream(bmpStream);
-
-                    bitmap = new Bitmap(image);
-                }
-
-                var imageExtension = Path.GetExtension(filePath);
-
-                return new KeyValuePair<string, Bitmap>(imageExtension, bitmap);
-            }
-
-            return new KeyValuePair<string, Bitmap>(null, null);
+            return File(ms, "image/jpeg");
         }
     }
 }

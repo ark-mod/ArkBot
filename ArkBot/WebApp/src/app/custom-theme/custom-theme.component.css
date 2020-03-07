@@ -1,0 +1,46 @@
+.customThemeContainer {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: space-between;
+}
+
+.customThemeItem {
+    width: 50%;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.customThemeColorPreview {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+    border: 2px solid black;
+    box-sizing: border-box;
+}
+
+.customThemeColorPreview > div {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    border: 2px solid white;
+    box-sizing: border-box;
+}
+
+.customThemeColor {
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+    font-family: monospace;
+    padding: 1px 3px;
+    width: 55px;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.customThemeName {
+    height: 20px;
+    display: inline-block;
+    vertical-align: middle;
+}

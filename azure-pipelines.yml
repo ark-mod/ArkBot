@@ -1,0 +1,120 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+name: $(TeamProject)_CIBuild_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'x64'
+  buildConfiguration: 'Release'
+  sourceVersion: '$(Build.SourceVersion)'
+
+jobs:
+- job: Build
+  steps:
+  - checkout: self
+    persistCredentials: true
+    clean: true
+
+  - task: NuGetToolInstaller@1
+
+  - task: NuGetCommand@2
+    inputs:
+      feedsToUse: config
+      nugetConfigPath: NuGet.config
+      restoreSolution: '$(solution)'
+
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        $buildNumber = "$env:Build_BuildNumber" -replace '^.*?_', ''
+        $pattern = '\[assembly: AssemblyInformationalVersion\("(.*)"\)\]'
+        $AssemblyFiles = Get-ChildItem . AssemblyInfo.cs -rec
+
+        foreach ($file in $AssemblyFiles)
+        {
+          (Get-Content $file.PSPath) | ForEach-Object{
+              if($_ -match $pattern){
+                  '[assembly: AssemblyInformationalVersion("{0}.{1}")]' -f  $Matches[1], $buildNumber
+              } else {
+                  # Output line as is
+                  $_
+              }
+          } | Set-Content $file.PSPath
+        }
+
+  - task: VSBuild@1
+    inputs:
+      solution: '$(solution)'
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+
+  - task: VSTest@2
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      artifactName: Release
+
+- job: CreateRelease
+  dependsOn:
+  - Build
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  steps:
+  - checkout: self
+    persistCredentials: true
+    clean: true
+
+  - powershell: Write-Host "##vso[task.setvariable variable=dateRev;]$("$(Build.BuildNumber)" -replace '^.*_', '')"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build Artifacts'
+    inputs:
+      artifactName: Release
+      downloadPath: '$(System.DefaultWorkingDirectory)/ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
+      replaceExistingArchive: true
+      sevenZipCompression: 'maximum'
+
+  - script: git config user.email "arkbot@devops.azure"
+  - script: git config user.name "ARK Bot Azure DevOps"
+  - script: git tag --force latest-master $(sourceVersion)
+  - script: git push --force --tags
+
+  - task: GitHubRelease@1
+    displayName: 'Create GitHub Release'   
+    inputs:
+      gitHubConnection: 'arkbot'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'edit'
+      target: '$(Build.SourceVersion)'
+      tag: 'latest-master'
+      title: 'Automated Build (master) - $(dateRev)'
+      releaseNotesSource: 'inline'
+      releaseNotesInline: |
+        This is an automated build compiled from the latest sources in the master branch.
+        
+        Use this if you want to try the latest features and enhancements and don't mind running a pre-release build.
+      isPreRelease: true
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
+      assets: '$(Build.ArtifactStagingDirectory)/*.zip'
+      assetUploadMode: 'delete'

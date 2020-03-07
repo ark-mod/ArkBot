@@ -6,6 +6,7 @@ using Discord;
 using PropertyChanged;
 using Validar;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
+using System.Collections.Generic;
 
 namespace ArkBot.Configuration.Model
 {
@@ -25,7 +26,7 @@ namespace ArkBot.Configuration.Model
             ArkMultipliers = new ArkMultipliersConfigSection();
             Servers = new ServersConfigSection();
             Clusters = new ClustersConfigSection();
-            WebAppRedirectListenPrefix = new string[] { };
+            WebAppRedirectListenPrefix = new List<string>();
             AccessControl = new AccessControlConfigSection();
             Discord = new DiscordConfigSection();
             WebApp = new WebAppConfigSection();
@@ -172,7 +173,7 @@ namespace ArkBot.Configuration.Model
         [Category(ConfigurationCategory.Optional)]
         [PropertyOrder(9)]
         //todo: validate this listen prefix
-        public string[] WebAppRedirectListenPrefix { get; set; }
+        public List<string> WebAppRedirectListenPrefix { get; set; }
 
         [JsonProperty(PropertyName = "powershellFilePath")]
         [Display(Name = "Powershell Executable Path", Description = "Absolute file path of the powershell executable")]

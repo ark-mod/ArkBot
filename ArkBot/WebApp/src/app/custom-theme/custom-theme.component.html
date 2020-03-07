@@ -1,0 +1,24 @@
+<div *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')" id="modal_custom_theme" class="w3-modal" [style.display]="_show ? 'block' : 'none'" [style.opacity]="_hoverHide ? 0 : 1">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="_show = false" style="font-size: 0;">
+    <header class="w3-container theme-d1"> 
+      <span (click)="_show = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+      <h2>Create Custom Theme</h2>
+    </header>
+    <div class="w3-container w3-small theme-l2">
+      <div class="w3-section">
+        <div class="w3-bar theme-l1 w3-card-4 w3-margin-bottom">
+          <button *ngFor="let g of customThemeGroups" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': g === currentCustomThemeGroup}" [style.width.%]="(100/customThemeGroups.length)" (click)="currentCustomThemeGroup = g">{{g.name}}</button>
+        </div>
+        <div class="customThemeContainer">
+          <div *ngFor="let ct of currentCustomThemeGroup.theme" class="customThemeItem" (click)="setCurrent(ct)">
+            <div class="customThemeColorPreview"><div [style.backgroundColor]="ct.value"></div></div>
+            <div class="customThemeColor theme-l1">{{ct.value}}</div>
+            <div class="customThemeName">{{ct.title || ct.name}}</div>
+          </div>
+        </div>
+        <input #colorPicker type="color" style="display: none;" [ngModel]="current?.value" (ngModelChange)="update($event)" />
+      </div>
+      <button class="w3-button w3-section theme-d1 w3-padding" (mouseover)="_hoverHide = true" (mouseleave)="_hoverHide = false">Hide</button><button class="w3-button w3-section w3-right theme-d1 w3-padding" (click)="copyStyles()">Copy Styles to Clipboard</button>
+    </div>
+  </div>
+</div>

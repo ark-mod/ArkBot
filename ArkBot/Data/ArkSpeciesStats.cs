@@ -13,8 +13,14 @@ namespace ArkBot.Data
 
     public class ArkSpeciesStats
     {
-        private const string _speciesstatsUrl = @"https://raw.githubusercontent.com/cadon/ARKStatsExtractor/master/ARKBreedingStats/json/values/values.json";
-        private const string _speciesstatsFileName = @"arkbreedingstats-values.json";
+        private const string _obeliskUrl = @"https://raw.githubusercontent.com/arkutils/Obelisk/master/data/asb/";
+
+        private const string _valuesUrl = @"values.json";
+        private const string _manifestUrl = @"_manifest.json";
+
+        private const string _valuesFileName = @"obelisk-abs-species.json";
+        private const string _manifestFileName = @"obelisk-asb-manifest.json";
+
         private object _lock = new object();
         private Task _updateTask;
 
@@ -23,11 +29,17 @@ namespace ArkBot.Data
 
         public ArkSpeciesStatsData Data { get; set; }
 
+        public ObeliskManifest Manifest { get; set; }
+
+        private ArkSpeciesStatsData Values { get; set; }
+
+        private List<ArkSpeciesStatsData> Mods { get; set; } = new List<ArkSpeciesStatsData>();
+
         public ArkSpeciesStats()
         {
         }
 
-        public async Task LoadOrUpdate()
+        public async Task LoadOrUpdate(int[] modIds)
         {
             Task updateTask = null;
             lock (_lock)
@@ -38,36 +50,36 @@ namespace ArkBot.Data
                     {
                         try
                         {
-                            try
-                            {
-                                //this resource contains species stats that we need
-                                await DownloadHelper.DownloadFile(
-                                    _speciesstatsUrl,
-                                    _speciesstatsFileName,
-                                    true,
-                                    TimeSpan.FromDays(1)
-                                );
-                            }
-                            catch (Exception ex)
-                            {
-                                /*ignore exceptions */
-                                Logging.LogException($"Error downloading {_speciesstatsUrl}", ex, typeof(ArkSpeciesStats), LogLevel.WARN, ExceptionLevel.Ignored);
-                            }
+                            // values.json
+                            var data = await DownloadResource<ArkSpeciesStatsData>(_obeliskUrl + _valuesUrl, _valuesFileName);
+                            if (data != null) Values = data;
 
-                            //even if download failed try with local file if it exists
-                            if (File.Exists(_speciesstatsFileName))
+                            // _manifest.json
+                            var manifest = await DownloadResource<ObeliskManifest>(_obeliskUrl + _manifestUrl, _manifestFileName);
+                            if (manifest != null) Manifest = manifest;
+
+                            // mods
+                            if (modIds?.Length > 0)
                             {
-                                using (var reader = new StreamReader(_speciesstatsFileName))
+                                foreach (var modId in modIds)
                                 {
-                                    var json = await reader.ReadToEndAsync();
-                                    var data = JsonConvert.DeserializeObject<ArkSpeciesStatsData>(json);
-                                    if (data != null) Data = data;
+                                    var strModId = modId.ToString();
+                                    var mod = Manifest?.Files?.FirstOrDefault(x => x.Value?.Mod?.Id.Equals(strModId) == true);
+
+                                    var modData = await DownloadResource<ArkSpeciesStatsData>(mod.HasValue ? _obeliskUrl + mod.Value.Key : null, $"obelisk-asb-species-{modId}.json", skipDownload: mod == null);
+                                    if (modData != null)
+                                    {
+                                        ViewModel.Workspace.Instance.Console.AddLog("Loaded species data for " + (mod.HasValue ? $"{mod.Value.Value.Mod.Title} ({modId})" : $"'{modId}'") + ".");
+                                        Mods.Add(modData);
+                                    }
+                                    else
+                                    {
+                                        ViewModel.Workspace.Instance.Console.AddLog($"Mod '{modId}' is not supported and could result in some data missing from the web app.");
+                                    }
                                 }
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logging.LogException($"Error when attempting to read {_speciesstatsFileName}", ex, typeof(ArkSpeciesStats), LogLevel.ERROR, ExceptionLevel.Ignored);
+
+                            Data = new ArkSpeciesStatsData(Values, Mods);
                         }
                         finally
                         {
@@ -82,6 +94,67 @@ namespace ArkBot.Data
 
             await updateTask;
         }
+
+        private async Task<TValue> DownloadResource<TValue>(string url, string path, bool skipDownload = false) where TValue: class
+        {
+            try
+            {
+                if (!skipDownload)
+                {
+                    try
+                    {
+                        //this resource contains species stats that we need
+                        await DownloadHelper.DownloadFile(
+                            url,
+                            path,
+                            true,
+                            TimeSpan.FromDays(1)
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        /*ignore exceptions */
+                        Logging.LogException($"Error downloading {url}", ex, typeof(ArkSpeciesStats), LogLevel.WARN, ExceptionLevel.Ignored);
+                    }
+                }
+
+                //even if download failed try with local file if it exists
+                if (File.Exists(path))
+                {
+                    using (var reader = new StreamReader(path))
+                    {
+                        var json = await reader.ReadToEndAsync();
+                        var data = JsonConvert.DeserializeObject<TValue>(json);
+                        return data;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogException($"Error when attempting to read {path}", ex, typeof(ArkSpeciesStats), LogLevel.ERROR, ExceptionLevel.Ignored);
+            }
+
+            return null;
+        }
+    }
+
+    public class ObeliskManifest
+    {
+        public string Format { get; set; }
+        public Dictionary<string, ObeliskFile> Files { get; set; } = new Dictionary<string, ObeliskFile>();
+    }
+
+    public class ObeliskFile
+    {
+        public string Version { get; set; }
+        public ObeliskMod Mod { get; set; }
+    }
+
+    public class ObeliskMod
+    {
+        public string Id { get; set; }
+        public string Tag { get; set; }
+        public string Title { get; set; }
     }
 
     public class ArkSpeciesStatsData
@@ -89,6 +162,16 @@ namespace ArkBot.Data
         public ArkSpeciesStatsData()
         {
             SpeciesStats = new List<SpeciesStat>();
+        }
+
+        public ArkSpeciesStatsData(ArkSpeciesStatsData values, List<ArkSpeciesStatsData> mods) : this()
+        {
+            if (values?.SpeciesStats != null) SpeciesStats.AddRange(values.SpeciesStats);
+
+            foreach (var mod in mods)
+            {
+                if (mod?.SpeciesStats != null) SpeciesStats.AddRange(mod.SpeciesStats);
+            }
         }
 
         [JsonProperty("species")]
@@ -173,16 +256,27 @@ namespace ArkBot.Data
 
         public SpeciesStat GetSpecies(string[] speciesaliases)
         {
-            return SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
+            var byName = SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase));
+            if (byName != null) return byName;
+
+            var className = speciesaliases.FirstOrDefault(x => x.EndsWith("_C"));
+            if (className != null)
+            {
+                className = "." + className.Substring(0, className.Length - 2);
+                var byClass = SpeciesStats?.Where(x => x.BlueprintPath.EndsWith(className, StringComparison.OrdinalIgnoreCase)).Take(2).ToArray();
+                return byClass.Length == 1 ? byClass[0] : null;
+            }
+
+            return null;
         }
 
         public double? GetMaxValue(string[] speciesaliases, Stat stat, int baseLevel, int tamedLevel, double tamingEfficiency, double imprintingBonus = 0)
         {
             var index = (int)stat;
             var multipliers = ArkServerMultipliers.Instance.Data?.GetStatMultipliers(stat);
-            var stats = SpeciesStats?.FirstOrDefault(x => speciesaliases.Contains(x.Name, StringComparer.OrdinalIgnoreCase))?.Stats;
+            var stats = GetSpecies(speciesaliases)?.Stats;
 
-            if (multipliers == null || multipliers.Length != 4 || stats == null) return null;
+            if (multipliers == null || multipliers.Length != 4 || stats == null || stats[index] == null) return null;
 
             //stats = new double[8].Select((x, i) =>
             //{

@@ -212,9 +212,14 @@ namespace ArkBot.WebApi.Controllers
             {
                 var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
                 var playercreatures = context.NoRafts.Where(x => x.TargetingTeam == playerId || (x.OwningPlayerId.HasValue && x.OwningPlayerId == playerId)).ToArray();
+                var playercreatures_cryo = player?.Items?.OfType<ArkItemCryopod>().Where(x => x.Dino != null).Select(x => x.Dino).ToArray() ?? new ArkTamedCreature[] {};
                 var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains((int)playerId));
                 var tribecreatures = tribe != null ? context.NoRafts.Where(x => x.TargetingTeam == tribe.Id && !playercreatures.Any(y => y.Id == x.Id)).ToArray() : new ArkTamedCreature[] { };
-                foreach (var item in playercreatures.Select(x => new { c = x, o = "player" }).Concat(tribecreatures.Select(x => new { c = x, o = "tribe" })))
+                var tribecreatures_cryo = tribe?.Items?.OfType<ArkItemCryopod>().Where(x => x.Dino != null).Select(x => x.Dino).ToArray() ?? new ArkTamedCreature[] { };
+                foreach (var item in playercreatures.Select(x => new { c = x, o = "player", cryo = false })
+                    .Concat(playercreatures_cryo.Select(x => new { c = x, o = "player", cryo = true }))
+                    .Concat(tribecreatures.Select(x => new { c = x, o = "tribe", cryo = false }))
+                    .Concat(tribecreatures_cryo.Select(x => new { c = x, o = "tribe", cryo = true })))
                 {
 
                     var currentFood = item.c.CurrentStatusValues?.Length > 4 ? item.c.CurrentStatusValues[4] : null;
@@ -256,14 +261,15 @@ namespace ArkBot.WebApi.Controllers
                         BabyAge = item.c.IsBaby ? item.c.BabyAge : null,
                         Imprint = item.c.DinoImprintingQuality,
                         FoodStatus = foodStatus,
-                        Latitude = item.c.Location?.Latitude,
-                        Longitude = item.c.Location?.Longitude,
-                        TopoMapX = item.c.Location?.TopoMapX,
-                        TopoMapY = item.c.Location?.TopoMapY,
+                        Latitude = item.cryo ? null : item.c.Location?.Latitude,
+                        Longitude = item.cryo ? null : item.c.Location?.Longitude,
+                        TopoMapX = item.cryo ? null : item.c.Location?.TopoMapX,
+                        TopoMapY = item.cryo ? null : item.c.Location?.TopoMapY,
                         NextMating = !item.c.IsBaby && item.c.Gender == ArkCreatureGender.Female ? item.c.NextAllowedMatingTimeApprox : null,
                         BabyFullyGrown = babyFullyGrownTimeApprox,
                         BabyNextCuddle = item.c.BabyNextCuddleTimeApprox,
-                        OwnerType = item.o
+                        OwnerType = item.o,
+                        InCryopod = item.cryo
                     };
                     if (incBaseStats)
                     {
@@ -339,9 +345,11 @@ namespace ArkBot.WebApi.Controllers
                 .GroupBy(x => x.ClassName)
                 .Select(x =>
                 {
-                    var name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
-                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
-                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                    //var name = _rKibble.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    //var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    //return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+
+                    return new { Name = ArkItems.Instance.Data?.GetItem(x.Key)?.Name ?? x.Key, Count = x.Sum(y => y.Quantity) };
                 })
                 .ToArray();
 
@@ -349,9 +357,11 @@ namespace ArkBot.WebApi.Controllers
                 .GroupBy(x => x.ClassName)
                 .Select(x =>
                 {
-                    var name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
-                    var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
-                    return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+                    //var name = _rEgg.Match(x.Key, m => m.Success ? m.Groups["name"].Value : x.Key);
+                    //var aliases = ArkSpeciesAliases.Instance.GetAliases(name);
+                    //return new { Name = aliases?.FirstOrDefault() ?? name, Count = x.Sum(y => y.Quantity) };
+
+                    return new { Name = ArkItems.Instance.Data?.GetItem(x.Key)?.Name ?? x.Key, Count = x.Sum(y => y.Quantity) };
                 })
                 .ToList();
 
@@ -388,6 +398,7 @@ namespace ArkBot.WebApi.Controllers
                     FertilizerQuantity = (int)Math.Round(GetFertilizerQuantityFromItems(x.Inventory), 0),
                     WaterAmount = x.WaterAmount,
                     PlantedCropClassName = x.PlantedCropClassName,
+                    PlantedCropName = ArkItems.Instance.Data?.GetItem(x.PlantedCropClassName, structuresPlusHack: true)?.Name?.Replace(" Seed", "") ?? x.PlantedCropClassName
                 };
             }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
 
@@ -422,6 +433,9 @@ namespace ArkBot.WebApi.Controllers
 
         internal static List<ElectricalGeneratorViewModel> BuildElectricalGeneratorViewModelsForPlayerId(ArkServerContext context, int playerId)
         {
+            if (!ArkSavegameToolkitNet.ArkToolkitSettings.Instance.ObjectTypes.TryGetValue(ArkSavegameToolkitNet.ObjectType.ItemElectricGeneratorGasoline, out var classNames))
+                return new List<ElectricalGeneratorViewModel>();
+
             var player = context.Players?.FirstOrDefault(x => x.Id == playerId);
             var tribe = player != null ? player.Tribe : context.Tribes?.FirstOrDefault(x => x.MemberIds.Contains(playerId));
 
@@ -433,7 +447,7 @@ namespace ArkBot.WebApi.Controllers
                 {
                     Activated = x.Activated,
                     //FuelTime = x.FuelTime, PrimalItemResource_Gasoline_C , PrimalItemResource_Gasoline_JStacks_C
-                    GasolineQuantity = (int)(x.Inventory?.Where(y => y.ClassName.Equals("PrimalItemResource_Gasoline_C", StringComparison.Ordinal)).Sum(y => y.Quantity) ?? 0)
+                    GasolineQuantity = (int)(x.Inventory?.Where(y => classNames.Contains(y.ClassName, StringComparer.Ordinal)).Sum(y => y.Quantity) ?? 0)
                 };
             }).OrderBy(x => x.Latitude).ThenBy(x => x.Longitude).ToList();
 

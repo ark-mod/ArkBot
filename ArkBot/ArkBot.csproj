@@ -77,6 +77,7 @@
     <PackageReference Include="QueryMaster" Version="1.1.0" />
     <PackageReference Include="RazorLight" Version="2.0.0-beta4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="System.Management" Version="4.7.0" />
     <PackageReference Include="System.Runtime.Caching" Version="4.7.0" />
     <PackageReference Include="Validar.Fody" Version="1.8.0" />
@@ -123,6 +124,9 @@
     <None Update="defaultconfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="ark.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\about.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -144,6 +148,9 @@
     <None Update="Resources\MapImages\Extinction.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Resources\MapImages\Genesis.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Update="Resources\MapImages\Ragnarok.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

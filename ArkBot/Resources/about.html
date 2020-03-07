@@ -14,6 +14,7 @@
         h1 { font-size: 30px; color: green; margin: 7px 0px; }
         h2, h3, h4 { color: green; margin: 15px 0px 7px 0px }
         h1.name { margin-top: 0px; }
+        .validation h3.title { color:#a94442 }
         .btn {
             padding: 5px 10px;
             display: inline-block;
@@ -32,9 +33,38 @@
             background-color: #e1e4e8;
             border: 0
         }
+        .validation {
+            color: #a94442;
+            background-color: #f2dede;
+            padding: 15px;
+            border: 1px solid #ebccd1;
+            border-radius: 5px;
+            margin-bottom: 24px;
+        }
+        .validation .error { font-weight: bold; }
+        .btn.btn-error {
+            background-color: #a94442;
+        }
     </style>
 </head>
 <body>
+    @if (!string.IsNullOrEmpty(Model.validationError))
+    {
+    <div class="validation">
+        <h3 class="title">Config Validation Error</h3>
+        <div class="error">@Raw(Model.validationError)</div>
+        <p>Please validate your config if you are not able to find the error. The most common problem is incorrect escaping of quotes (<span class="error">&quot;</span>).</p>
+        <p><a class="btn btn-error" href="https://jsonformatter.curiousconcept.com/">Validate JSON Online</a></p>
+    </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.configError))
+    {
+    <div class="validation">
+        <h3 class="title">Config Error</h3>
+        <p>@Raw(Model.configError)</p>
+    </div>
+    }
+
     @if(Model.hasConfig != true) {
     <div class="welcome">
         <h1>Welcome to ARK Bot!</h1>

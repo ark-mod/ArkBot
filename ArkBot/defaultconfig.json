@@ -6,8 +6,10 @@
   "steamApiKey": "",
   "webApp": {
     "defaultTheme": "Dark",
+    "topMenu":  false,
     "tribeLogLimit": 100,
-    "tribeLogColors": false
+    "tribeLogColors": false,
+    "customCssFilePath":  null
   },
   "discord": {
     "discordBotEnabled": true,
@@ -125,6 +127,8 @@
       "key": "server1",
       "clusterKey": "cluster1",
       "saveFilePath": "",
+      "modIds": [
+      ],
       "displayAddress": "",
       "ip": "127.0.0.1",
       "queryPort": 27015,
@@ -144,6 +148,8 @@
       "key": "server2",
       "clusterKey": "cluster1",
       "saveFilePath": "",
+      "modIds": [
+      ],
       "displayAddress": "",
       "ip": "127.0.0.1",
       "queryPort": 27016,

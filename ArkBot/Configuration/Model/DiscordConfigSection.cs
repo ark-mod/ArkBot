@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ArkBot.Configuration.Model
@@ -23,7 +24,7 @@ namespace ArkBot.Configuration.Model
 
         [JsonProperty(PropertyName = "enabledChannels")]
         [Display(Name = "Enabled Channels", Description = "A list of channels where the bot will listen to and answer commands")]
-        public string[] EnabledChannels { get; set; }
+        public List<string> EnabledChannels { get; set; }
 
         [JsonProperty(PropertyName = "infoTopicChannel")]
         [Display(Name = "Info Topic Channel", Description = "Channel where topic is set to display information about last update, next update and how to use bot commands")]
