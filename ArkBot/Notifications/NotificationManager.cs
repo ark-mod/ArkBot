@@ -10,12 +10,16 @@ namespace ArkBot.Notifications
         private ArkContextManager _contextManager;
         private IHubContext<ServerUpdateHub> _hubContext;
 
-        public NotificationManager(ArkContextManager contextManager, IHubContext<ServerUpdateHub> hubContext)
+        public NotificationManager(ArkContextManager contextManager)
         {
             _contextManager = contextManager;
-            _hubContext = hubContext;
 
             _contextManager.GameDataUpdated += _contextManager_GameDataUpdated;
+        }
+
+        internal void Setup(IHubContext<ServerUpdateHub> hubContext)
+        {
+            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -24,8 +28,8 @@ namespace ArkBot.Notifications
         private async void _contextManager_GameDataUpdated(IArkUpdateableContext sender)
         {
             
-            if (sender is ArkServerContext) await _hubContext.Clients.All.SendAsync("serverUpdateNotification", (sender as ArkServerContext).Config.Key);
-            if (sender is ArkClusterContext) await _hubContext.Clients.All.SendAsync("clusterUpdateNotification", (sender as ArkClusterContext).Config.Key);
+            if (sender is ArkServerContext) await _hubContext?.Clients.All.SendAsync("serverUpdateNotification", (sender as ArkServerContext).Config.Key);
+            if (sender is ArkClusterContext) await _hubContext?.Clients.All.SendAsync("clusterUpdateNotification", (sender as ArkClusterContext).Config.Key);
         }
     }
 }

@@ -135,8 +135,7 @@ namespace ArkBot.Ark
             : base(
                   config?.SaveFilePath,
                   clusterContext,
-                  fullconfig.SavegameExtractionMaxDegreeOfParallelism,
-                  true)
+                  loadOnlyPropertiesInDomain: true)
         {
             Config = config;
             _clusterContext = clusterContext;

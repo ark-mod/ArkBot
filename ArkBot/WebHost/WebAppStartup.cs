@@ -111,6 +111,11 @@ namespace ArkBot.WebHost
             AutofacContainer = app.ApplicationServices.GetAutofacRoot();
             _config = AutofacContainer.Resolve<IConfig>();
 
+            //TODO [.NET Core]: Not sure if there is a better way to do this. We need to use a child lifetime scope and thus can't register the hub context to be accessible from the root container.
+            var notificationMangager = AutofacContainer.Resolve<Notifications.NotificationManager>();
+            var hubContext = app.ApplicationServices.GetService<Microsoft.AspNetCore.SignalR.IHubContext<ServerUpdateHub>>();
+            notificationMangager.Setup(hubContext);
+
             if (Env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -200,7 +205,7 @@ namespace ArkBot.WebHost
                     }
 
                     var contents = File.ReadAllText(filePath);
-                    var portStr = new Regex(@":(?<port>\d+)(?:/|$)").Match(_config.WebApiListenPrefix)?.Groups["port"].Value;
+                    var portStr = new Regex(@":(?<port>\d+)(?:/|$)").Match(_config.WebAppListenPrefix)?.Groups["port"].Value;
                     var success = int.TryParse(portStr, out var port);
                     var obj = new
                     {
@@ -261,6 +266,10 @@ namespace ArkBot.WebHost
                 //endpoints.MapGet("/", context => context.Response.Write("Hello world"));
 
                 endpoints.MapHub<ServerUpdateHub>("/hub", options =>
+                {
+                });
+
+                endpoints.MapHub<ArkBotLinkHub>("/arkbotlink", options =>
                 {
                 });
 

@@ -53,8 +53,9 @@
   <ItemGroup>
     <PackageReference Include="Accord.MachineLearning" Version="3.8.0" />
     <PackageReference Include="AspNet.Security.OpenId.Steam" Version="3.0.0" />
-    <PackageReference Include="Autofac" Version="4.9.4" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Autofac" Version="5.1.2" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Autofac.SignalR2" Version="5.0.0" />
     <PackageReference Include="CefSharp.Wpf" Version="75.1.143" />
     <PackageReference Include="Certes" Version="2.3.3" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
@@ -96,12 +97,18 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="ArkSavegameToolkitNet">
-      <HintPath>..\..\ArkSavegameToolkitNet\ArkSavegameToolkitNet\bin\$(Configuration)\netcoreapp3.1\ArkSavegameToolkitNet.dll</HintPath>
+  <ItemGroup><!--<Reference Include="ArkSavegameToolkitNet">
+      <HintPath>..\..\ArkSavegameToolkitNet-netcore\ArkSavegameToolkitNet\bin\$(Configuration)\netcoreapp3.1\ArkSavegameToolkitNet.dll</HintPath>
     </Reference>
     <Reference Include="ArkSavegameToolkitNet.Domain">
-      <HintPath>..\..\ArkSavegameToolkitNet\ArkSavegameToolkitNet.Domain\bin\$(Configuration)\netcoreapp3.1\ArkSavegameToolkitNet.Domain.dll</HintPath>
+      <HintPath>..\..\ArkSavegameToolkitNet-netcore\ArkSavegameToolkitNet.Domain\bin\$(Configuration)\netcoreapp3.1\ArkSavegameToolkitNet.Domain.dll</HintPath>
+    </Reference>-->
+  
+    <Reference Include="ArkSavegameToolkitNet">
+      <HintPath>..\libs\ArkSavegameToolkitNet.dll</HintPath>
+    </Reference>
+    <Reference Include="ArkSavegameToolkitNet.Domain">
+      <HintPath>..\libs\ArkSavegameToolkitNet.Domain.dll</HintPath>
     </Reference>
   </ItemGroup>
 

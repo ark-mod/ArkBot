@@ -5,7 +5,7 @@ using ArkBot.Database.Model;
 using ArkBot.Discord;
 using ArkBot.Helpers;
 //TODO [.NET Core]: Removed temporarily
-//using ArkBot.Notifications;
+using ArkBot.Notifications;
 //using ArkBot.OpenID;
 //using ArkBot.WebApi;
 
@@ -56,6 +56,8 @@ using log4net;
 using log4net.Config;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Autofac.Integration.SignalR;
+using Microsoft.AspNet.SignalR;
 
 namespace ArkBot.ViewModel
 {
@@ -280,6 +282,9 @@ namespace ArkBot.ViewModel
                 return;
             }
 
+            // initialize default settings
+            ArkToolkitDomain.Initialize();
+
             _config = null;
             string exceptionMessage = null;
             if (File.Exists(Constants.ConfigFilePath))
@@ -455,7 +460,9 @@ namespace ArkBot.ViewModel
             builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
             //TODO [.NET Core]: Removed temporarily
             //builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
-            //builder.RegisterHubs(Assembly.GetExecutingAssembly());
+
+            builder.RegisterHubs(Assembly.GetExecutingAssembly());
+            //builder.RegisterType<WebApi.Hubs.ServerUpdateHub>().ExternallyOwned();
 
             builder.RegisterType<ArkContextManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<VotingManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
@@ -464,7 +471,7 @@ namespace ArkBot.ViewModel
 
 
             //TODO [.NET Core]: Removed temporarily
-            //builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
+            builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
             //builder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>().SingleInstance();
             //builder.RegisterType<WebApiStartup>().AsSelf();
             //builder.RegisterType<WebApp.WebAppStartup>().AsSelf();
@@ -531,7 +538,7 @@ namespace ArkBot.ViewModel
                 //TODO [.NET Core]: Removed temporarily (voting manager)
                 //var votingManager = Container.Resolve<VotingManager>();
                 //TODO [.NET Core]: Removed temporarily
-                //var notificationMangager = Container.Resolve<NotificationManager>();
+                var notificationMangager = Container.Resolve<NotificationManager>();
 
                 // Trigger manual updates for all servers (initialization)
                 foreach (var context in _contextManager.Servers)
@@ -752,7 +759,7 @@ namespace ArkBot.ViewModel
 
             // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/web-host?view=aspnetcore-3.1
             _webapp = Host.CreateDefaultBuilder()
-                .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
+                 .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
