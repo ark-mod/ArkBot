@@ -26,7 +26,6 @@ namespace ArkBot.Configuration.Model
             ArkMultipliers = new ArkMultipliersConfigSection();
             Servers = new ServersConfigSection();
             Clusters = new ClustersConfigSection();
-            WebAppRedirectListenPrefix = new List<string>();
             AccessControl = new AccessControlConfigSection();
             Discord = new DiscordConfigSection();
             WebApp = new WebAppConfigSection();
@@ -167,13 +166,13 @@ namespace ArkBot.Configuration.Model
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
         public BackupsConfigSection Backups { get; set; }
 
-        [JsonProperty(PropertyName = "webAppRedirectListenPrefix")]
-        [Display(Name = "Web App Redirect Listen Prefix(es)", Description = "Http listen prefix(es) that are redirected to BotUrl")]
-        [ConfigurationHelp(remarks: new[] { "Used to redirect alternate URLs to the actual Companion App (Web App) URL. Typically used to redirect HTTP requests to a secure HTTPS connection when SSL is enabled." }, Example = "http://+:80/")]
-        [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(9)]
-        //todo: validate this listen prefix
-        public List<string> WebAppRedirectListenPrefix { get; set; }
+        //[JsonProperty(PropertyName = "webAppRedirectListenPrefix")]
+        //[Display(Name = "Web App Redirect Listen Prefix(es)", Description = "Http listen prefix(es) that are redirected to BotUrl")]
+        //[ConfigurationHelp(remarks: new[] { "Used to redirect alternate URLs to the actual Companion App (Web App) URL. Typically used to redirect HTTP requests to a secure HTTPS connection when SSL is enabled." }, Example = "http://+:80/")]
+        //[Category(ConfigurationCategory.Optional)]
+        //[PropertyOrder(9)]
+        ////todo: validate this listen prefix
+        //public List<string> WebAppRedirectListenPrefix { get; set; }
 
         [JsonProperty(PropertyName = "powershellFilePath")]
         [Display(Name = "Powershell Executable Path", Description = "Absolute file path of the powershell executable")]
@@ -201,46 +200,59 @@ namespace ArkBot.Configuration.Model
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
         public SslConfigSection Ssl { get; set; }
 
-        [JsonProperty(PropertyName = "webApiListenPrefix")]
-        [Display(Name = "Web API Listen Prefix", Description = "Http listen prefix assigned to the Web API")]
-        [DefaultValue("http://+:60001/")]
+        //[JsonProperty(PropertyName = "webApiListenPrefix")]
+        //[Display(Name = "Web API Listen Prefix", Description = "Http listen prefix assigned to the Web API")]
+        //[DefaultValue("http://+:60001/")]
+        //[ConfigurationHelp(remarks: new[] {
+        //    "Listen prefix is a simple canonical form to express the schema, host, port and relative URI to reserve for a web listener.\r\n",
+        //    "Typically the primary thing you might change is the port which is the decimal number after `:`. This is the local port that the listener will attempt to bind to.\r\n",
+        //    "With SSL is enabled the schema should be changed from `http` to `https`.\r\n",
+        //    "[Learn more about listen prefixes](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx)\r\n"
+        //})]
+        //[Category(ConfigurationCategory.Optional)]
+        //[PropertyOrder(12)]
+        //[MinLength(1, ErrorMessage = "{0} is not set")]
+        ////todo: validate this listen prefix
+        //[RegularExpressionCustom(@"^https://.*", IfMethod = nameof(IsSslEnabled), ErrorMessage = "{0} should be `https` when SSL is enabled")]
+        //[RegularExpressionCustom(@"^http://.*", IfMethod = nameof(IsSslDisabled), ErrorMessage = "{0} should be `http` when SSL is disabled")]
+
+        //public string WebApiListenPrefix { get; set; }
+
+        //[JsonProperty(PropertyName = "webAppListenPrefix")]
+        //[Display(Name = "Web App Listen Prefix", Description = "Http listen prefix assigned to the Companion App (Web App)")]
+        //[DefaultValue("http://+:80/")]
+        //[ConfigurationHelp(remarks: new [] {
+        //    "Listen prefix is a simple canonical form to express the schema, host, port and relative URI to reserve for a web listener.\r\n",
+        //    "Typically the primary thing you might change is the port which is the decimal number after `:`. This is the local port that the listener will attempt to bind to.\r\n",
+        //    "With SSL is enabled the schema should be changed from `http` to `https`.\r\n",
+        //    "[Learn more about listen prefixes](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx)\r\n"
+        //})]
+        //[Category(ConfigurationCategory.Optional)]
+        //[PropertyOrder(13)]
+        //[MinLength(1, ErrorMessage = "{0} is not set")]
+        ////todo: validate this listen prefix
+        //[RegularExpressionCustom(@"^https://.*", IfMethod = nameof(IsSslEnabled), ErrorMessage = "{0} should be `https` when SSL is enabled")]
+        //[RegularExpressionCustom(@"^http://.*", IfMethod = nameof(IsSslDisabled), ErrorMessage = "{0} should be `http` when SSL is disabled")]
+        //public string WebAppListenPrefix { get; set; }
+
+        [JsonProperty(PropertyName = "webAppIPEndpoint")]
+        [Display(Name = "Web App IP Endpoint", Description = "IP Endpoint assigned to the Companion App (Web App)")]
+        [DefaultValue("0.0.0.0:80")]
         [ConfigurationHelp(remarks: new[] {
-            "Listen prefix is a simple canonical form to express the schema, host, port and relative URI to reserve for a web listener.\r\n",
+            "Represents a network endpoint as an IP address and a port number.\r\n",
             "Typically the primary thing you might change is the port which is the decimal number after `:`. This is the local port that the listener will attempt to bind to.\r\n",
-            "With SSL is enabled the schema should be changed from `http` to `https`.\r\n",
-            "[Learn more about listen prefixes](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx)\r\n"
         })]
         [Category(ConfigurationCategory.Optional)]
         [PropertyOrder(12)]
         [MinLength(1, ErrorMessage = "{0} is not set")]
         //todo: validate this listen prefix
-        [RegularExpressionCustom(@"^https://.*", IfMethod = nameof(IsSslEnabled), ErrorMessage = "{0} should be `https` when SSL is enabled")]
-        [RegularExpressionCustom(@"^http://.*", IfMethod = nameof(IsSslDisabled), ErrorMessage = "{0} should be `http` when SSL is disabled")]
-
-        public string WebApiListenPrefix { get; set; }
-
-        [JsonProperty(PropertyName = "webAppListenPrefix")]
-        [Display(Name = "Web App Listen Prefix", Description = "Http listen prefix assigned to the Companion App (Web App)")]
-        [DefaultValue("http://+:80/")]
-        [ConfigurationHelp(remarks: new [] {
-            "Listen prefix is a simple canonical form to express the schema, host, port and relative URI to reserve for a web listener.\r\n",
-            "Typically the primary thing you might change is the port which is the decimal number after `:`. This is the local port that the listener will attempt to bind to.\r\n",
-            "With SSL is enabled the schema should be changed from `http` to `https`.\r\n",
-            "[Learn more about listen prefixes](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364698(v=vs.85).aspx)\r\n"
-        })]
-        [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(13)]
-        [MinLength(1, ErrorMessage = "{0} is not set")]
-        //todo: validate this listen prefix
-        [RegularExpressionCustom(@"^https://.*", IfMethod = nameof(IsSslEnabled), ErrorMessage = "{0} should be `https` when SSL is enabled")]
-        [RegularExpressionCustom(@"^http://.*", IfMethod = nameof(IsSslDisabled), ErrorMessage = "{0} should be `http` when SSL is disabled")]
-        public string WebAppListenPrefix { get; set; }
+        public string WebAppIPEndpoint { get; set; }
 
         [JsonProperty(PropertyName = "tempFileOutputDirPath")]
         [Display(Name = "Temporary Files Directory", Description = "An existing directory path where temporary binary files can be stored (zip-files etc.)")]
         [DefaultValue("%TEMP%\\ArkBot")]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(14)]
+        [PropertyOrder(13)]
         [Editor(typeof(DirectoryPathEditor), typeof(DirectoryPathEditor))]
         [DirectoryPathIsValid(ErrorMessage = "{0} is not set or the directory path is not valid")]
         public string TempFileOutputDirPath { get; set; }
@@ -250,7 +262,7 @@ namespace ArkBot.Configuration.Model
         [DefaultValue(false)]
         [ConfigurationHelp(remarks: new[] { "Allows hiding the user interface on program startup. The program can be accessed from the system tray icon." })]
         [Category(ConfigurationCategory.Optional)]
-        [PropertyOrder(15)]
+        [PropertyOrder(14)]
         public bool HideUiOnStartup { get; set; }
 
 

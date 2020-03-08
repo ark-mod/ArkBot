@@ -1,6 +1,9 @@
-﻿using System;
+﻿using ArkBot.Configuration.Model;
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ArkBot.Helpers
@@ -90,7 +93,139 @@ namespace ArkBot.Helpers
                 //StandardOutput = standardOutput
             };
         }
-        
+
+        public static async Task<(bool success, string output)> RunCommandLine(string command, IConfig config, Action<string> onOutputLineRead = null, bool UsePowershellOutputRedirect = true, int timeoutSeconds = 10)
+        {
+            Timer timer = null;
+            Process process = null;
+            FileStream powershellOutputStream = null;
+            StreamReader powershellOutputStreamReader = null;
+            string tmpFilePathToPowershellOutput = null;
+            int result = -1;
+            var sb = new StringBuilder();
+            try
+            {
+                var lastUpdate = DateTime.Now;
+                var si = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c {command}",
+                    Verb = "runas",
+                    //WorkingDirectory = Path.GetDirectoryName(serverContext.Config.ServerManagement.SteamCmdExecutablePath),
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true
+                };
+
+                if (UsePowershellOutputRedirect)
+                {
+                    var debugNoExit = false;
+                    tmpFilePathToPowershellOutput = Path.GetTempFileName();
+                    si = new ProcessStartInfo
+                    {
+                        FileName = config.PowershellFilePath,
+                        Arguments = $@"{(debugNoExit ? "-NoExit " : "")}& {command} | tee {tmpFilePathToPowershellOutput}",
+                        //WorkingDirectory = Path.GetDirectoryName(serverContext.Config.ServerManagement.SteamCmdExecutablePath),
+                        Verb = "runas",
+                        UseShellExecute = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                }
+                var ss = new AutoResetEvent(false);
+                var tcs = new TaskCompletionSource<int>();
+                process = new Process
+                {
+                    StartInfo = si,
+                    EnableRaisingEvents = true
+                };
+                if (!UsePowershellOutputRedirect)
+                {
+                    process.OutputDataReceived += (s, e) =>
+                    {
+                        lastUpdate = DateTime.Now;
+                        if (e?.Data != null)
+                        {
+                            sb.AppendLine(e.Data);
+                            onOutputLineRead?.Invoke(e.Data);
+                        }
+                    };
+                }
+                else
+                {
+                    var offset = 0L;
+                    powershellOutputStream = new FileStream(tmpFilePathToPowershellOutput, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    powershellOutputStreamReader = new StreamReader(powershellOutputStream);
+                    var task = Task.Run(async () =>
+                    {
+                        while (true)
+                        {
+                            if (tcs.Task.IsCompleted) return;
+
+                            powershellOutputStream.Seek(offset, SeekOrigin.Begin);
+                            if (!powershellOutputStreamReader.EndOfStream)
+                            {
+                                do
+                                {
+                                    var line = powershellOutputStreamReader.ReadLine();
+
+                                    if (line == null) continue;
+
+                                    sb.AppendLine(line);
+                                    onOutputLineRead?.Invoke(line);
+                                } while (!powershellOutputStreamReader.EndOfStream);
+
+                                offset = powershellOutputStream.Position;
+                            }
+                            else await Task.Delay(100);
+                        }
+                    });
+                }
+                process.Exited += (sender, args) => tcs.TrySetResult(process.ExitCode);
+                if (!process.Start())
+                {
+                    return (false, sb.ToString());
+                }
+                if (!UsePowershellOutputRedirect) process.BeginOutputReadLine();
+                timer = new Timer(async (s) =>
+                {
+                    if ((DateTime.Now - lastUpdate).TotalSeconds >= timeoutSeconds) tcs.TrySetCanceled();
+                }, null, 1000, 10000);
+
+                result = await tcs.Task;
+                timer.Change(0, Timeout.Infinite);
+                if (result != 0)
+                {
+                    return (false, sb.ToString());
+                }
+
+                return (true, sb.ToString());
+            }
+            catch (OperationCanceledException)
+            {
+                return (false, sb.ToString());
+            }
+            catch (Exception ex)
+            {
+                return (false, sb.ToString());
+            }
+            finally
+            {
+                powershellOutputStream?.Dispose();
+                powershellOutputStream = null;
+                powershellOutputStreamReader?.Dispose();
+                powershellOutputStreamReader = null;
+                timer?.Dispose();
+                timer = null;
+
+                try
+                {
+                    if (tmpFilePathToPowershellOutput != null) File.Delete(tmpFilePathToPowershellOutput);
+                }
+                catch { }
+            }
+        }
+
         public static bool IsProcessStarted(int processId)
         {
             try

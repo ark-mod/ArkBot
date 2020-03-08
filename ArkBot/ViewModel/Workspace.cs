@@ -4,10 +4,7 @@ using ArkBot.Database;
 using ArkBot.Database.Model;
 using ArkBot.Discord;
 using ArkBot.Helpers;
-//TODO [.NET Core]: Removed temporarily
 using ArkBot.Notifications;
-//using ArkBot.OpenID;
-//using ArkBot.WebApi;
 
 using ArkBot.WebHost;
 using Microsoft.AspNetCore.Hosting;
@@ -60,6 +57,11 @@ using Autofac.Integration.SignalR;
 using Microsoft.AspNet.SignalR;
 using System.Globalization;
 using ArkSavegameToolkitNet;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using System.Net;
 
 namespace ArkBot.ViewModel
 {
@@ -71,6 +73,8 @@ namespace ArkBot.ViewModel
             public const string ArkConfigFilePath = @"ark.json";
             public const string DefaultConfigFilePath = @"defaultconfig.json";
             public const string LayoutFilePath = @".\Layout.config";
+
+            public const string AppId = "bb61c4d0-0060-401b-bf8f-4747cbd86d9d"; // this is the package tag from the project file
         }
 
         public static Workspace Instance => _instance;
@@ -111,9 +115,7 @@ namespace ArkBot.ViewModel
         public bool SkipExtractNextRestart { get; set; }
 
         private SavedState _savedstate = null;
-        private IDisposable _webapi;
         private IDisposable _webapp;
-        private List<IDisposable> _webappRedirects;
 
         private ArkContextManager _contextManager;
         internal IConfig _config;
@@ -133,8 +135,6 @@ namespace ArkBot.ViewModel
             TaskIconDoubleClickCommand = new DelegateCommand(OnShowHide);
 
             PropertyChanged += Workspace_PropertyChanged;
-
-            _webappRedirects = new List<IDisposable>();
 
             //if markdig is not used it will not be loaded before being used by razor template (hack)
             var tmp = Markdown.ToHtml(@"**hack**");
@@ -465,8 +465,6 @@ namespace ArkBot.ViewModel
             builder.RegisterInstance(discordCommands).AsSelf();
             builder.RegisterType<AutofacDiscordServiceProvider>().As<IServiceProvider>().SingleInstance();
             builder.RegisterType<ArkDiscordBot>();
-            //TODO [.NET Core]: Removed temporarily
-            //builder.RegisterType<WebApp.SinglePageApplicationModule>().AsSelf();
             builder.RegisterInstance(constants).As<IConstants>();
             builder.RegisterInstance(_savedstate).As<ISavedState>();
             builder.RegisterInstance(_config as Config).As<IConfig>();
@@ -492,39 +490,15 @@ namespace ArkBot.ViewModel
             builder.RegisterType<UpdateServerVoteHandler>().As<IVoteHandler<UpdateServerVote>>();
             builder.RegisterType<DestroyWildDinosVoteHandler>().As<IVoteHandler<DestroyWildDinosVote>>();
             builder.RegisterType<SetTimeOfDayVoteHandler>().As<IVoteHandler<SetTimeOfDayVote>>();
-            //TODO [.NET Core]: Removed temporarily
-            //builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
             builder.RegisterHubs(Assembly.GetExecutingAssembly());
-            //builder.RegisterType<WebApi.Hubs.ServerUpdateHub>().ExternallyOwned();
 
             builder.RegisterType<ArkContextManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<VotingManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<DiscordManager>().AsSelf().SingleInstance();
             builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance();
 
-
-            //TODO [.NET Core]: Removed temporarily
             builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
-            //builder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>().SingleInstance();
-            //builder.RegisterType<WebApiStartup>().AsSelf();
-            //builder.RegisterType<WebApp.WebAppStartup>().AsSelf();
-
-            //var webapiConfig = new System.Web.Http.HttpConfiguration();
-            //var webappConfig = new System.Web.Http.HttpConfiguration();
-            //builder.RegisterInstance(webapiConfig).Keyed<System.Web.Http.HttpConfiguration>("webapi");
-            //builder.RegisterInstance(webappConfig).Keyed<System.Web.Http.HttpConfiguration>("webapp");
-
-            //builder.RegisterWebApiFilterProvider(webapiConfig);
-            //builder.Register(c => new AccessControlAuthorizationFilter(c.Resolve<IConfig>()))
-            //    .AsWebApiAuthorizationFilterFor<WebApi.Controllers.BaseApiController>()
-            //    .InstancePerRequest();
-            //END [.NET Core]
-
-
-            //kernel.Bind(typeof(IHubConnectionContext<dynamic>)).ToMethod(context =>
-            //        resolver.Resolve<IConnectionManager>().GetHubContext<StockTickerHub>().Clients
-            //         ).WhenInjectedInto<IStockTicker>();
 
             Container = builder.Build();
 
@@ -572,7 +546,6 @@ namespace ArkBot.ViewModel
                 var scheduledTasksManager = Container.Resolve<ScheduledTasksManager>();
                 //TODO [.NET Core]: Removed temporarily (voting manager)
                 //var votingManager = Container.Resolve<VotingManager>();
-                //TODO [.NET Core]: Removed temporarily
                 var notificationMangager = Container.Resolve<NotificationManager>();
 
                 // Trigger manual updates for all servers (initialization)
@@ -648,166 +621,174 @@ namespace ArkBot.ViewModel
                 }
                 else renew = true;
 
-                //TODO [.NET Core]: Removed temporarily (SSL renewal - requires owin hosting)
-                //if (renew)
-                //{
-                //    var success = false;
-                //    Console.AddLog(@"SSL Certificate request issued...");
-                //    AcmeContext acme = null;
-                //    try
-                //    {
-                //        var pathAccountKey = $"{_config.Ssl.Name}-account.pem";
-                //        //var pathPrivateKey = $"{_config.Ssl.Name}-privatekey.pem";
-                //        if (File.Exists(pathAccountKey))
-                //        {
-                //            var accountKey = KeyFactory.FromPem(File.ReadAllText(pathAccountKey));
-
-                //            acme = new AcmeContext(WellKnownServers.LetsEncryptV2, accountKey);
-                //            var account = await acme.Account();
-                //        }
-                //        else
-                //        {
-                //            acme = new AcmeContext(WellKnownServers.LetsEncryptV2);
-                //            var account = await acme.NewAccount(_config.Ssl.Email, true);
-
-                //            var pemKey = acme.AccountKey.ToPem();
-                //            File.WriteAllText(pathAccountKey, pemKey);
-                //        }
-
-                //        var order = await acme.NewOrder(_config.Ssl.Domains);
-
-                //        var authz = (await order.Authorizations()).First();
-                //        var httpChallenge = await authz.Http();
-                //        var keyAuthz = httpChallenge.KeyAuthz;
-                //        using (var webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.Ssl.ChallengeListenPrefix, (appBuilder) =>
-                //        {
-                //            var challengePath = new PathString($"/.well-known/acme-challenge/{httpChallenge.Token}");
-                //            appBuilder.Use(new Func<AppFunc, AppFunc>((next) =>
-                //            {
-                //                AppFunc appFunc = async environment =>
-                //                {
-                //                    IOwinContext context = new OwinContext(environment);
-                //                    if (!context.Request.Path.Equals(challengePath)) await next.Invoke(environment);
-
-                //                    context.Response.StatusCode = (int)System.Net.HttpStatusCode.OK;
-                //                    context.Response.ContentType = "application/text";
-                //                    await context.Response.WriteAsync(keyAuthz);
-                //                };
-                //                return appFunc;
-                //            }));
-                //        }))
-                //        {
-                //            var result = await httpChallenge.Validate();
-                //            while (result.Status == Certes.Acme.Resource.ChallengeStatus.Pending || result.Status == Certes.Acme.Resource.ChallengeStatus.Processing)
-                //            {
-                //                await Task.Delay(500);
-                //                result = await httpChallenge.Resource();
-                //            }
-
-                //            if (result.Status == Certes.Acme.Resource.ChallengeStatus.Valid)
-                //            {
-                //                var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
-                //                var cert = await order.Generate(new CsrInfo
-                //                {
-                //                    CountryName = new RegionInfo(CultureInfo.CurrentCulture.Name).TwoLetterISORegionName,
-                //                    Locality = "Web",
-                //                    Organization = "ARK Bot",
-                //                }, privateKey);
-
-                //                if (revoke)
-                //                {
-                //                    //await acme.RevokeCertificate(
-                //                    //    File.ReadAllBytes(path), 
-                //                    //    Certes.Acme.Resource.RevocationReason.Superseded, 
-                //                    //    KeyFactory.FromPem(File.ReadAllText(pathPrivateKey)));
-
-                //                    if (File.Exists(path)) File.Delete(path);
-                //                }
-
-                //                //File.WriteAllText(pathPrivateKey, privateKey.ToPem());
-                //                var pfxBuilder = cert.ToPfx(privateKey);
-                //                var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
-                //                File.WriteAllBytes(path, pfx);
-
-                //                success = true;
-                //            }
-                //        }
-
-                //        if (success) Console.AddLog(@"SSL Certificate request completed!");
-                //        else Console.AddLog(@"SSL Certificate challenge failed!");
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
-                //        Logging.LogException("Failed to issue ssl certificate.", ex, this.GetType());
-                //    }
-                //}
-                //END [.NET Core]
-
-                if (File.Exists(path))
+                if (renew)
                 {
-                    var hostname = _config.Ssl.Domains.First();
-
-                    var attribute = (GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0];
-                    var appId = attribute.Value;
-
+                    var success = false;
+                    Console.AddLog(@"SSL Certificate request issued...");
+                    AcmeContext acme = null;
                     try
                     {
-                        using (var rlt = new X509Certificate2(path, _config.Ssl.Password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet))
+                        var pathAccountKey = $"{_config.Ssl.Name}-account.pem";
+                        //var pathPrivateKey = $"{_config.Ssl.Name}-privatekey.pem";
+                        if (File.Exists(pathAccountKey))
                         {
-                            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                            var accountKey = KeyFactory.FromPem(File.ReadAllText(pathAccountKey));
+
+                            acme = new AcmeContext(WellKnownServers.LetsEncryptV2, accountKey);
+                            var account = await acme.Account();
+                        }
+                        else
+                        {
+                            acme = new AcmeContext(WellKnownServers.LetsEncryptV2);
+                            var account = await acme.NewAccount(_config.Ssl.Email, true);
+
+                            var pemKey = acme.AccountKey.ToPem();
+                            File.WriteAllText(pathAccountKey, pemKey);
+                        }
+
+                        var order = await acme.NewOrder(_config.Ssl.Domains);
+
+                        var authz = (await order.Authorizations()).First();
+                        var httpChallenge = await authz.Http();
+                        var keyAuthz = httpChallenge.KeyAuthz;
+
+                        using (var webapp = Host.CreateDefaultBuilder()
+                            .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot_SSL_Renew")))
+                            .ConfigureWebHostDefaults(webBuilder =>
                             {
-                                store.Open(OpenFlags.ReadWrite);
+                                webBuilder
+                                    .ConfigureLogging(logging =>
+                                    {
+                                        logging.ClearProviders();
+                                        logging.AddDebug();
+                                        logging.AddEventLog();
+                                        logging.AddEventSourceLogger();
+                                    })
+                                    .UseUrls(_config.Ssl.ChallengeListenPrefix)
+                                    .Configure((appBuilder) =>
+                                    {
+                                        appBuilder.UseRouting();
+                                        appBuilder.UseEndpoints(endpoints =>
+                                        {
+                                            endpoints.MapGet($"/.well-known/acme-challenge/{httpChallenge.Token}", context =>
+                                            {
+                                                context.Response.ContentType = "application/text";
+                                                context.Response.StatusCode = StatusCodes.Status200OK;
+                                                return context.Response.WriteAsync(keyAuthz);
+                                            });
+                                        });
+                                    });
+                            }).Build())
+                        {
+                            (webapp as IHost).Start();
 
-                                var certs = store.Certificates.Find(X509FindType.FindBySubjectName, _config.Ssl.Domains.First(), false);
-
-                                if (!store.Certificates.Contains(rlt)) store.Add(rlt);
-                                store.Close();
+                            var result = await httpChallenge.Validate();
+                            while (result.Status == Certes.Acme.Resource.ChallengeStatus.Pending || result.Status == Certes.Acme.Resource.ChallengeStatus.Processing)
+                            {
+                                await Task.Delay(500);
+                                result = await httpChallenge.Resource();
                             }
 
-                            if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog(@"Binding SSL Certificate to ip/port...");
-                            else Console.AddLog(@"Binding SSL Certificate to hostname/port...");
-                            foreach (var port in _config.Ssl.Ports)
+                            if (result.Status == Certes.Acme.Resource.ChallengeStatus.Valid)
                             {
-                                var commands = new[]
+                                var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
+                                var cert = await order.Generate(new CsrInfo
                                 {
-                                _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http delete sslcert ipport=0.0.0.0:{port}" : $"netsh http delete sslcert hostnameport={hostname}:{port}",
-                                _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http add sslcert ipport=0.0.0.0:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my" : $"netsh http add sslcert hostnameport={hostname}:{port} certhash={rlt.Thumbprint} appid={{{appId}}} certstore=my"
-                            };
+                                    CountryName = new RegionInfo(CultureInfo.CurrentCulture.Name).TwoLetterISORegionName,
+                                    Locality = "Web",
+                                    Organization = "ARK Bot",
+                                }, privateKey);
 
-                                var exitCode = 0;
-                                foreach (var cmd in commands)
+                                if (revoke)
                                 {
-                                    await Task.Run(() =>
-                                    {
-                                        using (var proc = Process.Start(new ProcessStartInfo
-                                        {
-                                            FileName = "cmd.exe",
-                                            Arguments = $"/c {cmd}",
-                                            Verb = "runas",
-                                            UseShellExecute = false,
-                                            WindowStyle = ProcessWindowStyle.Hidden,
-                                            CreateNoWindow = true
-                                        }))
-                                        {
-                                            proc.WaitForExit();
-                                            exitCode = proc.ExitCode; //only add (last cmd) is interesting
-                                        }
-                                    });
+                                    //await acme.RevokeCertificate(
+                                    //    File.ReadAllBytes(path), 
+                                    //    Certes.Acme.Resource.RevocationReason.Superseded, 
+                                    //    KeyFactory.FromPem(File.ReadAllText(pathPrivateKey)));
+
+                                    if (File.Exists(path)) File.Delete(path);
                                 }
 
-                                if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] ipport: 0.0.0.0:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
-                                else Console.AddLog("[" + (exitCode == 0 ? "Success" : "Failed") + $"] hostnameport: {hostname}:{port}, thumbprint={rlt.Thumbprint}, appid={{{appId}}}");
+                                //File.WriteAllText(pathPrivateKey, privateKey.ToPem());
+                                var pfxBuilder = cert.ToPfx(privateKey);
+                                var pfx = pfxBuilder.Build(_config.Ssl.Name, _config.Ssl.Password);
+                                File.WriteAllBytes(path, pfx);
+
+                                success = true;
+                            }
+                        }
+
+                        if (success) Console.AddLog(@"SSL Certificate request completed!");
+                        else Console.AddLog(@"SSL Certificate challenge failed!");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
+                        Logging.LogException("Failed to issue ssl certificate.", ex, this.GetType());
+                    }
+                }
+
+                // clean up all bindings created by ark bot
+                {
+                    var (success, output) = await ProcessHelper.RunCommandLine("netsh http show sslcert", _config);
+                    if (success && !string.IsNullOrEmpty(output))
+                    {
+                        var r = new Regex($@"(?:(?:\s*IP\:port\s*\:\s*(?<ip>[^\:]+?)\:(?<port>\d+))|(?:\s*Hostname\:port\s*\:\s*(?<hostname>[^\:]+?)\:(?<port>\d+))).*Application ID\s*\:\s*{{{Constants.AppId}}}", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                        var sections = output.Split("\r\n\r\n\r\n", StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var section in sections)
+                        {
+                            var m = r.Match(section);
+                            if (!m.Success) continue;
+
+                            if (m.Groups["hostname"].Success && m.Groups["port"].Success)
+                            {
+                                await ProcessHelper.RunCommandLine($"netsh http delete sslcert hostnameport={m.Groups["hostname"].Value}:{m.Groups["port"].Value}", _config);
+                            }
+                            else if (m.Groups["ip"].Success && m.Groups["port"].Success)
+                            {
+                                await ProcessHelper.RunCommandLine($"netsh http delete sslcert ipport={m.Groups["ip"].Value}:{m.Groups["port"].Value}", _config);
                             }
                         }
                     }
-                    catch (CryptographicException ex)
-                    {
-                        Logging.LogException("Failed to open SSL certificate.", ex, this.GetType(), LogLevel.FATAL, ExceptionLevel.Unhandled);
-                        WriteAndWaitForKey("Failed to open SSL certificate (wrong password?)");
-                        return;
-                    }
                 }
+
+                //if (File.Exists(path))
+                //{
+                //    var hostname = _config.Ssl.Domains.First();
+
+                //    try
+                //    {
+                //        using (var rlt = new X509Certificate2(path, _config.Ssl.Password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet))
+                //        {
+                //            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                //            {
+                //                store.Open(OpenFlags.ReadWrite);
+
+                //                var certs = store.Certificates.Find(X509FindType.FindBySubjectName, _config.Ssl.Domains.First(), false);
+
+                //                if (!store.Certificates.Contains(rlt)) store.Add(rlt);
+                //                store.Close();
+                //            }
+
+                //            if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog(@"Binding SSL Certificate to ip/port...");
+                //            else Console.AddLog(@"Binding SSL Certificate to hostname/port...");
+                //            foreach (var port in _config.Ssl.Ports)
+                //            {
+                //                var cmd = _config.Ssl.UseCompatibilityNonSNIBindings ? $"netsh http add sslcert ipport=0.0.0.0:{port} certhash={rlt.Thumbprint} appid=`{{{Constants.AppId}`}} certstore=MY" : $"netsh http add sslcert hostnameport={hostname}:{port} certhash={rlt.Thumbprint} appid=`{{{Constants.AppId}`}} certstore=MY";
+                //                (success, output) = await ProcessHelper.RunCommandLine(cmd, _config);
+
+                //                if (_config.Ssl.UseCompatibilityNonSNIBindings) Console.AddLog("[" + (success ? "Success" : "Failed") + $"] ipport: 0.0.0.0:{port}, thumbprint={rlt.Thumbprint}, appid={{{Constants.AppId}}}");
+                //                else Console.AddLog("[" + (success ? "Success" : "Failed") + $"] hostnameport: {hostname}:{port}, thumbprint={rlt.Thumbprint}, appid={{{Constants.AppId}}}");
+                //            }
+                //        }
+                //    }
+                //    catch (CryptographicException ex)
+                //    {
+                //        Logging.LogException("Failed to open SSL certificate.", ex, this.GetType(), LogLevel.FATAL, ExceptionLevel.Unhandled);
+                //        WriteAndWaitForKey("Failed to open SSL certificate (wrong password?)");
+                //        return;
+                //    }
+                //}
             }
 
             // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/web-host?view=aspnetcore-3.1
@@ -815,7 +796,13 @@ namespace ArkBot.ViewModel
                  .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder
+                    webBuilder.ConfigureKestrel(options =>
+                        {
+                            options.Listen(IPEndPoint.Parse(_config.WebAppIPEndpoint), listenOptions =>
+                            {
+                                if (_config.Ssl.Enabled) listenOptions.UseHttps($"../{_config.Ssl.Name}.pfx", _config.Ssl.Password);
+                            });
+                        })
                         .ConfigureLogging(logging =>
                         {
                             logging.ClearProviders();
@@ -825,40 +812,11 @@ namespace ArkBot.ViewModel
                         })
                         .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
                         .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))
-                        .UseUrls(_config.WebAppListenPrefix)
+                        //.UseUrls(_config.WebAppListenPrefix)
                         .UseStartup<WebAppStartup>();
                 }).Build();
             (_webapp as IHost).Start();
             Console.AddLog("Web App started");
-
-            //TODO [.NET Core]: Removed temporarily (Web API, Web App)
-            //webapi
-            //_webapi = Microsoft.Owin.Hosting.WebApp.Start(_config.WebApiListenPrefix, app =>
-            //{
-            //    var startup = Container.Resolve<WebApiStartup>();
-            //    startup.Configuration(app, _config, Container, webapiConfig);
-            //});
-            //Console.AddLog("Web API started");
-
-
-
-            ////webapp
-            //_webapp = Microsoft.Owin.Hosting.WebApp.Start(_config.WebAppListenPrefix, app =>
-            //{
-            //    var startup = Container.Resolve<WebApp.WebAppStartup>();
-            //    startup.Configuration(app, _config, Container, webappConfig);
-            //});
-            //Console.AddLog("Web App started");
-
-            //if (_config.WebAppRedirectListenPrefix?.Length > 0)
-            //{
-            //    foreach (var redir in _config.WebAppRedirectListenPrefix)
-            //    {
-            //        _webappRedirects.Add(Microsoft.Owin.Hosting.WebApp.Start<WebApp.WebAppRedirectStartup>(url: redir));
-            //        Console.AddLog("Web App redirect added");
-            //    }
-            //}
-            //END [.NET Core]
 
             //Indicates the application started without errors, required for auto hide on startup
             _startedWithoutErrors = true;
@@ -892,16 +850,10 @@ namespace ArkBot.ViewModel
                 sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.Backups.BackupsDirectoryPath))}");
                 sb.AppendLine();
             }
-            if (string.IsNullOrWhiteSpace(_config.WebApiListenPrefix))
+            if (string.IsNullOrWhiteSpace(_config.WebAppIPEndpoint))
             {
-                sb.AppendLine($@"Error: {nameof(_config.WebApiListenPrefix)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebApiListenPrefix))}");
-                sb.AppendLine();
-            }
-            if (string.IsNullOrWhiteSpace(_config.WebAppListenPrefix))
-            {
-                sb.AppendLine($@"Error: {nameof(_config.WebAppListenPrefix)} is not set.");
-                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebAppListenPrefix))}");
+                sb.AppendLine($@"Error: {nameof(_config.WebAppIPEndpoint)} is not set.");
+                sb.AppendLine($@"Expected value: {ValidationHelper.GetDescriptionForMember(_config, nameof(_config.WebAppIPEndpoint))}");
                 sb.AppendLine();
             }
             if (_config.Ssl?.Enabled == true)
@@ -1150,16 +1102,6 @@ namespace ArkBot.ViewModel
 
                     try
                     {
-                        _webapi?.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogException(@"Exception in Workspace::Dispose (WebApi) when closing application", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                    }
-                    _webapi = null;
-
-                    try
-                    {
                         _webapp?.Dispose();
                     }
                     catch (Exception ex)
@@ -1167,19 +1109,6 @@ namespace ArkBot.ViewModel
                         Logging.LogException(@"Exception in Workspace::Dispose (WebApp) when closing application", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
                     }
                     _webapp = null;
-
-                    foreach (var redir in _webappRedirects.ToArray())
-                    {
-                        try
-                        {
-                            redir?.Dispose();
-                        }
-                        catch (Exception ex)
-                        {
-                            Logging.LogException(@"Exception in Workspace::Dispose (WebAppRedirects) when closing application", ex, GetType(), LogLevel.DEBUG, ExceptionLevel.Ignored);
-                        }
-                        _webappRedirects.Remove(redir);
-                    }
                 }
 
                 disposedValue = true;

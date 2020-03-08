@@ -6,10 +6,10 @@
   "steamApiKey": "",
   "webApp": {
     "defaultTheme": "Dark",
-    "topMenu":  false,
+    "topMenu": false,
     "tribeLogLimit": 100,
     "tribeLogColors": false,
-    "customCssFilePath":  null
+    "customCssFilePath": null
   },
   "discord": {
     "discordBotEnabled": true,
@@ -96,10 +96,7 @@
     "backupsEnabled": false,
     "backupsDirectoryPath": ""
   },
-  "webApiListenPrefix": "http://+:60001/",
-  "webAppListenPrefix": "http://+:80/",
-  "webAppRedirectListenPrefix": [
-  ],
+  "webAppIPEndpoint": "0.0.0.0:80",
   "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
   "useCompatibilityChangeWatcher": true,
   "ssl": {
@@ -110,7 +107,8 @@
     "email": "",
     "domains": [
     ],
-    "ports": [ 443, 60001 ],
+    "ports": [ 443 ],
+    "useHttpsRedirect": true,
     "useCompatibilityNonSNIBindings": true
   },
   "arkMultipliers": {

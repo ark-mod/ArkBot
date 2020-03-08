@@ -1,6 +1,7 @@
 ﻿using ArkBot.Configuration.Model;
 using ArkBot.Helpers;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -35,7 +36,7 @@ namespace ArkBot.WebApi.Controllers
         public async Task<IActionResult> Logout(string returnUrl)
         {
             var ctx = HttpContext;
-            await ctx.SignOutAsync("Cookie");
+            await ctx.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return Redirect(returnUrl);
         }
@@ -66,7 +67,7 @@ namespace ArkBot.WebApi.Controllers
                 foreach (var role in roles) claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var ci = new ClaimsIdentity(claims, "Cookie");
+            var ci = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await ctx.SignInAsync(new ClaimsPrincipal(ci));
 
             return Redirect(returnUrl);

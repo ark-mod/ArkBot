@@ -45,6 +45,10 @@ namespace ArkBot.Configuration.Model
         [Display(Name = "Ports", Description = "Ports to bind the ssl certificate to")]
         public List<int> Ports { get; set; }
 
+        [JsonProperty(PropertyName = "useHttpsRedirect")]
+        [Display(Name = "Use Https Redirect", Description = "Redirect HTTP request to HTTPS")]
+        public bool UseHttpsRedirect { get; set; }
+
         [JsonProperty(PropertyName = "useCompatibilityNonSNIBindings")]
         [Display(Name = "Use Compatibility non-SNI Bindings", Description = "Use non SNI SSL bindings for previous Windows OS (before Windows 8/2012)")]
         public bool UseCompatibilityNonSNIBindings { get; set; }

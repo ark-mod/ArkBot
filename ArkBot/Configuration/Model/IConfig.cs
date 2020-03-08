@@ -18,9 +18,8 @@ namespace ArkBot.Configuration.Model
         UserRolesConfigSection UserRoles { get; set; }
         AccessControlConfigSection AccessControl { get; set; }
         BackupsConfigSection Backups { get; set; }
-        string WebApiListenPrefix { get; set; }
-        string WebAppListenPrefix { get; set; }
-        List<string> WebAppRedirectListenPrefix { get; set; }
+        public string WebAppIPEndpoint { get; set; }
+        //List<string> WebAppRedirectListenPrefix { get; set; }
         string PowershellFilePath { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
         SslConfigSection Ssl { get; set; }

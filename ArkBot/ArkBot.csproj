@@ -16,7 +16,10 @@
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <PreserveCompilationContext>true</PreserveCompilationContext><!-- used for razor -->
+    <!-- used for razor -->
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <!-- /used for razor -->
+    <PackageTags>bb61c4d0-0060-401b-bf8f-4747cbd86d9d</PackageTags>
     <!--<CefSharpTargetDir>.\bin</CefSharpTargetDir>-->
   </PropertyGroup>
 
@@ -62,6 +65,7 @@
     <PackageReference Include="Ionic.Zip" Version="1.9.1.8" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Markdig" Version="0.18.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
