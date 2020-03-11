@@ -11,12 +11,12 @@
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeLogin($event)" style="font-size: 0;">
     <header class="w3-container theme-d1"> 
       <span (click)="showLogin = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
-      <h2>Log In</h2>
+      <h2><center>Login</center></h2>
     </header>
     <form class="w3-container theme-l2 w3-medium" method="post" [action]="getLoginUrl()" ngNoForm>
       <div class="w3-section">
-        <p>To give you access to personal information, first, we must verify your identity.</p>
-        <p>Please authenticate with our app through Steam by clicking on the button below.</p>
+        <p><center>In order to view your player, creature, and tribe informaiton you must first login to ArkBot.</center></p>
+        <p><center>Logging in allows ArkBot to positivly identify you by your steamid granting access to view all information related to your steamid and only your steamid.</center></p>
         <input name="returnUrl" type="hidden" [value]="currentUrl" />
         <button type="submit" class="w3-button w3-block theme-d1 w3-section w3-padding" name="provider" title="Log in using your Steam account">Go to Steam</button>
       </div>
