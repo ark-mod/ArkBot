@@ -1,35 +1,47 @@
 import { Injectable, EventEmitter, NgZone }    from '@angular/core';
 import { environment } from '../environments/environment';
+import * as signalR from "@microsoft/signalr";
 //import * as $ from 'jquery'; //problem: no $.hubConnection because this is not JQueryStatic
-//import 'ms-signalr-client'; //problem: does not appear to work with typescript
-//import {SignalR} from 'signalr'; //problem: 'signalr' is not a module
 declare var $: any;
 declare var config: any;
 
 @Injectable()
 export class MessageService {
-    //private connection: SignalR.Hub.Connection;
-    //private proxy: SignalR.Hub.Proxy;
-    private connection: any;
-    private proxy: any;
+    private connection: signalR.HubConnection;
 
     public serverUpdated$: EventEmitter<string> = new EventEmitter();
+    public onlinePlayers$: EventEmitter<any> = new EventEmitter();
+    public chatMessages$: EventEmitter<any> = new EventEmitter();
+    public playerLocations$: EventEmitter<any> = new EventEmitter();
 
     constructor(private zone:NgZone) {  }
 
     connect(): void {
-        this.connection = $.hubConnection(this.getSignalRBaseUrl());
-        this.proxy = this.connection.createHubProxy('ServerUpdateHub');
-        
-        this.proxy.on('serverUpdateNotification', (serverKey: string) => { 
+        this.connection = new signalR.HubConnectionBuilder().withUrl(`${this.getSignalRBaseUrl()}/hub`).build();
+        this.connection.on("ServerUpdate", (serverKey: string) => {
             this.zone.run(() => { 
                 this.serverUpdated$.emit(serverKey);
             });
-         });
+        });
+        this.connection.on("OnlinePlayers", (onlinePlayers: any) => {
+            this.zone.run(() => { 
+                this.onlinePlayers$.emit(onlinePlayers);
+            });
+        });
+        this.connection.on("ChatMessages", (messages: any) => {
+            this.zone.run(() => { 
+                this.chatMessages$.emit(messages);
+            });
+        });
+        this.connection.on("PlayerLocations", (playerLocations: any) => {
+            this.zone.run(() => { 
+                this.playerLocations$.emit(playerLocations);
+            });
+        });
         
         this.connection.start()
-        .done(() => console.log('Now connected, connection ID=' + this.connection.id))
-        .fail(() => console.log('Could not connect'));
+            .then(() => console.log('[signalR] Now connected, connection ID=' + this.connection.connectionId))
+            .catch((err) => console.log(`[signalR] Could not connect: ${err}`));
     }
 
     getSignalRBaseUrl(): string {

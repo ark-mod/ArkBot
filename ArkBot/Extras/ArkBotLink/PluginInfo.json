@@ -1,0 +1,6 @@
+{
+  "FullName":"ARK Bot Link",
+  "Description":"Communication channel link between ARK Bot and game server",
+  "Version":1.0,
+  "MinApiVersion":3.2
+}

@@ -7,7 +7,7 @@ import { DataService } from './data.service';
 import { HttpService } from './http.service';
 import { HotkeysService } from './hotkeys.service';
 import { environment } from '../environments/environment';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT } from '@angular/platform-browser';
 
 declare var config: any;
 

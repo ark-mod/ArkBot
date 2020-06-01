@@ -1,20 +1,10 @@
-﻿using ArkBot.ViewModel;
+﻿using ArkBot.Modules.Application.ViewModel;
+using ArkBot.Modules.Database;
+using Autofac;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ArkBot
 {
@@ -23,17 +13,16 @@ namespace ArkBot
     /// </summary>
     public partial class MainWindow : Window
     {
-
         public MainWindow()
         {
             Initialized += MainWindow_Initialized;
-
             InitializeComponent();
 
             Title = $"ARK Bot {Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}";
 
             Loaded += new RoutedEventHandler(MainWindow_Loaded);
             Unloaded += new RoutedEventHandler(MainWindow_Unloaded);
+            Closing += MainWindow_Closing;
         }
 
         private async void MainWindow_Initialized(object sender, EventArgs e)
@@ -42,12 +31,11 @@ namespace ArkBot
 
             //Check if the UI should be hidden on startup
             //Only checks here to allow the user to see if an error occurred
-            if (Workspace.Instance._startedWithoutErrors && Workspace.Instance._config != null && Workspace.Instance._config.HideUiOnStartup)
-            {
-                Application.Current.MainWindow?.Hide();
-                Workspace.Instance._isUIHidden = true;
-            }
-
+            //if (Workspace.Instance._startedWithoutErrors && Workspace.Instance._config != null && Workspace.Instance._config.HideUiOnStartup)
+            //{
+            //    Application.Current.MainWindow?.Hide();
+            //    Workspace.Instance._isUIHidden = true;
+            //}
         }
 
         void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -74,6 +62,13 @@ namespace ArkBot
             serializer.Serialize(Workspace.Constants.LayoutFilePath);
 
             Workspace.Instance.Dispose();
+        }
+
+        private async void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // update database online state for players
+            var databaseRepo = Workspace.Container?.Resolve<IDatabaseRepo>();
+            await databaseRepo.SetAllPlayersOffline().ConfigureAwait(false);
         }
     }
 }

@@ -22,6 +22,9 @@ import { DataService } from './data.service';
 import { DataServiceResolver } from './data-resolver.service';
 import { HotkeysService } from './hotkeys.service';
 import { AccessControlRouteGuardService } from './access-control-route-guard.service';
+import { DateFormatPipe } from './date-format.pipe';
+import { MapValuesPipe } from './map-values.pipe';
+import { MapEntriesPipe } from './map-entries.pipe';
 import { SanitizeStylePipe } from './sanitize-style.pipe';
 import { SanitizeHtmlPipe } from './sanitize-html.pipe';
 import { ClickOutsideDirective } from './clickOutside.directive';
@@ -37,6 +40,7 @@ import { AccessDeniedComponent } from './access-denied/access-denied.component';
 import { ConnectionErrorComponent } from './connection-error/connection-error.component';
 import { DeveloperComponent } from './developer/developer.component';
 import { CustomThemeComponent } from './custom-theme/custom-theme.component';
+import { CreatureStatComponent } from './components/creature-stat/creature-stat.component';
 
 import { DataTableModule } from './data-table/data-table.module';
 import { environment } from '../environments/environment';
@@ -133,6 +137,9 @@ const appRoutes: Routes = [
     AppComponent,
     ServerListComponent,
     ArkMapComponent,
+    DateFormatPipe,
+    MapValuesPipe,
+    MapEntriesPipe,
     SanitizeStylePipe,
     SanitizeHtmlPipe,
     ClickOutsideDirective,
@@ -151,7 +158,8 @@ const appRoutes: Routes = [
     AccessDeniedComponent,
     ConnectionErrorComponent,
     DeveloperComponent,
-    CustomThemeComponent
+    CustomThemeComponent,
+    CreatureStatComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),

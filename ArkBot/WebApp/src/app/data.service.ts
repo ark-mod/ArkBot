@@ -14,6 +14,11 @@ import * as moment from 'moment'
 @Injectable()
 export class DataService {
   _servers: BehaviorSubject<Servers> = new BehaviorSubject<Servers>(undefined);
+  _onlinePlayers: BehaviorSubject<any> = new BehaviorSubject<any>(undefined);
+  _playerLocations: BehaviorSubject<any> = new BehaviorSubject<any>(undefined);
+  _chatMessages: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(undefined);
+
+  private _chatMessagesArr = [];
 
   public Servers: Servers;
   public UserSteamId: string;
@@ -26,8 +31,28 @@ export class DataService {
     private messageService: MessageService) {
       this.ServersUpdated$ = new EventEmitter();
       messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
+      messageService.onlinePlayers$.subscribe(onlinePlayers => this._onlinePlayers.next(onlinePlayers));
+      messageService.playerLocations$.subscribe(playerLocations => this._playerLocations.next(playerLocations));
+      messageService.chatMessages$.subscribe(chatMessages => {
+        chatMessages.forEach(msg => {
+          this._chatMessagesArr.push(msg);
+        }); 
+        this._chatMessages.next(this._chatMessagesArr);
+      });
       //this.getServers();
     }
+
+  get OnlinePlayers() : Observable<any> {
+    return this._onlinePlayers.asObservable();
+  }
+
+  get PlayerLocations() : Observable<any> {
+    return this._playerLocations.asObservable();
+  }
+
+  get ChatMessages() : Observable<any[]> {
+    return this._chatMessages.asObservable();
+  }
 
   get Theme() : Observable<string> {
     return this.theme.asObservable();

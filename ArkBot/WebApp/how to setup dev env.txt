@@ -1,0 +1,15 @@
+How to install webapp requirements
+---------------------------------------------------
+https://chocolatey.org/
+
+choco install nodejs.install
+
+# npm install -g @angular/cli@1.0.2 (this is my local version - not sure why the global version was updated)
+
+npm install -g @angular/cli@1.7.4
+
+# to be able to run angular cli powershell scripts we have to change the execution policy
+# https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+# or for just the current session
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned

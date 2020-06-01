@@ -53,7 +53,36 @@
 <section *ngIf="isMenuActive('creatures') &amp;&amp; player != undefined &amp;&amp; dataService.hasFeatureAccess('player', 'creatures', steamId)" class="w3-container">
   <div class="w3-cell-row">
     <div class="w3-cell"><a id="creatures"></a><h2 class="theme-text-d1 w3-left">Creatures <span class="w3-tag w3-large theme-d1">{{filteredCreatures.length}}</span></h2></div>
-    <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" (click)="openMap($event)">Show Map</button></div>
+    <div class="w3-cell w3-cell-middle"><button class="w3-button theme-d1 w3-right" style="margin-left: 5px;" (click)="openMap($event)">Show Map</button><button #optionsButtonElement class="w3-button theme-d1 w3-right collapsible" (click)="toggleCollapsible($event, optionsButtonElement, optionsElement)">Options<i class="material-icons collapsible-closed" style="margin: -4px -5px 0px 0px; vertical-align: middle;">expand_more</i><i class="material-icons collapsible-open" style="margin: -4px -5px 0px 0px; vertical-align: middle;">expand_less</i></button></div>
+  </div>
+  <div class="w3-cell-row">
+    <div #optionsElement class="collapsible-content" style="margin-left: -20px; margin-right: -20px;">
+      <div class="w3-card-4 w3-margin-bottom" style="margin-left: 20px; margin-right: 20px;">
+        <header class="w3-container theme-d1">
+          <h5>Options</h5>
+        </header>
+        <div class="w3-container theme-l1">
+          <div class="w3-section">
+            <input [(ngModel)]="option_creaturesShowNormal" (ngModelChange)="filterAndSort();" class="w3-check" type="checkbox">
+            <label style="margin-right: 10px;">Show Normal</label>
+
+            <input [(ngModel)]="option_creaturesShowCryopods" (ngModelChange)="filterAndSort();" class="w3-check" type="checkbox">
+            <label style="margin-right: 10px;">Show Cryopods</label>
+
+            <input [(ngModel)]="option_creaturesShowCluster" (ngModelChange)="filterAndSort();" class="w3-check" type="checkbox">
+            <label style="margin-right: 10px;">Show Cluster</label>
+          </div>
+          <div class="w3-section">
+            <input [(ngModel)]="option_localTopStat"class="w3-check" type="checkbox">
+            <label style="margin-right: 10px;">Toggle Local Top Stat Calculation</label>
+          </div>
+          <div class="w3-section">
+            <input [(ngModel)]="option_compactView" class="w3-check" type="checkbox">
+            <label style="margin-right: 10px;">Toggle Compact View</label>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div *ngIf="!(player.Servers[serverKey]?.Creatures?.length > 0)">There are no creatures...</div>
   <ng-container *ngIf="player.Servers[serverKey]?.Creatures?.length > 0">
@@ -67,7 +96,7 @@
       <button *ngIf="dataService.hasFeatureAccess('player', 'creatures-ids', steamId)" href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeCreaturesMode('ids')}" [style.width.%]="(100/numCreatureTabs())" (click)="activateCreaturesMode('ids')">IDs</button>
     </div>
     <div class="w3-card-4 w3-responsive">
-      <table class="w3-table-all border-theme">
+      <table class="w3-table-all border-theme" [class.w3-small]="option_compactView">
         <thead>
           <tr class="theme-d1">
             <th style="cursor: pointer;" title="Sort by Name" (click)="setCreaturesSort('name')">Name</th>
@@ -108,10 +137,11 @@
               <th style="cursor: pointer;" title="Sort by ID1" (click)="setCreaturesSort('id1')">ID1</th>
               <th style="cursor: pointer;" title="Sort by ID2" (click)="setCreaturesSort('id2')">ID2</th>
             </ng-container>
+            <th style="width: 1em;"></th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="!(filteredCreatures?.length > 0)"><td [colSpan]="(activeCreaturesMode('ids') ? 6 : activeCreaturesMode('stats') ? 14 : 12)">No matching creatures...</td></tr>
+          <tr *ngIf="!(filteredCreatures?.length > 0)"><td [colSpan]="(activeCreaturesMode('ids') ? 7 : activeCreaturesMode('stats') ? 15 : 13)">No matching creatures...</td></tr>
           <tr *ngFor="let creature of filteredCreatures">
             <td>{{creature.Name}}</td>
             <!--<td>{{creature.ClassName}}</td>-->
@@ -158,53 +188,19 @@
             <ng-container *ngIf="activeCreaturesMode('stats')">
               <td>{{numTopStats(creature)}}</td>
               <td>{{creature.Gender}}</td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Health}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Health')">&nbsp;</div>
-                </div>
-              </td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Stamina}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Stamina')">&nbsp;</div>
-                </div>
-              </td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Oxygen}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Oxygen')">&nbsp;</div>
-                </div>
-              </td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Food}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Food')">&nbsp;</div>
-                </div>
-              </td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Weight}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Weight')">&nbsp;</div>
-                </div>
-              </td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.Melee}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'Melee')">&nbsp;</div>
-                </div>
-              </td>
-              <td class="stat-cell">
-                <div class="w3-round" style="position: relative;">
-                  <div class="stat-item" style="position: absolute; left: 50%; transform: translate(-50%, 0%);">{{creature.BaseStats?.MovementSpeed}}</div>
-                  <div class="w3-round stat-item" style="width: 100%;" [style.backgroundColor]="getColorForSpeciesStat(creature, 'MovementSpeed')">&nbsp;</div>
-                </div>
-              </td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.Health" [top]="speciesTopStats[creature.ClassName]['Health']"></creature-stat></td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.Stamina" [top]="speciesTopStats[creature.ClassName]['Stamina']"></creature-stat></td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.Oxygen" [top]="speciesTopStats[creature.ClassName]['Oxygen']"></creature-stat></td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.Food" [top]="speciesTopStats[creature.ClassName]['Food']"></creature-stat></td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.Weight" [top]="speciesTopStats[creature.ClassName]['Weight']"></creature-stat></td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.Melee" [top]="speciesTopStats[creature.ClassName]['Melee']"></creature-stat></td>
+              <td class="stat-cell"><creature-stat [value]="creature.BaseStats?.MovementSpeed" [top]="speciesTopStats[creature.ClassName]['MovementSpeed']"></creature-stat></td>
             </ng-container>
             <ng-container *ngIf="activeCreaturesMode('ids')">
               <td>{{creature.Id1}}</td>
               <td>{{creature.Id2}}</td>
             </ng-container>
+            <td style="text-align: right; cursor: pointer; padding-top: 0px; padding-bottom: 0px; vertical-align: middle;" title="View Creature Details" (click)="openCreatureModal(creature, $event)"><i class="material-icons theme-text-d1" style="vertical-align: middle;">visibility</i></td>
           </tr>
         </tbody>
       </table>
@@ -360,31 +356,31 @@
     </table>
   </div>
 </section>
-<section *ngIf="isMenuActive('electrical_generators') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'generators', steamId)" class="w3-container">
+<section *ngIf="isMenuActive('generators') &amp;&amp; player?.Servers[serverKey] &amp;&amp; dataService.hasFeatureAccess('player', 'generators', steamId)" class="w3-container">
   <div class="w3-cell-row">
-    <div class="w3-cell"><a id="electricalgenerators"></a><h2 class="theme-text-d1 w3-left">Electrical Generators</h2></div>
+    <div class="w3-cell"><a id="generators"></a><h2 class="theme-text-d1 w3-left">Generators</h2></div>
   </div>
-  <div *ngIf="!(player.Servers[serverKey].ElectricalGenerators?.length > 0)">There are no electrical generators...</div>
-  <div *ngIf="player.Servers[serverKey].ElectricalGenerators?.length > 0" class="w3-card-4 w3-responsive">
+  <div *ngIf="!(player.Servers[serverKey].Generators?.length > 0)">There are no generators...</div>
+  <div *ngIf="player.Servers[serverKey].Generators?.length > 0" class="w3-card-4 w3-responsive">
     <table class="w3-table-all border-theme">
       <thead>
         <tr class="theme-d1">
-          <th>Gasoline %</th>
-          <th>Gasoline Quantity</th>
+          <th>Fuel %</th>
+          <th>Quantity</th>
           <th>Activated</th>
           <th>Lat</th>
           <th>Lng</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let eg of player.Servers[serverKey].ElectricalGenerators">
+        <tr *ngFor="let eg of player.Servers[serverKey].Generators">
           <td>
             <div *ngIf="eg.Activated == true" class="theme-lighter-c1-bg w3-round" style="width: 6em; position: relative;">
-              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(eg.GasolineQuantity / 800.0) | percent:'1.0-0'}}</div>
-              <div class="theme-c1 w3-round" [style.width.%]="(eg.GasolineQuantity / 800.0) * 100">&nbsp;</div>
+              <div style="position: absolute; left: 50%; transform: translate(-50%, 0%); color: white;">{{(eg.FuelQuantity / 800.0) | percent:'1.0-0'}}</div>
+              <div class="theme-c1 w3-round" [style.width.%]="(eg.FuelQuantity / 800.0) * 100">&nbsp;</div>
             </div>
           </td>
-          <td>{{eg.GasolineQuantity | number}}</td>
+          <td>{{eg.FuelQuantity | number}}</td>
           <td>{{(eg.Activated == true ? "Yes" : "No")}}</td>
           <td>{{eg.Latitude | number:'1.1-1'}}</td>
           <td>{{eg.Longitude | number:'1.1-1'}}</td>
@@ -434,10 +430,223 @@
   </section>
 <div id="modal_map" class="w3-modal" [style.display]="showMap ? 'block' : 'none'">
   <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeMap($event)" style="font-size: 0;">
+    <header class="w3-container theme-d1"> 
+      <span (click)="showMap = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+      <h2>Map</h2>
+    </header>
+    <arkmap [mapName]="player?.MapNames[serverKey]" [points]="points"></arkmap>
+  </div>
+</div>
+
+<div id="modal_creature" class="w3-modal" [style.display]="showCreatureInModal != undefined ? 'block' : 'none'">
+  <div class="w3-modal-content w3-card-4 w3-animate-zoom" (clickOutside)="closeCreatureModal($event)" style="font-size: 0;">
   <header class="w3-container theme-d1"> 
-    <span (click)="showMap = false" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
-    <h2>Map</h2>
+    <span (click)="closeCreatureModal()" class="w3-button theme-d1 w3-xlarge w3-display-topright">&times;</span>
+    <h2>{{showCreatureInModal?.Name || showCreatureInModal?.Species || showCreatureInModal?.ClassName || 'Details'}}</h2>
   </header>
-  <arkmap [mapName]="player?.MapNames[serverKey]" [points]="points"></arkmap>
+  <div *ngIf="showCreatureInModal as c" class="w3-container w3-medium theme-l2">
+    <div class="w3-section">
+      <div class="w3-container theme-l1 w3-margin-bottom">
+        <table class="w3-table w3-bordered w3-small border-theme creaturedetails-table">
+          <tr>
+            <th class="theme-text-d1">Name</th>
+            <td style="width: max-content;">{{c.Name}}</td>
+          </tr>
+          <tr>
+            <th class="theme-text-d1">Species</th>
+            <td style="width: max-content;">{{c.Species || c.ClassName}}</td>
+          </tr>
+          <tr>
+            <th class="theme-text-d1">Gender</th>
+            <td style="width: max-content;">{{c.Gender}}</td>
+          </tr>
+          <tr>
+            <th class="theme-text-d1">Base Level</th>
+            <td style="width: max-content;">{{c.BaseLevel}}</td>
+          </tr>
+          <tr>
+            <th class="theme-text-d1">Level</th>
+            <td style="width: max-content;">{{c.Level}}</td>
+          </tr>
+          <tr>
+            <th class="theme-text-d1">Experience</th>
+            <td style="width: max-content;">{{c.Experience | number:'1.1-1' }}</td>
+          </tr>
+          <tr>
+            <th class="theme-text-d1">Imprint</th>
+            <td style="width: max-content;">{{c.Imprint | percent:'1.0-0'}}</td>
+          </tr>
+          <ng-container *ngIf="showCreatureInModalExtra.Parents?.Female && showCreatureInModalExtra.Parents?.Male">
+            <tr>
+              <th class="theme-text-d1">Random Mutations</th>
+              <td style="width: max-content;">{{(c.RandomMutationsFemale + c.RandomMutationsMale) | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Random Mutations (Matrilineal)</th>
+              <td style="width: max-content;">{{c.RandomMutationsFemale | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Random Mutations (Patrilineal)</th>
+              <td style="width: max-content;">{{c.RandomMutationsMale | number}}</td>
+            </tr>
+            <tr>
+              <th class="theme-text-d1">Inherited Best Stats</th>
+              <td style="width: max-content;">{{numInheritedBestStats(c)}} / {{STAT_NAMES.length}}</td>
+            </tr>
+          </ng-container>
+          <tr>
+            <th class="theme-text-d1">Top Stats</th>
+            <td style="width: max-content;">{{numTopStats(c)}} / {{STAT_NAMES.length}}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="w3-card-4 w3-responsive w3-margin-bottom">
+        <table class="stat-table w3-table-all w3-small border-theme">
+          <thead>
+            <tr class="theme-d1">
+              <th class="row-header">Stats</th>
+              <th style="cursor: pointer;" title="Health">HP</th>
+              <th style="cursor: pointer;" title="Stamina">ST</th>
+              <th style="cursor: pointer;" title="Oxygen">OX</th>
+              <th style="cursor: pointer;" title="Food">FO</th>
+              <th style="cursor: pointer;" title="Weight">WE</th>
+              <th style="cursor: pointer;" title="Melee">ME</th>
+              <th style="cursor: pointer;" title="Speed">SP</th>
+              <!--
+              <th style="cursor: pointer;" title="Health">HP</th>
+              <th style="cursor: pointer;" title="Stamina">ST</th>
+              <th style="cursor: pointer;" title="Torpidity">TO</th>
+              <th style="cursor: pointer;" title="Oxygen">OX</th>
+              <th style="cursor: pointer;" title="Food">FO</th>
+              <th style="cursor: pointer;" title="Water">WA</th>
+              <th style="cursor: pointer;" title="Temperature">TE</th>
+              <th style="cursor: pointer;" title="Weight">WE</th>
+              <th style="cursor: pointer;" title="Melee">ME</th>
+              <th style="cursor: pointer;" title="Speed">SP</th>
+              <th style="cursor: pointer;" title="Fortitude">FR</th>
+              <th style="cursor: pointer;" title="Crafting Speed">CR</th>
+              -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="{ stats: c.BaseStats, top: speciesTopStats[c.ClassName] } as d">
+              <td class="theme-d1 row-header">Base</td>
+              <ng-container *ngIf="{ a: showCreatureInModalExtra.Parents?.Female?.BaseStats, b: showCreatureInModalExtra.Parents?.Male?.BaseStats } as s">
+                <ng-container *ngIf="s.a && s.b; else no_inherited_best">
+                  <!-- todo: check for mutations  -->
+                  <td *ngFor="let p of STAT_NAMES"><creature-stat [value]="d.stats[p]" [top]="d.top[p]" [inheritedBest]="d.stats[p] >= Math.max(s.a[p], s.b[p])"></creature-stat></td>
+                </ng-container>
+                <ng-template #no_inherited_best let-s>
+                  <td *ngFor="let p of STAT_NAMES"><creature-stat [value]="d.stats[p]" [top]="d.top[p]"></creature-stat></td>
+                </ng-template>
+              </ng-container>
+            </tr>
+            <tr *ngIf="c.TamedStats as stats">
+              <td class="theme-d1 row-header">Tamed</td>
+              <td *ngFor="let p of STAT_NAMES">{{stats[p]}}</td>
+            </tr>
+            <tr *ngIf="c.StatValues.Tamed as values">
+              <td class="theme-d1 row-header">Tamed Values</td>
+              <td>{{values[0] | number:'1.1-1' }}</td>
+              <td>{{values[1] | number:'1.1-1' }}</td>
+              <td>{{values[3] | number:'1.1-1' }}</td>
+              <td>{{values[4] | number:'1.1-1' }}</td>
+              <td>{{values[7] | number:'1.1-1' }}</td>
+              <td>{{values[8] * 100 | number:'1.1-1' }}</td>
+              <td>{{values[9] * 100 | number:'1.1-1' }}</td>
+            </tr>
+            <tr *ngIf="c.StatValues.TamedNoImprint as values">
+              <td class="theme-d1 row-header">Before Imprint</td>
+              <td>{{values[0] | number:'1.1-1' }}</td>
+              <td>{{values[1] | number:'1.1-1' }}</td>
+              <td>{{values[3] | number:'1.1-1' }}</td>
+              <td>{{values[4] | number:'1.1-1' }}</td>
+              <td>{{values[7] | number:'1.1-1' }}</td>
+              <td>{{values[8] * 100 | number:'1.1-1' }}</td>
+              <td>{{values[9] * 100 | number:'1.1-1' }}</td>
+            </tr>
+            <tr *ngIf="c.StatValues.Wild as values">
+              <td class="theme-d1 row-header">Base Values</td>
+              <td>{{values[0] | number:'1.1-1' }}</td>
+              <td>{{values[1] | number:'1.1-1' }}</td>
+              <td>{{values[3] | number:'1.1-1' }}</td>
+              <td>{{values[4] | number:'1.1-1' }}</td>
+              <td>{{values[7] | number:'1.1-1' }}</td>
+              <td>{{values[8] * 100 | number:'1.1-1' }}</td>
+              <td>{{values[9] * 100 | number:'1.1-1' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <ng-container class="w3-section" *ngIf="{ female: showCreatureInModalExtra.Parents?.Female, male: showCreatureInModalExtra.Parents?.Male } as parents">
+      <div class="w3-section" *ngIf="parents.female || parents.male">
+        <h4 class="theme-text-d1">Parents</h4>
+
+        <ng-container *ngIf="parents.female as female">
+          <h5 class="theme-text-d1" style="margin-bottom: 0;">{{female.Name != undefined ? female.Name + ' - Female' : 'Female'}}</h5>
+          <div class="w3-card-4 w3-responsive w3-margin-bottom">
+            <table class="stat-table w3-table-all w3-small border-theme">
+              <tr class="theme-d1">
+                <th class="row-header">Stats</th>
+                <th style="cursor: pointer;" title="Health">HP</th>
+                <th style="cursor: pointer;" title="Stamina">ST</th>
+                <th style="cursor: pointer;" title="Oxygen">OX</th>
+                <th style="cursor: pointer;" title="Food">FO</th>
+                <th style="cursor: pointer;" title="Weight">WE</th>
+                <th style="cursor: pointer;" title="Melee">ME</th>
+                <th style="cursor: pointer;" title="Speed">SP</th>
+              </tr>
+              <tr *ngIf="{ stats: female.BaseStats, top: speciesTopStats[female.ClassName] } as d">
+                <td class="theme-d1 row-header">Base</td>
+                <td *ngFor="let p of STAT_NAMES"><creature-stat [value]="d.stats[p]" [top]="d.top[p]"></creature-stat></td>
+              </tr>
+              <tr *ngIf="female.StatValues.Wild as wild">
+                <td class="theme-d1 row-header">Base Values</td>
+                <td>{{wild[0] | number:'1.1-1' }}</td>
+                <td>{{wild[1] | number:'1.1-1' }}</td>
+                <td>{{wild[3] | number:'1.1-1' }}</td>
+                <td>{{wild[4] | number:'1.1-1' }}</td>
+                <td>{{wild[7] | number:'1.1-1' }}</td>
+                <td>{{wild[8] * 100 | number:'1.1-1' }}</td>
+                <td>{{wild[9] * 100 | number:'1.1-1' }}</td>
+              </tr>
+            </table>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="parents.male as male">
+          <h6 class="theme-text-d1" style="margin-bottom: 0;">{{male.Name != undefined ? male.Name + ' - Male' : 'Male'}}</h6>
+          <div class="w3-card-4 w3-responsive w3-margin-bottom">
+            <table class="stat-table w3-table-all w3-small border-theme">
+              <tr class="theme-d1">
+                <th class="row-header">Stats</th>
+                <th style="cursor: pointer;" title="Health">HP</th>
+                <th style="cursor: pointer;" title="Stamina">ST</th>
+                <th style="cursor: pointer;" title="Oxygen">OX</th>
+                <th style="cursor: pointer;" title="Food">FO</th>
+                <th style="cursor: pointer;" title="Weight">WE</th>
+                <th style="cursor: pointer;" title="Melee">ME</th>
+                <th style="cursor: pointer;" title="Speed">SP</th>
+              </tr>
+              <tr *ngIf="{ stats: male.BaseStats, top: speciesTopStats[male.ClassName] } as d">
+                <td class="theme-d1 row-header">Base</td>
+                <td *ngFor="let p of STAT_NAMES"><creature-stat [value]="d.stats[p]" [top]="d.top[p]"></creature-stat></td>
+              </tr>
+              <tr *ngIf="male.StatValues.Wild as wild">
+                <td class="theme-d1 row-header">Base Values</td>
+                <td>{{wild[0] | number:'1.1-1' }}</td>
+                <td>{{wild[1] | number:'1.1-1' }}</td>
+                <td>{{wild[3] | number:'1.1-1' }}</td>
+                <td>{{wild[4] | number:'1.1-1' }}</td>
+                <td>{{wild[7] | number:'1.1-1' }}</td>
+                <td>{{wild[8] * 100 | number:'1.1-1' }}</td>
+                <td>{{wild[9] * 100 | number:'1.1-1' }}</td>
+              </tr>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
   </div>
 </div>

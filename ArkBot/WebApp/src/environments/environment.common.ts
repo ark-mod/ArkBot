@@ -1,3 +1,3 @@
 export const commonEnvironment = {
-   configJs: 'var config = {"webapi":{"port":60001},"webapp":{"defaultTheme":"Dark"}};',
+   configJs: 'var config = {"webapi":{"port":8600},"webapp":{"defaultTheme":"Dark"}};',
 };

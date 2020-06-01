@@ -23,7 +23,7 @@
       </tr>
       <tr *ngFor="let row of _rows$ | async | slice:_fromRow:_fromRow+_numRows;  trackBy: trackByRow">
         <ng-container *ngFor="let column of _columnTemplates; trackBy: trackByKey">
-          <td *ngIf="showColumn(column.key)">
+          <td *ngIf="showColumn(column.key)" [ngStyle]="column.style">
             <ng-template
               *ngIf="column.cellTemplate"
               [ngTemplateOutlet]="column.cellTemplate"

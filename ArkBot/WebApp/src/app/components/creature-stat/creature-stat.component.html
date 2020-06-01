@@ -1,0 +1,5 @@
+<div class="stat-container w3-round">
+  <div *ngIf="inheritedBest != undefined" class="stat-inherited" [ngClass]="{ 'stat-inherited-best': inheritedBest, 'stat-inherited-worst': !inheritedBest }"><i class="material-icons">{{inheritedBest ? 'arrow_upward' : 'arrow_downward'}}</i><!-- theme-e1 --></div>
+  <div class="stat-text">{{value}}</div>
+  <div class="w3-round stat-bg" [style.backgroundColor]="color">&nbsp;</div>
+</div>

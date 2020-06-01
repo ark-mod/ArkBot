@@ -1,0 +1,134 @@
+:root {
+    --dark-theme-text-c1: #f7941d;
+    --dark-theme-d1-bg: #f7941d;
+    --dark-theme-c1-bg: #f7941d;
+}
+
+/*this is the background for the dark theme*/
+body.dark
+{
+  background: url(https://arkserver.knightsgg.com/1.jpg) no-repeat center fixed;
+  opacity: 0.9;
+  background-size: cover;
+}
+
+body.light
+{
+  background: url(https://i.imgur.com/WggoI2t.png) no-repeat center fixed;
+  background-size: cover;
+}
+
+
+/*this is the zoom speed of the sign in pop up window*/
+.w3-animate-zoom
+{
+  animation: animatezoom 1.0s;
+}
+
+
+/*these are the button that show up on the left side*/
+div.w3-button.w3-cell.w3-mobile
+{
+  	text-align: center;
+ 	box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.45) !important;
+	border: none;
+	border-radius: 0;
+	margin-bottom: 15px;
+  	background-color:transparent;
+}
+
+
+/*this is the top part of the sign in popup window and also the server headers*/
+header.w3-container.theme-d1
+{
+	align-items: center;
+	background-image: linear-gradient(to right, #151f383b, #00a7cf4d, #efe34852, #861a544a, #054f7d4d);
+	background-size: 600%;
+	background-position: 0 0;
+	box-shadow: inset 0 0 5em rgba(0, 0, 0, .5);
+	font-family: 'Lato', Arial, sans-serif;
+	height: 100%;
+	justify-content: center;
+	animation-duration: 20s;
+	animation-iteration-count: infinite;
+	animation-name: gradients;
+}
+
+
+/*this is the background of top part of the sign in popup window*/
+.w3-modal-content
+{
+  	text-align: center;
+ 	box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.45) !important;
+	border: none;
+	border-radius: 0;
+	margin-bottom: 15px;
+  	background-color:transparent;
+}
+
+
+/*this is the x button that closes the login popup window*/
+span.w3-button.theme-d1.w3-xlarge.w3-display-topright 
+{
+  	text-align: center;
+ 	box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.45) !important;
+	border: none;
+	border-radius: 0;
+	margin-bottom: 15px;
+  	background-color:transparent;
+}
+
+
+/*these are the subsections below each server heading*/
+div.w3-container.theme-l1
+{
+	align-items: center;
+	background-image: linear-gradient(to right, #000000, #000000, #000000, #000000, #000000);
+	box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.45) !important;
+	border: none;
+	border-radius: 0;
+	margin-bottom: 15px;
+	background-size: 600%;
+	background-position: 0 0;
+	font-family: 'Lato', Arial, sans-serif;
+	height: 100%;
+	justify-content: center;
+	animation-duration: 20s;
+	animation-iteration-count: infinite;
+	animation-name: gradients;
+}
+
+/*this is the bottom part of the sign in popup window*/
+form.w3-container.theme-l2.w3-medium
+{
+  	text-align: center;
+	box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.45) !important;
+	border: none;
+	border-radius: 0;
+	margin-bottom: 15px;
+}
+
+
+/*this is button on the bottom part of the sign in popup window*/
+button.w3-button.w3-block.theme-d1.w3-section.w3-padding
+{
+  	text-align: center;
+	box-shadow: 1px 4px 10px rgba(0, 0, 0, 0.45) !important;
+	border: none;
+	border-radius: 0;
+	margin-bottom: 15px;
+}
+
+
+/*this reorders the online player list first, then servers, then external resources*/
+app-server-list{display: grid;}
+app-server-list > section:nth-last-child(1){order:3;}
+app-server-list > section:nth-last-child(2){order:1;}
+app-server-list > section:nth-last-child(3){order:2;}
+
+
+/*this allows you to add random text after the "last update" block of text
+page > app-server-list > section:nth-child(1) > div > div > p:nth-child(1)::after {
+    content: " Whaaaaa I added text";
+}
+*/

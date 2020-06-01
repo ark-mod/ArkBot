@@ -1,0 +1,19 @@
+Required software
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ARK Bot
+- SQL Server 2019 (https://www.microsoft.com/en-us/sql-server/sql-server-downloads) [download link https://go.microsoft.com/fwlink/?linkid=866658]
+
+ARK Bot Link
+- ARK: Server API 3.2 (https://arkserverapi.com/resources/ark-server-api.4/)
+
+
+Required dependencies
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ARK Bot:
+- .NET Core Desktop Runtime 3.1 (https://dotnet.microsoft.com/download/dotnet-core/3.1) [download link https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-desktop-3.1.2-windows-x64-installer]
+- ASP.NET Core Runtime 3.1 (https://dotnet.microsoft.com/download/dotnet-core/3.1) [download link https://dotnet.microsoft.com/download/dotnet-core/thank-you/runtime-aspnetcore-3.1.2-windows-x64-installer]
+
+CefSharp:
+- Visual C++ 2015 x64 (https://www.microsoft.com/en-us/download/details.aspx?id=48145)
+- .NET Framework 4.5.2 (https://dotnet.microsoft.com/download/dotnet-framework/net452)
+

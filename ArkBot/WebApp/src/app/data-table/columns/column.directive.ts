@@ -25,4 +25,5 @@ export class DataTableColumnDirective {
     @Input() thenSort: string;
     @Input() title: string;
     @Input() orderBy: boolean;
+    @Input() style: string;
 }

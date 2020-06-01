@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<Fragment>
+    <!-- SQL Server Express 2019 x64 -->
+    <util:RegistrySearch Id="Sql2019Version"
+          Root="HKLM"
+          Key="SOFTWARE\Microsoft\Microsoft SQL Server\150\Tools\ClientSetup\CurrentVersion"
+          Value="CurrentVersion"
+          Variable="Sql2019Version" />
+    <PackageGroup Id="Sql2019">
+      <ExePackage 
+        Id="Sql2019Express"
+        Cache="yes"
+        PerMachine="yes"
+        Permanent="yes"
+        Vital="yes"
+        Compressed="no"
+        DownloadUrl="https://go.microsoft.com/fwlink/?linkid=866658"
+        Name="SQL2019-SSEI-Expr.exe"
+        InstallCommand="/Q /IACCEPTSQLSERVERLICENSETERMS /HIDEPROGRESSBAR /ACTION=&quot;install&quot; /ENU /CONFIGURATIONFILE=&quot;[WixBundleExecutePackageCacheFolder]ConfigurationFile.ini&quot;"
+        DetectCondition="(Sql2019Version &gt;= v15.0)"
+        InstallCondition="InstallSqlServer2019Express" >
+        <!--<ExitCode Value ="3010" Behavior="forceReboot" />-->
+        <RemotePayload 
+          CertificatePublicKey="6ADD0C9D1AC70DA3668644B1C78884E82E3F3457" 
+          CertificateThumbprint="711AF71DC4C4952C8ED65BB4BA06826ED3922A32" 
+          Description="SQL Server Installer for Express Editions" 
+          Hash="333FDBBB45BE64CC77B07D273AB2A58D1EAA98BE" 
+          ProductName="Microsoft Sql Server Installer" 
+          Size="6376336" 
+          Version="15.2002.4709.1" />
+        <Payload Name="ConfigurationFile.ini" Id="ConfigurationFile" SourceFile="ConfigurationFile.ini" />
+      </ExePackage>
+      <!--InstallCommand2="/ACTION=Install /INSTANCENAME=$(var.InstanceName) /FEATURES=SQL /SECURITYMODE=SQL [SqlVariable] /TCPENABLED=1 /SQLSVCACCOUNT=&quot;NT AUTHORITY\NETWORK SERVICE&quot; /SQLSVCSTARTUPTYPE=Manual /SQLSYSADMINACCOUNTS=BUILTIN\Administrators /ADDCURRENTUSERASSQLADMIN=FALSE /Q /HIDECONSOLE /SkipRules=RebootRequiredCheck /IAcceptSQLServerLicenseTerms"-->
+      <!--<ExePackage
+          Id="vc140"
+          Cache="yes"
+          PerMachine="yes"
+          Permanent="yes"
+          Vital="yes"
+          Compressed="no"
+          DownloadUrl="http://go.microsoft.com/fwlink/?LinkID=615460"
+          Name="vcredist_vc140"
+          InstallCommand="/quiet /norestart"
+          DetectCondition="(VCREDIST_140_x64 &gt;= v14.0.24215)">
+        <RemotePayload 
+          CertificatePublicKey="371DD003A37769487A2A89A5A9DDB3026451B906" 
+          CertificateThumbprint="98ED99A67886D020C564923B7DF25E9AC019DF26" 
+          Description="Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24215" 
+          Hash="10B1683EA3FF5F36F225769244BF7E7813D54AD0" 
+          ProductName="Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24215" 
+          Size="15301888" 
+          Version="14.0.24215.1" />
+      </ExePackage>-->
+    </PackageGroup>
+	</Fragment>
+</Wix>

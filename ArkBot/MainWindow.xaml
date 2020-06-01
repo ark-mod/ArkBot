@@ -3,22 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:tb="http://www.hardcodet.net/taskbar" 
         xmlns:local="clr-namespace:ArkBot"
-        xmlns:layout="clr-namespace:ArkBot.Layout"
-        xmlns:controls="clr-namespace:ArkBot.Controls"
+        xmlns:layout="clr-namespace:ArkBot.Modules.Application.Layout"
+        xmlns:controls="clr-namespace:ArkBot.Modules.Application.Controls"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:xcpt="http://schemas.xceed.com/wpf/xaml/themes"
         xmlns:xctt="http://schemas.xceed.com/wpf/xaml/toolkit/themes"
         xmlns:localThemes="http://schemas.xceed.com/wpf/xaml/avalondock/themes"
-        xmlns:s="clr-namespace:System;assembly=mscorlib"
-        xmlns:sw="clr-namespace:System.Windows;assembly=mscorlib"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:prism="http://prismlibrary.com/"
         mc:Ignorable="d"
         x:Name="mainWindow"
-        Title="ARK Bot" MinWidth="600" MinHeight="500" Width="800" Height="800" WindowStartupLocation="CenterScreen" Icon="basket_empty.ico">
+        Title="ARK Bot" MinWidth="600" MinHeight="500" Width="800" Height="800" WindowStartupLocation="CenterScreen" Icon="arkbot.ico">
+    <!--xmlns:tb="http://www.hardcodet.net/taskbar"-->
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">
             <prism:InvokeCommandAction Command="{Binding ClosingCommand}" />
@@ -166,19 +164,19 @@
             </xcad:LayoutRoot>
         </xcad:DockingManager>
 
-        <tb:TaskbarIcon
+        <!--<tb:TaskbarIcon
             Grid.Row="0" 
             IconSource="basket_empty.ico"
             ToolTipText="ARK Bot"
             DoubleClickCommand="{Binding TaskIconDoubleClickCommand}"
             >
-            <!-- Set a simple context menu  -->
+            --><!-- Set a simple context menu  --><!--
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Show/Hide" Command="{Binding ShowOrHideCommand}"/>
                     <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
-        </tb:TaskbarIcon>
+        </tb:TaskbarIcon>-->
     </Grid>
 </Window>

@@ -26,8 +26,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
   private theme$: Observable<string>;
   private themeSubscription: any;
 
+  private option_creaturesShowNormal: boolean = true;
+  private option_creaturesShowCryopods: boolean = true;
+  private option_creaturesShowCluster: boolean = true;
+  private option_localTopStat: boolean = false;
+  private option_compactView: boolean = false;
+
+  private Math: any;
+
+  private readonly STAT_NAMES = ['Health','Stamina','Oxygen','Food','Weight','Melee','MovementSpeed'];
+
   serverUpdatedSubscription: any;
   player: Player;
+  creaturesMap: any;
   filteredCreatures: Creature[];
   imprintCreatures: Creature[];
   imprintNotifications: boolean = false;
@@ -39,6 +50,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
   steamId: string;
   loaded: boolean = false;
   showMap: boolean = false;
+  showCreatureInModal: any = undefined;
+  showCreatureInModalExtra: any = undefined;
   serverKey: string;
   clusterKey: string;
   creaturesMode: string = "status";
@@ -82,6 +95,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private notificationsService: NotificationsService,
     private ref: ChangeDetectorRef) {
+      this.Math = Math;
     }
 
     getPlayer(): void {
@@ -95,7 +109,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
           if (!this.clusterKey || clusterKeys.find(k => k == this.clusterKey) == undefined) this.clusterKey = clusterKeys.length > 0 ? clusterKeys[0] : null;
           this.player = player;
 
-          this.calculateTopStats();
+          this.processCreatures();
 
           this.filterAndSort();
 
@@ -107,6 +121,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
         })
         .catch(error => {
           this.player = null;
+          this.creaturesMap = null;
           this.filteredCreatures = null;
           this.imprintCreatures = null;
           this.filteredClusterCreatures = null;
@@ -179,7 +194,27 @@ export class PlayerComponent implements OnInit, OnDestroy {
     return num;
   }
 
-  calculateTopStats() {
+  numInheritedBestStats(creature: any) {
+    if (creature.Parents == undefined || creature.Parents.Female == undefined || creature.Parents.Male == undefined) return 0;
+
+    let female = this.creaturesMap[creature.Parents.Female.Id1 + "_" + creature.Parents.Female.Id2]?.BaseStats;
+    let male = this.creaturesMap[creature.Parents.Male.Id1 + "_" + creature.Parents.Male.Id2]?.BaseStats;
+
+    if (!female || !male) return 0;
+
+    let stats =  creature.BaseStats;
+    let top = this.speciesTopStats[creature.ClassName];
+
+    let num = 0;
+    for (let p of this.STAT_NAMES) if (stats[p] >= Math.max(female[p], male[p])) num++;
+
+    return num;    
+  }
+
+  processCreatures() {
+    this.creaturesMap = {};
+
+    // calculate top stats
     var speciesTopStats = <any> {};
     var stats = [ 'Health', 'Stamina', 'Oxygen', 'Food', 'Weight', 'Melee', 'MovementSpeed' ];
     var serverKeys = Object.keys(this.player.Servers);
@@ -188,6 +223,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let creatures = <any[]> this.player.Servers[serverKey].Creatures;
 
       for (let c of creatures) {
+        this.creaturesMap[c.Id1 + "_" + c.Id2] = c;
+
         if (speciesTopStats[c.ClassName] === undefined) speciesTopStats[c.ClassName] = {Health: 0, Stamina: 0, Oxygen: 0, Food: 0, Weight: 0, Melee: 0, MovementSpeed: 0};
 
         let sts = speciesTopStats[c.ClassName];
@@ -240,7 +277,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   }
 
   filter(): void {
-    if (this.creaturesFilter == null || this.creaturesFilter.length == 0) this.filteredCreatures = this.player.Servers[this.serverKey].Creatures;
+    /* if (this.creaturesFilter == null || this.creaturesFilter.length == 0) this.filteredCreatures = this.player.Servers[this.serverKey].Creatures;
     else {
       let filter = this.creaturesFilter.toLowerCase();
       let option_cryopod = undefined;
@@ -256,7 +293,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
         (option_cryopod == undefined || creature.InCryopod == option_cryopod) && (
           (creature.Species != null && creature.Species.toLowerCase().indexOf(filter) >= 0) 
           || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0)));
-    }
+    } */
+
+    let filter = this.creaturesFilter == null || this.creaturesFilter.length == 0 ? undefined : this.creaturesFilter.toLowerCase();
+
+    this.filteredCreatures = this.player.Servers[this.serverKey].Creatures.filter(creature => 
+      ((creature.InCryopod == false && this.option_creaturesShowNormal == true)
+      || (creature.InCryopod == true && this.option_creaturesShowCryopods == true)
+      || (creature.InCluster == true && this.option_creaturesShowCluster == true))
+      && (filter == undefined || ((creature.Species != null && creature.Species.toLowerCase().indexOf(filter) >= 0) 
+        || (creature.Name != null && creature.Name.toLowerCase().indexOf(filter) >= 0))));
 
     let imprintCreatures = this.player.Servers[this.serverKey].Creatures.filter(creature => creature.BabyAge != null);
     imprintCreatures.sort((c1, c2) => {
@@ -277,6 +323,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
       let point = {} as any;
       point.x = creature.TopoMapX;
       point.y = creature.TopoMapY;
+      point.label = creature.Name || creature.Species || creature.ClassName;
       points.push(point);
     }
     this.points = points;
@@ -319,6 +366,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   run(): void {
     if(this.steamId == null || this.steamId == "") {
       this.player = null;
+      this.creaturesMap = null;
       this.filteredCreatures = null;
       this.imprintCreatures = null;
       return;
@@ -333,6 +381,22 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   closeMap(event: any): void {
     this.showMap = false;
+  }
+
+  openCreatureModal(creature: any, event: any): void {
+    this.showCreatureInModal = creature;
+    this.showCreatureInModalExtra = {
+      Parents: creature.Parents != undefined && creature.Parents.Female != undefined && creature.Parents.Male != undefined ? {
+        Female: this.creaturesMap[creature.Parents.Female.Id1 + "_" + creature.Parents.Female.Id2], 
+        Male: this.creaturesMap[creature.Parents.Male.Id1 + "_" + creature.Parents.Male.Id2]
+      } : undefined
+    };
+    event.stopPropagation();
+  }
+
+  closeCreatureModal(event: any): void {
+    this.showCreatureInModal = undefined;
+    this.showCreatureInModalExtra = undefined;
   }
 
   updateServer(serverKey: string): void {
@@ -421,5 +485,10 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   isTheme(theme: string): boolean {
     return this.theme == theme;
+  }
+
+  toggleCollapsible(event, triggerElement, contentElement) {
+    triggerElement.classList.toggle("active");
+    contentElement.style.maxHeight = contentElement.style.maxHeight ? null : contentElement.scrollHeight + "px";
   }
 }
