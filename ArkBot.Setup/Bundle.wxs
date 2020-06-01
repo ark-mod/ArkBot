@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+	<Bundle Name="ARK Bot" Version="2.0.0.0" Manufacturer="ARK Bot" UpgradeCode="590f66d5-1310-4115-b098-9830b056100b">
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
+      <bal:WixStandardBootstrapperApplication
+            LicenseFile="license.rtf"
+            LicenseUrl="https://github.com/ark-mod/ArkBot"
+            ShowVersion="yes"
+            LogoFile="logo_small.png"
+            ThemeFile="customtheme.xml"
+            LocalizationFile="customtheme.wxl"
+            LogoSideFile="logo.png"
+            SuppressOptionsUI="no"
+            />
+    </BootstrapperApplicationRef>
+
+    <Variable Name="InstallFolder" Type="string" Value="[ProgramFiles64Folder]ARK Bot"/>
+
+    <Variable Name="AddDesktopShortcut" Type="numeric" Value="1" />
+    <Variable Name="AddDesktopShortcutMsiVariable" bal:Overridable="yes" Value="[AddDesktopShortcut]" />
+
+    <Variable Name="InstallSqlServer2019Express" Type="numeric" Value="0" />
+
+    <Chain>
+      <PackageGroupRef Id="WindowsDesktopRuntime31Web"/>
+      <PackageGroupRef Id="AspNetCoreRuntime31Web"/>
+      <PackageGroupRef Id="NetFx452Web"/>
+      <PackageGroupRef Id="vcredist_vc140"/>
+      <PackageGroupRef Id="Sql2019" />
+      <RollbackBoundary/>
+      <MsiPackage Id="ArkBot" SourceFile="$(var.ArkBot.Installer.TargetPath)">
+        <MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+        <MsiProperty Name="AddDesktopShortcut" Value="[AddDesktopShortcutMsiVariable]" />
+      </MsiPackage>
+		</Chain>
+	</Bundle>
+</Wix>

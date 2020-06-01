@@ -1,13 +1,12 @@
-﻿using ArkBot.Interop;
-using ArkBot.ViewModel;
+﻿using ArkBot.Modules.Application.ViewModel;
+using ArkBot.Utils;
+using ArkBot.Utils.Interop;
+using CefSharp;
+using CefSharp.Wpf;
 using System;
 using System.IO;
 using System.Text;
 using System.Windows;
-using CefSharp;
-using System.Configuration;
-using CefSharp.Wpf;
-using System.Diagnostics;
 
 namespace ArkBot
 {

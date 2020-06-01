@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
   <ItemGroup> 
   	<WebAppFiles Include="$(MSBuildThisFileDirectory)\WebApp\dist\**\*.*" />
   </ItemGroup>
 
-  <Target Name="BeforeBuild">
+  <Target Name="CopyWebAppFilesTarget" AfterTargets="build">
     <Copy SourceFiles="@(WebAppFiles)" DestinationFiles="@(WebAppFiles->'$(OutputPath)\WebApp\%(RecursiveDir)%(Filename)%(Extension)')" ContinueOnError="true" SkipUnchangedFiles="false" Condition="$(CopyWebAppFiles)"/>
+  </Target>
+
+  <Target Name="PublishWebAppFilesTarget" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <WebAppFilesPublish Include="WebApp\dist\**\*.*" />
+      <ResolvedFileToPublish Include="@(WebAppFilesPublish->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)" Condition="$(CopyWebAppFiles)" >
+        <RelativePath>WebApp\%(WebAppFilesPublish.RecursiveDir)%(WebAppFilesPublish.Filename)%(WebAppFilesPublish.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
   </Target>
 </Project>

@@ -3,9 +3,9 @@
                     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                     xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
                     xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-                    xmlns:behaviours="clr-namespace:ArkBot.Browser.Behaviours"
-                    xmlns:controls="clr-namespace:ArkBot.Controls"
-                    xmlns:configuration="clr-namespace:ArkBot.Configuration">
+                    xmlns:behaviours="clr-namespace:ArkBot.Modules.Application.Browser.Behaviours"
+                    xmlns:controls="clr-namespace:ArkBot.Modules.Application.Controls"
+                    xmlns:configuration="clr-namespace:ArkBot.Modules.Application.Configuration">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/Xceed.Wpf.Toolkit;component/CollectionControl/Themes/Generic.xaml" />
     </ResourceDictionary.MergedDictionaries>

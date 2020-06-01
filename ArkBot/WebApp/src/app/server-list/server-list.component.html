@@ -1,4 +1,4 @@
-<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.UserSteamId != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'myprofile') &amp;&amp; dataService.hasFeatureAccess('pages', 'player', dataService.UserSteamId)" class="w3-container">
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.UserSteamId != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'myprofile') &amp;&amp; dataService.hasFeatureAccess('pages', 'player', dataService.UserSteamId)" class="my-profile-section w3-container">
   <h3 class="theme-text-d1">My Profile</h3>
   <div class="w3-card-4 w3-margin-bottom">
     <header class="w3-container theme-d1">
@@ -6,13 +6,37 @@
     </header>
     <div class="w3-container theme-l1">
       <p>
-        Find your tames, view base stats and keep track of their food status. Get notified of pending imprints, the amount of fertilizer and gasoline remaining in your crops and generators. This and much more is available in your profile.
+        Find your tames, view base stats and keep track of their food status. Get notified of pending imprints, the amount of fertilizer and fuel remaining in your crops and generators. This and much more is available in your profile.
       </p>
       <p><a [routerLink]="'/player/' + dataService.UserSteamId" class="" style="text-decoration: none;">View my profile&nbsp;❯</a></p>
     </div>
   </div>
 </section>
-<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; serverCount > 0 &amp;&amp; dataService.hasFeatureAccess('home', 'serverlist')" class="w3-container">
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; serverCount > 0 &amp;&amp; dataService.hasFeatureAccess('home', 'serverlist')" class="server-list-section w3-container">
+  <h3 class="theme-text-d1">Servers</h3>
+  <div class="w3-card-4 w3-responsive  w3-margin-bottom">
+    <table class="w3-table w3-striped w3-bordered border-theme">
+        <tr class="theme-d1">
+            <th>Name</th>
+            <th>Last Update</th>
+            <th>Next Update</th>
+            <th></th>
+        </tr>
+        <tr *ngFor="let server of dataService.Servers.Servers">
+          <td class="serverCell"><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else server_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;"><ng-container *ngIf="server.MapName">{{server.MapName}} - </ng-container>{{server.Key}}</a><ng-template #server_no_link><ng-container *ngIf="server.MapName">{{server.MapName}} - </ng-container>{{server.Key}}</ng-template></td>
+          <td class="serverCell">{{server.LastUpdate}}</td>
+          <td class="serverCell">{{server.NextUpdate || '-'}}</td>
+          <td class="serverCell">
+            <ul class="flex-container wrap">
+              <li class="flex-item"><a *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')" class="serverBtn w3-button theme-d1 w3-right"  [routerLink]="'/admin/' + server.Key">Admin</a></li>
+              <li class="flex-item"><a *ngIf="dataService.hasFeatureAccess('pages', 'server')" class="serverBtn w3-button theme-d1 w3-right"  [routerLink]="'/server/' + server.Key">View server</a></li>
+            </ul>
+          </td>
+        </tr>
+    </table>
+  </div>
+</section>
+<!-- <section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; serverCount > 0 &amp;&amp; dataService.hasFeatureAccess('home', 'serverlist')" class="server-list-section w3-container">
   <h3 class="theme-text-d1">Servers</h3>
   <div *ngFor="let server of dataService.Servers.Servers" class="w3-card-4 w3-margin-bottom">
     <header class="w3-container theme-d1">
@@ -26,8 +50,8 @@
       <p *ngIf="dataService.hasFeatureAccess('pages', 'admin-server')"><a [routerLink]="'/admin/' + server.Key" class="" style="text-decoration: none;">Admin ❯</a></p>
     </div>
   </div>
-</section>
-<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'online')" class="w3-container">
+</section> -->
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'online')" class="online-section w3-container">
   <h3 class="theme-text-d1">Online <span class="w3-tag w3-large theme-d1">{{onlinePlayerCount}}</span></h3>
   <div *ngIf="onlinePlayerCount == 0; else online_players_list">There are no players online...</div>
   <ng-template #online_players_list>
@@ -41,25 +65,73 @@
               <th>Server</th>
               <th>Time Online</th>
           </tr>
-          <ng-container *ngFor="let server of dataService.Servers.Servers">
-            <tr *ngFor="let player of server.OnlinePlayers">
-              <td>{{player.SteamName}}</td>
-              <td>{{player.CharacterName}}</td>
-              <td>{{player.TribeName}}</td>
-              <td>{{player.DiscordName}}</td>
-              <td>{{server.Key}}</td>
-              <td>{{player.TimeOnline}}</td>
+          <ng-container *ngFor="let kv of onlinePlayers | mapEntries">
+            <tr *ngFor="let player of kv.value">
+              <td>{{player.steamName}}</td>
+              <td>{{player.characterName}}</td>
+              <td>{{player.tribeName}}</td>
+              <td>{{player.discordName}}</td>
+              <td>{{kv.key}}</td>
+              <td><relative-time [time]="player.loginTime" [suffix]="false"></relative-time></td>
             </tr>
           </ng-container>
       </table>
     </div>
   </ng-template>
 </section>
+<section *ngIf="isMenuActive('overview') &amp;&amp; chatMessages != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'online')" class="chat-section w3-container">
+  <h3 class="theme-text-d1">Chat</h3>
+  <div *ngIf="chatMessages == undefined || chatMessages.length == 0; else chat_messages_list">No chat history available...</div>
+  <ng-template #chat_messages_list>
+    <div class="w3-card-4 w3-margin-bottom">
+<!--       <ark-data-table [rows]="chatMessages" trackByProp="at">
+        <ark-dt-mode name="Default" key="default" columnKeys="at,from,message"></ark-dt-mode>
+        <ark-dt-column key="at" [style]="{'white-space':'nowrap'}">
+          <ng-template ark-dt-header>
+            Time
+          </ng-template>
+          <ng-template let-msg ark-dt-cell>
+            {{msg.at | dateFormat:'HH:mm:ss'}}
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="from" [style]="{'white-space':'nowrap'}">
+          <ng-template ark-dt-header>
+            From
+          </ng-template>
+          <ng-template let-msg ark-dt-cell>
+            {{msg.playerName}}<span *ngIf="(msg.tribeName || undefined) != undefined"> [{{msg.tribeName}}]</span>
+          </ng-template>
+        </ark-dt-column>
+        <ark-dt-column key="message" [style]="{'width':'100%'}">
+          <ng-template ark-dt-header>
+            Message
+          </ng-template>
+          <ng-template let-msg ark-dt-cell>
+            {{msg.message}}
+          </ng-template>
+        </ark-dt-column>
+      </ark-data-table> -->
+
+      <table class="w3-table w3-striped w3-bordered border-theme">
+        <tr class="theme-d1">
+            <th>Time</th>
+            <th>From</th>
+            <th>Message</th>
+        </tr>
+        <tr *ngFor="let msg of chatMessages | slice:-15">
+          <td class="chatTimeCell">{{msg.at | dateFormat:'HH:mm:ss'}}</td>
+          <td class="chatFromCell">{{msg.playerName}}<span *ngIf="(msg.tribeName || undefined) != undefined"> [{{msg.tribeName}}]</span></td>
+          <td class="chatMessageCell">{{msg.message}}</td>
+        </tr>
+      </table>
+    </div>
+  </ng-template>
+</section>
 <ng-container *ngFor="let server of dataService.Servers?.Servers">
-  <section *ngIf="isMenuActive(server.Key) &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')" class="w3-container">
+  <section *ngIf="isMenuActive(server.Key) &amp;&amp; dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')" class="server-details-section w3-container">
     <div class="w3-card-4 w3-responsive w3-margin-bottom">
       <header class="w3-container theme-d1">
-        <h3><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name}}</a><ng-template #serverdetails_no_link>{{server.Name}}</ng-template></h3>
+        <h3><a *ngIf="dataService.hasFeatureAccess('pages', 'server'); else serverdetails_no_link" [routerLink]="'/server/' + server.Key" style="text-decoration: none;">{{server.Name || server.Key}}</a><ng-template #serverdetails_no_link>{{server.Name || server.Key}}</ng-template></h3>
       </header>
       <div class="w3-container theme-l1">
         <table class="w3-table w3-bordered w3-small border-theme serverdetails">
@@ -117,7 +189,7 @@
             </tr>
             <tr style="border-bottom: none;">
               <th class="theme-text-d1">Uptime</th>
-              <td>{{server.ServerStarted ? dataService.toRelativeDate(server.ServerStarted) : '-'}}</td>
+              <td><relative-time [time]="server.ServerStarted" [suffix]="false"></relative-time></td>
             </tr>
           </table>
       </div>
@@ -184,9 +256,9 @@
         </tr>
       </table>
     </div>-->
-    <ng-container *ngIf="dataService.hasFeatureAccess('home', 'online')">
-      <h3 class="theme-text-d1">Online <span class="w3-tag w3-large theme-d1">{{server.OnlinePlayerCount}}</span></h3>
-      <div *ngIf="server.OnlinePlayerCount == 0; else server_online_players_list">There are no players online...</div>
+    <div *ngIf="dataService.hasFeatureAccess('home', 'online')" class="online-block">
+      <h3 class="theme-text-d1">Online <span class="w3-tag w3-large theme-d1">{{onlinePlayers[server.Key]?.length || 0}}</span></h3>
+      <div *ngIf="(onlinePlayers[server.Key]?.length || 0) == 0; else server_online_players_list">There are no players online...</div>
       <ng-template #server_online_players_list>
         <div class="w3-card-4 w3-responsive w3-margin-bottom">
           <table *ngIf="isMenuActive(server.Key)" class="w3-table w3-striped w3-bordered border-theme">
@@ -197,22 +269,29 @@
                   <th>Discord Tag</th>
                   <th>Time Online</th>
               </tr>
-              <tr *ngFor="let player of server.OnlinePlayers">
-                <td>{{player.SteamName}}</td>
-                <td>{{player.CharacterName}}</td>
-                <td>{{player.TribeName}}</td>
-                <td>{{player.DiscordName}}</td>
-                <td>{{player.TimeOnline}}</td>
+              <tr *ngFor="let player of onlinePlayers[server.Key]">
+                <td>{{player.steamName}}</td>
+                <td>{{player.characterName}}</td>
+                <td>{{player.tribeName}}</td>
+                <td>{{player.discordName}}</td>
+                <td><relative-time [time]="player.loginTime" [suffix]="false"></relative-time></td>
               </tr>
           </table>
         </div>
       </ng-template>
-    </ng-container>
+    </div>
+
+    <div *ngIf="dataService.hasFeatureAccess('home', 'online') &amp;&amp; server.MapName != undefined" class="map-block">
+      <h3 class="theme-text-d1">Map</h3>
+      <div class="w3-card-4 w3-responsive w3-margin-bottom">
+        <arkmap [mapName]="server.MapName" [points]="playerLocations != undefined ? playerLocations[server.Key] : []"></arkmap>
+      </div>
+    </div>
   </section>
 </ng-container>
-<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.hasFeatureAccess('home', 'externalresources')" class="w3-container margin-top">
+<section *ngIf="isMenuActive('overview') &amp;&amp; dataService.hasFeatureAccess('home', 'externalresources')" class="external-resources-section w3-container margin-top">
   <h3 class="theme-text-d1">External Resources</h3>
-  <div class="w3-card-4 w3-margin-bottom">
+  <div class="wiki-block w3-card-4 w3-margin-bottom">
     <header class="w3-container theme-d1">
       <h3>Wiki</h3>
     </header>
@@ -220,18 +299,18 @@
       <p><a href="http://ark.gamepedia.com/" style="text-decoration: none;">Official ARK Survival Evolved Wiki&nbsp;❯</a></p>
     </div>
   </div>
-  <div class="w3-card-4 w3-margin-bottom">
+  <div class="taming-calculators-block w3-card-4 w3-margin-bottom">
     <header class="w3-container theme-d1">
       <h3>Taming Calculators</h3>
     </header>
     <div class="w3-container theme-l1">
       <ul class="w3-ul" style="margin: 7px 0px;">
-        <li style="padding-left: 0px;"><a href="http://www.survive-ark.com/taming-calculator/" style="text-decoration: none;">Survive ARK: Taming Calculator&nbsp;❯</a></li>
-        <li style="padding-left: 0px;"><a href="http://www.dododex.com/" style="text-decoration: none;">Dododex: Taming Calculator&nbsp;❯</a></li>
+        <li class="survive-ark-item" style="padding-left: 0px;"><a href="http://www.survive-ark.com/taming-calculator/" style="text-decoration: none;">Survive ARK: Taming Calculator&nbsp;❯</a></li>
+        <li class="dododex-item" style="padding-left: 0px;"><a href="http://www.dododex.com/" style="text-decoration: none;">Dododex: Taming Calculator&nbsp;❯</a></li>
       </ul>
     </div>
   </div>
-  <div class="w3-card-4 w3-margin-bottom">
+  <div class="creature-library-block w3-card-4 w3-margin-bottom">
     <header class="w3-container theme-d1">
       <h3>Creature Library and Breeding Suggestions</h3>
     </header>

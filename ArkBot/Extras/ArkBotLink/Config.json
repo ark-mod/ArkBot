@@ -1,0 +1,5 @@
+{
+    "serverKey": "server1",
+    "linkUri": "http://127.0.0.1:80/arkbotlink",
+    "playerLocationsPushInterval": 15000
+}

@@ -1,0 +1,7 @@
+- Third party binaries loaded from application root directory.
+- Access control settings not added for new web app features.
+- Some settings do not save when using the configuration editor.
+- Option "Toggle Local Top Stat Calculation" for Player/Creatures does not work.
+- Option "Show Cluster" for Player/Creatures does not work.
+- Server value "Player Slots" always 0.
+- Server value "Uptime" sometimes show incorrect values (ex. "50 years").

@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, OnChanges, SimpleChanges, ElementRef, HostListener } from '@angular/core';
+import { Component, Input, ViewChild, OnInit, OnChanges, SimpleChanges, ElementRef, HostListener } from '@angular/core';
 
 import { environment } from '../environments/environment';
 import * as d3 from "d3";
@@ -7,12 +7,14 @@ declare var config: any;
 
 @Component({
   selector: 'arkmap',
-  template: `<canvas #myCanvas [width]="width" [height]="height" style="width: 100%;"></canvas>`
+  template: `<canvas #myCanvas [width]="width" [height]="height" style="width: 100%;"></canvas><div #mapTooltip class="map-tooltip theme-d1 border-theme">{{tooltipLabel}}</div>`,
+  styles: ['.map-tooltip { visibility: hidden; position: fixed; left: -9999px; top: -9999px; font-size: 15px; pointer-events: none; padding: 5px 10px; border-width: 2px; border-style: solid; opacity: 0; transition: opacity 0.5s ease-in-out; }']
 })
-export class ArkMapComponent implements OnChanges {
+export class ArkMapComponent implements OnInit, OnChanges {
     @Input() mapName: string;
     @Input() points: any[];
     @ViewChild('myCanvas') canvasRef: ElementRef;
+    @ViewChild('mapTooltip') mapTooltip: ElementRef;
     /*@HostListener('window:resize')
     onResize(): void {
       this.resize();
@@ -22,11 +24,45 @@ export class ArkMapComponent implements OnChanges {
     height: number;
     img: HTMLImageElement;
     zoom: any;
+    tooltipLabel: string;
 
     constructor() {
       this.width = 1024;
       this.height = 1024;
       this.zoom = d3.zoom().scaleExtent([1, 10]);
+    }
+    ngOnInit() {
+      this.canvasRef.nativeElement.addEventListener('mousemove', e => {
+        if (this.points == null) return;
+
+        const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+        let x = (e.clientX - rect.left) / (rect.right - rect.left) * this.width;
+        let y = (e.clientY - rect.top) / (rect.bottom - rect.top) * this.height;
+
+        let hideTooltip = true;
+        for (let point of this.points) {
+          if ((point.label || undefined) == undefined) continue;
+
+          if (x >= point.x - 6 && x <= point.x + 6 && y >= point.y - 6 && y <= point.y + 6) {
+            this.tooltipLabel = point.label;
+            if ((this.mapTooltip.nativeElement.style.visibility || undefined) == undefined) {
+              this.mapTooltip.nativeElement.style.visibility = 'visible';
+              this.mapTooltip.nativeElement.style.opacity = 1;
+            }
+            this.mapTooltip.nativeElement.style.left = (Math.round(e.clientX) + 5) + 'px';
+            this.mapTooltip.nativeElement.style.top = (Math.round(e.clientY) - this.mapTooltip.nativeElement.clientHeight - 5) + 'px';
+            hideTooltip = false;
+            break;
+          }
+        }
+
+        if (hideTooltip && (this.mapTooltip.nativeElement.style.visibility || undefined) != undefined) {
+          this.mapTooltip.nativeElement.style.visibility = null;
+          this.mapTooltip.nativeElement.style.opacity = null;
+          this.mapTooltip.nativeElement.style.left = null;
+          this.mapTooltip.nativeElement.style.top = null;
+        }
+      });
     }
 
     imageLoaded(img: HTMLImageElement): void {

@@ -4,8 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ArkBot"
-        xmlns:layout="clr-namespace:ArkBot.Layout"
-        xmlns:controls="clr-namespace:ArkBot.Controls"
+        xmlns:layout="clr-namespace:ArkBot.Modules.Application.Layout"
+        xmlns:controls="clr-namespace:ArkBot.Modules.Application.Controls"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:xcpt="http://schemas.xceed.com/wpf/xaml/themes"
@@ -15,7 +15,7 @@
         xmlns:prism="http://prismlibrary.com/"
         mc:Ignorable="d"
         x:Name="mainWindow"
-        Title="ARK Bot" MinWidth="600" MinHeight="500" Width="800" Height="800" WindowStartupLocation="CenterScreen" Icon="basket_empty.ico">
+        Title="ARK Bot" MinWidth="600" MinHeight="500" Width="800" Height="800" WindowStartupLocation="CenterScreen" Icon="arkbot.ico">
     <!--xmlns:tb="http://www.hardcodet.net/taskbar"-->
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Closing">

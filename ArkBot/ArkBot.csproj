@@ -5,14 +5,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
-    <ApplicationIcon>basket_empty.ico</ApplicationIcon>
+    <ApplicationIcon>arkbot.ico</ApplicationIcon>
     <AssemblyTitle>ARK Bot</AssemblyTitle>
     <Description>ARK Survival Evolved application that monitors and extracts data from local ARK servers and exposes this data through a Web App, Web API and Discord Bot.</Description>
     <Product>ArkBot</Product>
     <Copyright>Copyright © 2020</Copyright>
-    <Version>1.91</Version>
-    <AssemblyVersion>1.91.0.0</AssemblyVersion>
-    <FileVersion>1.91.0.0</FileVersion>
+    <Version>2.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -21,7 +21,11 @@
     <!-- /used for razor -->
     <PackageTags>bb61c4d0-0060-401b-bf8f-4747cbd86d9d</PackageTags>
     <!--<CefSharpTargetDir>.\bin</CefSharpTargetDir>-->
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
+
+  <Import Project="WebAppFiles.props" Condition="Exists('WebAppFiles.props')" />
+  <Import Project="ExtrasFiles.props" Condition="Exists('ExtrasFiles.props')" />
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -50,7 +54,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200316212228_InitialCreate.cs" />
+    <Compile Remove="Migrations\20200316212228_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200316213817_InitialCreate.cs" />
+    <Compile Remove="Migrations\20200316213817_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200317061250_InitialCreate.cs" />
+    <Compile Remove="Migrations\20200317061250_InitialCreate.Designer.cs" />
+    <Compile Remove="Migrations\20200317073834_InitialCreate.cs" />
+    <Compile Remove="Migrations\20200317073834_InitialCreate.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="arkbot.ico" />
     <None Remove="basket_empty.ico" />
+    <None Remove="Migrations\EfDatabaseContextModelSnapshot.cs.old" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,7 +78,12 @@
     <PackageReference Include="Autofac.SignalR2" Version="5.0.0" />
     <PackageReference Include="CefSharp.Wpf" Version="75.1.143" />
     <PackageReference Include="Certes" Version="2.3.3" />
+    <PackageReference Include="CoreRCON" Version="4.5.1" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="Fody" Version="6.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Ionic.Zip" Version="1.9.1.8" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Markdig" Version="0.18.0" />
@@ -78,7 +100,6 @@
     <PackageReference Include="Nito.AsyncEx" Version="5.0.0" />
     <PackageReference Include="Prism.Wpf" Version="7.2.0.1422" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.2.2" />
-    <PackageReference Include="QueryMaster" Version="1.1.0" />
     <PackageReference Include="RazorLight" Version="2.0.0-beta4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
@@ -118,6 +139,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="arkbot.ico" />
     <Resource Include="basket_empty.ico" />
   </ItemGroup>
 
@@ -191,6 +213,7 @@
     <CefSharpTargetDir>$(TargetDir)\lib</CefSharpTargetDir>
   </PropertyGroup>-->
   <Import Project="WebAppFiles.targets" Condition="Exists('WebAppFiles.targets')" />
+  <Import Project="ExtrasFiles.targets" Condition="Exists('ExtrasFiles.targets')" />
   <!--<PropertyGroup>
     <PostBuildEvent>
       if not exist "$(TargetDir)x86" md "$(TargetDir)x86"

@@ -1,18 +1,78 @@
 ﻿{
-  "botName": "ARK Bot",
-  "botUrl": "",
-  "appUrl": "",
-  "tempFileOutputDirPath": "",
   "steamApiKey": "",
+  "databaseConnectionString": "Data Source=.\\SQLExpress;Integrated Security=True;Database=ArkBot",
   "webApp": {
+    "iPEndpoint": "0.0.0.0:80",
+    "externalUrl": "",
+    "ssl": {
+      "enabled": false,
+      "challengeListenPrefix": "http://+:80/",
+      "name": "ark-bot-ssl",
+      "password": "",
+      "email": "",
+      "domains": [
+      ],
+      "useHttpsRedirect": true
+    },
     "defaultTheme": "Dark",
-    "topMenu": false,
+    "topMenu": true,
     "tribeLogLimit": 100,
     "tribeLogColors": false,
-    "customCssFilePath": null
+    "customCssFilePath": null,
+    "userRoles": [
+      {
+        "role": "admin",
+        "steamIds": [
+        ]
+      }
+    ],
+    "accessControl": {
+      "pages": {
+        "home": [ "guest" ],
+        "server": [ "guest" ],
+        "player": [ "self", "admin" ],
+        "admin-server": [ "admin" ]
+      },
+      "home": {
+        "myprofile": [ "user" ],
+        "serverlist": [ "guest" ],
+        "serverdetails": [ "guest" ],
+        "online": [ "guest" ],
+        "externalresources": [ "guest" ]
+      },
+      "server": {
+        "players": [ "guest" ],
+        "tribes": [ "guest" ],
+        "wildcreatures": [ "admin" ],
+        "wildcreatures-coords": [ "admin" ],
+        "wildcreatures-basestats": [ "admin" ],
+        "wildcreatures-ids": [ "admin" ],
+        "wildcreatures-statistics": [ "admin" ]
+      },
+      "player": {
+        "profile": [ "guest" ],
+        "profile-detailed": [ "self", "admin" ],
+        "creatures": [ "guest" ],
+        "creatures-basestats": [ "self", "admin" ],
+        "creatures-ids": [ "admin" ],
+        "creatures-cloud": [ "guest" ],
+        "breeding": [ "self", "admin" ],
+        "crops": [ "self", "admin" ],
+        "generators": [ "self", "admin" ],
+        "kibbles-eggs": [ "self", "admin" ],
+        "tribelog": [ "self", "admin" ]
+      },
+      "admin-server": {
+        "players": [ "admin" ],
+        "tribes": [ "admin" ],
+        "structures": [ "admin" ],
+        "fertilized-eggs": [ "disabled" ],
+        "structures-rcon": [ "disabled" ]
+      }
+    }
   },
   "discord": {
-    "discordBotEnabled": true,
+    "enabled": true,
     "botToken": "",
     "enabledChannels": [ "bot-commands" ],
     "infoTopicChannel": "bot-commands",
@@ -38,93 +98,22 @@
         "disabled": [ "@everyone" ]
       }
     },
-    "steamOpenIdRelyingServiceListenPrefix": "http://+:60002/openid/",
-    "steamOpenIdRedirectUri": ""
-  },
-  "userRoles": [
-    {
-      "role": "admin",
-      "steamIds": [
-      ]
-    }
-  ],
-  "accessControl": {
-    "pages": {
-      "home": [ "guest" ],
-      "server": [ "guest" ],
-      "player": [ "self", "admin" ],
-      "admin-server": [ "admin" ]
-    },
-    "home": {
-      "myprofile": [ "user" ],
-      "serverlist": [ "guest" ],
-      "serverdetails": [ "guest" ],
-      "online": [ "guest" ],
-      "externalresources": [ "guest" ]
-    },
-    "server": {
-      "players": [ "guest" ],
-      "tribes": [ "guest" ],
-      "wildcreatures": [ "admin" ],
-      "wildcreatures-coords": [ "admin" ],
-      "wildcreatures-basestats": [ "admin" ],
-      "wildcreatures-ids": [ "admin" ],
-      "wildcreatures-statistics": [ "admin" ]
-    },
-    "player": {
-      "profile": [ "guest" ],
-      "profile-detailed": [ "self", "admin" ],
-      "creatures": [ "guest" ],
-      "creatures-basestats": [ "self", "admin" ],
-      "creatures-ids": [ "admin" ],
-      "creatures-cloud": [ "guest" ],
-      "breeding": [ "self", "admin" ],
-      "crops": [ "self", "admin" ],
-      "generators": [ "self", "admin" ],
-      "kibbles-eggs": [ "self", "admin" ],
-      "tribelog": [ "self", "admin" ]
-    },
-    "admin-server": {
-      "players": [ "admin" ],
-      "tribes": [ "admin" ],
-      "structures": [ "admin" ],
-      "fertilized-eggs": [ "disabled" ],
-      "structures-rcon": [ "disabled" ]
-    }
+    "logLevel": "Warning"
   },
   "backups": {
-    "backupsEnabled": false,
+    "enabled": false,
     "backupsDirectoryPath": ""
   },
-  "webAppIPEndpoint": "0.0.0.0:80",
-  "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
-  "useCompatibilityChangeWatcher": true,
-  "ssl": {
-    "enabled": false,
-    "challengeListenPrefix": "http://+:80/",
-    "name": "ark-bot-ssl",
-    "password": "",
-    "email": "",
-    "domains": [
-    ],
-    "ports": [ 443 ],
-    "useHttpsRedirect": true,
-    "useCompatibilityNonSNIBindings": true
-  },
-  "arkMultipliers": {
-    "eggHatchSpeedMultiplier": 1.0,
-    "babyMatureSpeedMultiplier": 1.0,
-    "cuddleIntervalMultiplier": 1.0
-  },
-  "savegameExtractionMaxDegreeOfParallelism": null,
-  "anonymizeWebApiData": false,
-  "hideUiOnStartup": false,
-  "discordLogLevel": "Warning",
   "servers": [
     {
       "key": "server1",
       "clusterKey": "cluster1",
       "saveFilePath": "",
+      "arkMultipliers": {
+        "eggHatchSpeedMultiplier": 1.0,
+        "babyMatureSpeedMultiplier": 1.0,
+        "cuddleIntervalMultiplier": 1.0
+      },
       "modIds": [
       ],
       "displayAddress": "",
@@ -133,7 +122,7 @@
       "rconPort": 27020,
       "rconPassword": "",
       "serverManagement": {
-        "enabled": true,
+        "enabled": false,
         "serverExecutablePath": "",
         "serverExecutableArguments": "",
         "steamCmdExecutablePath": "",
@@ -146,6 +135,11 @@
       "key": "server2",
       "clusterKey": "cluster1",
       "saveFilePath": "",
+      "arkMultipliers": {
+        "eggHatchSpeedMultiplier": 1.0,
+        "babyMatureSpeedMultiplier": 1.0,
+        "cuddleIntervalMultiplier": 1.0
+      },
       "modIds": [
       ],
       "displayAddress": "",
@@ -169,5 +163,9 @@
       "key": "cluster1",
       "savePath": ""
     }
-  ]
+  ],
+  "tempFileOutputDirPath": "",
+  "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "useCompatibilityChangeWatcher": true,
+  "anonymizeWebApiData": false
 }

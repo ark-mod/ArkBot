@@ -15,6 +15,8 @@ export class RelativeTimeComponent implements OnInit, OnDestroy {
     private _counterSubscription: Subscription;
     _str: string;
 
+    @Input() suffix: boolean;
+
     @Input()
     set time(value) {
         this._time.next(value);
@@ -51,6 +53,6 @@ export class RelativeTimeComponent implements OnInit, OnDestroy {
     }
 
     toRelativeDate(datejson: string): string {
-        return moment(new Date(datejson)).fromNow();
+        return moment(new Date(datejson)).fromNow(!this.suffix);
     }
 }

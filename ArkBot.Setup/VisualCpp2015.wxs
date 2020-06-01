@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+	<Fragment>
+    <!-- vcredist 2015 x64 -->
+    <util:ProductSearch
+        Id="VCREDIST_140_x64"
+        UpgradeCode="36F68A90-239C-34DF-B58C-64B30153CE35"
+        Result="version"
+        Variable="VCREDIST_140_x64"/>
+    <PackageGroup Id="vcredist_vc140">
+      <ExePackage
+          Id="vc140"
+          Cache="yes"
+          PerMachine="yes"
+          Permanent="yes"
+          Vital="yes"
+          Compressed="no"
+          DownloadUrl="http://go.microsoft.com/fwlink/?LinkID=615460"
+          Name="vcredist_vc140"
+          InstallCommand="/quiet /norestart"
+          DetectCondition="(VCREDIST_140_x64 &gt;= v14.0.24215)">
+        <RemotePayload 
+          CertificatePublicKey="371DD003A37769487A2A89A5A9DDB3026451B906" 
+          CertificateThumbprint="98ED99A67886D020C564923B7DF25E9AC019DF26" 
+          Description="Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24215" 
+          Hash="10B1683EA3FF5F36F225769244BF7E7813D54AD0" 
+          ProductName="Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24215" 
+          Size="15301888" 
+          Version="14.0.24215.1" />
+      </ExePackage>
+    </PackageGroup>
+	</Fragment>
+</Wix>

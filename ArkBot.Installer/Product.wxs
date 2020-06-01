@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--https://www.youtube.com/watch?v=6Yf-eDsRrnM-->
+  <!--https://nblumhardt.com/2017/04/netcore-msi/-->
+  <Product Id="*" Name="ARK Bot" Language="1033" Version="2.0.0.0" Manufacturer="ARK Bot" UpgradeCode="ea86611c-8198-4041-a878-d90709ae8c1e">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="MyProductIcon" SourceFile="..\ArkBot\arkbot.ico"/>
+    <Property Id='ARPPRODUCTICON'>MyProductIcon</Property>
+
+		<Feature Id="ProductFeature" Title="ARK Bot" Level="1">
+			<!--<ComponentGroupRef Id="ProductComponents" />-->
+      <ComponentGroupRef Id="ArkBot_Project" />
+      <ComponentGroupRef Id="ProductComponents" />
+		</Feature>
+	</Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="DesktopFolder" Name="Desktop" />
+			<Directory Id="ProgramFiles64Folder">
+				<Directory Id="INSTALLFOLDER" Name="ARK Bot" />
+			</Directory>
+		</Directory>
+	</Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- Conditional shortcut component-->
+      <Component Id="DesktopShortcutComponent" Guid="*">
+        <RegistryValue Id="RegShortcutDesktop" Root="HKCU" Key="SOFTWARE\ARKBot\2.0\settings" Name="DesktopSC" Value="1" Type="integer" KeyPath="yes" />
+        <Shortcut Id="desktopSc" Target="[INSTALLFOLDER]\ArkBot.exe" Directory="DesktopFolder" Name="ARK Bot" Icon="MyProductIcon" IconIndex="0" WorkingDirectory="INSTALLFOLDER" Advertise="no"/>
+        <RemoveFolder Id="RemoveShortcutFolder" On="uninstall" />
+        <Condition>ADDDESKTOPSHORTCUT=1</Condition>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+	<!--<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			--><!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. --><!--
+			<Component Id="ProductComponent">
+				--><!-- TODO: Insert files, registry keys, and other resources here. --><!--
+				<File Source="$(var.ArkBot.TargetPath)" />
+			</Component>
+		</ComponentGroup>
+	</Fragment>-->
+</Wix>

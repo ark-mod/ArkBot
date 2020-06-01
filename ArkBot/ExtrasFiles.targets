@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup> 
+  	<ExtrasFiles Include="$(MSBuildThisFileDirectory)\Extras\**\*.*" />
+  </ItemGroup>
+
+  <Target Name="CopyExtrasFilesTarget" AfterTargets="build">
+    <Copy SourceFiles="@(ExtrasFiles)" DestinationFiles="@(ExtrasFiles->'$(OutputPath)\Extras\%(RecursiveDir)%(Filename)%(Extension)')" ContinueOnError="true" SkipUnchangedFiles="false" Condition="$(CopyExtrasFiles)"/>
+  </Target>
+
+  <Target Name="PublishExtrasFilesTarget" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ExtrasFilesPublish Include="Extras\**\*.*" />
+      <ResolvedFileToPublish Include="@(ExtrasFilesPublish->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)" Condition="$(CopyExtrasFiles)" >
+        <RelativePath>Extras\%(ExtrasFilesPublish.RecursiveDir)%(ExtrasFilesPublish.Filename)%(ExtrasFilesPublish.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+</Project>
