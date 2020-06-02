@@ -24,6 +24,7 @@ namespace ArkBot.Modules.Application.Configuration.Model
             Discord = new DiscordConfigSection();
             WebApp = new WebAppConfigSection();
             Backups = new BackupsConfigSection();
+            Prometheus = new PrometheusConfigSection();
 
             //Test = new Test1ConfigSection();
         }
@@ -126,6 +127,16 @@ namespace ArkBot.Modules.Application.Configuration.Model
         [FileExists(ErrorMessage = "{0} is not set or the file path does not exist")]
         //todo: only used with Server.ServerManagement.UsePowershellOutputRedirect
         public string PowershellFilePath { get; set; }
+
+        [JsonProperty(PropertyName = "prometheus")]
+        [Display(Name = "Prometheus", Description = "Prometheus endpoint settings")]
+        [ConfigurationHelp(remarks: new[] { "Settings specific to the Prometheus endpoint feature." })]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(11)]
+        [ExpandableObject]
+        [Required(ErrorMessage = "{0} is not set")]
+        [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
+        public PrometheusConfigSection Prometheus { get; set; }
 
         [JsonProperty(PropertyName = "tempFileOutputDirPath")]
         [Display(Name = "Temporary Files Directory", Description = "An existing directory path where temporary binary files can be stored (zip-files etc.)")]
