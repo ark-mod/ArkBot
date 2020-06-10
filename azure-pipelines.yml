@@ -65,7 +65,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      pathtoPublish: 'ArkBot.Setup/bin/$(buildConfiguration)'
       artifactName: Release
 
 - job: CreateRelease
@@ -83,11 +83,11 @@ jobs:
     displayName: 'Download Build Artifacts'
     inputs:
       artifactName: Release
-      downloadPath: '$(System.DefaultWorkingDirectory)/ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      downloadPath: '$(System.DefaultWorkingDirectory)/ArkBot.Setup/bin/$(buildConfiguration)'
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/ArkBot/bin/$(buildPlatform)/$(buildConfiguration)'
+      rootFolderOrFile: '$(System.DefaultWorkingDirectory)/ArkBot.Setup/bin/$(buildConfiguration)'
       includeRootFolder: false
       archiveType: 'zip'
       archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildNumber).zip'
