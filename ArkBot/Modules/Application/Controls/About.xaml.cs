@@ -55,7 +55,12 @@ namespace ArkBot.Modules.Application.Controls
             }
 
             e.CancelNavigation = true;
-            Process.Start(e.Request.Url);
+
+            Process.Start(new ProcessStartInfo(e.Request.Url)
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
 
         private async void AboutBrowser_IsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)

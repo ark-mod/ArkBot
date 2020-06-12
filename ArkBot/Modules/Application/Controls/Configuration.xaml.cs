@@ -198,7 +198,12 @@ namespace ArkBot.Modules.Application.Controls
             }
 
             e.CancelNavigation = true;
-            Process.Start(e.Request.Url);
+
+            Process.Start(new ProcessStartInfo(e.Request.Url)
+            {
+                UseShellExecute = true,
+                Verb = "open"
+            });
         }
 
         private async void ConfigurationPropertyGrid_SelectedPropertyItemChanged(object sender, RoutedPropertyChangedEventArgs<PropertyItemBase> e)
