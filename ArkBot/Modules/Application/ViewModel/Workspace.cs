@@ -110,9 +110,6 @@ namespace ArkBot.Modules.Application.ViewModel
         private ArkContextManager _contextManager;
         internal IConfig _config;
 
-        internal bool _isUIHidden = false;
-        internal bool _startedWithoutErrors = false;
-
         private Workspace()
         {
             //do not create viewmodels or load data here, or avalondock layout deserialization will fail
@@ -676,34 +673,55 @@ namespace ArkBot.Modules.Application.ViewModel
             }
 
             // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/web-host?view=aspnetcore-3.1
-            _webapp = Host.CreateDefaultBuilder()
-                 .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.ConfigureKestrel(options =>
-                        {
-                            options.Listen(IPEndPoint.Parse(_config.WebApp.IPEndpoint), listenOptions =>
+            try
+            {
+                _webapp = Host.CreateDefaultBuilder()
+                     .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
+                    .ConfigureWebHostDefaults(webBuilder =>
+                    {
+                        webBuilder.ConfigureKestrel(options =>
                             {
-                                if (_config.WebApp.Ssl.Enabled) listenOptions.UseHttps($"../{_config.WebApp.Ssl.Name}.pfx", _config.WebApp.Ssl.Password);
-                            });
-                        })
-                        .ConfigureLogging(logging =>
+                                options.Listen(IPEndPoint.Parse(_config.WebApp.IPEndpoint), listenOptions =>
+                                {
+                                    if (_config.WebApp.Ssl.Enabled) listenOptions.UseHttps($"../{_config.WebApp.Ssl.Name}.pfx", _config.WebApp.Ssl.Password);
+                                });
+                            })
+                            .ConfigureLogging(logging =>
+                            {
+                                logging.ClearProviders();
+                                logging.AddDebug();
+                                logging.AddEventLog();
+                                logging.AddEventSourceLogger();
+                            })
+                            .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
+                            .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))
+                            .UseStartup<WebAppStartup>();
+                    }).Build();
+                (_webapp as IHost).Start();
+                Console.AddLog("Web App started");
+            }
+            catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 5664) //Failed to bind to address <...>: address already in use.
+            {
+                var portInUseBy = (string)null;
+                try
+                {
+                    if (IPEndPoint.TryParse(_config.WebApp.IPEndpoint, out var ipEndpoint))
+                    {
+                        // power shell
+                        // Get-Process -Id (Get-NetTCPConnection -LocalPort 8600).OwningProcess | Format-List *
+                        var (success, output) = await ProcessHelper.RunCommandLine($"(Get-Process -Id (Get-NetTCPConnection -LocalPort {ipEndpoint.Port}).OwningProcess).Name", _config, UseCallOperator: false);
+                        if (success && !string.IsNullOrEmpty(output))
                         {
-                            logging.ClearProviders();
-                            logging.AddDebug();
-                            logging.AddEventLog();
-                            logging.AddEventSourceLogger();
-                        })
-                        .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
-                        .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))
-                        .UseStartup<WebAppStartup>();
-                }).Build();
-            (_webapp as IHost).Start();
-            Console.AddLog("Web App started");
+                            portInUseBy = $@"Port {ipEndpoint.Port} in use by: {output}";
+                        }
+                    }
+                }
+                catch (Exception) { /* do nothing */ }
 
-            //Indicates the application started without errors, required for auto hide on startup
-            _startedWithoutErrors = true;
-
+                Console.AddLog($@"Failed to start web app! (""{ex.Message}"")");
+                if (!string.IsNullOrWhiteSpace(portInUseBy)) Console.AddLog(portInUseBy);
+                Logging.LogException("Failed to start web app.", ex, GetType());
+            }
         }
 
         private string ValidateConfig()
