@@ -236,10 +236,6 @@ namespace ArkBot.Modules.Application.ViewModel
 
         internal async Task Init()
         {
-            System.Console.WriteLine("ARK Bot");
-            System.Console.WriteLine("------------------------------------------------------");
-            System.Console.WriteLine();
-
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("App.config")); //"log4net.config"
 
@@ -578,10 +574,7 @@ namespace ArkBot.Modules.Application.ViewModel
                                     {
                                         logging.ClearProviders();
                                         logging.AddDebug();
-                                        logging.AddEventLog();
-                                        logging.AddEventSourceLogger();
-                                        //todo: add log4net logging
-                                        //possible to catch exceptions and serialize detailed exception logs?
+                                        logging.AddWebApp();
                                     })
                                     .UseUrls(_config.WebApp.Ssl.ChallengeListenPrefix)
                                     .Configure((appBuilder) =>
@@ -690,8 +683,7 @@ namespace ArkBot.Modules.Application.ViewModel
                             {
                                 logging.ClearProviders();
                                 logging.AddDebug();
-                                logging.AddEventLog();
-                                logging.AddEventSourceLogger();
+                                logging.AddWebApp();
                             })
                             .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
                             .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))

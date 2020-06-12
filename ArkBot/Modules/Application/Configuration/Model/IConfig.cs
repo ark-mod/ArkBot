@@ -14,6 +14,7 @@
         ClustersConfigSection Clusters { get; set; }
         string PowershellFilePath { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
+        Microsoft.Extensions.Logging.LogLevel LogLevel { get; set; }
         bool AnonymizeWebApiData { get; set; }
 
         //Test1ConfigSection Test { get; set; }
