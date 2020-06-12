@@ -123,6 +123,7 @@ namespace ArkBot.Utils.Helpers
                 }
                 var ss = new AutoResetEvent(false);
                 var tcs = new TaskCompletionSource<int>();
+                var readFunc = (Func<bool>)null;
                 process = new Process
                 {
                     StartInfo = si,
@@ -145,28 +146,36 @@ namespace ArkBot.Utils.Helpers
                     var offset = 0L;
                     powershellOutputStream = new FileStream(tmpFilePathToPowershellOutput, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     powershellOutputStreamReader = new StreamReader(powershellOutputStream);
+
+                    readFunc = new Func<bool>(() =>
+                    {
+                        powershellOutputStream.Seek(offset, SeekOrigin.Begin);
+                        if (!powershellOutputStreamReader.EndOfStream)
+                        {
+                            do
+                            {
+                                var line = powershellOutputStreamReader.ReadLine();
+
+                                if (line == null) continue;
+
+                                sb.AppendLine(line);
+                                onOutputLineRead?.Invoke(line);
+                            } while (!powershellOutputStreamReader.EndOfStream);
+
+                            offset = powershellOutputStream.Position;
+
+                            return true;
+                        }
+                        else return false;
+                    });
+
                     var task = Task.Run(async () =>
                     {
                         while (true)
                         {
                             if (tcs.Task.IsCompleted) return;
 
-                            powershellOutputStream.Seek(offset, SeekOrigin.Begin);
-                            if (!powershellOutputStreamReader.EndOfStream)
-                            {
-                                do
-                                {
-                                    var line = powershellOutputStreamReader.ReadLine();
-
-                                    if (line == null) continue;
-
-                                    sb.AppendLine(line);
-                                    onOutputLineRead?.Invoke(line);
-                                } while (!powershellOutputStreamReader.EndOfStream);
-
-                                offset = powershellOutputStream.Position;
-                            }
-                            else await Task.Delay(100);
+                            if (!readFunc()) await Task.Delay(100);
                         }
                     });
                 }
@@ -183,6 +192,7 @@ namespace ArkBot.Utils.Helpers
 
                 result = await tcs.Task;
                 timer.Change(0, Timeout.Infinite);
+                readFunc?.Invoke();
                 if (result != 0)
                 {
                     return (false, sb.ToString());

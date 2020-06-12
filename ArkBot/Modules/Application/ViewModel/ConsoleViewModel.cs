@@ -1,4 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using ArkBot.Utils.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,11 +13,11 @@ namespace ArkBot.Modules.Application.ViewModel
 {
     public sealed class ConsoleViewModel : TabViewModel
     {
-        public ObservableCollection<string> ConsoleOutput { get; set; }
+        public ObservableCollection<ConsoleLogEntry> ConsoleOutput { get; set; }
 
         private ConsoleViewModel() : base("Console", "Console")
         {
-            ConsoleOutput = new ObservableCollection<string>();
+            ConsoleOutput = new ObservableCollection<ConsoleLogEntry>();
         }
 
         private async Task<ConsoleViewModel> InitializeAsync()
@@ -25,15 +31,40 @@ namespace ArkBot.Modules.Application.ViewModel
             return ret.InitializeAsync();
         }
 
-        public void AddLog(string message)
+        public void AddLog(string message, System.Windows.Media.Brush color = null)
         {
             if (message == null) return;
 
             System.Windows.Application.Current?.Dispatcher.Invoke(delegate
             {
-                ConsoleOutput.Add(message.TrimEnd('\n', '\r'));
+                while (ConsoleOutput.Count >= 1000) ConsoleOutput.RemoveAt(0);
+                ConsoleOutput.Add(new ConsoleLogEntry(message.TrimEnd('\n', '\r'), color));
             });
         }
+
+        public void AddLogError(string message)
+        {
+            AddLog(message, System.Windows.Media.Brushes.Red);
+        }
+
+        public void AddLogWarning(string message)
+        {
+            AddLog(message, System.Windows.Media.Brushes.Orange);
+        }
+    }
+
+    public class ConsoleLogEntry
+    {
+        public ConsoleLogEntry(string message, System.Windows.Media.Brush color = null)
+        {
+            When = DateTime.Now;
+            Message = message;
+            Color = color ?? System.Windows.Media.Brushes.Black;
+        }
+
+        public DateTime When { get; set; }
+        public string Message { get; set; }
+        public System.Windows.Media.Brush Color { get; set; }
     }
 
     public static class AutoScrollBehavior

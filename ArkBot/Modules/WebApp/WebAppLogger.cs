@@ -102,12 +102,14 @@ namespace ArkBot.Modules.WebApp
             {
                 if (!_logLevels.TryGetValue(logLevel, out var internalLogLevel)) internalLogLevel = Utils.LogLevel.INFO;
 
-                Application.ViewModel.Workspace.Instance.Console.AddLog(@$"{message} (""{exception.Message}"")");
+                Application.ViewModel.Workspace.Instance.Console.AddLog(@$"{message} (""{exception.Message}"")", System.Windows.Media.Brushes.Red);
                 Utils.Logging.LogException(message, exception, GetType(), internalLogLevel);
             }
             else
             {
-                Application.ViewModel.Workspace.Instance.Console.AddLog(message);
+                if (logLevel == LogLevel.Warning) Application.ViewModel.Workspace.Instance.Console.AddLogWarning(message);
+                else if (logLevel >= LogLevel.Error) Application.ViewModel.Workspace.Instance.Console.AddLogError(message);
+                else Application.ViewModel.Workspace.Instance.Console.AddLog(message);
             }
         }
     }

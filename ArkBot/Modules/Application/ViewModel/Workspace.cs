@@ -259,7 +259,7 @@ namespace ArkBot.Modules.Application.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    Console.AddLog($@"Error loading 'ark.config'. Using default config. (""{ex.Message}"")");
+                    Console.AddLogError($@"Error loading 'ark.config'. Using default config. (""{ex.Message}"")");
                     Logging.LogException("Error loading 'ark.config'. Using default config.", ex, GetType());
                 }
             }
@@ -427,7 +427,7 @@ namespace ArkBot.Modules.Application.ViewModel
             }
             catch (SqlException ex)
             {
-                Console.AddLog($@"Error initializing Microsoft SQL Server (""{ex.Message}"")");
+                Console.AddLogError($@"Error initializing Microsoft SQL Server (""{ex.Message}"")");
                 Logging.LogException("Error initializing Microsoft SQL Server.", ex, GetType());
                 return;
             }
@@ -635,7 +635,7 @@ namespace ArkBot.Modules.Application.ViewModel
                     }
                     catch (Exception ex)
                     {
-                        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
+                        Console.AddLogError($@"SSL Certificate request failed! (""{ex.Message}"")");
                         Logging.LogException("Failed to issue ssl certificate.", ex, GetType());
                     }
                 }
@@ -710,8 +710,8 @@ namespace ArkBot.Modules.Application.ViewModel
                 }
                 catch (Exception) { /* do nothing */ }
 
-                Console.AddLog($@"Failed to start web app! (""{ex.Message}"")");
-                if (!string.IsNullOrWhiteSpace(portInUseBy)) Console.AddLog(portInUseBy);
+                Console.AddLogError($@"Failed to start web app! (""{ex.Message}"")");
+                if (!string.IsNullOrWhiteSpace(portInUseBy)) Console.AddLogError(portInUseBy);
                 Logging.LogException("Failed to start web app.", ex, GetType());
             }
         }
@@ -915,14 +915,14 @@ namespace ArkBot.Modules.Application.ViewModel
                         try
                         {
                             lastAttempt = DateTime.Now;
-                            System.Console.WriteLine("Connecting bot...");
+                            System.Console.WriteLine("Connecting discord bot...");
                             await _bot.Start();
-                            System.Console.WriteLine("Connected!");
+                            System.Console.WriteLine("Discord bot connected!");
                             isConnected = true;
                         }
                         catch (Exception ex)
                         {
-                            System.Console.WriteLine($"Failed to connect ({ex.Message})! Will retry in a moment...");
+                            System.Console.WriteLine($"Discord bot failed to connect ({ex.Message})! Will retry in a moment...");
                             Logging.LogException("Failed to start Discord Bot", ex, GetType(), Utils.LogLevel.DEBUG, ExceptionLevel.Ignored);
                         }
                     }

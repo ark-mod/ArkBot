@@ -17,16 +17,42 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <ScrollViewer autoscroll:AutoScrollBehavior.AutoScroll="True">
-            <StackPanel>
-                <ItemsControl ItemsSource="{Binding ConsoleOutput, Mode=OneWay}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Path=.}" FontFamily="Consolas" TextWrapping="Wrap" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <!--<TextBox Text="{Binding ConsoleInput, Mode=TwoWay}" Background="Black" Foreground="White" FontFamily="Consolas" Name="InputBlock" BorderBrush="{x:Null}" SelectionBrush="{x:Null}" />-->
-            </StackPanel>
+            <ListBox ItemsSource="{Binding ConsoleOutput, Mode=OneWay}" SelectionMode="Extended" AlternationCount="2">
+                <ListBox.Resources>
+                    <Style  TargetType="{x:Type ListBoxItem}">
+                        <Style.Triggers>
+                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                <Setter Property="Background" Value="#ffffff"></Setter>
+                            </Trigger>
+                            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                                <Setter Property="Background" Value="#f0f0f0"></Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.Resources>
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <ItemsPresenter />
+                    </ControlTemplate>
+                </ListBox.Template>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Vertical" IsItemsHost="True" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Path=When, StringFormat='yyyy-MM-dd HH:mm:ss.fff'}" FontFamily="Consolas" Margin="0,0,15,0" />
+                            <TextBlock Grid.Column="1" Text="{Binding Path=Message}" FontFamily="Consolas" TextWrapping="Wrap" Foreground="{Binding Path=Color}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </ScrollViewer>
     </Grid>
 </UserControl>
