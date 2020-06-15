@@ -150,10 +150,17 @@ namespace ArkBot.Modules.Application.Configuration.Model
 
         // Debugging, Logging etc.
 
+        [JsonProperty(PropertyName = "logLevel")]
+        [Display(Name = "Log Level", Description = "Log level")]
+        [DefaultValue(Microsoft.Extensions.Logging.LogLevel.Warning)]
+        [Category(ConfigurationCategory.Debug)]
+        [PropertyOrder(1)]
+        public Microsoft.Extensions.Logging.LogLevel LogLevel { get; set; }
+
         [JsonProperty(PropertyName = "anonymizeWebApiData")]
         [Display(Name = "Anonymize Web API Data", Description = "Anonymize all data in the WebAPI. Used to create data dumps for demoing the web-app")]
         [Category(ConfigurationCategory.Debug)]
-        [PropertyOrder(1)]
+        [PropertyOrder(2)]
         public bool AnonymizeWebApiData { get; set; }
 
         //[JsonProperty(PropertyName = "test")]

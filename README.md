@@ -1,6 +1,8 @@
 [![Build Status](https://dev.azure.com/ark-mod/ArkBot/_apis/build/status/ark-mod.ArkBot?branchName=master)](https://dev.azure.com/ark-mod/ArkBot/_build/latest?definitionId=2&branchName=master)
 
-# Project status last updated Jan 21st 2020
+# Project status last updated June 15th 2020
+
+## We are working towards a stable 2.0 release. Development of the previous 1.91 version is halted and the 2.0 codebase has been merged into the master branch. 
 
 ### Support
 Support [Wiki](https://github.com/ark-mod/ArkBot/wiki)
@@ -11,7 +13,7 @@ Support [Wiki](https://github.com/ark-mod/ArkBot/wiki)
 Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind currently and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
-We are actively developing this tool again!  We have assembled a team with past and new members.  Users can follow development progress here or get updates on Discord (link found above)
+We are actively developing this tool again!  We have assembled a team with past and new members. Users can follow development progress here or get updates on Discord (link found above)
 
 #### IMPORTANT NOTES
 Important Dependency Note: 
@@ -48,18 +50,17 @@ The application monitors and extracts data from any number of configured local A
 
 It aims to provide important functions to players: dino listings, food-status, breeding info, statistics; and server admins: rcon-commands, server managing etc. It does not enable cheating or making available data that have a considerable impact on how the game is played.
 
-## Latest release
-### Stable Branch
+## Latest releases
+### 1.91 Stable
 
-https://github.com/ark-mod/ArkBot/releases
+https://github.com/ark-mod/ArkBot/releases/tag/1.91-stable
 
-### Development Branch
+### 2.0 Beta (WIP - only for testing)
 
-https://github.com/mxtsdev/ArkBot/releases
-https://github.com/johnthegreat/ArkBot/releases
+https://github.com/ark-mod/ArkBot/releases/tag/latest-master
 
 
-## Installation
+## Installation (version 1.91)
 
 * Download the latest pre-built binaries (see above).
 * Perform configuration within the ArkBot program after opening by clicking on the configuration tab, completing all required fields.

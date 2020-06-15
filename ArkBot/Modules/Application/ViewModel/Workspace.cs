@@ -110,9 +110,6 @@ namespace ArkBot.Modules.Application.ViewModel
         private ArkContextManager _contextManager;
         internal IConfig _config;
 
-        internal bool _isUIHidden = false;
-        internal bool _startedWithoutErrors = false;
-
         private Workspace()
         {
             //do not create viewmodels or load data here, or avalondock layout deserialization will fail
@@ -239,10 +236,6 @@ namespace ArkBot.Modules.Application.ViewModel
 
         internal async Task Init()
         {
-            System.Console.WriteLine("ARK Bot");
-            System.Console.WriteLine("------------------------------------------------------");
-            System.Console.WriteLine();
-
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("App.config")); //"log4net.config"
 
@@ -266,7 +259,7 @@ namespace ArkBot.Modules.Application.ViewModel
                 }
                 catch (Exception ex)
                 {
-                    Console.AddLog($@"Error loading 'ark.config'. Using default config. (""{ex.Message}"")");
+                    Console.AddLogError($@"Error loading 'ark.config'. Using default config. (""{ex.Message}"")");
                     Logging.LogException("Error loading 'ark.config'. Using default config.", ex, GetType());
                 }
             }
@@ -434,7 +427,7 @@ namespace ArkBot.Modules.Application.ViewModel
             }
             catch (SqlException ex)
             {
-                Console.AddLog($@"Error initializing Microsoft SQL Server (""{ex.Message}"")");
+                Console.AddLogError($@"Error initializing Microsoft SQL Server (""{ex.Message}"")");
                 Logging.LogException("Error initializing Microsoft SQL Server.", ex, GetType());
                 return;
             }
@@ -581,10 +574,7 @@ namespace ArkBot.Modules.Application.ViewModel
                                     {
                                         logging.ClearProviders();
                                         logging.AddDebug();
-                                        logging.AddEventLog();
-                                        logging.AddEventSourceLogger();
-                                        //todo: add log4net logging
-                                        //possible to catch exceptions and serialize detailed exception logs?
+                                        logging.AddWebApp();
                                     })
                                     .UseUrls(_config.WebApp.Ssl.ChallengeListenPrefix)
                                     .Configure((appBuilder) =>
@@ -645,7 +635,7 @@ namespace ArkBot.Modules.Application.ViewModel
                     }
                     catch (Exception ex)
                     {
-                        Console.AddLog($@"SSL Certificate request failed! (""{ex.Message}"")");
+                        Console.AddLogError($@"SSL Certificate request failed! (""{ex.Message}"")");
                         Logging.LogException("Failed to issue ssl certificate.", ex, GetType());
                     }
                 }
@@ -676,34 +666,54 @@ namespace ArkBot.Modules.Application.ViewModel
             }
 
             // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/web-host?view=aspnetcore-3.1
-            _webapp = Host.CreateDefaultBuilder()
-                 .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.ConfigureKestrel(options =>
-                        {
-                            options.Listen(IPEndPoint.Parse(_config.WebApp.IPEndpoint), listenOptions =>
+            try
+            {
+                _webapp = Host.CreateDefaultBuilder()
+                     .UseServiceProviderFactory(new AutofacChildLifetimeScopeServiceProviderFactory(Container.BeginLifetimeScope("AspNetCore_IsolatedRoot")))
+                    .ConfigureWebHostDefaults(webBuilder =>
+                    {
+                        webBuilder.ConfigureKestrel(options =>
                             {
-                                if (_config.WebApp.Ssl.Enabled) listenOptions.UseHttps($"../{_config.WebApp.Ssl.Name}.pfx", _config.WebApp.Ssl.Password);
-                            });
-                        })
-                        .ConfigureLogging(logging =>
+                                options.Listen(IPEndPoint.Parse(_config.WebApp.IPEndpoint), listenOptions =>
+                                {
+                                    if (_config.WebApp.Ssl.Enabled) listenOptions.UseHttps($"../{_config.WebApp.Ssl.Name}.pfx", _config.WebApp.Ssl.Password);
+                                });
+                            })
+                            .ConfigureLogging(logging =>
+                            {
+                                logging.ClearProviders();
+                                logging.AddDebug();
+                                logging.AddWebApp();
+                            })
+                            .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
+                            .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))
+                            .UseStartup<WebAppStartup>();
+                    }).Build();
+                (_webapp as IHost).Start();
+                Console.AddLog("Web App started");
+            }
+            catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 5664) //Failed to bind to address <...>: address already in use.
+            {
+                var portInUseBy = (string)null;
+                try
+                {
+                    if (IPEndPoint.TryParse(_config.WebApp.IPEndpoint, out var ipEndpoint))
+                    {
+                        // power shell
+                        // Get-Process -Id (Get-NetTCPConnection -LocalPort 8600).OwningProcess | Format-List *
+                        var (success, output) = await ProcessHelper.RunCommandLine($"(Get-Process -Id (Get-NetTCPConnection -LocalPort {ipEndpoint.Port}).OwningProcess).Name", _config, UseCallOperator: false);
+                        if (success && !string.IsNullOrEmpty(output))
                         {
-                            logging.ClearProviders();
-                            logging.AddDebug();
-                            logging.AddEventLog();
-                            logging.AddEventSourceLogger();
-                        })
-                        .UseContentRoot(Path.Combine(AppContext.BaseDirectory, "WebApp")) //Directory.GetCurrentDirectory()
-                        .UseWebRoot(Path.Combine(AppContext.BaseDirectory, "WebApp"))
-                        .UseStartup<WebAppStartup>();
-                }).Build();
-            (_webapp as IHost).Start();
-            Console.AddLog("Web App started");
+                            portInUseBy = $@"Port {ipEndpoint.Port} in use by: {output}";
+                        }
+                    }
+                }
+                catch (Exception) { /* do nothing */ }
 
-            //Indicates the application started without errors, required for auto hide on startup
-            _startedWithoutErrors = true;
-
+                Console.AddLogError($@"Failed to start web app! (""{ex.Message}"")");
+                if (!string.IsNullOrWhiteSpace(portInUseBy)) Console.AddLogError(portInUseBy);
+                Logging.LogException("Failed to start web app.", ex, GetType());
+            }
         }
 
         private string ValidateConfig()
@@ -905,14 +915,14 @@ namespace ArkBot.Modules.Application.ViewModel
                         try
                         {
                             lastAttempt = DateTime.Now;
-                            System.Console.WriteLine("Connecting bot...");
+                            System.Console.WriteLine("Connecting discord bot...");
                             await _bot.Start();
-                            System.Console.WriteLine("Connected!");
+                            System.Console.WriteLine("Discord bot connected!");
                             isConnected = true;
                         }
                         catch (Exception ex)
                         {
-                            System.Console.WriteLine($"Failed to connect ({ex.Message})! Will retry in a moment...");
+                            System.Console.WriteLine($"Discord bot failed to connect ({ex.Message})! Will retry in a moment...");
                             Logging.LogException("Failed to start Discord Bot", ex, GetType(), Utils.LogLevel.DEBUG, ExceptionLevel.Ignored);
                         }
                     }

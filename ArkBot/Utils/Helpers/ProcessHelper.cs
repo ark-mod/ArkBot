@@ -83,7 +83,9 @@ namespace ArkBot.Utils.Helpers
             };
         }
 
-        public static async Task<(bool success, string output)> RunCommandLine(string command, IConfig config, Action<string> onOutputLineRead = null, bool UsePowershellOutputRedirect = true, int timeoutSeconds = 10)
+        /// <param name="UseCallOperator">For powershell when calling a command with arguments (to support pipe to tee) (see https://ss64.com/ps/call.html )</param>
+        /// <returns></returns>
+        public static async Task<(bool success, string output)> RunCommandLine(string command, IConfig config, Action<string> onOutputLineRead = null, bool UsePowershellOutputRedirect = true, bool UseCallOperator = true, int timeoutSeconds = 10)
         {
             Timer timer = null;
             Process process = null;
@@ -113,7 +115,7 @@ namespace ArkBot.Utils.Helpers
                     si = new ProcessStartInfo
                     {
                         FileName = config.PowershellFilePath,
-                        Arguments = $@"{(debugNoExit ? "-NoExit " : "")}& {command} | tee {tmpFilePathToPowershellOutput}",
+                        Arguments = $@"{(debugNoExit ? "-NoExit " : "")}{(UseCallOperator ? "& " : "")}{command} | tee {tmpFilePathToPowershellOutput}",
                         Verb = "runas",
                         UseShellExecute = true,
                         WindowStyle = ProcessWindowStyle.Hidden
@@ -121,6 +123,7 @@ namespace ArkBot.Utils.Helpers
                 }
                 var ss = new AutoResetEvent(false);
                 var tcs = new TaskCompletionSource<int>();
+                var readFunc = (Func<bool>)null;
                 process = new Process
                 {
                     StartInfo = si,
@@ -143,28 +146,36 @@ namespace ArkBot.Utils.Helpers
                     var offset = 0L;
                     powershellOutputStream = new FileStream(tmpFilePathToPowershellOutput, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     powershellOutputStreamReader = new StreamReader(powershellOutputStream);
+
+                    readFunc = new Func<bool>(() =>
+                    {
+                        powershellOutputStream.Seek(offset, SeekOrigin.Begin);
+                        if (!powershellOutputStreamReader.EndOfStream)
+                        {
+                            do
+                            {
+                                var line = powershellOutputStreamReader.ReadLine();
+
+                                if (line == null) continue;
+
+                                sb.AppendLine(line);
+                                onOutputLineRead?.Invoke(line);
+                            } while (!powershellOutputStreamReader.EndOfStream);
+
+                            offset = powershellOutputStream.Position;
+
+                            return true;
+                        }
+                        else return false;
+                    });
+
                     var task = Task.Run(async () =>
                     {
                         while (true)
                         {
                             if (tcs.Task.IsCompleted) return;
 
-                            powershellOutputStream.Seek(offset, SeekOrigin.Begin);
-                            if (!powershellOutputStreamReader.EndOfStream)
-                            {
-                                do
-                                {
-                                    var line = powershellOutputStreamReader.ReadLine();
-
-                                    if (line == null) continue;
-
-                                    sb.AppendLine(line);
-                                    onOutputLineRead?.Invoke(line);
-                                } while (!powershellOutputStreamReader.EndOfStream);
-
-                                offset = powershellOutputStream.Position;
-                            }
-                            else await Task.Delay(100);
+                            if (!readFunc()) await Task.Delay(100);
                         }
                     });
                 }
@@ -181,6 +192,7 @@ namespace ArkBot.Utils.Helpers
 
                 result = await tcs.Task;
                 timer.Change(0, Timeout.Infinite);
+                readFunc?.Invoke();
                 if (result != 0)
                 {
                     return (false, sb.ToString());
