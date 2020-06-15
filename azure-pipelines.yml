@@ -107,12 +107,12 @@ jobs:
       action: 'edit'
       target: '$(Build.SourceVersion)'
       tag: 'latest-master'
-      title: 'Automated Build (master) - $(dateRev)'
+      title: '2.0 Beta: Automated Build (master) - $(dateRev)'
       releaseNotesSource: 'inline'
       releaseNotesInline: |
-        This is an automated build compiled from the latest sources in the master branch.
+        This is an automated build compiled from the latest 2.0 beta sources in the master branch.
         
-        Use this if you want to try the latest features and enhancements and don't mind running a pre-release build.
+        Use this if you want to try the latest features and enhancements and don't mind running a pre-release build to help with testing.
       isPreRelease: true
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
