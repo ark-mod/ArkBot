@@ -4,6 +4,7 @@ using ArkBot.Modules.Application.Configuration.Model;
 using ArkBot.Modules.Application.Data;
 using ArkBot.Modules.Application.Data.ExternalImports;
 using ArkBot.Modules.Application.Services;
+using ArkBot.Modules.AuctionHouse;
 using ArkBot.Modules.Database;
 using ArkBot.Modules.Discord;
 using ArkBot.Modules.Prometheus;
@@ -419,10 +420,11 @@ namespace ArkBot.Modules.Application.ViewModel
 
             builder.RegisterType<ArkContextManager>().WithParameter(new TypedParameter(typeof(IProgress<string>), progress)).AsSelf().SingleInstance();
             builder.RegisterType<DiscordManager>().AsSelf().SingleInstance();
-            builder.RegisterType<PrometheusManager>().AsSelf().SingleInstance();
             builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance();
 
             builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
+            builder.RegisterType<PrometheusManager>().AsSelf().SingleInstance();
+            builder.RegisterType<AuctionHouseManager>().AsSelf().SingleInstance();
 
             Container = builder.Build();
 
@@ -469,7 +471,11 @@ namespace ArkBot.Modules.Application.ViewModel
 
                 // Initialize managers so that they are ready to handle events such as ArkContextManager.InitializationCompleted-event.
                 var scheduledTasksManager = Container.Resolve<ScheduledTasksManager>();
-                var notificationMangager = Container.Resolve<NotificationManager>();
+                var notificationManager = Container.Resolve<NotificationManager>();
+                // <GHOST DIVISION>
+                var prometheusManager = Container.Resolve<PrometheusManager>();
+                var auctionHouseManager = Container.Resolve<AuctionHouseManager>();
+                // </GHOST DIVISION>
 
                 // Trigger manual updates for all servers (initialization)
                 foreach (var context in _contextManager.Servers)
@@ -494,6 +500,22 @@ namespace ArkBot.Modules.Application.ViewModel
                     });
                     _contextManager.QueueUpdateClusterManual(context);
                 }
+
+                // <GHOST DIVISION>
+                // run prometheus endpoint
+                if (_config.Prometheus.Enabled)
+                {
+                    prometheusManager.Start();
+                }
+                else Console.AddLog("Prometheus is disabled.");
+
+                // run auction house manager
+                if (_config.AuctionHouse.Enabled)
+                {
+                    auctionHouseManager.Start();
+                }
+                else Console.AddLog("Auction House monitor is disabled.");
+                // </GHOST DIVISION>
             }
 
             //run the discord bot
@@ -503,12 +525,6 @@ namespace ArkBot.Modules.Application.ViewModel
                 _runDiscordBotTask = await Task.Factory.StartNew(async () => await RunDiscordBot(), _runDiscordBotCts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
             else Console.AddLog("Discord bot is disabled.");
-
-            if (_config.Prometheus.Enabled)
-            {
-                PrometheusManager.Instance.Start(_config.Prometheus.IPEndpoint);
-            }
-            else Console.AddLog("Prometheus is disabled.");
 
             //load the server multipliers data
             await ArkServerMultipliers.Instance.LoadOrUpdate();

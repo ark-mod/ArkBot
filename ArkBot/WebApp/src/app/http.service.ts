@@ -6,6 +6,7 @@ import 'rxjs/add/operator/toPromise';
 import { environment } from '../environments/environment';
 import { Servers } from './servers';
 import { Player } from './player';
+import { Market } from './market';
 
 declare var config: any;
 
@@ -20,6 +21,7 @@ export class HttpService {
   private adminServerUrl = '/adminserver';
   private administerUrl = '/administer';
   private playerUrl = '/player';
+  private marketsUrl = '/markets';
 
   constructor(protected http: Http) { }
 
@@ -39,6 +41,13 @@ export class HttpService {
     return this.http.get(`${this.getApiBaseUrl()}${this.serversUrl}?t=${+new Date()}`, this.getOptions())
                .toPromise()
                .then(response => response.json() as Servers)
+               .catch(this.handleError);
+  }
+
+  getMarkets(): Promise<Market[]> {
+    return this.http.get(`${this.getApiBaseUrl()}${this.marketsUrl}?t=${+new Date()}`, this.getOptions())
+               .toPromise()
+               .then(response => response.json() as Market[])
                .catch(this.handleError);
   }
 

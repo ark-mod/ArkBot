@@ -10,6 +10,8 @@ import { Ng2BreadcrumbModule } from 'ng2-breadcrumb/ng2-breadcrumb';
 import { AppComponent } from './app.component';
 import { PlayerComponent } from './player/player.component';
 import { PlayerMenuComponent } from './player-menu/player-menu.component';
+import { AuctionComponent } from './auction/auction.component';
+import { AuctionMenuComponent } from './auction-menu/auction-menu.component';
 import { ServerComponent } from './server/server.component';
 import { ServerListComponent } from './server-list/server-list.component';
 import { AdminServerComponent } from './admin-server/admin-server.component';
@@ -59,6 +61,23 @@ const appRoutes: Routes = [
       {
         path: '',
         component: PlayerMenuComponent,
+        outlet: 'menu'
+      }
+    ]
+  },
+  {
+    path: 'auction',
+    canActivate: [AccessControlRouteGuardService],
+    //resolve: { dataService: DataServiceResolver }, //only use when testing without canActivate (it does the same thing)
+    data: { name: 'auction' },
+    children: [
+      {
+        path: '',
+        component: AuctionComponent
+      },
+      {
+        path: '',
+        component: AuctionMenuComponent,
         outlet: 'menu'
       }
     ]
@@ -159,7 +178,9 @@ const appRoutes: Routes = [
     ConnectionErrorComponent,
     DeveloperComponent,
     CustomThemeComponent,
-    CreatureStatComponent
+    CreatureStatComponent,
+    AuctionComponent,
+    AuctionMenuComponent
   ],
   imports: [
     RouterModule.forRoot(appRoutes),

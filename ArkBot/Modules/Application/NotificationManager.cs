@@ -1,8 +1,10 @@
-﻿using ArkBot.Modules.Database;
+﻿using ArkBot.Modules.AuctionHouse;
+using ArkBot.Modules.Database;
 using ArkBot.Modules.WebApp.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 

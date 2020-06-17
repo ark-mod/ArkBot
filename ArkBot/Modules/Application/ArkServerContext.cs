@@ -141,13 +141,6 @@ namespace ArkBot.Modules.Application
                 {
                     progress.Report($"Server ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
                     IsInitialized = true;
-                    
-                    var server = _contextManager?.GetServer(Config.Key);
-                    Prometheus.PrometheusManager.Instance.CreaturesTamed.WithLabels(Config.Key).Set(server.TamedCreatures.Length);
-                    Prometheus.PrometheusManager.Instance.CreaturesWild.WithLabels(Config.Key).Set(server.WildCreatures.Length);
-                    Prometheus.PrometheusManager.Instance.Structures.WithLabels(Config.Key).Set(server.Structures.Length);
-                    Prometheus.PrometheusManager.Instance.Tribes.WithLabels(Config.Key).Set(server.Tribes.Length);
-
                     LastUpdate = DateTime.Now;
                 }
 

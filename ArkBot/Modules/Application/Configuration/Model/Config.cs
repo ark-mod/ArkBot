@@ -25,6 +25,7 @@ namespace ArkBot.Modules.Application.Configuration.Model
             WebApp = new WebAppConfigSection();
             Backups = new BackupsConfigSection();
             Prometheus = new PrometheusConfigSection();
+            AuctionHouse = new AuctionHouseConfigSection();
 
             //Test = new Test1ConfigSection();
         }
@@ -137,6 +138,16 @@ namespace ArkBot.Modules.Application.Configuration.Model
         [Required(ErrorMessage = "{0} is not set")]
         [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
         public PrometheusConfigSection Prometheus { get; set; }
+
+        [JsonProperty(PropertyName = "auctionhouse")]
+        [Display(Name = "Auction House", Description = "Auction House settings")]
+        [ConfigurationHelp(remarks: new[] { "Settings specific to the ghazlawl auction house feature." })]
+        [Category(ConfigurationCategory.Optional)]
+        [PropertyOrder(12)]
+        [ExpandableObject]
+        [Required(ErrorMessage = "{0} is not set")]
+        [ValidateExpandable(ErrorMessage = "{0} contain field(s) that are invalid")]
+        public AuctionHouseConfigSection AuctionHouse { get; set; }
 
         [JsonProperty(PropertyName = "tempFileOutputDirPath")]
         [Display(Name = "Temporary Files Directory", Description = "An existing directory path where temporary binary files can be stored (zip-files etc.)")]

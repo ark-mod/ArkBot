@@ -1,0 +1,10 @@
+<app-menu #menu>
+  <h2 class="menu-header theme-text-d1">Auction</h2>
+  <div class="menu-items w3-cell-row theme-l2">
+    <ng-container
+      *ngIf="dataService.Markets != undefined &amp;&amp; dataService.Markets.Markets != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')">
+      <div *ngFor="let market of dataService.Markets.Markets" class="w3-button w3-cell w3-mobile"
+        [ngClass]="{'theme-d1': menu.active(market.Name)}" (click)="menu.activate(market.Name)">{{market.Name}}</div>
+    </ng-container>
+  </div>
+</app-menu>

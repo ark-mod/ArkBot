@@ -2,6 +2,7 @@
   <h2 class="menu-header theme-text-d1">Servers</h2>
   <div class="menu-items w3-cell-row theme-l2">
     <div class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active('overview')}" (click)="menu.activate('overview')">Overview</div>
+    <a [routerLink]="'/auction/'" class="w3-button w3-cell w3-mobile">Auction House</a>
     <ng-container *ngIf="dataService.Servers != undefined &amp;&amp; dataService.hasFeatureAccess('home', 'serverdetails')">
       <div *ngFor="let server of dataService.Servers.Servers" class="w3-button w3-cell w3-mobile" [ngClass]="{'theme-d1': menu.active(server.Key)}" (click)="menu.activate(server.Key)">{{server.Key}}</div>
     </ng-container>

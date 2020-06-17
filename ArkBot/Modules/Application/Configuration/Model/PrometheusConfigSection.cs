@@ -32,5 +32,10 @@ namespace ArkBot.Modules.Application.Configuration.Model
         [PropertyOrder(2)]
         [MinLength(1, ErrorMessage = "{0} is not set")]
         public string IPEndpoint { get; set; }
+
+        [JsonProperty(PropertyName = "countSouls")]
+        [PropertyOrder(3)]
+        [Display(Name = "Count Souls", Description = "Option to enable/disable the counting of souls")]
+        public bool CountSouls { get; set; }
     }
 }

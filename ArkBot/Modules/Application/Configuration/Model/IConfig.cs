@@ -14,6 +14,7 @@
         ClustersConfigSection Clusters { get; set; }
         string PowershellFilePath { get; set; }
         PrometheusConfigSection Prometheus { get; set; }
+        AuctionHouseConfigSection AuctionHouse { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
         bool AnonymizeWebApiData { get; set; }
 
