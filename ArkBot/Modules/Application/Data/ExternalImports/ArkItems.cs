@@ -180,7 +180,7 @@ namespace ArkBot.Modules.Application.Data.ExternalImports
             [JsonProperty("description")]
             public string Description { get; set; }
 
-            [JsonProperty("blueprintPath")]
+            [JsonProperty("bp")]
             public string BlueprintPath { get; set; }
 
             [JsonProperty("type")]
