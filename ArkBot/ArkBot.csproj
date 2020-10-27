@@ -76,7 +76,7 @@
     <PackageReference Include="Autofac" Version="5.1.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Autofac.SignalR2" Version="5.0.0" />
-    <PackageReference Include="CefSharp.Wpf" Version="75.1.143" />
+    <PackageReference Include="CefSharp.Wpf" Version="85.3.130" />
     <PackageReference Include="Certes" Version="2.3.3" />
     <PackageReference Include="CoreRCON" Version="4.5.1" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
