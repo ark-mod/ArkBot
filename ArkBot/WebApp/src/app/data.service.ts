@@ -6,6 +6,7 @@ import { HttpService } from './http.service';
 import { MessageService } from './message.service';
 
 import { Servers } from './servers';
+import { Markets } from './markets';
 
 import { environment } from '../environments/environment';
 
@@ -17,12 +18,15 @@ export class DataService {
   _onlinePlayers: BehaviorSubject<any> = new BehaviorSubject<any>(undefined);
   _playerLocations: BehaviorSubject<any> = new BehaviorSubject<any>(undefined);
   _chatMessages: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(undefined);
+  _markets: BehaviorSubject<Markets> = new BehaviorSubject<Markets>(undefined);
 
   private _chatMessagesArr = [];
 
   public Servers: Servers;
+  public Markets: Markets;
   public UserSteamId: string;
   public ServersUpdated$: EventEmitter<Servers>;
+  public MarketsUpdated$: EventEmitter<Markets>;
   private menuOption: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
   private theme: BehaviorSubject<string> = new BehaviorSubject<string>(undefined);
 
@@ -30,7 +34,9 @@ export class DataService {
     private httpService: HttpService,
     private messageService: MessageService) {
       this.ServersUpdated$ = new EventEmitter();
+      this.MarketsUpdated$ = new EventEmitter();
       messageService.serverUpdated$.subscribe(serverKey => this.updateServer(serverKey));
+      messageService.marketsUpdated$.subscribe(this.updateMarkets());
       messageService.onlinePlayers$.subscribe(onlinePlayers => this._onlinePlayers.next(onlinePlayers));
       messageService.playerLocations$.subscribe(playerLocations => this._playerLocations.next(playerLocations));
       messageService.chatMessages$.subscribe(chatMessages => {
@@ -92,8 +98,29 @@ export class DataService {
         });
   }
 
+  getMarkets(): Promise<boolean> {
+    return this.httpService
+        .getMarkets()
+        .then(markets => {
+          this.Markets = new Markets(markets, null, null);
+          this._markets.next(this.Markets);
+          this.MarketsUpdated$.emit(this.Markets);
+          return true;
+        })
+        .catch(error => {
+          this.Markets = null;
+          this._markets.next(null);
+          this.MarketsUpdated$.emit(null);
+          return false;
+        });
+  }
+
   updateServer(serverKey: string): void {
     this.getServers();
+  }
+
+  updateMarkets(): void {
+    this.getMarkets();
   }
 
   hasFeatureAccess(featureGroup: string, featureName: string, forSteamId?: string): boolean {

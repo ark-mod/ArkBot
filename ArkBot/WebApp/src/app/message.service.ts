@@ -13,6 +13,7 @@ export class MessageService {
     public onlinePlayers$: EventEmitter<any> = new EventEmitter();
     public chatMessages$: EventEmitter<any> = new EventEmitter();
     public playerLocations$: EventEmitter<any> = new EventEmitter();
+    public marketsUpdated$: EventEmitter<any> = new EventEmitter();
 
     constructor(private zone:NgZone) {  }
 
@@ -36,6 +37,11 @@ export class MessageService {
         this.connection.on("PlayerLocations", (playerLocations: any) => {
             this.zone.run(() => { 
                 this.playerLocations$.emit(playerLocations);
+            });
+        });
+        this.connection.on("MarketUpdate", () => {
+            this.zone.run(() => { 
+                this.marketsUpdated$.emit();
             });
         });
         

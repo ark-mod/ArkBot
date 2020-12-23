@@ -13,6 +13,8 @@
         ServersConfigSection Servers { get; set; }
         ClustersConfigSection Clusters { get; set; }
         string PowershellFilePath { get; set; }
+        PrometheusConfigSection Prometheus { get; set; }
+        AuctionHouseConfigSection AuctionHouse { get; set; }
         bool UseCompatibilityChangeWatcher { get; set; }
         Microsoft.Extensions.Logging.LogLevel LogLevel { get; set; }
         bool AnonymizeWebApiData { get; set; }

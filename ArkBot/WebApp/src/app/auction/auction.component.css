@@ -1,0 +1,40 @@
+.stat-cell {
+    padding: 3px 2px;
+}
+
+.stat-item {
+    padding: 5px 0px;
+}
+
+.creaturedetails-table tr:last-of-type {
+    border-bottom: none !important;
+}
+
+.stat-table th {
+    text-align: center;
+}
+
+.stat-table td {
+    text-align: center;
+}
+
+.stat-table td.row-header, .stat-table th.row-header {
+    text-align: left;
+    width: 1em;
+    white-space: nowrap;
+    padding-right: 16px;
+}
+
+.collapsible:not(.active) .collapsible-open {
+    display: none;
+}
+
+.collapsible.active .collapsible-closed {
+    display: none;
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+}

@@ -1,0 +1,103 @@
+<section *ngIf="loaded == false" class="w3-container">
+  <div class="w3-panel theme-l2">
+    <h3 class="theme-text-l1-light">Loading...</h3>
+  </div>
+</section>
+<section *ngIf="loaded == true &amp;&amp; dataService.Markets == null &amp;&amp; dataService.Markets.Markets == null" class="w3-container">
+  <div class="w3-panel w3-red">
+    <h3>Error!</h3>
+    <p>No data could be loaded for the given steam id.</p>
+  </div>
+</section>
+
+<ng-container *ngFor="let market of dataService.Markets.Markets">
+  <section *ngIf="isMenuActive(market.Name)" class="w3-container">
+        <h2 class="theme-text-d1">{{market.Name}}</h2>
+        <div class="w3-bar theme-l2 w3-card-4">
+          <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeSub(market.Name, 'dino')}" [style.width.%]="50" (click)="activateSub('dino')">Dino</button>
+          <button href="#" class="w3-bar-item w3-button w3-mobile" [ngClass]="{'theme-d1': activeSub(market.Name, 'item')}" [style.width.%]="50" (click)="activateSub('item')">Item</button>
+        </div>
+  </section>
+  
+  <section *ngIf="activeSub(market.Name, 'dino')" class="w3-container">
+    <div class="inner-addon right-addon">
+      <input [ngModel]="auctionsFilter" (ngModelChange)="auctionsFilter = $event; filterAndSort();" class="w3-input w3-border w3-round-xlarge w3-large w3-margin-bottom border-theme theme-l1" placeholder="Filter" />
+      <span *ngIf="auctionsFilter != null &amp;&amp; auctionsFilter != ''" class='glyphicon glyphicon-remove' style="cursor: pointer;" (click)="auctionsFilter = ''; filterAndSort();"></span>
+      <input type="checkbox" [ngModel]="isBreedableFilter" (ngModelChange)="isBreedableFilter = $event; filterAndSort();" /> Breedable
+    </div>
+    <a id="player"></a><h2 class="theme-text-d1">Dino</h2>
+    <div class="w3-card-4 w3-responsive">
+      <table class="w3-table-all border-theme">
+        <thead>
+          <tr class="theme-d1">
+            <th style="cursor: pointer;" title="Sort by Date" (click)="setDinoSort('date')">Date</th>
+            <th style="cursor: pointer;" title="Sort by Seller" (click)="setDinoSort('seller')">Seller</th>
+            <th colspan="2" style="cursor: pointer;" title="Sort by Name" (click)="setDinoSort('name')">Name</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Level" (click)="setDinoSort('level')">Level</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Health" (click)="setDinoSort('health')">Health</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Stamina" (click)="setDinoSort('stamina')">Stamina</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Oxygen" (click)="setDinoSort('oxygen')">Oxygen</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Food" (click)="setDinoSort('food')">Food</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Damage" (click)="setDinoSort('damage')">Damage</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Speed" (click)="setDinoSort('speed')">Speed</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Price" (click)="setDinoSort('price')">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let auction of filteredAuctions">
+            <td>{{ auction.Date }}</td>
+            <td><a href="https://steamcommunity.com/profiles/{{ auction.Seller.SteamID }}">{{ auction.Seller.Name }}</a></td>
+            <td style="text-align: right;"><img src="/assets/gender/{{ auction.Dino.Gender }}.png" style="width:20px;height:20px;" alt="{{ auction.Dino.Gender }}" /> <img src="/assets/dino/{{theme}}/{{ auction.SellingClass }}.png" style="width:40px;height:40px;" alt="{{ auction.SellingClass }}" title="{{ auction.Name }}" /></td>
+            <td>{{ auction.SellingClientName }}</td>
+            <td style="text-align: right;">{{ auction.Dino.Level }}</td>
+            <td style="text-align: right;">{{ auction.Dino.Stats.Health | number:'1.1-1' }}</td>
+            <td style="text-align: right;">{{ auction.Dino.Stats.Stamina | number:'1.1-1' }}</td>
+            <td style="text-align: right;">{{ auction.Dino.Stats.Oxygen | number:'1.1-1' }}</td>
+            <td style="text-align: right;">{{ auction.Dino.Stats.Food | number:'1.1-1' }}</td>
+            <td style="text-align: right;">{{ auction.Dino.Stats.Damage | number:'1.1-2' }}%</td>
+            <td style="text-align: right;">{{ auction.Dino.Stats.Speed | number:'1.1-1' }}%</td>
+            <td style="text-align: right;">{{ auction.AskingAmount }} <img src="/assets/item/{{ auction.AskingClass }}.png" style="width:40px;height:40px;" alt="{{ auction.AskingClass }}" title="{{ auction.AskingClientName }}" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <section *ngIf="activeSub(market.Name, 'item')" class="w3-container">
+    <a id="player"></a><h2 class="theme-text-d1">Item</h2>
+    <div class="w3-card-4 w3-responsive">
+      <table class="w3-table-all border-theme">
+        <thead>
+          <tr class="theme-d1">
+            <th style="cursor: pointer;" title="Sort by Date" (click)="setAuctionSort('date')">Date</th>
+            <th style="cursor: pointer;" title="Sort by Seller" (click)="setAuctionSort('seller')">Seller</th>
+            <th colspan="2" style="cursor: pointer;" title="Sort by Item" (click)="setAuctionSort('item')">Item</th>
+            <th style="cursor: pointer;" title="Sort by Armor" (click)="setAuctionSort('armor')">Armor</th>
+            <th style="cursor: pointer;" title="Sort by Damage" (click)="setAuctionSort('damage')">Damage</th>
+            <th style="cursor: pointer;" title="Sort by Durability" (click)="setAuctionSort('durability')">Durability</th>
+            <th style="cursor: pointer;" title="Sort by Crafting Bonus" (click)="setAuctionSort('crafting')">Crafting Bonus</th>
+            <th style="text-align: right; cursor: pointer;" title="Sort by Price" (click)="setAuctionSort('price')">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let auction of filteredAuctions">
+            <td>{{ auction.Date }}</td>
+            <td><a href="https://steamcommunity.com/profiles/{{ auction.Seller.SteamID }}">{{ auction.Seller.Name }}</a></td>
+            <td style="text-align: right;">{{ auction.Quantity }} <img src="/assets/item/{{ auction.SellingClass }}.png" class="q{{ auction.Item.Quality }}" style="width:40px;height:40px;" alt="{{ auction.SellingClass }}" title="{{ auction.SellingClientName }}" /></td>
+            <td>{{ auction.SellingClientName }}</td>
+            <td style="text-align: right;" *ngIf="auction.Item?.Stats?.Armor">{{ auction.Item.Stats.Armor | number:'1.1-2'  }}</td>
+            <td *ngIf="!auction.Item?.Stats?.Armor">&nbsp;</td>
+            <td style="text-align: right;" *ngIf="auction.Item?.Stats?.Damage">{{ auction.Item.Stats.Damage | number:'1.1-2' }}%</td>
+            <td *ngIf="!auction.Item.Stats?.Damage">&nbsp;</td>
+            <td style="text-align: right;" *ngIf="auction.Item?.Stats?.MaxDurability">{{ auction.Item.Stats.MaxDurability | number:'1.1-2' }}</td>
+            <td *ngIf="!auction.Item.Stats?.MaxDurability">&nbsp;</td>
+            <td style="text-align: right;" *ngIf="auction.Item?.Stats?.CraftedSkillBonus">{{ auction.Item.Stats.CraftedSkillBonus | number:'1.1-2' }}%</td>
+            <td *ngIf="!auction.Item.Stats?.CraftedSkillBonus">&nbsp;</td>
+            <td style="text-align: right;">{{ auction.AskingAmount }} <img src="/assets/item/{{ auction.AskingClass }}.png" style="width:40px;height:40px;" alt="{{ auction.AskingClass }}" title="{{ auction.AskingClientName }}" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</ng-container>

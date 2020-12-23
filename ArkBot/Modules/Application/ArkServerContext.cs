@@ -141,7 +141,6 @@ namespace ArkBot.Modules.Application
                 {
                     progress.Report($"Server ({Config.Key}): Update finished in {st.ElapsedMilliseconds:N0} ms");
                     IsInitialized = true;
-
                     LastUpdate = DateTime.Now;
                 }
 

@@ -166,6 +166,10 @@
   ],
   "tempFileOutputDirPath": "",
   "powershellFilePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "prometheus": {
+    "enabled": false,
+    "iPEndpoint": "127.0.0.1:9091"
+  },
   "useCompatibilityChangeWatcher": true,
   "logLevel": "Warning",
   "anonymizeWebApiData": false
