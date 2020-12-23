@@ -121,16 +121,16 @@
       ]
     },
     "CrystalIsles": {
-      "LatitudeShift": 50.0,
-      "LatitudeDivisor": 13718.0,
+      "LatitudeShift": 48.75,
+      "LatitudeDivisor": 16000.0,
       "LongitudeShift": 50.0,
-      "LongitudeDivisor": 13718.0,
+      "LongitudeDivisor": 17000.0,
       "Images": [
         {
           "FilePath": "Resources\\MapImages\\CrystalIsles.jpg",
           "TopEdgeLatitude": -1.7,
-          "LeftEdgeLongitude": -1.5,
-          "RightEdgeLongitude": 99.3,
+          "LeftEdgeLongitude": -1.65,
+          "RightEdgeLongitude": 99.25,
           "BottomEdgeLatitude": 101.0
         }
       ]
