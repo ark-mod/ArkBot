@@ -39,7 +39,6 @@ jobs:
         $buildNumber = "$env:Build_BuildNumber" -replace '^.*?_', ''
         $pattern = '\[assembly: AssemblyInformationalVersion\("(.*)"\)\]'
         $AssemblyFiles = Get-ChildItem . AssemblyInfo.cs -rec
-
         foreach ($file in $AssemblyFiles)
         {
           (Get-Content $file.PSPath) | ForEach-Object{
@@ -51,7 +50,6 @@ jobs:
               }
           } | Set-Content $file.PSPath
         }
-
   - task: VSBuild@1
     inputs:
       solution: '$(solution)'
