@@ -1,5 +1,6 @@
 ﻿using ArkBot.Modules.Application;
 using ArkBot.Modules.Application.Configuration.Model;
+using ArkBot.Modules.AuctionHouse;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace ArkBot.Modules.WebApp.Hubs
     {
         Task ServerUpdate(string serverKey);
         Task ClusterUpdate(string clusterKey);
+        Task MarketUpdate(string name);
         Task OnlinePlayers(Dictionary<string, OnlinePlayerViewModel[]> onlinePlayers);
         Task PlayerLocations(Dictionary<string, PlayerLocationViewModel[]> playerLocations);
         Task ChatMessages(ChatMessageViewModel[] msg);

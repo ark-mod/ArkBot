@@ -6,6 +6,7 @@ import 'rxjs/add/operator/toPromise';
 import { environment } from '../environments/environment';
 import { Servers } from './servers';
 import { Player } from './player';
+import { Market } from './market';
 
 import { HttpService } from './http.service';
 
@@ -18,6 +19,13 @@ export class DemoHttpService extends HttpService {
     return this.http.get('assets/demo/servers.json')
     .toPromise()
     .then(response => response.json() as Servers)
+    .catch(this.handleError);
+  }
+
+  getMarkets(): Promise<Market[]> {
+    return this.http.get('assets/demo/markets.json')
+    .toPromise()
+    .then(response => response.json() as Market[])
     .catch(this.handleError);
   }
 

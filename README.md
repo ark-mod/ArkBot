@@ -1,19 +1,21 @@
 [![Build Status](https://dev.azure.com/ark-mod/ArkBot/_apis/build/status/ark-mod.ArkBot?branchName=master)](https://dev.azure.com/ark-mod/ArkBot/_build/latest?definitionId=2&branchName=master)
 
-# Project status last updated June 15th 2020
+# Project status last updated March 5th 2021
 
-## We are working towards a stable 2.0 release. Development of the previous 1.91 version is halted and the 2.0 codebase has been merged into the master branch. 
+## Active Development of the previous 1.91 version and 2.0 is halted indefinately as our chief coder is on hiatus. 
 
 ### Support
 Support [Wiki](https://github.com/ark-mod/ArkBot/wiki)
 
 
-## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and feature requests.  Please read through existing issues before making a new one.  If you need support with setup, have general questions, would like to be up-to-date on development, or something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7).  Be sure to assign your user role #start-here in the Discord to access the discussion channels. 
+## DO NOT use GitHub as a support forum.  The issues section is reserved for just that, issues and feature requests.  Please read through existing issues before making a new one.  If you have general questions or a question on something else not covered in the wiki, join our Discord using this [link](https://discord.gg/Np23aw7) and search for an answer to your question in the appropriate channels.
 
-Before requesting support from our Discord, please understand that ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind currently and as such are unsupported.  We will offer no support if you choose to go this route. 
+Before requesting support from our Discord, please understand that ArkBot is a free tool and that one-on-one support may not always be available.  We encourage new users to utilize the Discord search function for an answer to their issue(s). 
+
+## ArkBot is designed in its current form to be run on the machine hosting your gameservers.  While methods exist to mirror/link files from a remote gameserver, arkbot is not designed with these workarounds in mind currently and as such are unsupported.  We will offer no support if you choose to go this route. 
 
 #### Development
-We are actively developing this tool again!  We have assembled a team with past and new members. Users can follow development progress here or get updates on Discord (link found above)
+Active Development has ceased.
 
 #### IMPORTANT NOTES
 Important Dependency Note: 
@@ -51,14 +53,8 @@ The application monitors and extracts data from any number of configured local A
 It aims to provide important functions to players: dino listings, food-status, breeding info, statistics; and server admins: rcon-commands, server managing etc. It does not enable cheating or making available data that have a considerable impact on how the game is played.
 
 ## Latest releases
-### 1.91 Stable
 
-https://github.com/ark-mod/ArkBot/releases/tag/1.91-stable
-
-### 2.0 Beta (WIP - only for testing)
-
-https://github.com/ark-mod/ArkBot/releases/tag/latest-master
-
+https://github.com/ark-mod/ArkBot/releases
 
 ## Installation (version 1.91)
 

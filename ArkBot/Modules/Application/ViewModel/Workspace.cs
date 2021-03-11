@@ -4,8 +4,10 @@ using ArkBot.Modules.Application.Configuration.Model;
 using ArkBot.Modules.Application.Data;
 using ArkBot.Modules.Application.Data.ExternalImports;
 using ArkBot.Modules.Application.Services;
+using ArkBot.Modules.AuctionHouse;
 using ArkBot.Modules.Database;
 using ArkBot.Modules.Discord;
+using ArkBot.Modules.Prometheus;
 using ArkBot.Modules.Shared;
 using ArkBot.Modules.WebApp;
 using ArkBot.Utils;
@@ -414,6 +416,8 @@ namespace ArkBot.Modules.Application.ViewModel
             builder.RegisterType<ScheduledTasksManager>().AsSelf().PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies).SingleInstance();
 
             builder.RegisterType<NotificationManager>().AsSelf().SingleInstance();
+            builder.RegisterType<PrometheusManager>().AsSelf().SingleInstance();
+            builder.RegisterType<AuctionHouseManager>().AsSelf().SingleInstance();
 
             Container = builder.Build();
 
@@ -460,7 +464,11 @@ namespace ArkBot.Modules.Application.ViewModel
 
                 // Initialize managers so that they are ready to handle events such as ArkContextManager.InitializationCompleted-event.
                 var scheduledTasksManager = Container.Resolve<ScheduledTasksManager>();
-                var notificationMangager = Container.Resolve<NotificationManager>();
+                var notificationManager = Container.Resolve<NotificationManager>();
+                // <GHOST DIVISION>
+                var prometheusManager = Container.Resolve<PrometheusManager>();
+                var auctionHouseManager = Container.Resolve<AuctionHouseManager>();
+                // </GHOST DIVISION>
 
                 // Trigger manual updates for all servers (initialization)
                 foreach (var context in _contextManager.Servers)
@@ -485,6 +493,22 @@ namespace ArkBot.Modules.Application.ViewModel
                     });
                     _contextManager.QueueUpdateClusterManual(context);
                 }
+
+                // <GHOST DIVISION>
+                // run prometheus endpoint
+                if (_config.Prometheus.Enabled)
+                {
+                    prometheusManager.Start();
+                }
+                else Console.AddLog("Prometheus is disabled.");
+
+                // run auction house manager
+                if (_config.AuctionHouse.Enabled)
+                {
+                    auctionHouseManager.Start();
+                }
+                else Console.AddLog("Auction House monitor is disabled.");
+                // </GHOST DIVISION>
             }
 
             //run the discord bot

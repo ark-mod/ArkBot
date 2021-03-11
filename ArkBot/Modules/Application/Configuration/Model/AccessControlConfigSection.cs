@@ -21,7 +21,7 @@ namespace ArkBot.Modules.Application.Configuration.Model
         /// </summary>
         internal void SetupConfigDefaults()
         {
-            GetOrAddNewWithPostAction("pages", (x) => x.SetupDefaults(new[] { "home", "server", "player", "admin-server" }));
+            GetOrAddNewWithPostAction("pages", (x) => x.SetupDefaults(new[] { "home", "server", "player", "admin-server", "auction" }));
             GetOrAddNewWithPostAction("home", (x) => x.SetupDefaults(new[] { "myprofile", "serverlist", "serverdetails", "online", "externalresources" }));
             GetOrAddNewWithPostAction("server", (x) => x.SetupDefaults(new[] { "players", "tribes", "wildcreatures", "wildcreatures-coords", "wildcreatures-basestats", "wildcreatures-ids", "wildcreatures-statistics" }));
             GetOrAddNewWithPostAction("player", (x) => x.SetupDefaults(new[] { "profile", "profile-detailed", "creatures", "creatures-basestats", "creatures-ids", "creatures-cloud", "breeding", "crops", "generators", "kibbles-eggs", "tribelog" }));
