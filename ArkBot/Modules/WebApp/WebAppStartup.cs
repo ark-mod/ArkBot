@@ -147,7 +147,8 @@ namespace ArkBot.Modules.WebApp
 
             app.UseCookiePolicy(new CookiePolicyOptions
             {
-                Secure = _config.WebApp.Ssl?.Enabled == true ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest
+                Secure = _config.WebApp.Ssl?.Enabled == true ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest,
+                MinimumSameSitePolicy = _config.WebApp.Ssl?.Enabled == true ? SameSiteMode.None : SameSiteMode.Lax
             });
 
             app.UseAuthentication();
