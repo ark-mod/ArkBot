@@ -165,6 +165,36 @@
         }
       ]
     },
+    "Gen2": {
+      "LatitudeShift": 49.6552,
+      "LatitudeDivisor": 14500,
+      "LongitudeShift": 49.6552,
+      "LongitudeDivisor": 14500,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\Gen2.jpg",
+          "TopEdgeLatitude": 0,
+          "LeftEdgeLongitude": 0,
+          "RightEdgeLongitude": 100,
+          "BottomEdgeLatitude": 100
+        }
+      ]
+    },
+    "LostIsland": {
+      "LatitudeShift": 48.75,
+      "LatitudeDivisor": 16000.0,
+      "LongitudeShift": 50.0,
+      "LongitudeDivisor": 17000.0,
+      "Images": [
+        {
+          "FilePath": "Resources\\MapImages\\LostIsland.jpg",
+          "TopEdgeLatitude": 0,
+          "LeftEdgeLongitude": 0,
+          "RightEdgeLongitude": 100.0,
+          "BottomEdgeLatitude": 100.0
+        }
+      ]
+    },
     "Valhalla": {
       "LatitudeShift": 48.81356,
       "LatitudeDivisor": 14750.0,
