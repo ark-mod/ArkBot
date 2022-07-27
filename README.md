@@ -75,7 +75,7 @@ https://github.com/ark-mod/ArkSavegameToolkitNet
 
 Allows server-side ARK plugins.
 
-https://gameservershub.com/forums/ark-server-api.12/
+https://gameservershub.com/forums/resources/ark-server-api.12/
 
 #### ARK Server API: ArkBotHelper (Plugin by WETBATMAN)
 
