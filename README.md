@@ -32,7 +32,7 @@ ArkBot relies upon certain VS C++ runtimes installed. It requires [.NET 3.5 with
 
 This has been installed on WS 2012R2, WS 2016, WS 2019, Windows 10, Windows 11. Other platforms may not work. Try it at your own risk.
 
-To enable map clean-up from the companion app (web app) for administrators, install [ARK-Server-API](https://arkserverapi.com/resources/ark-server-api.4/) and [ARK-Server-API: ArkBotHelper Plugin by WETBATMAN](https://arkserverapi.com/resources/ark-bot-helper.142/).
+To enable map clean-up from the companion app (web app) for administrators, install [ARK-Server-API](https://arkserverapi.com/resources/ark-server-api.4/) and [ARK-Server-API: ArkBotHelper Plugin by WETBATMAN](https://gameservershub.com/forums/resources/ark-bot-helper.136/).
 
 
 ## Documentation from Wiki
@@ -75,10 +75,10 @@ https://github.com/ark-mod/ArkSavegameToolkitNet
 
 Allows server-side ARK plugins.
 
-https://arkserverapi.com/resources/ark-server-api.4/
+https://gameservershub.com/forums/ark-server-api.4/
 
 #### ARK Server API: ArkBotHelper (Plugin by WETBATMAN)
 
 Used to facilitate map clean-up from the companion app (web app) for administrators.
 
-https://arkserverapi.com/resources/ark-bot-helper.142/
+https://gameservershub.com/forums/resources/ark-bot-helper.136/
