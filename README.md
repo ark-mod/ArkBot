@@ -61,7 +61,7 @@ Creature stat data is sourced from Cadons [ARK Smart Breeding](https://github.co
 
 WETBATMAN for the Ark Server API: ArtBotHelper Plugin.
 
-Knights GG Ark Cluster for extensive testing and support throughout the years [KNIGHTSGG](https://www.knightsggc.com).
+Knights GG Ark Cluster for extensive testing and support throughout the years [KNIGHTSGG](https://www.knightsgg.com).
 
 ## Links
 
