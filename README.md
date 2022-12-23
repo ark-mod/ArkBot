@@ -30,7 +30,7 @@ It aims to provide important functions to players: dino listings, food-status, b
 * Important Dependency Note: 
 ArkBot relies upon certain VS C++ runtimes installed. It requires [.NET 3.5 with service pack 1](https://www.microsoft.com/en-us/download/details.aspx?id=25150), [.NET 4.7](https://www.microsoft.com/en-us/download/details.aspx?id=55170), and [Microsoft Visual C++ Redistributable 2013](https://support.microsoft.com/en-us/help/4032938/update-for-visual-c-2013-redistributable-package). Please note: If you are running a windows server install, you must install the [.NET 3.5 and 4.7(or 4.8) from the server admin panel.](https://www.interserver.net/tips/kb/enable-net-framework-3-5-windows-server/)
 
-This has been installed on WS 2012R2, WS 2016, WS 2019, Windows 10, Windows 11. Other platforms may not work. Try it at your own risk.
+This has been installed on WS 2012R2, WS 2016, WS 2019, WS 2022, Windows 10, Windows 11. Other platforms may not work. Try it at your own risk.
 
 To enable map clean-up from the companion app (web app) for administrators, install [ARK-Server-API](https://arkserverapi.com/resources/ark-server-api.4/) and [ARK-Server-API: ArkBotHelper Plugin by WETBATMAN](https://gameservershub.com/forums/resources/ark-bot-helper.136/).
 
